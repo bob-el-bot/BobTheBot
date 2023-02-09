@@ -41,6 +41,10 @@
             "Discord.Net": {
               "target": "Package",
               "version": "[3.6.1, )"
+            },
+            "Microsoft.Net.Http": {
+              "target": "Package",
+              "version": "[2.2.29, )"
             }
           },
           "imports": [

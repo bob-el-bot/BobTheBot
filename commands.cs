@@ -1,6 +1,8 @@
 using Discord.Interactions;
 using System.Threading.Tasks;
 using System;
+using System.Net.Http.Headers;
+using System.Net.Http;
 using Discord.WebSocket;
 using Discord;
 
@@ -70,6 +72,32 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
         // Respond
         await RespondAsync(text: $"🎱 The magic 8 ball says **{result}** in response to {prompt}");
+    }
+
+    [EnabledInDm(false)]
+    [SlashCommand("dadjoke", "Bob will tell you a dad joke.")]
+    [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
+    public async Task DadJoke()
+    {
+        // Formulate Request
+        var httpClient = new HttpClient();
+
+        var request = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, "https://icanhazdadjoke.com");
+
+        var productValue = new ProductInfoHeaderValue("BobTheBot", "1.0");
+        var commentValue = new ProductInfoHeaderValue("(+https://github.com/Quantam-Studios/BobTheBot)");
+        var acceptValue = new MediaTypeWithQualityHeaderValue("text/plain");
+        request.Headers.UserAgent.Add(productValue);
+        request.Headers.UserAgent.Add(commentValue);
+        request.Headers.Accept.Add(acceptValue);
+
+        // Send Request (Get the joke)
+        var resp = await httpClient.SendAsync(request);
+        // Parse Content
+        var content = await resp.Content.ReadAsStringAsync();
+
+        // Respond
+        await RespondAsync(text: $"😉  *{content}*");
     }
 
     [EnabledInDm(false)]

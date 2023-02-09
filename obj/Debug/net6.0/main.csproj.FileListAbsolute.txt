@@ -52,3 +52,5 @@
 /home/runner/BobTheBot/obj/Debug/net6.0/ref/main.dll
 /home/runner/BobTheBot/obj/Debug/net6.0/main.pdb
 /home/runner/BobTheBot/obj/Debug/net6.0/main.genruntimeconfig.cache
+/home/runner/BobTheBot/bin/Debug/net6.0/System.Net.Http.Extensions.dll
+/home/runner/BobTheBot/bin/Debug/net6.0/System.Net.Http.Primitives.dll

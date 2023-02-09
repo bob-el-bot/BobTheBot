@@ -144,7 +144,7 @@ public static class HttpServer
             builder.AppendLine(@"HTTP/1.1 200 OK");
             builder.AppendLine(@"Content-Type: text/html");
             builder.AppendLine(@"");
-            builder.AppendLine(@"<html><head></head><body><p>Bob the bot is online!</p></body></html>");
+				builder.AppendLine (@"<html><head><title>Bob Is Online!</title></head><body><h1>Bob Is Online!</h1></body></html>"); 
 
             Console.WriteLine("");
             Console.WriteLine("response...");

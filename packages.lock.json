@@ -16,6 +16,16 @@
           "Discord.Net.Webhook": "3.6.1"
         }
       },
+      "Microsoft.Net.Http": {
+        "type": "Direct",
+        "requested": "[2.2.29, )",
+        "resolved": "2.2.29",
+        "contentHash": "fc4CPEewJ30Xgal+fSq1lYIBt582A7eKlAL7O4HXiYAiTp2VTnA4osSvk7T2n8aS4xTCPVJusQk3yKLT0XSpkg==",
+        "dependencies": {
+          "Microsoft.Bcl": "1.1.10",
+          "Microsoft.Bcl.Build": "1.0.14"
+        }
+      },
       "Discord.Net.Commands": {
         "type": "Transitive",
         "resolved": "3.6.1",
@@ -73,6 +83,19 @@
           "Discord.Net.Core": "3.6.1",
           "Discord.Net.Rest": "3.6.1"
         }
+      },
+      "Microsoft.Bcl": {
+        "type": "Transitive",
+        "resolved": "1.1.10",
+        "contentHash": "+tTqoh/M1pyL8El3qLy30EcwnAtyvFoDZJtdG9Cbg/WdFbh4N8kyrq198XHuEL7lnJbeD0DRO8jcX5IIOh05cQ==",
+        "dependencies": {
+          "Microsoft.Bcl.Build": "1.0.14"
+        }
+      },
+      "Microsoft.Bcl.Build": {
+        "type": "Transitive",
+        "resolved": "1.0.14",
+        "contentHash": "cDLKSvNvRa519hplsbSoYqO69TjdDIhfjtKUM0g20/nVROoWsGav9KCI9HtnGjLmdV1+TcUUDhbotcllibjPEA=="
       },
       "Microsoft.Extensions.DependencyInjection.Abstractions": {
         "type": "Transitive",
