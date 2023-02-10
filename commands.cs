@@ -217,6 +217,28 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         }
     }
 
+ [EnabledInDm(false)]
+    [SlashCommand("fancytext", "Bob will type your text in a fancy font.")]
+    [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
+    public async Task FancyText(string text)
+    {
+        string[] fancyAlpha = { "𝖆", "𝖇", "𝖈", "𝖉", "𝖊", "𝖋", "𝖌", "𝖍", "𝖎", "𝖏", "𝖐", "𝖑", "𝖒", "𝖓", "𝖔", "𝖕", "𝖖", "𝖗", "𝖘", "𝖙", "𝖚", "𝖛", "𝖜", "𝖝", "𝖞", "𝖟" };
+        string alpha = "abcdefghijklmnopqrstuvwxyz";
+        string fancifiedText = "";
+      
+        foreach(char letter in text){
+          if (alpha.Contains(letter)) 
+          {
+            int letterIndex = alpha.IndexOf(letter);
+            fancifiedText += fancyAlpha[letterIndex]; 
+          }
+          else
+            fancifiedText += letter;
+        }
+
+        await RespondAsync(fancifiedText);      
+    }
+
     // MOD Stuff
 
     [EnabledInDm(false)]
