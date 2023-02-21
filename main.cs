@@ -5,6 +5,7 @@ using Discord.WebSocket;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Collections;
 
 // For c# server
 using System.IO;
@@ -24,7 +25,7 @@ public static class Bot
 
     public static async Task Main()
     {
-        if (Token is null) throw new Exception("You didn't set your Discord bot token properly.");
+        if (Token is null) throw new Exception("Discord bot token not set properly.");
 
         Client.Ready += Ready;
         Client.Log += Log;
@@ -50,6 +51,11 @@ public static class Bot
         Service.SlashCommandExecuted += SlashCommandResulted;
 
         await Client.SetGameAsync("with C#", null, ActivityType.Playing);
+
+        // Print the servers bob is in.
+        foreach (var guild in Bot.Client.Guilds) {
+          Console.WriteLine($"{guild.Name}, {guild.MemberCount}");
+        }
     }
 
     private static async Task SlashCommandExecuted(SocketSlashCommand command)
@@ -144,7 +150,7 @@ public static class HttpServer
             builder.AppendLine(@"HTTP/1.1 200 OK");
             builder.AppendLine(@"Content-Type: text/html");
             builder.AppendLine(@"");
-				builder.AppendLine (@"<html><head><title>Bob Is Online!</title></head><body><h1>Bob Is Online!</h1></body></html>"); 
+            builder.AppendLine(@"<html><head><title>Bob Is Online!</title></head><body><h1>Bob Is Online!</h1></body></html>");
 
             Console.WriteLine("");
             Console.WriteLine("response...");

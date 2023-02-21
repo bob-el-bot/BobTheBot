@@ -238,7 +238,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
         await RespondAsync(fancifiedText);      
     }
-
+  
     // MOD Stuff
 
     [EnabledInDm(false)]
