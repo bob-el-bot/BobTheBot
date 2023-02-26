@@ -3,7 +3,7 @@ public class Encryption
     public enum CipherTypes
     {
         Atbash,
-        //Caesar,
+        Caesar,
         A1Z26
     }
 
@@ -28,26 +28,26 @@ public class Encryption
         return finalText;
     }
 
-    // public static string Caesar(string text)
-    // {
-    //     string alpha = "abcdefghijklmnopqrstuvwxyz";
-    //     string finalText = "";
+    public static string Caesar(string text)
+    {
+        string alpha = "abcdefghijklmnopqrstuvwxyz";
+        string finalText = "";
+        int shift = 3;
 
-    //     foreach (char letter in text)
-    //     {
-    //         if (alpha.IndexOf(letter) > -1)
-    //         {
-    //             int finalVal = 25 - alpha.IndexOf(letter);
-    //             finalText += alpha[finalVal];
-    //         }
-    //         else
-    //         {
-    //             finalText += letter;
-    //         }
-    //     }
-
-    //     return finalText;
-    // }
+        foreach (char letter in text)
+        {
+            if (alpha.IndexOf(letter) > -1)
+            {
+                if (alpha.IndexOf(letter) + shift <= 25)
+                    finalText += alpha[alpha.IndexOf(letter) + shift];
+                else
+                    finalText += alpha[alpha.IndexOf(letter) + shift - 26];
+            }
+            else
+                finalText += letter;
+        }
+        return finalText;
+    }
 
     public static string A1Z26(string text)
     {

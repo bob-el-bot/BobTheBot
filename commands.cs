@@ -292,9 +292,9 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
             case Encryption.CipherTypes.Atbash:
                 finalText = Encryption.Atbash(message);
                 break;
-            // case Encryption.CipherTypes.Caesar:
-            //     finalText = Encryption.Caesar(message);
-            //     break;
+            case Encryption.CipherTypes.Caesar:
+                finalText = Encryption.Caesar(message);
+                break;
             case Encryption.CipherTypes.A1Z26:
                 finalText = Encryption.A1Z26(message);
                 break;
