@@ -217,7 +217,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         }
     }
 
- [EnabledInDm(false)]
+    [EnabledInDm(false)]
     [SlashCommand("fancytext", "Bob will type your text in a fancy font.")]
     [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task FancyText(string text)
@@ -225,20 +225,61 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         string[] fancyAlpha = { "𝖆", "𝖇", "𝖈", "𝖉", "𝖊", "𝖋", "𝖌", "𝖍", "𝖎", "𝖏", "𝖐", "𝖑", "𝖒", "𝖓", "𝖔", "𝖕", "𝖖", "𝖗", "𝖘", "𝖙", "𝖚", "𝖛", "𝖜", "𝖝", "𝖞", "𝖟" };
         string alpha = "abcdefghijklmnopqrstuvwxyz";
         string fancifiedText = "";
-      
-        foreach(char letter in text){
-          if (alpha.Contains(letter)) 
-          {
-            int letterIndex = alpha.IndexOf(letter);
-            fancifiedText += fancyAlpha[letterIndex]; 
-          }
-          else
-            fancifiedText += letter;
+
+        foreach (char letter in text)
+        {
+            if (alpha.Contains(letter))
+            {
+                int letterIndex = alpha.IndexOf(letter);
+                fancifiedText += fancyAlpha[letterIndex];
+            }
+            else
+                fancifiedText += letter;
         }
 
-        await RespondAsync(fancifiedText);      
+        await RespondAsync(fancifiedText);
     }
-  
+
+    [EnabledInDm(false)]
+    [SlashCommand("ship", "Bob will determine how good of a couple two users would make")]
+    [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
+    public async Task Ship(SocketUser person1, SocketUser person2)
+    {
+        // Prepare for calculations
+        string id1 = person1.Id.ToString();
+        int[] id1MakeUp = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        string id2 = person2.Id.ToString();
+        int[] id2MakeUp = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+        // determine amount of each digit
+        for (int i = 0; i < 18; i++)
+        {
+            id1MakeUp[Int32.Parse($"{id1[i]}")] += 1;
+            id2MakeUp[Int32.Parse($"{id2[i]}")] += 1;
+        }
+
+        // determine difference between digits
+        float matchDifference = 0;
+        for (int i = 0; i < 9; i++)
+        {
+            matchDifference += MathF.Abs(id1MakeUp[i] - id2MakeUp[i]);
+        }
+
+        // calculate perecentage of similarity.
+        float matchPercent = (matchDifference / 90) * 100;
+
+        // Embed
+        var embed = new Discord.EmbedBuilder
+        {
+            Title = $"{person1.Username} ❤️ {person2.Username}",
+            Color = new Discord.Color(6689298),
+        };
+
+        embed.AddField(name: $"Match of:", value: $"`{matchPercent}%`");
+
+        await RespondAsync(embed: embed.Build());
+    }
+
     // MOD Stuff
 
     [EnabledInDm(false)]
@@ -290,5 +331,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         }
     }
 }
+
+
 
 
