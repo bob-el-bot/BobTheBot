@@ -280,6 +280,29 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         await RespondAsync(embed: embed.Build());
     }
 
+    [EnabledInDm(false)]
+    [SlashCommand("encrypt", "Bob will encrypt your message with a cipher of your choice.")]
+    [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
+    public async Task Encrypt(string message, Encryption.CipherTypes cipher)
+    {
+        string finalText = "";
+
+        switch (cipher)
+        {
+            case Encryption.CipherTypes.Atbash:
+                finalText = Encryption.Atbash(message);
+                break;
+            // case Encryption.CipherTypes.Caesar:
+            //     finalText = Encryption.Caesar(message);
+            //     break;
+            case Encryption.CipherTypes.A1Z26:
+                finalText = Encryption.A1Z26(message);
+                break;
+        }
+
+        await RespondAsync($"{finalText}");
+    }
+
     // MOD Stuff
 
     [EnabledInDm(false)]
