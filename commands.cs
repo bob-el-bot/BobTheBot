@@ -109,6 +109,21 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     }
 
     [EnabledInDm(false)]
+    [SlashCommand("info", "Learn about Bob.")]
+    [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
+    public async Task Info()
+    {
+        var embed = new Discord.EmbedBuilder
+        {
+            Title = $"Bob's Info",
+            Color = new Discord.Color(6689298),
+        };
+        embed.AddField(name: "📛 Username", value: $"{Bot.Client.CurrentUser.Username}", inline: true).AddField(name: "🪪 ID", value: $"`{Bot.Client.CurrentUser.Id}`", inline: true).AddField(name: "📈 Server Count", value: $"`{Bot.Client.Guilds.Count}`").AddField(name: ":calendar_spiral: Date Created", value: $"`{Bot.Client.CurrentUser.CreatedAt}`", inline: true).AddField(name: "⚡ Github Repository", value: "https://github.com/Quantam-Studios/BobTheBot").AddField(name: "🏗️ Made With", value: "C#, .NET", inline: true).AddField(name: "📡 Hosted With", value: "replit.com", inline: true);
+
+        await RespondAsync(embed: embed.Build());
+    }
+
+    [EnabledInDm(false)]
     [SlashCommand("color", "Bob will choose a random color.")]
     [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task Color()

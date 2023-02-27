@@ -25,7 +25,7 @@ public class Encryption
             }
         }
 
-        return finalText;
+        return $"🔒 {finalText}";
     }
 
     public static string Caesar(string text)
@@ -46,7 +46,7 @@ public class Encryption
             else
                 finalText += letter;
         }
-        return finalText;
+        return $"🔒 {finalText}";
     }
 
     public static string A1Z26(string text)
@@ -77,6 +77,6 @@ public class Encryption
             }
         }
 
-        return finalText;
+        return $"🔒 {finalText}";
     }
 }
