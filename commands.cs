@@ -284,20 +284,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         float matchPercent = (matchDifference / 90) * 100;
 
         // Determine Heart Level
-        string heartLevel = "";
-        HeartLevel[] heartLevels = { new HeartLevel("💔", 0), new HeartLevel("❤️", 5), new HeartLevel("💓", 20), new HeartLevel("💗", 35), new HeartLevel("💕", 50), new HeartLevel("💞", 65), new HeartLevel("💖", 80), new HeartLevel("💘", 90), };
-
-        foreach (HeartLevel level in heartLevels)
-        {
-            if (matchPercent >= level.min)
-            {
-                heartLevel = level.heart;
-            }
-            else
-            {
-                break;
-            }
-        }
+        string heartLevel = HeartLevels.CalculateHeartLevel(matchPercent);
 
         // Embed
         var embed = new Discord.EmbedBuilder
