@@ -283,6 +283,22 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         // calculate perecentage of similarity.
         float matchPercent = (matchDifference / 90) * 100;
 
+        // Determine Heart Level
+        string heartLevel = "";
+        HeartLevel[] heartLevels = { new HeartLevel("💔", 0), new HeartLevel("❤️", 5), new HeartLevel("💓", 20), new HeartLevel("💗", 35), new HeartLevel("💕", 50), new HeartLevel("💞", 65), new HeartLevel("💖", 80), new HeartLevel("💘", 90), };
+
+        foreach (HeartLevel level in heartLevels)
+        {
+            if (matchPercent >= level.min)
+            {
+                heartLevel = level.heart;
+            }
+            else
+            {
+                break;
+            }
+        }
+
         // Embed
         var embed = new Discord.EmbedBuilder
         {
@@ -290,12 +306,12 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
             Color = new Discord.Color(6689298),
         };
 
-        embed.AddField(name: $"Match of:", value: $"`{matchPercent}%`");
+        embed.AddField(name: $"Match of:", value: $"`{matchPercent}%`", inline: true).AddField(name: "Heart Level", value: heartLevel, inline: true);
 
         await RespondAsync(embed: embed.Build());
     }
 
-    [EnabledInDm(false)]
+    [EnabledInDm(true)]
     [SlashCommand("encrypt", "Bob will encrypt your message with a cipher of your choice.")]
     [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task Encrypt(string message, Encryption.CipherTypes cipher)
