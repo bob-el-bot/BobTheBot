@@ -318,7 +318,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
                 break;
         }
 
-        await RespondAsync($"{finalText}");
+        await RespondAsync($"{finalText}", ephemeral: true);
     }
 
     // MOD Stuff

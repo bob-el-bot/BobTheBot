@@ -7,9 +7,10 @@ public class Encryption
         A1Z26
     }
 
+    public static string alpha = "abcdefghijklmnopqrstuvwxyz";
+
     public static string Atbash(string text)
     {
-        string alpha = "abcdefghijklmnopqrstuvwxyz";
         string finalText = "";
 
         foreach (char letter in text)
@@ -30,7 +31,6 @@ public class Encryption
 
     public static string Caesar(string text)
     {
-        string alpha = "abcdefghijklmnopqrstuvwxyz";
         string finalText = "";
         int shift = 3;
 
@@ -51,7 +51,6 @@ public class Encryption
 
     public static string A1Z26(string text)
     {
-        string alpha = "abcdefghijklmnopqrstuvwxyz";
         string finalText = "";
 
         int place = 0;
