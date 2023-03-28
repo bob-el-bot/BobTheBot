@@ -141,7 +141,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         request.Headers.UserAgent.Add(commentValue);
         request.Headers.Accept.Add(acceptValue);
 
-        // Send Request (Get the joke)
+        // Send Request (Get the Commit Data)
         var resp = await httpClient.SendAsync(request);
         // Read In Content
         var content = await resp.Content.ReadAsStringAsync();
@@ -273,26 +273,26 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     }
 
     [EnabledInDm(false)]
-    [SlashCommand("fancytext", "Bob will type your text in a fancy font.")]
+    [SlashCommand("fonts", "Bob will type your text in a font of your choice")]
     [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
-    public async Task FancyText(string text)
+    public async Task Fonts(string text, FontConversion.FontTypes font)
     {
-        string[] fancyAlpha = { "𝖆", "𝖇", "𝖈", "𝖉", "𝖊", "𝖋", "𝖌", "𝖍", "𝖎", "𝖏", "𝖐", "𝖑", "𝖒", "𝖓", "𝖔", "𝖕", "𝖖", "𝖗", "𝖘", "𝖙", "𝖚", "𝖛", "𝖜", "𝖝", "𝖞", "𝖟" };
-        string alpha = "abcdefghijklmnopqrstuvwxyz";
-        string fancifiedText = "";
+        string finalText = "";
 
-        foreach (char letter in text)
+        switch (font)
         {
-            if (alpha.Contains(letter))
-            {
-                int letterIndex = alpha.IndexOf(letter);
-                fancifiedText += fancyAlpha[letterIndex];
-            }
-            else
-                fancifiedText += letter;
+        case FontConversion.FontTypes.fancy:
+                finalText = FontConversion.Fancy(text);
+                break;
+            case FontConversion.FontTypes.slashed:
+                finalText = FontConversion.Slashed(text);
+                break;
+            case FontConversion.FontTypes.flip:
+                finalText = FontConversion.Flip(text);
+                break;
         }
 
-        await RespondAsync(fancifiedText);
+        await RespondAsync(finalText);
     }
 
     [EnabledInDm(false)]
