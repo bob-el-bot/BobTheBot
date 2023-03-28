@@ -1,6 +1,7 @@
 using Discord.Interactions;
 using System.Threading.Tasks;
 using System;
+using System.Text.Json.Nodes;
 using System.Net.Http.Headers;
 using System.Net.Http;
 using Discord.WebSocket;
@@ -119,6 +120,45 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
             Color = new Discord.Color(6689298),
         };
         embed.AddField(name: "📛 Username", value: $"{Bot.Client.CurrentUser.Username}", inline: true).AddField(name: "🪪 ID", value: $"`{Bot.Client.CurrentUser.Id}`", inline: true).AddField(name: "📈 Server Count", value: $"`{Bot.Client.Guilds.Count}`").AddField(name: ":calendar_spiral: Date Created", value: $"`{Bot.Client.CurrentUser.CreatedAt}`", inline: true).AddField(name: "⚡ Github Repository", value: "https://github.com/Quantam-Studios/BobTheBot").AddField(name: "🏗️ Made With", value: "C#, .NET", inline: true).AddField(name: "📡 Hosted With", value: "replit.com", inline: true);
+
+        await RespondAsync(embed: embed.Build());
+    }
+
+    [EnabledInDm(false)]
+    [SlashCommand("new", "See the newest changes to Bob, and find out what's next.")]
+    [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
+    public async Task New()
+    {
+        // Formulate Request
+        var httpClient = new HttpClient();
+
+        var request = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, "https://api.github.com/repos/Quantam-Studios/BobTheBot/commits/main");
+
+        var productValue = new ProductInfoHeaderValue("BobTheBot", "1.0");
+        var commentValue = new ProductInfoHeaderValue("(+https://github.com/Quantam-Studios/BobTheBot)");
+        var acceptValue = new MediaTypeWithQualityHeaderValue("application/json");
+        request.Headers.UserAgent.Add(productValue);
+        request.Headers.UserAgent.Add(commentValue);
+        request.Headers.Accept.Add(acceptValue);
+
+        // Send Request (Get the joke)
+        var resp = await httpClient.SendAsync(request);
+        // Read In Content
+        var content = await resp.Content.ReadAsStringAsync();
+        // Parse Content
+        var jsonData = JsonNode.Parse(content).AsObject();
+        var commit = JsonNode.Parse(jsonData["commit"].ToString()).AsObject();
+        var commitMessage = commit["message"].ToString();
+        var commitAuthor = JsonNode.Parse(commit["author"].ToString()).AsObject();
+        var commitDate = commitAuthor["date"].ToString();
+
+        var embed = new Discord.EmbedBuilder
+        {
+            Title = $"What's New?",
+            Color = new Discord.Color(6689298),
+        };
+
+        embed.AddField(name: "✨ Latest Update", value: commitMessage, inline: true).AddField(name: ":calendar_spiral: Date", value: $"`{commitDate}`", inline: true).AddField(name: "🔮 See What's In the Works", value: "https://github.com/users/Quantam-Studios/projects/3/views/1");
 
         await RespondAsync(embed: embed.Build());
     }
