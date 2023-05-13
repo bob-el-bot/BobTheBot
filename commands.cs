@@ -102,6 +102,36 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     }
 
     [EnabledInDm(false)]
+    [SlashCommand("quote", "Bob will tell you a quote.")]
+    [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
+    public async Task Quote()
+    {
+        // Formulate Request
+        var httpClient = new HttpClient();
+
+        var request = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, "https://api.quotable.io/random");
+
+        var productValue = new ProductInfoHeaderValue("BobTheBot", "1.0");
+        var commentValue = new ProductInfoHeaderValue("(+https://github.com/Quantam-Studios/BobTheBot)");
+        var acceptValue = new MediaTypeWithQualityHeaderValue("application/json");
+        request.Headers.UserAgent.Add(productValue);
+        request.Headers.UserAgent.Add(commentValue);
+        request.Headers.Accept.Add(acceptValue);
+
+        // Send Request (Get The Quote)
+        var resp = await httpClient.SendAsync(request);
+        // Read In Content
+        var content = await resp.Content.ReadAsStringAsync();
+        // Parse Content
+        var jsonData = JsonNode.Parse(content).AsObject();
+        var quote = jsonData["content"].ToString();
+        var author = jsonData["author"].ToString();
+
+        // Respond
+        await RespondAsync(text: $"✍️ {quote} - *{author}*");
+    }
+
+    [EnabledInDm(false)]
     [SlashCommand("bye", "Say bye to Bob.")]
     [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task Bye()
