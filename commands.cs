@@ -281,7 +281,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
         switch (font)
         {
-        case FontConversion.FontTypes.fancy:
+            case FontConversion.FontTypes.fancy:
                 finalText = FontConversion.Fancy(text);
                 break;
             case FontConversion.FontTypes.slashed:
