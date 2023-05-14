@@ -104,12 +104,12 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     [EnabledInDm(false)]
     [SlashCommand("quote", "Bob will tell you a quote.")]
     [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
-    public async Task Quote()
+    public async Task Quote(string prompt = "")
     {
         // Formulate Request
         var httpClient = new HttpClient();
 
-        var request = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, "https://api.quotable.io/random");
+        var request = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, $"https://api.quotable.io/quotes/random?tags={prompt}");
 
         var productValue = new ProductInfoHeaderValue("BobTheBot", "1.0");
         var commentValue = new ProductInfoHeaderValue("(+https://github.com/Quantam-Studios/BobTheBot)");
@@ -122,13 +122,31 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         var resp = await httpClient.SendAsync(request);
         // Read In Content
         var content = await resp.Content.ReadAsStringAsync();
-        // Parse Content
-        var jsonData = JsonNode.Parse(content).AsObject();
-        var quote = jsonData["content"].ToString();
-        var author = jsonData["author"].ToString();
 
-        // Respond
-        await RespondAsync(text: $"✍️ {quote} - *{author}*");
+        if (content != "[]") // no quotes match the prompt
+        {
+            // Parse Content
+            var formattedContent = content.Substring(1, content.Length - 2);
+            var jsonData = JsonNode.Parse(formattedContent).AsObject();
+            var quote = jsonData["content"].ToString();
+            var author = jsonData["author"].ToString();
+            // Respond
+            await RespondAsync(text: $"✍️ {quote} - *{author}*");
+        }
+        else 
+        {
+            // Respond
+            await RespondAsync(text: $"Sorry, but no quotes could be found for the prompt: {prompt} \nTry a different prompt, and make sure you spelled everything correctly.\nYou can also use `/quoteprompts` to see all valid prompts.");
+        }
+    }
+
+    [EnabledInDm(false)]
+    [SlashCommand("quoteprompts", "Bob will give you all valid prompts for /quote.")]
+    [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
+    public async Task QuotePrompts()
+    {
+            // Respond
+            await RespondAsync(text: $"Here are all valid prompts for `/quote`:\nage, athletics, business, change, character, competition, conservative, courage, education, ethics, failure, faith, family, famous-quotes, film, freedom, future, generosity, genius, gratitude, happiness, health, history, honor, humor, humorous, inspirational, knowledge, leadership, life, love, mathematics, motivational, nature, oppurtunity, pain, perseverance, philosphy, politics, power-quotes, proverb, religion, sadness, science, self, sports, stupidity, success, technology, time, tolerance, truth, virtue, war, weakness, wellness, wisdom, work");
     }
 
     [EnabledInDm(false)]

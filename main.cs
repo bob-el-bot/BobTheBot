@@ -5,6 +5,7 @@ using Discord.WebSocket;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Collections;
 
 public static class Bot
 {
