@@ -5,13 +5,6 @@ using Discord.WebSocket;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Collections;
-
-// For c# server
-using System.IO;
-using System.Text;
-using System.Net;
-using System.Net.Sockets;
 
 public static class Bot
 {
@@ -53,8 +46,9 @@ public static class Bot
         await Client.SetGameAsync("with C#", null, ActivityType.Playing);
 
         // Print the servers bob is in.
-        foreach (var guild in Bot.Client.Guilds) {
-          Console.WriteLine($"{guild.Name}, {guild.MemberCount}");
+        foreach (var guild in Bot.Client.Guilds)
+        {
+            Console.WriteLine($"{guild.Name}, {guild.MemberCount}");
         }
     }
 
@@ -121,65 +115,5 @@ public static class Bot
             LogSeverity.Warning => ConsoleColor.Magenta,
             _ => ConsoleColor.White,
         };
-    }
-}
-
-public static class HttpServer
-{
-    static Encoding enc = Encoding.UTF8;
-
-    public static void CreateServer(string[] args)
-    {
-        Console.WriteLine("start up http server...");
-
-        TcpListener listener = new TcpListener(IPAddress.Any, 8080);
-        listener.Start();
-
-        while (true)
-        {
-            TcpClient client = listener.AcceptTcpClient();
-            Console.WriteLine("request incoming...");
-
-            NetworkStream stream = client.GetStream();
-            string request = ToString(stream);
-
-            Console.WriteLine("");
-            Console.WriteLine(request);
-
-            StringBuilder builder = new StringBuilder();
-            builder.AppendLine(@"HTTP/1.1 200 OK");
-            builder.AppendLine(@"Content-Type: text/html");
-            builder.AppendLine(@"");
-            builder.AppendLine(@"<html><head><title>Bob Is Online!</title></head><body><h1>Bob Is Online!</h1></body></html>");
-
-            Console.WriteLine("");
-            Console.WriteLine("response...");
-            Console.WriteLine(builder.ToString());
-
-            byte[] sendBytes = enc.GetBytes(builder.ToString());
-            stream.Write(sendBytes, 0, sendBytes.Length);
-
-            stream.Close();
-            client.Close();
-        }
-    }
-
-    public static string ToString(NetworkStream stream)
-    {
-        MemoryStream memoryStream = new MemoryStream();
-        byte[] data = new byte[256];
-        int size;
-        do
-        {
-            size = stream.Read(data, 0, data.Length);
-            if (size == 0)
-            {
-                Console.WriteLine("client disconnected...");
-                Console.ReadLine();
-                return null;
-            }
-            memoryStream.Write(data, 0, size);
-        } while (stream.DataAvailable);
-        return enc.GetString(memoryStream.ToArray());
     }
 }
