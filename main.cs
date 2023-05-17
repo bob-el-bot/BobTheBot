@@ -6,6 +6,8 @@ using System;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Collections;
+using System.Text.Json;
+using System.IO;
 
 public static class Bot
 {
@@ -15,10 +17,12 @@ public static class Bot
     });
 
     private static InteractionService Service;
-    private static readonly string Token = Environment.GetEnvironmentVariable("token");
+   
+    private static readonly string Token = Config.GetToken();
 
     public static async Task Main()
     {
+
         if (Token is null) throw new Exception("Discord bot token not set properly.");
 
         Client.Ready += Ready;

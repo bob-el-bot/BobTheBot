@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "/home/runner/BobTheBot/main.csproj": {}
+    "C:\\Users\\minec\\Documents\\MyProjects\\BobTheBot\\main.csproj": {}
   },
   "projects": {
-    "/home/runner/BobTheBot/main.csproj": {
+    "C:\\Users\\minec\\Documents\\MyProjects\\BobTheBot\\main.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/home/runner/BobTheBot/main.csproj",
+        "projectUniqueName": "C:\\Users\\minec\\Documents\\MyProjects\\BobTheBot\\main.csproj",
         "projectName": "main",
-        "projectPath": "/home/runner/BobTheBot/main.csproj",
-        "packagesPath": "/home/runner/.nuget/packages/",
-        "outputPath": "/home/runner/BobTheBot/obj/",
+        "projectPath": "C:\\Users\\minec\\Documents\\MyProjects\\BobTheBot\\main.csproj",
+        "packagesPath": "C:\\Users\\minec\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\minec\\Documents\\MyProjects\\BobTheBot\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/home/runner/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\minec\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net6.0"
@@ -53,16 +53,35 @@
             "net47",
             "net471",
             "net472",
-            "net48"
+            "net48",
+            "net481"
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[6.0.16, 6.0.16]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Host.win-x64",
+              "version": "[6.0.16, 6.0.16]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[6.0.16, 6.0.16]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Ref",
+              "version": "[6.0.16, 6.0.16]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/nix/store/jsm5am5i2b2izvwzbw5h6lk3plvpkrlw-dotnet-sdk-6.0.100/sdk/6.0.100/RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.302\\RuntimeIdentifierGraph.json"
         }
       }
     }
