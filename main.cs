@@ -5,9 +5,7 @@ using Discord.WebSocket;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Collections;
-using System.Text.Json;
-using System.IO;
+using System.Diagnostics;
 
 public static class Bot
 {
@@ -34,6 +32,20 @@ public static class Bot
         while (Console.ReadKey().Key != ConsoleKey.Q) { };
     }
 
+    private static async Task<double> GetCpuUsageForProcess()
+    {
+        var startTime = DateTime.UtcNow;
+        var startCpuUsage = Process.GetCurrentProcess().TotalProcessorTime;
+        await Task.Delay(500);
+    
+        var endTime = DateTime.UtcNow;
+        var endCpuUsage = Process.GetCurrentProcess().TotalProcessorTime;
+        var cpuUsedMs = (endCpuUsage - startCpuUsage).TotalMilliseconds;
+        var totalMsPassed = (endTime - startTime).TotalMilliseconds;
+        var cpuUsageTotal = cpuUsedMs / (Environment.ProcessorCount * totalMsPassed);
+        return cpuUsageTotal * 100;
+    }
+
     private static async Task Ready()
     {
         Service = new InteractionService(Client, new InteractionServiceConfig()
@@ -48,13 +60,16 @@ public static class Bot
         Client.SlashCommandExecuted += SlashCommandExecuted;
         Service.SlashCommandExecuted += SlashCommandResulted;
 
-        await Client.SetGameAsync("with C#", null, ActivityType.Playing);
+        await Client.SetGameAsync("on RaspberryPI", null, ActivityType.Playing);
 
         // Print the servers bob is in.
         foreach (var guild in Bot.Client.Guilds)
         {
             Console.WriteLine($"{guild.Name}, {guild.MemberCount}");
         }
+
+        var cpuUsage = await GetCpuUsageForProcess();
+        Console.WriteLine("CPU at Ready: " + cpuUsage.ToString());
     }
 
     private static async Task SlashCommandExecuted(SocketSlashCommand command)
@@ -69,6 +84,9 @@ public static class Bot
             if (command.Type == InteractionType.ApplicationCommand)
                 await command.GetOriginalResponseAsync().ContinueWith(async (msg) => await msg.Result.DeleteAsync());
         }
+
+        var cpuUsage = await GetCpuUsageForProcess();
+        Console.WriteLine($"CPU from {command.CommandName}: " + cpuUsage.ToString());
     }
 
     private static async Task SlashCommandResulted(SlashCommandInfo info, IInteractionContext ctx, IResult res)
