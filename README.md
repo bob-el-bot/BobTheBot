@@ -1,11 +1,18 @@
-[![Bob's Makeup](https://skillicons.dev/icons?i=cs,net,raspberrypi,discord)](https://skillicons.dev)
+<div align="center">
+    <img src="https://cdn.discordapp.com/app-icons/705680059809398804/80ccbc059472924a24fb60fe404521e0.png?size=512%22">
+<p>
+    <img src="https://skillicons.dev/icons?i=cs,net,raspberrypi,discord">
+<p>
+<p>A bot for 🎲 RNG, new 📜 fonts, 🔒 encryption, and ✨ more!</p>
+<a href="https://discord.com/oauth2/authorize?client_id=705680059809398804&permissions=1110719392886&scope=bot%20applications.commands">Invite</a>
+<span>|
+<a href="https://github.com/Quantam-Studios/BobTheBot#all-commands">See Commands</a>
+<span>|
+<a href="https://top.gg/bot/705680059809398804/vote">Vote For Bob</a>
+<span>|
+<a href="https://top.gg/bot/705680059809398804">Write a Review</a>
 
-# General
-A bot for 🎲 RNG, new 📜 fonts, 🔒 encryption, and ✨ more!
-- [Invite Bob](https://discord.com/oauth2/authorize?client_id=705680059809398804&permissions=1110719392886&scope=bot%20applications.commands) Bob to your server
-- [See commands](https://github.com/Quantam-Studios/BobTheBot#all-commands)
-- [Vote for Bob](https://top.gg/bot/705680059809398804/vote) on Top.gg
-- [Leave a review](https://top.gg/bot/705680059809398804) on Top.gg
+</div>
 
 # Plans For The Future
 Bob will only use slash commands. This ensures users can always understand how a command works as well as what all of the commands are without the use of a help command.
