@@ -3,7 +3,7 @@
 # General
 A bot for 🎲 RNG, new 📜 fonts, 🔒 encryption, and ✨ more!
 - [Invite Bob](https://discord.com/oauth2/authorize?client_id=705680059809398804&permissions=1110719392886&scope=bot%20applications.commands) Bob to your server
-- [See commands](https://https://github.com/Quantam-Studios/BobTheBot#all-commands)
+- [See commands](https://github.com/Quantam-Studios/BobTheBot#all-commands)
 - [Vote for Bob](https://top.gg/bot/705680059809398804/vote) on Top.gg
 - [Leave a review](https://top.gg/bot/705680059809398804) on Top.gg
 
