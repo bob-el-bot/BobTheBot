@@ -81,7 +81,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     public async Task Review()
     {
         // Respond
-        await RespondAsync(text: "If you're enjoying BobTheBot, please consider leaving a review on Top.gg!\nhttps://top.gg/bot/705680059809398804#reviews");
+        await RespondAsync(text: "📝 If you're enjoying BobTheBot, please consider leaving a review on Top.gg!\nhttps://top.gg/bot/705680059809398804#reviews");
     }
 
     [EnabledInDm(false)]
@@ -92,8 +92,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         // Respond
         await RespondAsync(text: "**Top.gg is not associated with BobTheBot and so ads cannot be removed by Bob's creators.**\n\nVote for Bob!\nhttps://top.gg/bot/705680059809398804/vote");
     }
-
-
 
     [EnabledInDm(false)]
     [SlashCommand("dadjoke", "Bob will tell you a dad joke.")]
@@ -187,7 +185,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
             Title = $"Bob's Info",
             Color = new Discord.Color(6689298),
         };
-        embed.AddField(name: "📛 Username", value: $"{Bot.Client.CurrentUser.Username}", inline: true).AddField(name: "🪪 ID", value: $"`{Bot.Client.CurrentUser.Id}`", inline: true).AddField(name: "📈 Server Count", value: $"`{Bot.Client.Guilds.Count}`").AddField(name: ":calendar_spiral: Date Created", value: $"`{Bot.Client.CurrentUser.CreatedAt}`", inline: true).AddField(name: "⚡ Github Repository", value: "https://github.com/Quantam-Studios/BobTheBot").AddField(name: "🏗️ Made With", value: "C#, .NET", inline: true).AddField(name: "📡 Hosted With", value: "replit.com", inline: true);
+        embed.AddField(name: "📛 Username", value: $"{Bot.Client.CurrentUser.Username}", inline: true).AddField(name: "🪪 ID", value: $"`{Bot.Client.CurrentUser.Id}`", inline: true).AddField(name: "📈 Server Count", value: $"`{Bot.Client.Guilds.Count}`").AddField(name: ":calendar_spiral: Date Created", value: $"`{Bot.Client.CurrentUser.CreatedAt}`", inline: true).AddField(name: "⚡ Github Repository", value: "https://github.com/Quantam-Studios/BobTheBot").AddField(name: "🏗️ Made With", value: "C#, .NET", inline: true).AddField(name: "📡 Hosted With", value: "Raspberry PI 4", inline: true);
 
         await RespondAsync(embed: embed.Build());
     }

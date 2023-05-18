@@ -86,7 +86,7 @@ public static class Bot
         }
 
         var cpuUsage = await GetCpuUsageForProcess();
-        Console.WriteLine($"CPU from {command.CommandName}: " + cpuUsage.ToString());
+        Console.WriteLine($"CPU from /{command.CommandName}: " + cpuUsage.ToString());
     }
 
     private static async Task SlashCommandResulted(SlashCommandInfo info, IInteractionContext ctx, IResult res)
