@@ -76,6 +76,26 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     }
 
     [EnabledInDm(false)]
+    [SlashCommand("review", "Leave a review for Bob on Top.gg")]
+    [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
+    public async Task Review()
+    {
+        // Respond
+        await RespondAsync(text: "If you're enjoying BobTheBot, please consider leaving a review on Top.gg!\nhttps://top.gg/bot/705680059809398804#reviews");
+    }
+
+    [EnabledInDm(false)]
+    [SlashCommand("vote", "Vote for Bob on Top.gg")]
+    [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
+    public async Task Vote()
+    {
+        // Respond
+        await RespondAsync(text: "**Top.gg is not associated with BobTheBot and so ads cannot be removed by Bob's creators.**\n\nVote for Bob!\nhttps://top.gg/bot/705680059809398804/vote");
+    }
+
+
+
+    [EnabledInDm(false)]
     [SlashCommand("dadjoke", "Bob will tell you a dad joke.")]
     [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task DadJoke()
