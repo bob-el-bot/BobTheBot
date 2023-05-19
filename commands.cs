@@ -19,7 +19,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         await RespondAsync(text: $"🏓 Pong! The client latency is **{Bot.Client.Latency}** ms.");
     }
 
-    [EnabledInDm(false)]
+    [EnabledInDm(true)]
     [SlashCommand("hi", "Say hi to Bob.")]
     [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task Hi()
@@ -27,7 +27,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         await RespondAsync(text: "👋 hi!");
     }
 
-    [EnabledInDm(false)]
+    [EnabledInDm(true)]
     [SlashCommand("cointoss", "Bob will flip a coin")]
     [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task CoinToss()
@@ -42,7 +42,17 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         await RespondAsync(text: $"🪙 The coin landed **" + result + "**!");
     }
 
-    [EnabledInDm(false)]
+    [EnabledInDm(true)]
+    [SlashCommand("rock-paper-scissors", "Play a game of Rock Paper Scissors with Bob.")]
+    [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
+    public async Task RPS()
+    {
+        var builder = new ComponentBuilder().WithSelectMenu(RockPaperScissors.RPSOptions);
+        Bot.Client.SelectMenuExecuted += RockPaperScissors.RPSSelectMenuHandler;
+        await RespondAsync(text: "*Game On!* What do you choose?", components: builder.Build());
+    }
+
+    [EnabledInDm(true)]
     [SlashCommand("diceroll", "Bob will roll a die with the side amount specified.")]
     [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task DiceRoll(int sides)
@@ -59,7 +69,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         }
     }
 
-    [EnabledInDm(false)]
+    [EnabledInDm(true)]
     [SlashCommand("8ball", "Bob will shake a magic 8 ball in repsonse to a question.")]
     [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task Magic8Ball(string prompt)
@@ -75,7 +85,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         await RespondAsync(text: $"🎱 The magic 8 ball says **{result}** in response to {prompt}");
     }
 
-    [EnabledInDm(false)]
+    [EnabledInDm(true)]
     [SlashCommand("review", "Leave a review for Bob on Top.gg")]
     [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task Review()
@@ -84,7 +94,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         await RespondAsync(text: "📝 If you're enjoying BobTheBot, please consider leaving a review on Top.gg!\nhttps://top.gg/bot/705680059809398804#reviews");
     }
 
-    [EnabledInDm(false)]
+    [EnabledInDm(true)]
     [SlashCommand("vote", "Vote for Bob on Top.gg")]
     [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task Vote()
@@ -167,7 +177,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
             await RespondAsync(text: $"Here are all valid prompts for `/quote`:\nage, athletics, business, change, character, competition, conservative, courage, education, ethics, failure, faith, family, famous-quotes, film, freedom, future, generosity, genius, gratitude, happiness, health, history, honor, humor, humorous, inspirational, knowledge, leadership, life, love, mathematics, motivational, nature, oppurtunity, pain, perseverance, philosphy, politics, power-quotes, proverb, religion, sadness, science, self, sports, stupidity, success, technology, time, tolerance, truth, virtue, war, weakness, wellness, wisdom, work");
     }
 
-    [EnabledInDm(false)]
+    [EnabledInDm(true)]
     [SlashCommand("bye", "Say bye to Bob.")]
     [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task Bye()
@@ -175,7 +185,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         await RespondAsync(text: "👋 bye!");
     }
 
-    [EnabledInDm(false)]
+    [EnabledInDm(true)]
     [SlashCommand("info", "Learn about Bob.")]
     [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task Info()
@@ -229,7 +239,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         await RespondAsync(embed: embed.Build());
     }
 
-    [EnabledInDm(false)]
+    [EnabledInDm(true)]
     [SlashCommand("color", "Bob will choose a random color.")]
     [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task Color()
@@ -338,7 +348,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         }
     }
 
-    [EnabledInDm(false)]
+    [EnabledInDm(true)]
     [SlashCommand("fonts", "Bob will type your text in a font of your choice")]
     [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task Fonts(string text, FontConversion.FontTypes font)
