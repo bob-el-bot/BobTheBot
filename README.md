@@ -31,6 +31,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 
 ### ✨ Miscellaneous commands: 
 - `/fonts [text] [font]` | Change your text to a different font.
+- `/rock-paper-scissors` | Play Bob in a game of rock paper scissors.
 - `/encrypt [message] [cipher]` | Change text into a cipher.
 - `/poll [prompt] [option]*4` | Create a poll.
 - `/ping` | Find the client's latency.
