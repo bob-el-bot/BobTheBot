@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
@@ -11,14 +12,13 @@ public class RockPaperScissors
     .WithCustomId("RPSOptions")
     .WithMaxValues(1)
     .WithMinValues(1)
-    .AddOption("🪨 Rock", "🪨")
-    .AddOption("📃 Paper", "📃")
-    .AddOption("✂️ Scissors", "✂️");
+    .AddOption("🪨 Rock", "0")
+    .AddOption("📃 Paper", "1")
+    .AddOption("✂️ Scissors", "2");
 
     public static async Task RPSButtonHandler(SocketMessageComponent component) {
         switch(component.Data.CustomId) {
             case "RPS":
-
                 await component.ModifyOriginalResponseAsync((Discord.MessageProperties props) => {props.Content = $"";});
             break;
         }
@@ -26,25 +26,26 @@ public class RockPaperScissors
 
     public static async Task RPSSelectMenuHandler(SocketMessageComponent component)
     {
-        string result = PlayRPS(component.Data.Value);
-        await component.ModifyOriginalResponseAsync((Discord.MessageProperties props) => {props.Content = result;});
+        string result = PlayRPS(string.Join("", component.Data.Values));
+        await component.RespondAsync(text: result);
     }
 
-    public static string PlayRPS(string userOption)
+    public static string PlayRPS(string userChoice)
     {
         string[] options = { "🪨", "📃", "✂️"};
         Random random = new Random();
         string botOption = options[random.Next(0, RPSOptions.Options.Count)];
 
-
+        string userOption = options[Int32.Parse(userChoice)];
         string resultMeaning = "";
 
         if (userOption == botOption)
         {
             resultMeaning = "*That's a draw!* Let's play again!";
+            return $"{userOption} **VS** {botOption} " + resultMeaning;
         }
 
-        if ((userOption == "🪨" && botOption == "📃") || (userOption == "📃" && botOption == "✂️") || (userOption == "✂️" && botOption == "🪨"))
+        if ((userOption == "0" && botOption == "📃") || (userOption == "📃" && botOption == "✂️") || (userOption == "✂️" && botOption == "🪨"))
         {
             resultMeaning = "*I win!* Let's play again!";
         }else {
