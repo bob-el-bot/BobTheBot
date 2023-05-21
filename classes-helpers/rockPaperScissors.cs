@@ -28,6 +28,7 @@ public class RockPaperScissors
     {
         string result = PlayRPS(string.Join("", component.Data.Values));
         await component.RespondAsync(text: result);
+        Bot.Client.SelectMenuExecuted -= RockPaperScissors.RPSSelectMenuHandler;
     }
 
     public static string PlayRPS(string userChoice)

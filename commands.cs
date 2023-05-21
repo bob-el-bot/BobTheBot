@@ -28,7 +28,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     }
 
     [EnabledInDm(true)]
-    [SlashCommand("cointoss", "Bob will flip a coin")]
+    [SlashCommand("coin-toss", "Bob will flip a coin")]
     [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task CoinToss()
     {
@@ -53,7 +53,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     }
 
     [EnabledInDm(true)]
-    [SlashCommand("diceroll", "Bob will roll a die with the side amount specified.")]
+    [SlashCommand("dice-roll", "Bob will roll a die with the side amount specified.")]
     [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task DiceRoll(int sides)
     {
@@ -104,7 +104,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     }
 
     [EnabledInDm(false)]
-    [SlashCommand("dadjoke", "Bob will tell you a dad joke.")]
+    [SlashCommand("dad-joke", "Bob will tell you a dad joke.")]
     [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task DadJoke()
     {
@@ -169,7 +169,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     }
 
     [EnabledInDm(false)]
-    [SlashCommand("quoteprompts", "Bob will give you all valid prompts for /quote.")]
+    [SlashCommand("quote-prompts", "Bob will give you all valid prompts for /quote.")]
     [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task QuotePrompts()
     {
