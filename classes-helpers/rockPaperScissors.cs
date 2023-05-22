@@ -27,8 +27,7 @@ public class RockPaperScissors
     public static async Task RPSSelectMenuHandler(SocketMessageComponent component)
     {
         string result = PlayRPS(string.Join("", component.Data.Values));
-        await component.DeleteOriginalResponseAsync();
-        await component.RespondAsync(text: result + component.User.Mention);
+        await component.UpdateAsync(x => {x.Content = result + component.User.Mention;});
         Bot.Client.SelectMenuExecuted -= RockPaperScissors.RPSSelectMenuHandler;
     }
 
