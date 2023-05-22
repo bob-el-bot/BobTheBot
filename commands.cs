@@ -12,7 +12,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     // GENERAL Stuff
 
     [EnabledInDm(false)]
-    [DefaultMemberPermissions(GuildPermission.UseApplicationCommands)]
     [SlashCommand("ping", "Bob will share his ping.")]
     public async Task Ping()
     {
@@ -415,57 +414,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         }
 
         await RespondAsync($"{finalText}", ephemeral: true);
-    }
-
-    // MOD Stuff
-
-    [EnabledInDm(false)]
-    [SlashCommand("ban", "Bob will defend your server from a user forever by... banning them.")]
-    [RequireBotPermission(Discord.GuildPermission.BanMembers | Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
-    public async Task Ban(SocketGuildUser user, int days, String reason)
-    {
-        if (Context.Guild.GetUser(id: Context.User.Id).GuildPermissions.BanMembers)
-        {
-            await user.Guild.AddBanAsync(user: user, pruneDays: days, reason: reason);
-            await RespondAsync(text: $"🚫 {user.Mention} has been **banned**.");
-        }
-        else
-        {
-            await RespondAsync(text: $"Hey, you do **not** have permission to do that.", ephemeral: true);
-        }
-    }
-
-    [EnabledInDm(false)]
-    [SlashCommand("unban", "Allow a user to come back to the server... maybe they learned their lesson.")]
-    [RequireBotPermission(Discord.GuildPermission.BanMembers | Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
-    public async Task UnBan(SocketUser user)
-    {
-
-        if (Context.Guild.GetUser(id: Context.User.Id).GuildPermissions.BanMembers)
-        {
-            await Context.Guild.RemoveBanAsync(user.Id);
-            await RespondAsync(text: $"✅ {user.Mention} has been **unbanned**.");
-        }
-        else
-        {
-            await RespondAsync(text: $"Hey, you do **not** have permission to do that.", ephemeral: true);
-        }
-    }
-
-    [EnabledInDm(false)]
-    [SlashCommand("kick", "Bob will put their foot down by kicking a user.")]
-    [RequireBotPermission(Discord.GuildPermission.KickMembers | Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
-    public async Task Kick(SocketGuildUser user, String reason)
-    {
-        if (Context.Guild.GetUser(id: Context.User.Id).GuildPermissions.KickMembers)
-        {
-            await user.KickAsync(reason: reason);
-            await RespondAsync(text: $"🦶 {user.Mention} has been **kicked**.");
-        }
-        else
-        {
-            await RespondAsync(text: $"Hey, you do **not** have permission to do that.", ephemeral: true);
-        }
     }
 }
 
