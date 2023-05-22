@@ -25,12 +25,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         await RespondAsync(text: "👋 hi!");
     }
 
-    [SlashCommand("test", "test command")]
-    public async Task Test()
-    {
-        await RespondAsync(text: "test!");
-    }
-
     [EnabledInDm(true)]
     [SlashCommand("coin-toss", "Bob will flip a coin")]
     public async Task CoinToss()
