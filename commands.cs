@@ -13,7 +13,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
     [EnabledInDm(false)]
     [SlashCommand("ping", "Bob will share his ping.")]
-    [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task Ping()
     {
         await RespondAsync(text: $"🏓 Pong! The client latency is **{Bot.Client.Latency}** ms.");
@@ -21,7 +20,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
     [EnabledInDm(true)]
     [SlashCommand("hi", "Say hi to Bob.")]
-    [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task Hi()
     {
         await RespondAsync(text: "👋 hi!");
@@ -29,7 +27,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
     [EnabledInDm(true)]
     [SlashCommand("coin-toss", "Bob will flip a coin")]
-    [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task CoinToss()
     {
         var random = new Random();
@@ -44,7 +41,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
     [EnabledInDm(true)]
     [SlashCommand("rock-paper-scissors", "Play a game of Rock Paper Scissors with Bob.")]
-    [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task RPS()
     {
         var builder = new ComponentBuilder().WithSelectMenu(RockPaperScissors.RPSOptions);
@@ -54,7 +50,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
     [EnabledInDm(true)]
     [SlashCommand("dice-roll", "Bob will roll a die with the side amount specified.")]
-    [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task DiceRoll(int sides)
     {
         if (sides <= 0)
@@ -71,7 +66,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
     [EnabledInDm(true)]
     [SlashCommand("8ball", "Bob will shake a magic 8 ball in repsonse to a question.")]
-    [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task Magic8Ball(string prompt)
     {
         // Possible Answers
@@ -87,7 +81,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
     [EnabledInDm(true)]
     [SlashCommand("review", "Leave a review for Bob on Top.gg")]
-    [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task Review()
     {
         // Respond
@@ -96,7 +89,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
     [EnabledInDm(true)]
     [SlashCommand("vote", "Vote for Bob on Top.gg")]
-    [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task Vote()
     {
         // Respond
@@ -105,7 +97,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
     [EnabledInDm(false)]
     [SlashCommand("dad-joke", "Bob will tell you a dad joke.")]
-    [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task DadJoke()
     {
         // Formulate Request
@@ -131,7 +122,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
     [EnabledInDm(false)]
     [SlashCommand("quote", "Bob will tell you a quote.")]
-    [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task Quote(string prompt = "")
     {
         // Formulate Request
@@ -170,7 +160,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
     [EnabledInDm(false)]
     [SlashCommand("quote-prompts", "Bob will give you all valid prompts for /quote.")]
-    [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task QuotePrompts()
     {
             // Respond
@@ -179,7 +168,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
     [EnabledInDm(true)]
     [SlashCommand("bye", "Say bye to Bob.")]
-    [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task Bye()
     {
         await RespondAsync(text: "👋 bye!");
@@ -187,7 +175,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
     [EnabledInDm(true)]
     [SlashCommand("info", "Learn about Bob.")]
-    [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task Info()
     {
         var embed = new Discord.EmbedBuilder
@@ -202,7 +189,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
     [EnabledInDm(false)]
     [SlashCommand("new", "See the newest changes to Bob, and find out what's next.")]
-    [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task New()
     {
         // Formulate Request
@@ -241,7 +227,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
     [EnabledInDm(true)]
     [SlashCommand("color", "Bob will choose a random color.")]
-    [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task Color()
     {
         var random = new Random();
@@ -258,7 +243,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
     [EnabledInDm(false)]
     [SlashCommand("servers", "How many servers is Bob serving?")]
-    [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task Servers()
     {
         await RespondAsync(text: $"📈 I am in **{Bot.Client.Guilds.Count}** servers!");
@@ -266,7 +250,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
     [EnabledInDm(false)]
     [SlashCommand("serverinfo", "Bob will tell you info about the current server.")]
-    [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task ServerInfo()
     {
         // Get all data
@@ -300,7 +283,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
     [EnabledInDm(false)]
     [SlashCommand("poll", "Bob will create a poll.")]
-    [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task Poll(string prompt, string option1, string option2, string option3 = "", string option4 = "")
     {
         // Setup base data
@@ -350,7 +332,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
     [EnabledInDm(true)]
     [SlashCommand("fonts", "Bob will type your text in a font of your choice")]
-    [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task Fonts(string text, FontConversion.FontTypes font)
     {
         string finalText = "";
@@ -373,7 +354,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
     [EnabledInDm(false)]
     [SlashCommand("ship", "Bob will determine how good of a couple two users would make")]
-    [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task Ship(SocketUser person1, SocketUser person2)
     {
         // Prepare for calculations
@@ -416,7 +396,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
     [EnabledInDm(true)]
     [SlashCommand("encrypt", "Bob will encrypt your message with a cipher of your choice.")]
-    [RequireBotPermission(Discord.GuildPermission.ViewChannel | Discord.GuildPermission.SendMessages)]
     public async Task Encrypt(string message, Encryption.CipherTypes cipher)
     {
         string finalText = "";
