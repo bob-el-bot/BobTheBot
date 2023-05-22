@@ -12,6 +12,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     // GENERAL Stuff
 
     [EnabledInDm(false)]
+    [RequireUserPermission(GuildPermission.UseApplicationCommands)]
     [SlashCommand("ping", "Bob will share his ping.")]
     public async Task Ping()
     {
