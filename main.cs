@@ -6,6 +6,7 @@ using System;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Diagnostics;
+using System.Threading;
 
 public static class Bot
 {
@@ -15,7 +16,7 @@ public static class Bot
     });
 
     private static InteractionService Service;
-   
+
     private static readonly string Token = Config.GetToken();
 
     public static async Task Main()
@@ -37,7 +38,7 @@ public static class Bot
         var startTime = DateTime.UtcNow;
         var startCpuUsage = Process.GetCurrentProcess().TotalProcessorTime;
         await Task.Delay(500);
-    
+
         var endTime = DateTime.UtcNow;
         var endCpuUsage = Process.GetCurrentProcess().TotalProcessorTime;
         var cpuUsedMs = (endCpuUsage - startCpuUsage).TotalMilliseconds;
@@ -60,7 +61,8 @@ public static class Bot
         Client.SlashCommandExecuted += SlashCommandExecuted;
         Service.SlashCommandExecuted += SlashCommandResulted;
 
-        await Client.SetGameAsync("on RaspberryPI", null, ActivityType.Playing);
+        CancellationTokenSource cancelTokenSource = new CancellationTokenSource();
+        await PeriodicStatusAsync(TimeSpan.FromMinutes(1), cancelTokenSource.Token);
 
         // Print the servers bob is in.
         foreach (var guild in Bot.Client.Guilds)
@@ -71,6 +73,27 @@ public static class Bot
         var cpuUsage = await GetCpuUsageForProcess();
         Console.WriteLine("CPU at Ready: " + cpuUsage.ToString());
     }
+
+    public static async Task PeriodicStatusAsync(TimeSpan interval, CancellationToken cancellationToken)
+    {
+        while (true)
+        {
+            await Client.SetGameAsync(RandomStatus(), null, ActivityType.Playing);
+            await Task.Delay(interval, cancellationToken);
+        }
+
+        string RandomStatus()
+        {
+            // Possible Statuses
+            string[] statuses = { "with RaspberryPI", "with C#", "with new commands!", "with new ideas!" };
+
+            Random random = new Random();
+
+            return statuses[random.Next(0, statuses.Length)];
+
+        }
+    }
+
 
     private static async Task SlashCommandExecuted(SocketSlashCommand command)
     {
