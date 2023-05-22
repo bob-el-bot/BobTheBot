@@ -46,7 +46,7 @@ public class RockPaperScissors
             return $"{userOption} **VS** {botOption} " + resultMeaning;
         }
 
-        if ((userOption == "0" && botOption == "📃") || (userOption == "📃" && botOption == "✂️") || (userOption == "✂️" && botOption == "🪨"))
+        if ((userOption == "🪨" && botOption == "📃") || (userOption == "📃" && botOption == "✂️") || (userOption == "✂️" && botOption == "🪨"))
         {
             resultMeaning = "*I win!* Let's play again!";
         }else {
