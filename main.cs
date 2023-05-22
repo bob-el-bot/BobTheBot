@@ -47,6 +47,8 @@ public static class Bot
         return cpuUsageTotal * 100;
     }
 
+    private static Timer timer;
+
     private static async Task Ready()
     {
         Service = new InteractionService(Client, new InteractionServiceConfig()
@@ -61,8 +63,14 @@ public static class Bot
         Client.SlashCommandExecuted += SlashCommandExecuted;
         Service.SlashCommandExecuted += SlashCommandResulted;
 
-        CancellationTokenSource cancelTokenSource = new CancellationTokenSource();
-        await PeriodicStatusAsync(TimeSpan.FromMinutes(1), cancelTokenSource.Token);
+        string[] statuses = { "with RaspberryPI", "with C#", "with new commands!", "with new ideas!" };
+        int index = 0;
+
+        timer = new Timer(async x =>
+        {
+            await Client.SetGameAsync(statuses[index], null, ActivityType.Playing);
+            index = index + 1 == statuses.Length ? 0 : index + 1;
+        }, null, TimeSpan.FromSeconds(15), TimeSpan.FromSeconds(30));
 
         // Print the servers bob is in.
         foreach (var guild in Bot.Client.Guilds)
@@ -74,26 +82,16 @@ public static class Bot
         Console.WriteLine("CPU at Ready: " + cpuUsage.ToString());
     }
 
-    public static async Task PeriodicStatusAsync(TimeSpan interval, CancellationToken cancellationToken)
+    public static string RandomStatus()
     {
-        while (true)
-        {
-            await Client.SetGameAsync(RandomStatus(), null, ActivityType.Playing);
-            await Task.Delay(interval, cancellationToken);
-        }
+        // Possible Statuses
+        string[] statuses = { "with RaspberryPI", "with C#", "with new commands!", "with new ideas!" };
 
-        string RandomStatus()
-        {
-            // Possible Statuses
-            string[] statuses = { "with RaspberryPI", "with C#", "with new commands!", "with new ideas!" };
+        Random random = new Random();
 
-            Random random = new Random();
+        return statuses[random.Next(0, statuses.Length)];
 
-            return statuses[random.Next(0, statuses.Length)];
-
-        }
     }
-
 
     private static async Task SlashCommandExecuted(SocketSlashCommand command)
     {
