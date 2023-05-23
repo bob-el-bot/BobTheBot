@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\minec\\Documents\\MyProjects\\BobTheBot\\main.csproj": {}
+    "c:\\Users\\minec\\Documents\\MyProjects\\BobTheBot\\main.csproj": {}
   },
   "projects": {
-    "C:\\Users\\minec\\Documents\\MyProjects\\BobTheBot\\main.csproj": {
+    "c:\\Users\\minec\\Documents\\MyProjects\\BobTheBot\\main.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\minec\\Documents\\MyProjects\\BobTheBot\\main.csproj",
+        "projectUniqueName": "c:\\Users\\minec\\Documents\\MyProjects\\BobTheBot\\main.csproj",
         "projectName": "main",
-        "projectPath": "C:\\Users\\minec\\Documents\\MyProjects\\BobTheBot\\main.csproj",
+        "projectPath": "c:\\Users\\minec\\Documents\\MyProjects\\BobTheBot\\main.csproj",
         "packagesPath": "C:\\Users\\minec\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\minec\\Documents\\MyProjects\\BobTheBot\\obj\\",
+        "outputPath": "c:\\Users\\minec\\Documents\\MyProjects\\BobTheBot\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\minec\\AppData\\Roaming\\NuGet\\NuGet.Config"
@@ -40,7 +40,7 @@
           "dependencies": {
             "Discord.Net": {
               "target": "Package",
-              "version": "[3.6.1, )"
+              "version": "[3.10.0, )"
             },
             "Microsoft.Net.Http": {
               "target": "Package",
