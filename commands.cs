@@ -347,6 +347,12 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
             case FontConversion.FontTypes.flip:
                 finalText = FontConversion.Flip(text);
                 break;
+            case FontConversion.FontTypes.boxed:
+                finalText = FontConversion.Boxed(text);
+                break;
+            case FontConversion.FontTypes.medieval:
+                finalText = FontConversion.Medieval(text);
+                break;
         }
 
         await RespondAsync(finalText);
