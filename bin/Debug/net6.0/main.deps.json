@@ -8,96 +8,96 @@
     ".NETCoreApp,Version=v6.0": {
       "main/1.0.0": {
         "dependencies": {
-          "Discord.Net": "3.6.1",
+          "Discord.Net": "3.10.0",
           "Microsoft.Net.Http": "2.2.29"
         },
         "runtime": {
           "main.dll": {}
         }
       },
-      "Discord.Net/3.6.1": {
+      "Discord.Net/3.10.0": {
         "dependencies": {
-          "Discord.Net.Commands": "3.6.1",
-          "Discord.Net.Core": "3.6.1",
-          "Discord.Net.Interactions": "3.6.1",
-          "Discord.Net.Rest": "3.6.1",
-          "Discord.Net.WebSocket": "3.6.1",
-          "Discord.Net.Webhook": "3.6.1"
+          "Discord.Net.Commands": "3.10.0",
+          "Discord.Net.Core": "3.10.0",
+          "Discord.Net.Interactions": "3.10.0",
+          "Discord.Net.Rest": "3.10.0",
+          "Discord.Net.WebSocket": "3.10.0",
+          "Discord.Net.Webhook": "3.10.0"
         }
       },
-      "Discord.Net.Commands/3.6.1": {
+      "Discord.Net.Commands/3.10.0": {
         "dependencies": {
-          "Discord.Net.Core": "3.6.1"
+          "Discord.Net.Core": "3.10.0"
         },
         "runtime": {
           "lib/net6.0/Discord.Net.Commands.dll": {
-            "assemblyVersion": "3.6.1.0",
-            "fileVersion": "3.6.1.0"
+            "assemblyVersion": "3.10.0.0",
+            "fileVersion": "3.10.0.0"
           }
         }
       },
-      "Discord.Net.Core/3.6.1": {
+      "Discord.Net.Core/3.10.0": {
         "dependencies": {
-          "Newtonsoft.Json": "13.0.1",
+          "Newtonsoft.Json": "13.0.2",
           "System.Collections.Immutable": "5.0.0",
           "System.Interactive.Async": "5.0.0",
           "System.ValueTuple": "4.5.0"
         },
         "runtime": {
           "lib/net6.0/Discord.Net.Core.dll": {
-            "assemblyVersion": "3.6.1.0",
-            "fileVersion": "3.6.1.0"
+            "assemblyVersion": "3.10.0.0",
+            "fileVersion": "3.10.0.0"
           }
         }
       },
-      "Discord.Net.Interactions/3.6.1": {
+      "Discord.Net.Interactions/3.10.0": {
         "dependencies": {
-          "Discord.Net.Core": "3.6.1",
-          "Discord.Net.Rest": "3.6.1",
-          "Discord.Net.WebSocket": "3.6.1",
+          "Discord.Net.Core": "3.10.0",
+          "Discord.Net.Rest": "3.10.0",
+          "Discord.Net.WebSocket": "3.10.0",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "5.0.0",
           "System.Collections.Immutable": "5.0.0",
           "System.Reactive": "5.0.0"
         },
         "runtime": {
           "lib/net6.0/Discord.Net.Interactions.dll": {
-            "assemblyVersion": "3.6.1.0",
-            "fileVersion": "3.6.1.0"
+            "assemblyVersion": "3.10.0.0",
+            "fileVersion": "3.10.0.0"
           }
         }
       },
-      "Discord.Net.Rest/3.6.1": {
+      "Discord.Net.Rest/3.10.0": {
         "dependencies": {
-          "Discord.Net.Core": "3.6.1"
+          "Discord.Net.Core": "3.10.0"
         },
         "runtime": {
           "lib/net6.0/Discord.Net.Rest.dll": {
-            "assemblyVersion": "3.6.1.0",
-            "fileVersion": "3.6.1.0"
+            "assemblyVersion": "3.10.0.0",
+            "fileVersion": "3.10.0.0"
           }
         }
       },
-      "Discord.Net.Webhook/3.6.1": {
+      "Discord.Net.Webhook/3.10.0": {
         "dependencies": {
-          "Discord.Net.Core": "3.6.1",
-          "Discord.Net.Rest": "3.6.1"
+          "Discord.Net.Core": "3.10.0",
+          "Discord.Net.Rest": "3.10.0"
         },
         "runtime": {
           "lib/net6.0/Discord.Net.Webhook.dll": {
-            "assemblyVersion": "3.6.1.0",
-            "fileVersion": "3.6.1.0"
+            "assemblyVersion": "3.10.0.0",
+            "fileVersion": "3.10.0.0"
           }
         }
       },
-      "Discord.Net.WebSocket/3.6.1": {
+      "Discord.Net.WebSocket/3.10.0": {
         "dependencies": {
-          "Discord.Net.Core": "3.6.1",
-          "Discord.Net.Rest": "3.6.1"
+          "Discord.Net.Core": "3.10.0",
+          "Discord.Net.Rest": "3.10.0"
         },
         "runtime": {
           "lib/net6.0/Discord.Net.WebSocket.dll": {
-            "assemblyVersion": "3.6.1.0",
-            "fileVersion": "3.6.1.0"
+            "assemblyVersion": "3.10.0.0",
+            "fileVersion": "3.10.0.0"
           }
         }
       },
@@ -131,11 +131,11 @@
           }
         }
       },
-      "Newtonsoft.Json/13.0.1": {
+      "Newtonsoft.Json/13.0.2": {
         "runtime": {
-          "lib/netstandard2.0/Newtonsoft.Json.dll": {
+          "lib/net6.0/Newtonsoft.Json.dll": {
             "assemblyVersion": "13.0.0.0",
-            "fileVersion": "13.0.1.25517"
+            "fileVersion": "13.0.2.27524"
           }
         }
       },
@@ -176,54 +176,54 @@
       "serviceable": false,
       "sha512": ""
     },
-    "Discord.Net/3.6.1": {
+    "Discord.Net/3.10.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-TfcL/HG57fVt//WVJ2XyF2PlytY9IYkkwwkPLIhvu5FW4wf9rm7+N8RPh4qtELLfsa5ES0FK2RbgYjABRR9AjA==",
-      "path": "discord.net/3.6.1",
-      "hashPath": "discord.net.3.6.1.nupkg.sha512"
+      "sha512": "sha512-X5V2lM8YO3Vf1oqxmL1/zSAOKmIZ7AAlxbpgdelQlCKXWZSJeEadLqxQRLCa/z6VsK+btdfNHZFxeQjqYPQ9mQ==",
+      "path": "discord.net/3.10.0",
+      "hashPath": "discord.net.3.10.0.nupkg.sha512"
     },
-    "Discord.Net.Commands/3.6.1": {
+    "Discord.Net.Commands/3.10.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-kK7m571yzSzPd93o+n8Z+TfvX62BT1HtOEZIWXKwXWO8itP/sgqBNExjWK/6DOpkbD6+khc2f3rp+TA0rJD88g==",
-      "path": "discord.net.commands/3.6.1",
-      "hashPath": "discord.net.commands.3.6.1.nupkg.sha512"
+      "sha512": "sha512-/DpV2H+PkOtypV6csIdp6NSqhxuDnyS25gcteaDpbwceMwCxmaveTiycUmPxbqgjKADzNx4qszoxShwQGoXalg==",
+      "path": "discord.net.commands/3.10.0",
+      "hashPath": "discord.net.commands.3.10.0.nupkg.sha512"
     },
-    "Discord.Net.Core/3.6.1": {
+    "Discord.Net.Core/3.10.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-ibVjQiWzgqh0GyP/GXE2kv3TA/9ysmmNFG/WmRE7GepQQAXXGxVUO9IMJ8h14EvIXMQ0m0DktMe5DkUnilo3Ag==",
-      "path": "discord.net.core/3.6.1",
-      "hashPath": "discord.net.core.3.6.1.nupkg.sha512"
+      "sha512": "sha512-GnsLmSYDShws23rqzdf6aOwIG70cqYUHY7i2cFdj3YVz/c8OelsbLndnFvkg6yELcy7aD60NSHyYZ5oMsgDavA==",
+      "path": "discord.net.core/3.10.0",
+      "hashPath": "discord.net.core.3.10.0.nupkg.sha512"
     },
-    "Discord.Net.Interactions/3.6.1": {
+    "Discord.Net.Interactions/3.10.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-WGOxz6SMUu4WS5b/JdrhlwQletcplBIYqvjFBBDfnqE+uNJqcNGtAdyjLqIILfXGx8aSSSSYZSCeAUa7FZ8Yew==",
-      "path": "discord.net.interactions/3.6.1",
-      "hashPath": "discord.net.interactions.3.6.1.nupkg.sha512"
+      "sha512": "sha512-9IrJQ1kV6wmUHijUtfv4yA6+YlTxD0UyJV8mRaGN4CjahC5a5LGIwSj6MnUiz2Zgh0CPQIGGOB55K1Ovu13jjg==",
+      "path": "discord.net.interactions/3.10.0",
+      "hashPath": "discord.net.interactions.3.10.0.nupkg.sha512"
     },
-    "Discord.Net.Rest/3.6.1": {
+    "Discord.Net.Rest/3.10.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-T7RRThIS23roFEJwTL1l7aawjVyn7ZB5yH3tMge0d6TiCzzp4V4FAZ+ArTt19LHRFhPly90v8V3sWqmTMN+5Zg==",
-      "path": "discord.net.rest/3.6.1",
-      "hashPath": "discord.net.rest.3.6.1.nupkg.sha512"
+      "sha512": "sha512-N2nlOCoZCTyQbDlwqDKcqknOgwAbeJgy2r9DAUNsNxcO763ru67WK3GxkA7V7QgZ80RU9rLB3fr9jvjJ14pUBA==",
+      "path": "discord.net.rest/3.10.0",
+      "hashPath": "discord.net.rest.3.10.0.nupkg.sha512"
     },
-    "Discord.Net.Webhook/3.6.1": {
+    "Discord.Net.Webhook/3.10.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-xikKHIGAIMz0BzHkaTKb48DNpFjKW8mvJjLJSezJ1xQOu+laHNk/hav4qxVtyZz7HSI/vGTkmlq9hKVhWzpaUA==",
-      "path": "discord.net.webhook/3.6.1",
-      "hashPath": "discord.net.webhook.3.6.1.nupkg.sha512"
+      "sha512": "sha512-1rZFNpsK7b34SQmtnwa/jm8E1aIkoaBA1GzPM1hDGC/NX1q9fxoF7CEyeiC1ExDz+WVBp8JBCwEfAr7Qx63/LA==",
+      "path": "discord.net.webhook/3.10.0",
+      "hashPath": "discord.net.webhook.3.10.0.nupkg.sha512"
     },
-    "Discord.Net.WebSocket/3.6.1": {
+    "Discord.Net.WebSocket/3.10.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-hF22Xy7URlVEDQZ69INOgzPvFUsIDfd+r6U+1yF9HWdBn3d4THnvAAhkv1TraSx/T/MKS7g+jvk/HZ3mh5S3aw==",
-      "path": "discord.net.websocket/3.6.1",
-      "hashPath": "discord.net.websocket.3.6.1.nupkg.sha512"
+      "sha512": "sha512-pA581o5JoAAFlintQEeDncIr99WHZOWzwnZWLuPiSW4BmFjG/oYf8F6C60Ob/5w1C1QB0k72NLgh8mEwnTCI5Q==",
+      "path": "discord.net.websocket/3.10.0",
+      "hashPath": "discord.net.websocket.3.10.0.nupkg.sha512"
     },
     "Microsoft.Bcl/1.1.10": {
       "type": "package",
@@ -253,12 +253,12 @@
       "path": "microsoft.net.http/2.2.29",
       "hashPath": "microsoft.net.http.2.2.29.nupkg.sha512"
     },
-    "Newtonsoft.Json/13.0.1": {
+    "Newtonsoft.Json/13.0.2": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-ppPFpBcvxdsfUonNcvITKqLl3bqxWbDCZIzDWHzjpdAHRFfZe0Dw9HmA0+za13IdyrgJwpkDTDA9fHaxOrt20A==",
-      "path": "newtonsoft.json/13.0.1",
-      "hashPath": "newtonsoft.json.13.0.1.nupkg.sha512"
+      "sha512": "sha512-R2pZ3B0UjeyHShm9vG+Tu0EBb2lC8b0dFzV9gVn50ofHXh9Smjk6kTn7A/FdAsC8B5cKib1OnGYOXxRBz5XQDg==",
+      "path": "newtonsoft.json/13.0.2",
+      "hashPath": "newtonsoft.json.13.0.2.nupkg.sha512"
     },
     "System.Collections.Immutable/5.0.0": {
       "type": "package",

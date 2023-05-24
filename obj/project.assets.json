@@ -786,11 +786,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "c:\\Users\\minec\\Documents\\MyProjects\\BobTheBot\\main.csproj",
+      "projectUniqueName": "C:\\Users\\minec\\Documents\\MyProjects\\BobTheBot\\main.csproj",
       "projectName": "main",
-      "projectPath": "c:\\Users\\minec\\Documents\\MyProjects\\BobTheBot\\main.csproj",
+      "projectPath": "C:\\Users\\minec\\Documents\\MyProjects\\BobTheBot\\main.csproj",
       "packagesPath": "C:\\Users\\minec\\.nuget\\packages\\",
-      "outputPath": "c:\\Users\\minec\\Documents\\MyProjects\\BobTheBot\\obj\\",
+      "outputPath": "C:\\Users\\minec\\Documents\\MyProjects\\BobTheBot\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\minec\\AppData\\Roaming\\NuGet\\NuGet.Config"

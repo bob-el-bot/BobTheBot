@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "59TU3AKTKcFvQYz13LmvzUws+dldlwMVhVCbJb7i9eYSqojOhf2Vx7tpoXXtQjZViAEDW8vJmfa/mVC782/Dhg==",
+  "dgSpecHash": "dvA63FYl3K1Sv8fS+sPSt1MVkC7ZesvLbrowZwN7Z5pK6DWSVprvMp0uEYFy3Cs06rpjkBGti4hBXMIX6lhwSQ==",
   "success": true,
-  "projectFilePath": "c:\\Users\\minec\\Documents\\MyProjects\\BobTheBot\\main.csproj",
+  "projectFilePath": "C:\\Users\\minec\\Documents\\MyProjects\\BobTheBot\\main.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\minec\\.nuget\\packages\\discord.net\\3.10.0\\discord.net.3.10.0.nupkg.sha512",
     "C:\\Users\\minec\\.nuget\\packages\\discord.net.commands\\3.10.0\\discord.net.commands.3.10.0.nupkg.sha512",
