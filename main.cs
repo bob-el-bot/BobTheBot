@@ -63,7 +63,7 @@ public static class Bot
         Client.SlashCommandExecuted += SlashCommandExecuted;
         Service.SlashCommandExecuted += SlashCommandResulted;
 
-        string[] statuses = { "on RaspberryPI", "with new commands!", "with C#", "with new ideas!", "with 1,000+" };
+        string[] statuses = { "on RaspberryPI", "with new commands!", "with C#", "with new ideas!", "with 1,000+ users" };
         int index = 0;
 
         timer = new Timer(async x =>
