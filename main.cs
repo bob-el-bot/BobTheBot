@@ -63,14 +63,14 @@ public static class Bot
         Client.SlashCommandExecuted += SlashCommandExecuted;
         Service.SlashCommandExecuted += SlashCommandResulted;
 
-        string[] statuses = { "with RaspberryPI", "with C#", "with new commands!", "with new ideas!" };
+        string[] statuses = { "on RaspberryPI", "with new commands!", "with C#", "with new ideas!", "with 1,000+" };
         int index = 0;
 
         timer = new Timer(async x =>
         {
             await Client.SetGameAsync(statuses[index], null, ActivityType.Playing);
             index = index + 1 == statuses.Length ? 0 : index + 1;
-        }, null, TimeSpan.FromSeconds(15), TimeSpan.FromSeconds(30));
+        }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(16));
 
         // Print the servers bob is in.
         foreach (var guild in Bot.Client.Guilds)

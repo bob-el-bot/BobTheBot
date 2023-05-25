@@ -11,7 +11,7 @@ public class Choose
 
     public static string GetRandomDecisionText()
     {
-        string[] responses = { "Hmm... *this* one: ", "Definitely this: ", "No... no... maybe... *ooo0*: ", "This one caught my eye: " };
+        string[] responses = { "Hmm... *this* one: ", "*Definitely* this: ", "No... no... maybe... *oooo*: ", "This one caught my eye: " };
 
         var random = new Random();
         
