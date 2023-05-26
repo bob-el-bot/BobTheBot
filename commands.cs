@@ -295,7 +295,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
         if (user.IsBot)
         {
-            await RespondAsync(text: "❌ Sorry, but no sending messages to bots.");
+            await RespondAsync(text: "❌ Sorry, but no sending messages to bots.", ephemeral: true);
         }
         else
         {
