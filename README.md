@@ -26,6 +26,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/dice-roll [sides]` | Roll a die with a specified # of sides.
 - `/coin-toss` | Flip a coin.
 - `/quote [prompt]` | Get a random quote, with an optional prompt.
+- `/choose [option]*5` | Can't choose? Bob can for you!
 - `/dad-joke` | Get a random dad joke.
 - `/8ball [prompt]` | Get an 8 ball response to a prompt. 
 
@@ -35,6 +36,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/encrypt [message] [cipher]` | Change text into a cipher.
 - `/poll [prompt] [option]*4` | Create a poll.
 - `/ping` | Find the client's latency.
+- `/confess [message] [user] [signOff]` | Bob will anonymously DM a message to a user.
 - `/ship [user]*2` | See how good of a match 2 users are.
 - `/new` | See the latest updates to Bob.
 - `/quote-prompts` | See all valid prompts for /quote.
