@@ -295,13 +295,21 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
         if (user.IsBot)
         {
-            await RespondAsync(text: "❌ Sorry, but no sending messages to bots.");
+            await RespondAsync(text: "❌ Sorry, but no sending messages to bots.", ephemeral: true);
         }
         else
         {
             await user.SendMessageAsync($"{message} {signed}");
             await RespondAsync(text: $"✉️ Your message has been sent!\nMessage: **{message}** was sent to **{user.Username}**", ephemeral: true);
         }
+    }
+
+    [EnabledInDm(true)]
+    [SlashCommand("suggest", "Invites to Bob's Official Discord server where you can suggest ideas.")]
+    public async Task Suggest()
+    {
+        // Respond
+        await RespondAsync(text: "🏰 Have an idea for a command? Share it on the official server for Bob The Bot.\nhttps://discord.gg/HvGMRZD8jQ");
     }
 
     [EnabledInDm(false)]
