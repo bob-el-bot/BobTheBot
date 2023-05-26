@@ -6,6 +6,7 @@ using System.Net.Http.Headers;
 using System.Net.Http;
 using Discord.WebSocket;
 using Discord;
+using System.Collections.Generic;
 
 public class Commands : InteractionModuleBase<SocketInteractionContext>
 {
@@ -151,7 +152,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
             // Respond
             await RespondAsync(text: $"✍️ {quote} - *{author}*");
         }
-        else 
+        else
         {
             // Respond
             await RespondAsync(text: $"Sorry, but no quotes could be found for the prompt: {prompt} \nTry a different prompt, and make sure you spelled everything correctly.\nYou can also use `/quoteprompts` to see all valid prompts.");
@@ -162,8 +163,8 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("quote-prompts", "Bob will give you all valid prompts for /quote.")]
     public async Task QuotePrompts()
     {
-            // Respond
-            await RespondAsync(text: $"Here are all valid prompts for `/quote`:\nage, athletics, business, change, character, competition, conservative, courage, education, ethics, failure, faith, family, famous-quotes, film, freedom, future, generosity, genius, gratitude, happiness, health, history, honor, humor, humorous, inspirational, knowledge, leadership, life, love, mathematics, motivational, nature, oppurtunity, pain, perseverance, philosphy, politics, power-quotes, proverb, religion, sadness, science, self, sports, stupidity, success, technology, time, tolerance, truth, virtue, war, weakness, wellness, wisdom, work");
+        // Respond
+        await RespondAsync(text: $"Here are all valid prompts for `/quote`:\nage, athletics, business, change, character, competition, conservative, courage, education, ethics, failure, faith, family, famous-quotes, film, freedom, future, generosity, genius, gratitude, happiness, health, history, honor, humor, humorous, inspirational, knowledge, leadership, life, love, mathematics, motivational, nature, oppurtunity, pain, perseverance, philosphy, politics, power-quotes, proverb, religion, sadness, science, self, sports, stupidity, success, technology, time, tolerance, truth, virtue, war, weakness, wellness, wisdom, work");
     }
 
     [EnabledInDm(true)]
@@ -241,11 +242,66 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         await RespondAsync(embed: embed.Build());
     }
 
+    [EnabledInDm(true)]
+    [SlashCommand("choose", "Can't make up your mind? Bob can for you!")]
+    public async Task Pick(string option1, string option2, string option3 = "", string option4 = "", string option5 = "")
+    {
+        List<string> choices = new List<string>();
+        choices.Add(option1);
+        choices.Add(option2);
+        Choose.TestAdd(option3, choices);
+        Choose.TestAdd(option4, choices);
+        Choose.TestAdd(option5, choices);
+
+        var random = new Random();
+        string choice = choices[random.Next(0, choices.Count)];
+
+        await RespondAsync(text: "🤔 " + Choose.GetRandomDecisionText() + $"**{choice}**");
+    }
+
     [EnabledInDm(false)]
     [SlashCommand("servers", "How many servers is Bob serving?")]
     public async Task Servers()
     {
         await RespondAsync(text: $"📈 I am in **{Bot.Client.Guilds.Count}** servers!");
+    }
+
+    [EnabledInDm(false)]
+    [SlashCommand("confess", "Bob will send someone a message anonymously")]
+    public async Task confess(string message, SocketUser user, Confession.SignOffs signOff)
+    {
+        string signed = "";
+        switch (signOff)
+        {
+            case Confession.SignOffs.Anon:
+                signed = "- Anon";
+                break;
+            case Confession.SignOffs.Secret_Admirer:
+                signed = "- your *secret* admirer";
+                break;
+            case Confession.SignOffs.You_Know_Who:
+                signed = "- *you know who*";
+                break;
+            case Confession.SignOffs.Guess:
+                signed = "- guess who!";
+                break;
+            case Confession.SignOffs.FBI:
+                signed = "- The FBI ... (not actually)";
+                break;
+            case Confession.SignOffs.Your_Dad:
+                signed = "- your father ... you thought";
+                break;
+        }
+
+        if (user.IsBot)
+        {
+            await RespondAsync(text: "❌ Sorry, but no sending messages to bots.");
+        }
+        else
+        {
+            await user.SendMessageAsync($"{message} {signed}");
+            await RespondAsync(text: $"✉️ Your message has been sent!\nMessage: **{message}** was sent to **{user.Username}**", ephemeral: true);
+        }
     }
 
     [EnabledInDm(false)]

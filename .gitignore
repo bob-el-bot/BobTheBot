@@ -478,3 +478,7 @@ $RECYCLE.BIN/
 
 # Config
 config.cs
+
+# bin & obj
+bin/
+obj/
