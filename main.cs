@@ -107,7 +107,8 @@ public static class Bot
         }
 
         var cpuUsage = await GetCpuUsageForProcess();
-        Console.WriteLine($"CPU from /{command.CommandName}: " + cpuUsage.ToString());
+        var Location = command.GuildId == null ? "a DM" : Client.GetGuild(ulong.Parse(command.GuildId.ToString())).ToString();
+        Console.WriteLine($"{DateTime.Now:dd/MM. H:mm:ss} CPU from: {Location} using: /{command.CommandName}: " + cpuUsage.ToString());
     }
 
     private static async Task SlashCommandResulted(SlashCommandInfo info, IInteractionContext ctx, IResult res)
