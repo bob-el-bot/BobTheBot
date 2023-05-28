@@ -44,7 +44,17 @@ public static class Bot
         var cpuUsedMs = (endCpuUsage - startCpuUsage).TotalMilliseconds;
         var totalMsPassed = (endTime - startTime).TotalMilliseconds;
         var cpuUsageTotal = cpuUsedMs / (Environment.ProcessorCount * totalMsPassed);
-        return cpuUsageTotal * 100;
+
+        return cpuUsageTotal * 100f;
+    }
+
+    private static double GetRamUsageForProcess()
+    {
+        var ramUsage = Process.GetCurrentProcess().WorkingSet64;
+        Console.WriteLine(ramUsage);
+
+        // RAM of RPI in Bytes = 4294967296
+        return (ramUsage / 4294967296f) * 100f;
     }
 
     private static Timer timer;
@@ -80,6 +90,8 @@ public static class Bot
 
         var cpuUsage = await GetCpuUsageForProcess();
         Console.WriteLine("CPU at Ready: " + cpuUsage.ToString());
+        var ramUsage = GetRamUsageForProcess();
+        Console.WriteLine("RAM at Ready: " + ramUsage.ToString());
     }
 
     public static string RandomStatus()
@@ -107,7 +119,9 @@ public static class Bot
         }
 
         var cpuUsage = await GetCpuUsageForProcess();
-        Console.WriteLine($"CPU from /{command.CommandName}: " + cpuUsage.ToString());
+        var ramUsage = GetRamUsageForProcess();
+        var Location = command.GuildId == null ? "a DM" : Client.GetGuild(ulong.Parse(command.GuildId.ToString())).ToString();
+        Console.WriteLine($"{DateTime.Now:dd/MM. H:mm:ss} CPU: {cpuUsage.ToString()} RAM: {ramUsage.ToString()} Location: {Location} Command: /{command.CommandName}");
     }
 
     private static async Task SlashCommandResulted(SlashCommandInfo info, IInteractionContext ctx, IResult res)
