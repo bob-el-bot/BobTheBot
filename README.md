@@ -27,6 +27,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/coin-toss` | Flip a coin.
 - `/quote [prompt]` | Get a random quote, with an optional prompt.
 - `/dad-joke` | Get a random dad joke.
+- `/random-fact` | Get an outrageous fact.
 - `/8ball [prompt]` | Get an 8 ball response to a prompt. 
 
 ### ✨ Miscellaneous commands: 
