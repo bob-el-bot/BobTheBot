@@ -51,7 +51,6 @@ public static class Bot
     private static double GetRamUsageForProcess()
     {
         var ramUsage = Process.GetCurrentProcess().WorkingSet64;
-        Console.WriteLine(ramUsage);
 
         // RAM of RPI in Bytes = 4294967296
         return (ramUsage / 4294967296f) * 100f;
