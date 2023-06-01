@@ -22,27 +22,30 @@ Bob was not made to do a specific thing, but instead will gain features that are
 # All Commands
 Bob The Bot has many features all of which are `/slash` commands for ease of use!
 ### 🎲 RNG (randomly generated) commands: 
-- `/color` | Get a color with hex, and RGB codes.
-- `/dice-roll [sides]` | Roll a die with a specified # of sides.
-- `/coin-toss` | Flip a coin.
-- `/quote [prompt]` | Get a random quote, with an optional prompt.
-- `/dad-joke` | Get a random dad joke.
-- `/random-fact` | Get an outrageous fact.
-- `/8ball [prompt]` | Get an 8 ball response to a prompt. 
+- `/color` Get a color with hex, and RGB codes.
+- `/dice-roll [sides]` Roll a die with a specified # of sides.
+- `/coin-toss` Flip a coin.
+- `/quote [prompt]` Get a random quote.
+    - `[prompt]` choices: use `/quote-prompts` to view all valid prompts.
+- `/dad-joke` Get a random dad joke.
+- `/random-fact` Get an outrageous fact.
+- `/8ball [prompt]` Get an 8 ball response to a prompt. 
 
 ### ✨ Miscellaneous commands: 
-- `/fonts [text] [font]` | Change your text to a different font.
-- `/rock-paper-scissors` | Play Bob in a game of rock paper scissors.
-- `/encrypt [message] [cipher]` | Change text into a cipher.
-- `/poll [prompt] [option]*4` | Create a poll.
-- `/ping` | Find the client's latency.
-- `/ship [user]*2` | See how good of a match 2 users are.
-- `/new` | See the latest updates to Bob.
-- `/quote-prompts` | See all valid prompts for /quote.
-- `/info` | Learn about Bob.
-- `/servers` | Get how many servers Bob is in.
-- `/hi` | Say hi to Bob.
-- `/bye` | Say bye to Bob.
+- `/fonts [text] [font]` Change your text to a different font.
+    - `[font]` choices: 𝖒𝖊𝖉𝖎𝖊𝖛𝖆𝖑, 𝓯𝓪𝓷𝓬𝔂, flip (this will make your text the opposite), s̷l̷̷a̷s̷h̷e̷d̷, and 🄱🄾🅇🄴🄳.
+- `/rock-paper-scissors` Play Bob in a game of rock paper scissors.
+- `/encrypt [message] [cipher]` Change text into a cipher.
+    - `[cipher]` choices: Caesar, A1Z26, Atbash
+- `/poll [prompt] [option]*4` Create a poll.
+- `/ping` Find the client's latency.
+- `/ship [user]*2` See how good of a match 2 users are.
+- `/new` See the latest updates to Bob.
+- `/quote-prompts` See all valid prompts for `/quote`.
+- `/info` Learn about Bob.
+- `/servers` Get how many servers Bob is in.
+- `/hi` Say hi to Bob.
+- `/bye` Say bye to Bob.
 
 # How is Bob Hosted?
 Bob runs on a Raspberry Pi 4 running Raspberry Pi OS Lite. This enables a lot of freedom in terms of feature sets because Bob no longer relies on [replit](replit.com). Replit was originally used, but after an outrageous price increase it was no longer viable.

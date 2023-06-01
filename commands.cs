@@ -121,7 +121,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         var jsonData = JsonNode.Parse(content).AsObject();
         var fact = jsonData["text"].ToString();
 
-        await RespondAsync(text: $"🤓 {fact}\n\n (Source: *Trust Me Bro.)*");
+        await RespondAsync(text: $"🤓 {fact}\n\n (Source: *Trust Me Bro*.)");
     }
 
     [EnabledInDm(false)]
