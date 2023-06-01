@@ -5,7 +5,6 @@ using Discord.WebSocket;
 using System;
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Diagnostics;
 using System.Threading;
 
 public static class Bot
@@ -57,6 +56,18 @@ public static class Bot
             await Client.SetGameAsync(statuses[index], null, ActivityType.Playing);
             index = index + 1 == statuses.Length ? 0 : index + 1;
         }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(16));
+
+        // Update Top.GG stats.
+        if (Token != Config.GetTestToken())
+        {
+            TopGG topGG = new TopGG();
+            await topGG.PostStats();
+            Console.WriteLine("Top.GG stats updated");
+        }
+        else
+        {
+            Console.WriteLine("Top.GG stats NOT updated because test bot is in use.");
+        }
 
         // Print the servers bob is in.
         int totalUsers = 0;
