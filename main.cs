@@ -74,17 +74,6 @@ public static class Bot
         Console.WriteLine("RAM at Ready: " + ramUsage.ToString());
     }
 
-    public static string RandomStatus()
-    {
-        // Possible Statuses
-        string[] statuses = { "with RaspberryPI", "with C#", "with new commands!", "with new ideas!" };
-
-        Random random = new Random();
-
-        return statuses[random.Next(0, statuses.Length)];
-
-    }
-
     private static async Task SlashCommandExecuted(SocketSlashCommand command)
     {
         try
