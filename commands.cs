@@ -97,6 +97,34 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     }
 
     [EnabledInDm(false)]
+    [SlashCommand("random-fact", "Bob will provide you with an outrageous fact.")]
+    public async Task RandomFacts()
+    {
+        // Formulate Request
+        var httpClient = new HttpClient();
+
+        var request = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, "https://uselessfacts.jsph.pl/api/v2/facts/random?language=en");
+
+        var productValue = new ProductInfoHeaderValue("BobTheBot", "1.0");
+        var commentValue = new ProductInfoHeaderValue("(+https://github.com/Quantam-Studios/BobTheBot)");
+        var acceptValue = new MediaTypeWithQualityHeaderValue("application/json");
+        request.Headers.UserAgent.Add(productValue);
+        request.Headers.UserAgent.Add(commentValue);
+        request.Headers.Accept.Add(acceptValue);
+
+        // Send Request (Get the fact)
+        var resp = await httpClient.SendAsync(request);
+
+        // Read In Content
+        var content = await resp.Content.ReadAsStringAsync();
+        // Parse Content
+        var jsonData = JsonNode.Parse(content).AsObject();
+        var fact = jsonData["text"].ToString();
+
+        await RespondAsync(text: $"🤓 {fact}\n\n (Source: *Trust Me Bro*.)");
+    }
+
+    [EnabledInDm(false)]
     [SlashCommand("dad-joke", "Bob will tell you a dad joke.")]
     public async Task DadJoke()
     {
@@ -264,6 +292,21 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     public async Task Servers()
     {
         await RespondAsync(text: $"📈 I am in **{Bot.Client.Guilds.Count}** servers!");
+    }
+
+    [EnabledInDm(false)]
+    [SlashCommand("help", "Bob will DM you all relevant information for every command.")]
+    public async Task help()
+    {
+        var embed = new Discord.EmbedBuilder
+        {
+            Title = $"📖 Here is a list of all of my commands.",
+            Color = new Discord.Color(6689298),
+        };
+        embed.AddField(name: "🎲 Randomly Generated (RNG):", value: "- `/color` Get a color with hex, and RGB codes.\n\n- `/dice-roll [sides]` Roll a die with a specified # of sides.\n\n- `/coin-toss` Flip a coin.\n\n- `/quote [prompt]` Get a random quote.\n  - `[prompt]`choices: This is optional, use `/quote-prompts` to view all valid prompts.\n\n- `/dad-joke` Get a random dad joke.\n\n- `/random-fact` Get an outrageous fact.\n\n- `/8ball [prompt]` Get an 8 ball response to a prompt.").AddField(name: "✨ Other:", value: "- `/fonts [text] [font]` Change your text to a different font.\n  - `[font]` choices: 𝖒𝖊𝖉𝖎𝖊𝖛𝖆𝖑, 𝓯𝓪𝓷𝓬𝔂, flip (this will make your text the opposite), s̷l̷̷a̷s̷h̷e̷d̷, and 🄱🄾🅇🄴🄳.\n\n- `/rock-paper-scissors` Play Bob in a game of rock paper scissors.\n\n- `/encrypt [message] [cipher]` Change text into a cipher.\n    - `[cipher]` choices: Caesar, A1Z26, Atbash\n\n- `/poll [prompt] [option]*4` Create a poll.\n  - `[option]*4` usage: You must provide 2-4 options. These are essentially the poll's choices. \n\n- `/ship [user]*2` See how good of a match 2 users are.").AddField(name: "🗄️ Informational / Help:", value: "- `/new` See the latest updates to Bob.\n\n- `/quote-prompts` See all valid prompts for `/quote`.\n\n- `/ping` Find the client's latency.\n\n- `/info` Learn about Bob.\n\n- `/servers` Get how many servers Bob is in.\n\n- `/suggest` Join Bob's official server, and share you ideas!");
+
+        await Context.User.SendMessageAsync(embed: embed.Build());
+        await RespondAsync(text: $"📪 Check your DMs.", ephemeral: true);
     }
 
     [EnabledInDm(false)]
