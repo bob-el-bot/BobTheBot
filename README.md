@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="https://cdn.discordapp.com/app-icons/705680059809398804/80ccbc059472924a24fb60fe404521e0.png?size=512%22">
+    <img src="https://cdn.discordapp.com/app-icons/705680059809398804/299eecd0b113960b0b8109908b9347ca.png?size=128">
 <p>
     <img src="https://skillicons.dev/icons?i=cs,net,raspberrypi,discord">
 <p>
@@ -22,6 +22,7 @@ Bob was not made to do a specific thing, but instead will gain features that are
 # All Commands
 Bob The Bot has many features all of which are `/slash` commands for ease of use!
 ### 🎲 RNG (randomly generated) commands: 
+
 - `/color` Get a color with hex, and RGB codes.
 - `/dice-roll [sides]` Roll a die with a specified # of sides.
 - `/coin-toss` Flip a coin.
