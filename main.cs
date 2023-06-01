@@ -82,10 +82,14 @@ public static class Bot
         }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(16));
 
         // Print the servers bob is in.
+        int totalUsers = 0;
         foreach (var guild in Bot.Client.Guilds)
         {
             Console.WriteLine($"{guild.Name}, {guild.MemberCount}");
+            totalUsers += guild.MemberCount;
         }
+
+        Console.WriteLine($"Total Users: {totalUsers}");
 
         var cpuUsage = await GetCpuUsageForProcess();
         Console.WriteLine("CPU at Ready: " + cpuUsage.ToString());
