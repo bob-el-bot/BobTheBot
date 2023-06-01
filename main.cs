@@ -33,29 +33,6 @@ public static class Bot
         while (Console.ReadKey().Key != ConsoleKey.Q) { };
     }
 
-    private static async Task<double> GetCpuUsageForProcess()
-    {
-        var startTime = DateTime.UtcNow;
-        var startCpuUsage = Process.GetCurrentProcess().TotalProcessorTime;
-        await Task.Delay(500);
-
-        var endTime = DateTime.UtcNow;
-        var endCpuUsage = Process.GetCurrentProcess().TotalProcessorTime;
-        var cpuUsedMs = (endCpuUsage - startCpuUsage).TotalMilliseconds;
-        var totalMsPassed = (endTime - startTime).TotalMilliseconds;
-        var cpuUsageTotal = cpuUsedMs / (Environment.ProcessorCount * totalMsPassed);
-
-        return cpuUsageTotal * 100f;
-    }
-
-    private static double GetRamUsageForProcess()
-    {
-        var ramUsage = Process.GetCurrentProcess().WorkingSet64;
-
-        // RAM of RPI in Bytes = 4294967296
-        return (ramUsage / 4294967296f) * 100f;
-    }
-
     private static Timer timer;
 
     private static async Task Ready()
@@ -91,9 +68,9 @@ public static class Bot
 
         Console.WriteLine($"Total Users: {totalUsers}");
 
-        var cpuUsage = await GetCpuUsageForProcess();
+        var cpuUsage = await Performance.GetCpuUsageForProcess();
         Console.WriteLine("CPU at Ready: " + cpuUsage.ToString());
-        var ramUsage = GetRamUsageForProcess();
+        var ramUsage = Performance.GetRamUsageForProcess();
         Console.WriteLine("RAM at Ready: " + ramUsage.ToString());
     }
 
@@ -121,8 +98,8 @@ public static class Bot
                 await command.GetOriginalResponseAsync().ContinueWith(async (msg) => await msg.Result.DeleteAsync());
         }
 
-        var cpuUsage = await GetCpuUsageForProcess();
-        var ramUsage = GetRamUsageForProcess();
+        var cpuUsage = await Performance.GetCpuUsageForProcess();
+        var ramUsage = Performance.GetRamUsageForProcess();
         var Location = command.GuildId == null ? "a DM" : Client.GetGuild(ulong.Parse(command.GuildId.ToString())).ToString();
         Console.WriteLine($"{DateTime.Now:dd/MM. H:mm:ss} CPU: {cpuUsage.ToString()} RAM: {ramUsage.ToString()} Location: {Location} Command: /{command.CommandName}");
     }
