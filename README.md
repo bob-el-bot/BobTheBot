@@ -38,14 +38,17 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/encrypt [message] [cipher]` Change text into a cipher.
     - `[cipher]` choices: Caesar, A1Z26, Atbash
 - `/poll [prompt] [option]*4` Create a poll.
-- `/ping` Find the client's latency.
 - `/ship [user]*2` See how good of a match 2 users are.
-- `/new` See the latest updates to Bob.
-- `/quote-prompts` See all valid prompts for `/quote`.
-- `/info` Learn about Bob.
-- `/servers` Get how many servers Bob is in.
 - `/hi` Say hi to Bob.
 - `/bye` Say bye to Bob.
+### 🗄️ Informational / help commands:
+- `/help` Get DMed information for *all* commands.
+- `/new` See the latest updates to Bob.
+- `/quote-prompts` See all valid prompts for `/quote`.
+- `/ping` Find the client's latency.
+- `/info` Learn about Bob.
+- `/servers` Get how many servers Bob is in.
+- `/suggest` Join Bob's official server and share your ideas!
 
 # How is Bob Hosted?
 Bob runs on a Raspberry Pi 4 running Raspberry Pi OS Lite. This enables a lot of freedom in terms of feature sets because Bob no longer relies on [replit](replit.com). Replit was originally used, but after an outrageous price increase it was no longer viable.
