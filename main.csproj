@@ -9,7 +9,6 @@
     <PackageReference Include="Discord.Net" Version="3.10.0" />
     <Reference Include="System.Net.Http" />
     <PackageReference Include="Microsoft.Net.Http" Version="2.2.29" />
-    <PackageReference Include="DiscordBotsList.Api" />
   </ItemGroup>
 
 </Project>
