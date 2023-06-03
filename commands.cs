@@ -7,6 +7,7 @@ using System.Net.Http;
 using Discord.WebSocket;
 using Discord;
 using System.Collections.Generic;
+using System.Linq;
 
 public class Commands : InteractionModuleBase<SocketInteractionContext>
 {
@@ -471,8 +472,10 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     {
         // Prepare for calculations
         string id1 = person1.Id.ToString();
+        string name1 = person1.Username;
         int[] id1MakeUp = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         string id2 = person2.Id.ToString();
+        string name2 = person2.Username;
         int[] id2MakeUp = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
         // determine amount of each digit
@@ -482,6 +485,25 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
             id2MakeUp[Int32.Parse($"{id2[i]}")] += 1;
         }
 
+        // determine difference in name length
+        float nameLengthDifference = Math.Abs(name1.Length - name2.Length);
+        float[] specialDifference = { 1f, 2f, 3f, 5f, 8f, 13f, 21f };
+        if (specialDifference.ToList().Contains(nameLengthDifference))
+            nameLengthDifference += 20;
+        nameLengthDifference *= 0.6f;
+
+        // determine difference in names
+        int nameDifference = 0;
+        if (name1[0] != name2[0])
+        {
+            nameDifference += 10;
+            if (name1[1] != name2[1])
+                nameDifference += 20;
+        }
+
+        if (name1[name1.Length - 1] != name2[name2.Length - 1])
+            nameDifference += 10;
+
         // determine difference between digits
         float matchDifference = 0;
         for (int i = 0; i < 9; i++)
@@ -490,7 +512,9 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         }
 
         // calculate perecentage of similarity.
-        float matchPercent = (matchDifference / 90) * 100;
+        float matchPercent = ((matchDifference + nameLengthDifference + nameDifference) / 135) * 100;
+        if (matchPercent > 100)
+            matchPercent = 100;
 
         // Determine Heart Level
         string heartLevel = HeartLevels.CalculateHeartLevel(matchPercent);
@@ -499,7 +523,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         var embed = new Discord.EmbedBuilder
         {
             Title = $"{person1.Username} ❤️ {person2.Username}",
-            Color = new Discord.Color(6689298),
+            Color = new Discord.Color(15548997),
         };
 
         embed.AddField(name: $"Match of:", value: $"`{matchPercent}%`", inline: true).AddField(name: "Heart Level", value: heartLevel, inline: true);
