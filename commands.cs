@@ -279,13 +279,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     }
 
     [EnabledInDm(false)]
-    [SlashCommand("servers", "How many servers is Bob serving?")]
-    public async Task Servers()
-    {
-        await RespondAsync(text: $"📈 I am in **{Bot.Client.Guilds.Count}** servers!");
-    }
-
-    [EnabledInDm(false)]
     [SlashCommand("help", "Bob will DM you all relevant information for every command.")]
     public async Task help()
     {
