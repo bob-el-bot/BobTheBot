@@ -17,7 +17,7 @@ public static class Bot
 
     private static InteractionService Service;
 
-    private static readonly string Token = Config.GetTestToken();
+    private static readonly string Token = Config.GetToken();
 
     public static async Task Main()
     {
