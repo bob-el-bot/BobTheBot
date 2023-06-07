@@ -6,6 +6,7 @@ using System;
 using System.Reflection;
 using System.Threading.Tasks;
 using System.Threading;
+using System.Linq;
 
 public static class Bot
 {
@@ -16,15 +17,15 @@ public static class Bot
 
     private static InteractionService Service;
 
-    private static readonly string Token = Config.GetToken();
+    private static readonly string Token = Config.GetTestToken();
 
     public static async Task Main()
     {
-
         if (Token is null) throw new Exception("Discord bot token not set properly.");
 
         Client.Ready += Ready;
         Client.Log += Log;
+        //Client.JoinedGuild += JoinedGuild;
 
         await Client.LoginAsync(TokenType.Bot, Token);
         await Client.StartAsync();
@@ -48,7 +49,7 @@ public static class Bot
         Client.SlashCommandExecuted += SlashCommandExecuted;
         Service.SlashCommandExecuted += SlashCommandResulted;
 
-        string[] statuses = { "/help | Fonts!", "/help | New Commands!", "/help | RNG!", "/help | New Ideas!", "/help | 1,500+ users" };
+        string[] statuses = { "/help | Fonts!", "/help | New Commands!", "/help | RNG!", "/help | New Games!", "/help | 2,000+ users" };
         int index = 0;
 
         timer = new Timer(async x =>
@@ -84,6 +85,37 @@ public static class Bot
         var ramUsage = Performance.GetRamUsageForProcess();
         Console.WriteLine("RAM at Ready: " + ramUsage.ToString());
     }
+
+    // private static async Task JoinedGuild(SocketGuild guild)
+    // {
+    //     Random random = new Random();
+    //     string[] greetings = { "G'day, I am Bob!", "Hello there, I'm Bob!", "Thanks for the invite, my name is Bob!" };
+
+    //     string instructions = "I can do a lot of things now, but I also receive updates almost daily. If you want to see my newest features use `/new`. If you want to learn about all of my commands use `/help` to get sent a list via DM. With that, I look forward to serving you all 🥳!";
+
+    //     var embed = new Discord.EmbedBuilder
+    //     {
+    //         Title = "👋 " + greetings[random.Next(0, greetings.Length)],
+    //         Description = instructions,
+    //         Color = new Discord.Color(6689298)
+    //     };
+
+    //     try
+    //     {
+    //         var TextChannels = guild.Channels.OfType<SocketTextChannel>().ToArray();
+
+    //         SocketTextChannel DefaultChannel = TextChannels
+    //                 .Where(c => guild.CurrentUser.GetPermissions(c).SendMessages && guild.CurrentUser.GetPermissions(c).ViewChannel)
+    //                 .OrderBy(c => c.Position)
+    //                 .First();
+
+    //         await DefaultChannel.SendMessageAsync(embed: embed.Build());
+    //     } 
+    //     catch(Exception e)
+    //     {
+    //         Console.WriteLine(e);
+    //     }
+    // }
 
     private static async Task SlashCommandExecuted(SocketSlashCommand command)
     {
