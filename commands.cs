@@ -12,6 +12,7 @@ using System.Linq;
 public class Commands : InteractionModuleBase<SocketInteractionContext>
 {
     // GENERAL Stuff
+    public Random random = new Random();
 
     [EnabledInDm(false)]
     [SlashCommand("ping", "Bob will share his ping.")]
@@ -343,39 +344,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     {
         // Respond
         await RespondAsync(text: "🏰 Have an idea for a command? Share it on the official server for Bob The Bot.\nhttps://discord.gg/HvGMRZD8jQ");
-    }
-
-    [EnabledInDm(false)]
-    [SlashCommand("serverinfo", "Bob will tell you info about the current server.")]
-    public async Task ServerInfo()
-    {
-        // Get all data
-        string serverName = Context.Guild.Name;
-        int memberCount = Context.Guild.MemberCount;
-        DateTimeOffset dateCreated = Context.Guild.CreatedAt;
-        string serverDescription = Context.Guild.Description ?? "";
-        int textChannelCount = Context.Guild.TextChannels.Count;
-        int voiceChannelCount = Context.Guild.VoiceChannels.Count;
-        int roleCount = Context.Guild.Roles.Count;
-        ulong serverId = Context.Guild.Id;
-        string ownerDisplayName = Context.Guild.Owner.Username;
-        ulong ownerId = Context.Guild.OwnerId;
-        string iconUrl = Context.Guild.IconUrl;
-
-        // Prepare color
-        Discord.Color displayColor = new Discord.Color(5793266);
-
-        // Embed
-        var embed = new Discord.EmbedBuilder
-        {
-            Title = serverName,
-            ThumbnailUrl = iconUrl,
-            Description = serverDescription,
-        };
-
-        embed.AddField(name: "Id", value: "`" + serverId.ToString() + "`", inline: true).AddField(name: "Members", value: "`" + memberCount.ToString() + "`", inline: true).AddField(name: "Creation Date", value: "`" + dateCreated.ToString("yyyy/MM/dd") + "`", inline: true).AddField(name: "Roles", "`" + roleCount.ToString() + "`", inline: true).AddField(name: "Text Channels", value: "`" + textChannelCount.ToString() + "`", inline: true).AddField(name: "Voice Channels", value: "`" + voiceChannelCount + "`", inline: true).AddField(name: "Owner", value: ownerDisplayName, inline: true).AddField(name: "Owner ID", value: "`" + ownerId.ToString() + "`", inline: true).WithColor(displayColor);
-
-        await RespondAsync(embed: embed.Build());
     }
 
     [EnabledInDm(false)]
