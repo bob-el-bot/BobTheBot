@@ -6,7 +6,6 @@ using Discord.WebSocket;
 
 public class RockPaperScissors
 {
-
     public static SelectMenuBuilder RPSOptions = new SelectMenuBuilder()
     .WithPlaceholder("Select an option")
     .WithCustomId("RPSOptions")
