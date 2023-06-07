@@ -41,7 +41,6 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/poll [prompt] [option]*4` Create a poll.
 - `/ship [user]*2` See how good of a match 2 users are.
 - `/hi` Say hi to Bob.
-- `/bye` Say bye to Bob.
 ### 🗄️ Informational / help commands:
 - `/help` Get DMed information for *all* commands.
 - `/new` See the latest updates to Bob.

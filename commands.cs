@@ -60,7 +60,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         }
         else
         {
-            var random = new Random();
             int randInt = random.Next(1, (sides + 1));
             await RespondAsync(text: $"🎲 The {sides} sided die landed on **{randInt}**");
         }
@@ -74,7 +73,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         string[] results = { "'no'", "'yes'", "'maybe'", "'ask again'", "'probably not'", "'affirmative'", "'it is certain'", "'very doubtful'" };
 
         // Get Random Result
-        var random = new Random();
         string result = results[random.Next(0, results.Length)];
 
         // Respond
@@ -197,13 +195,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     }
 
     [EnabledInDm(true)]
-    [SlashCommand("bye", "Say bye to Bob.")]
-    public async Task Bye()
-    {
-        await RespondAsync(text: "👋 bye!");
-    }
-
-    [EnabledInDm(true)]
     [SlashCommand("info", "Learn about Bob.")]
     public async Task Info()
     {
@@ -259,7 +250,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("color", "Bob will choose a random color.")]
     public async Task Color()
     {
-        var random = new Random();
         var hex = String.Format("{0:X6}", random.Next(0x1000000));
         System.Drawing.Color rgb = System.Drawing.Color.FromArgb(int.Parse(hex, System.Globalization.NumberStyles.HexNumber));
         Discord.Color displayColor = new Discord.Color(Convert.ToUInt32(hex, 16));
@@ -282,7 +272,6 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         Choose.TestAdd(option4, choices);
         Choose.TestAdd(option5, choices);
 
-        var random = new Random();
         string choice = choices[random.Next(0, choices.Count)];
 
         await RespondAsync(text: "🤔 " + Choose.GetRandomDecisionText() + $"**{choice}**");
