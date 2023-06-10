@@ -21,8 +21,8 @@ Bob was not made to do a specific thing, but instead will gain features that are
 
 # All Commands
 Bob The Bot has many features all of which are `/slash` commands for ease of use!
-### 🎲 RNG (randomly generated) commands: 
 
+### 🎲 RNG (randomly generated) commands: 
 - `/color` Get a color with hex, and RGB codes.
 - `/dice-roll [sides]` Roll a die with a specified # of sides.
 - `/coin-toss` Flip a coin.
@@ -32,22 +32,26 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/random-fact` Get an outrageous fact.
 - `/8ball [prompt]` Get an 8 ball response to a prompt. 
 
+### 🎮 Game commands:
+- `/rock-paper-scissors` Play Bob in a game of rock paper scissors.
+- `/master-mind new-game` Play a game of Master Mind, the rules will shared upon usage.
+- `/master-mind guess` Make a guess in a game of Master Mind.
+
 ### ✨ Miscellaneous commands: 
 - `/fonts [text] [font]` Change your text to a different font.
-    - `[font]` choices: 𝖒𝖊𝖉𝖎𝖊𝖛𝖆𝖑, 𝓯𝓪𝓷𝓬𝔂, flip (this will make your text the opposite), s̷l̷̷a̷s̷h̷e̷d̷, and 🄱🄾🅇🄴🄳.
-- `/rock-paper-scissors` Play Bob in a game of rock paper scissors.
+    - `[font]` choices: 𝖒𝖊𝖉𝖎𝖊𝖛𝖆𝖑, 𝓯𝓪𝓷𝓬𝔂, 𝕠𝕦𝕥𝕝𝕚𝕟𝕖𝕕, s̷l̷̷a̷s̷h̷e̷d̷, and 🄱🄾🅇🄴🄳.
 - `/encrypt [message] [cipher]` Change text into a cipher.
     - `[cipher]` choices: Caesar, A1Z26, Atbash
 - `/poll [prompt] [option]*4` Create a poll.
 - `/ship [user]*2` See how good of a match 2 users are.
 - `/hi` Say hi to Bob.
+
 ### 🗄️ Informational / help commands:
 - `/help` Get DMed information for *all* commands.
 - `/new` See the latest updates to Bob.
 - `/quote-prompts` See all valid prompts for `/quote`.
 - `/ping` Find the client's latency.
 - `/info` Learn about Bob.
-- `/servers` Get how many servers Bob is in.
 - `/suggest` Join Bob's official server and share your ideas!
 
 # How is Bob Hosted?
