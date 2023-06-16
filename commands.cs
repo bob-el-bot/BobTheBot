@@ -8,6 +8,7 @@ using Discord.WebSocket;
 using Discord;
 using System.Collections.Generic;
 using System.Linq;
+using Discord.Rest;
 
 public class Commands : InteractionModuleBase<SocketInteractionContext>
 {
@@ -50,6 +51,160 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         Bot.Client.SelectMenuExecuted += RockPaperScissors.RPSSelectMenuHandler;
         await RespondAsync(text: "*Game On!* What do you choose?", components: builder.Build());
     }
+
+    [EnabledInDm(false)]
+    [Group("master-mind", "All commands relevant to game Master Mind.")]
+    public class MasterMind : InteractionModuleBase<SocketInteractionContext>
+    {
+        [EnabledInDm(false)]
+        [SlashCommand("new-game", "Start a game of Master Mind (rules will be sent upon use of this command).")]
+        public async Task NewGame()
+        {
+            if (MasterMindGeneral.currentGames != null && MasterMindGeneral.currentGames.Find(game => game.id == Context.Channel.Id) != null)
+            {
+                await RespondAsync(text: "❌ Only one game of Master Mind can be played per channel at a time.", ephemeral: true);
+            }
+            else // Display Rules / Initial Embed
+            {
+                MasterMindGame game = new MasterMindGame();
+                MasterMindGeneral.currentGames.Add(game);
+                game.id = Context.Channel.Id;
+
+                var embed = new Discord.EmbedBuilder
+                {
+                    Title = "🧠 Master Mind",
+                    Color = new Discord.Color(6689298),
+                };
+                embed.AddField(name: "How to Play.", value: "The goal of the game is to guess the correct randomly generated code. **Each code is 4 digits** long where each digit is an integer from **1-9**. Use the command `/master-mind guess` to make your guess. Be warned you only have **8 tries**!");
+
+                // Begin Button
+                var button = new Discord.ButtonBuilder
+                {
+                    Label = "Begin Game!",
+                    Style = Discord.ButtonStyle.Success,
+                    CustomId = "begin"
+                };
+
+                var builder = new ComponentBuilder().WithButton(button);
+
+                await RespondAsync(embed: embed.Build(), components: builder.Build());
+            }
+        }
+
+        [EnabledInDm(false)]
+        [SlashCommand("guess", "make a guess in an existing game of Master Mind")]
+        public async Task Guess([Summary("guess", "Type a 4 digit guess as to what the answer is.")] string guess)
+        {
+            var game = MasterMindGeneral.currentGames.Find(game => game.id == Context.Channel.Id);
+            if (game == null)
+                await RespondAsync(text: "❌ There is currently not a game of Master Mind in this channel. To make one use `/master-mind new-game`", ephemeral: true);
+            else if (MasterMindGeneral.currentGames.Count > 0 && game.isStarted == false)
+                await RespondAsync(text: "❌ Press \"Begin Game!\" to start guessing.", ephemeral: true);
+            else if (guess.Length != 4)
+                await RespondAsync(text: "❌ Your should have **exactly 4 digits** (No guesses were expended).", ephemeral: true);
+            else
+            {
+                // Set Values
+                game.guessesLeft -= 1;
+
+                // Get Result
+                string result = MasterMindGeneral.GetResult(guess, game.key);
+
+                // Ready Embed
+                var embed = new Discord.EmbedBuilder
+                {
+                    Title = "🧠 Master Mind",
+                    Color = new Discord.Color(6689298),
+                };
+
+                if (result == "🟩🟩🟩🟩") // it is solved
+                {
+                    embed.Title += " (solved)";
+                    embed.Description = MasterMindGeneral.GetCongrats();
+                    embed.AddField(name: "Answer:", value: $"`{game.key}`", inline: true).AddField(name: "Guesses Left:", value: $"`{game.guessesLeft}`", inline: true);
+                    await game.message.ModifyAsync(x => { x.Embed = embed.Build(); x.Components = null; });
+                    MasterMindGeneral.currentGames.Remove(game);
+                }
+                else if (game.guessesLeft <= 0) // lose game
+                {
+                    embed.Title += " (lost)";
+                    embed.Description = "You have lost, but don't be sad you can just start a new game with `/master-mind new-game`";
+                    embed.AddField(name: "Answer:", value: $"`{game.key}`");
+                    await game.message.ModifyAsync(x => { x.Embed = embed.Build(); x.Components = null; });
+                    MasterMindGeneral.currentGames.Remove(game);
+                }
+                else
+                {
+                    embed.AddField(name: "Guesses Left:", value: $"`{game.guessesLeft}`", inline: true).AddField(name: "Last Guess:", value: $"`{guess}`", inline: true).AddField(name: "Result:", value: $"{result}");
+                    await game.message.ModifyAsync(x => { x.Embed = embed.Build(); });
+                }
+
+                // Respond
+                await RespondAsync(text: "🎯 Guess Made.", ephemeral: true);
+            }
+        }
+    }
+
+    [ComponentInteraction("begin")]
+    public async Task MasterMindBeginButtonHandler()
+    {
+        // Get Game
+        var game = MasterMindGeneral.currentGames.Find(game => game.id == Context.Interaction.ChannelId);
+
+        // Set message
+        var component = (SocketMessageComponent) Context.Interaction;
+        game.message = component.Message;
+
+        // Set startUser
+        game.startUser = component.Message.Author.Username;
+
+        // Initialize Key
+        game.key = MasterMindGeneral.CreateKey();
+
+        // Initialize Embed  
+        var embed = new Discord.EmbedBuilder
+        {
+            Title = "🧠 Master Mind",
+            Color = new Discord.Color(6689298),
+        };
+        embed.AddField(name: "Guesses Left:", value: $"`{game.guessesLeft}`", inline: true).AddField(name: "Last Guess:", value: "use `/master-mind guess`", inline: true).AddField(name: "Result:", value: "use `/master-mind guess`");
+
+        // Forfeit Button
+        var button = new Discord.ButtonBuilder
+        {
+            Label = "Forfeit",
+            Style = Discord.ButtonStyle.Danger,
+            CustomId = "quit"          
+        };
+        var builder = new ComponentBuilder().WithButton(button);
+
+        // Begin Game
+        game.isStarted = true;
+
+        // Edit Message For Beginning of Game.
+        await component.Message.ModifyAsync(x => { x.Embed = embed.Build(); x.Components = builder.Build(); });
+    }
+
+    [ComponentInteraction("quit")]
+    public async Task MasterMindQuitButtonHandler()
+    {
+        await DeferAsync();
+        // Get Game
+        var game = MasterMindGeneral.currentGames.Find(game => game.id == Context.Interaction.Channel.Id);
+
+        var embed = new Discord.EmbedBuilder
+        {
+            Title = "🧠 Master Mind",
+            Color = new Discord.Color(6689298),
+            Description = "This was certainly difficult, try again with `/master-mind new-game`",
+        };
+
+        embed.Title += " (forfeited)";
+        embed.AddField(name: "Answer:", value: $"`{game.key}`");
+        await game.message.ModifyAsync(x => { x.Embed = embed.Build(); x.Components = null; });
+        MasterMindGeneral.currentGames.Remove(game);
+    }
+
 
     [EnabledInDm(true)]
     [SlashCommand("dice-roll", "Bob will roll a die with the side amount specified.")]
@@ -123,9 +278,9 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
         string factFormatted = "";
 
-        for(int i = 0; i < fact.Length; i++)
+        for (int i = 0; i < fact.Length; i++)
         {
-            if(fact[i] == '`')
+            if (fact[i] == '`')
                 factFormatted += "\\";
             factFormatted += fact[i];
         }
@@ -297,7 +452,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
             Color = new Discord.Color(6689298),
         };
         embed.AddField(name: "🎲 Randomly Generated (RNG):", value: "- `/color` Get a color with hex, and RGB codes.\n\n- `/dice-roll [sides]` Roll a die with a specified # of sides.\n\n- `/coin-toss` Flip a coin.\n\n- `/quote [prompt]` Get a random quote.\n  - `[prompt]`choices: This is optional, use `/quote-prompts` to view all valid prompts.\n\n- `/dad-joke` Get a random dad joke.\n\n- `/random-fact` Get an outrageous fact.\n\n- `/8ball [prompt]` Get an 8 ball response to a prompt.")
-        .AddField(name: "🎮 Games:", value: "- `/rock-paper-scissors` Play Bob in a game of rock paper scissors.")
+        .AddField(name: "🎮 Games:", value: "- `/rock-paper-scissors` Play Bob in a game of rock paper scissors.\n\n- `/master-mind new-game` Play a game of Master Mind, the rules will shared upon usage.\n\n- `/master-mind guess` Make a guess in a game of Master Mind.")
         .AddField(name: "✨ Other:", value: "- `/fonts [text] [font]` Change your text to a different font.\n  - `[font]` choices: 𝖒𝖊𝖉𝖎𝖊𝖛𝖆𝖑, 𝓯𝓪𝓷𝓬𝔂, 𝕠𝕦𝕥𝕝𝕚𝕟𝕖𝕕, s̷l̷̷a̷s̷h̷e̷d̷, and 🄱🄾🅇🄴🄳.\n\n- `/encrypt [message] [cipher]` Change text into a cipher.\n    - `[cipher]` choices: Caesar, A1Z26, Atbash\n\n- `/poll [prompt] [option]*4` Create a poll.\n  - `[option]*4` usage: You must provide 2-4 options. These are essentially the poll's choices. \n\n- `/ship [user]*2` See how good of a match 2 users are.")
         .AddField(name: "🗄️ Informational / Help:", value: "- `/new` See the latest updates to Bob.\n\n- `/quote-prompts` See all valid prompts for `/quote`.\n\n- `/ping` Find the client's latency.\n\n- `/info` Learn about Bob.\n\n- `/suggest` Join Bob's official server, and share you ideas!");
 

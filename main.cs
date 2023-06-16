@@ -12,7 +12,8 @@ public static class Bot
 {
     public static readonly DiscordSocketClient Client = new(new DiscordSocketConfig()
     {
-        GatewayIntents = GatewayIntents.Guilds
+        GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers,
+        AlwaysDownloadUsers = true
     });
 
     private static InteractionService Service;
@@ -46,7 +47,7 @@ public static class Bot
         await Service.AddModulesAsync(Assembly.GetEntryAssembly(), null);
         await Service.RegisterCommandsGloballyAsync();
 
-        Client.SlashCommandExecuted += SlashCommandExecuted;
+        Client.InteractionCreated += InteractionCreated;
         Service.SlashCommandExecuted += SlashCommandResulted;
 
         string[] statuses = { "/help | Fonts!", "/help | New Commands!", "/help | RNG!", "/help | New Games!", "/help | 2,000+ users" };
@@ -117,27 +118,28 @@ public static class Bot
     //     }
     // }
 
-    private static async Task SlashCommandExecuted(SocketSlashCommand command)
+    private static async Task InteractionCreated(SocketInteraction interaction)
     {
         try
         {
-            SocketInteractionContext ctx = new(Client, command);
+            SocketInteractionContext ctx = new(Client, interaction);
             IResult res = await Service.ExecuteCommandAsync(ctx, null);
         }
         catch
         {
-            if (command.Type == InteractionType.ApplicationCommand)
-                await command.GetOriginalResponseAsync().ContinueWith(async (msg) => await msg.Result.DeleteAsync());
+            if (interaction.Type == InteractionType.ApplicationCommand)
+                await interaction.GetOriginalResponseAsync().ContinueWith(async (msg) => await msg.Result.DeleteAsync());
         }
-
-        var cpuUsage = await Performance.GetCpuUsageForProcess();
-        var ramUsage = Performance.GetRamUsageForProcess();
-        var Location = command.GuildId == null ? "a DM" : Client.GetGuild(ulong.Parse(command.GuildId.ToString())).ToString();
-        Console.WriteLine($"{DateTime.Now:dd/MM. H:mm:ss} CPU: {cpuUsage.ToString()} RAM: {ramUsage.ToString()} Location: {Location} Command: /{command.CommandName}");
     }
 
     private static async Task SlashCommandResulted(SlashCommandInfo info, IInteractionContext ctx, IResult res)
     {
+
+        var cpuUsage = await Performance.GetCpuUsageForProcess();
+        var ramUsage = Performance.GetRamUsageForProcess();
+        var Location = ctx.Interaction.GuildId == null ? "a DM" : Client.GetGuild(ulong.Parse(ctx.Interaction.GuildId.ToString())).ToString();
+        Console.WriteLine($"{DateTime.Now:dd/MM. H:mm:ss} CPU: {cpuUsage.ToString()} RAM: {ramUsage.ToString()} Location: {Location} Command: /{info.Name}");
+
         if (!res.IsSuccess)
         {
             switch (res.Error)
