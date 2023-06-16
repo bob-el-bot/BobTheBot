@@ -148,6 +148,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     [ComponentInteraction("begin")]
     public async Task MasterMindBeginButtonHandler()
     {
+        await DeferAsync();
         // Get Game
         var game = MasterMindGeneral.currentGames.Find(game => game.id == Context.Interaction.ChannelId);
 
