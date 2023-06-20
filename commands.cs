@@ -54,7 +54,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
         for (int i = 0; i < people.Length; i++)
         {
-            if (people[i] == null)
+            if (people[i] != null)
                 response += ", " + people[i].Mention;
         }
 
