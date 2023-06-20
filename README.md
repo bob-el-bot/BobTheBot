@@ -3,7 +3,9 @@
 <p>
     <img src="https://skillicons.dev/icons?i=cs,net,raspberrypi,discord">
 <p>
+
 <p>A bot for 🎲 RNG, new 📜 fonts, 🔒 encryption, and ✨ more! Currently serving 3,000+ users!</p>
+
 <a href="https://discord.com/oauth2/authorize?client_id=705680059809398804&permissions=1110719392886&scope=bot%20applications.commands">Invite</a>
 <span>|
 <a href="https://github.com/Quantam-Studios/BobTheBot#all-commands">See Commands</a>
@@ -15,9 +17,11 @@
 </div>
 
 # Plans For The Future
-Bob will only use slash commands. This ensures users can always understand how a command works as well as what all of the commands are without the use of a help command.
-Bob was not made to do a specific thing, but instead will gain features that are requested by the users. Until a proper suggest command is created, you can email me with any feature requests.
-- [View](https://github.com/users/Quantam-Studios/projects/3) what is in the works
+Bob is constantly being updated, and improved! A road map of updates can be found below:
+> **Note**
+The order is irrelevant, and features are added from one of the to do sections as the developer wants.
+
+- [See what's in the works!](https://github.com/users/Quantam-Studios/projects/3)
 
 # All Commands
 Bob The Bot has many features all of which are `/slash` commands for ease of use!
@@ -56,6 +60,9 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/suggest` Join Bob's official server and share your ideas!
 
 # How is Bob Hosted?
+> **Note**
+This is subject to change as the usage of Bob has begun to push the limits of a Raspberry Pi 4. Bob will probably be migrated to Azure.
+
 Bob runs on a Raspberry Pi 4 running Raspberry Pi OS Lite. This enables a lot of freedom in terms of feature sets because Bob no longer relies on [replit](replit.com). Replit was originally used, but after an outrageous price increase it was no longer viable.
 
 # Framework
