@@ -3,7 +3,9 @@
 <p>
     <img src="https://skillicons.dev/icons?i=cs,net,raspberrypi,discord">
 <p>
-<p>A bot for 🎲 RNG, new 📜 fonts, 🔒 encryption, and ✨ more! Currently serving 2,000+ users!</p>
+
+<p>A bot for 🎲 RNG, new 📜 fonts, 🔒 encryption, and ✨ more! Currently serving 3,000+ users!</p>
+
 <a href="https://discord.com/oauth2/authorize?client_id=705680059809398804&permissions=1110719392886&scope=bot%20applications.commands">Invite</a>
 <span>|
 <a href="https://github.com/Quantam-Studios/BobTheBot#all-commands">See Commands</a>
@@ -46,6 +48,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
     - `[cipher]` choices: Caesar, A1Z26, Atbash
 - `/poll [prompt] [option]*4` Create a poll.
 - `/ship [user]*2` See how good of a match 2 users are.
+- `/hug [user]*5` Show your friends some love with a hug.
 - `/hi` Say hi to Bob.
 
 ### 🗄️ Informational / help commands:
