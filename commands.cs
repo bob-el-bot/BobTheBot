@@ -44,6 +44,24 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     }
 
     [EnabledInDm(true)]
+    [SlashCommand("hug", "Hug your friends! (up to 5 people in a group hug!)")]
+    public async Task Hug(SocketUser person1, SocketUser person2 = null, SocketUser person3 = null, SocketUser person4 = null, SocketUser person5 = null)
+    {
+        string response = "";
+        response += Context.User.Mention + " *hugs* " + person1.Mention;
+
+        SocketUser[] people = { person2, person3, person4, person5 };
+
+        for (int i = 0; i < people.Length; i++)
+        {
+            if (people[i] == null)
+                response += ", " + people[i].Mention;
+        }
+
+        await RespondAsync(text: $"🤗🫂 {response}" + "!");
+    }    
+
+    [EnabledInDm(true)]
     [SlashCommand("rock-paper-scissors", "Play a game of Rock Paper Scissors with Bob.")]
     public async Task RPS()
     {
@@ -454,7 +472,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         };
         embed.AddField(name: "🎲 Randomly Generated (RNG):", value: "- `/color` Get a color with hex, and RGB codes.\n\n- `/dice-roll [sides]` Roll a die with a specified # of sides.\n\n- `/coin-toss` Flip a coin.\n\n- `/quote [prompt]` Get a random quote.\n  - `[prompt]`choices: This is optional, use `/quote-prompts` to view all valid prompts.\n\n- `/dad-joke` Get a random dad joke.\n\n- `/random-fact` Get an outrageous fact.\n\n- `/8ball [prompt]` Get an 8 ball response to a prompt.")
         .AddField(name: "🎮 Games:", value: "- `/rock-paper-scissors` Play Bob in a game of rock paper scissors.\n\n- `/master-mind new-game` Play a game of Master Mind, the rules will shared upon usage.\n\n- `/master-mind guess` Make a guess in a game of Master Mind.")
-        .AddField(name: "✨ Other:", value: "- `/fonts [text] [font]` Change your text to a different font.\n  - `[font]` choices: 𝖒𝖊𝖉𝖎𝖊𝖛𝖆𝖑, 𝓯𝓪𝓷𝓬𝔂, 𝕠𝕦𝕥𝕝𝕚𝕟𝕖𝕕, s̷l̷̷a̷s̷h̷e̷d̷, and 🄱🄾🅇🄴🄳.\n\n- `/encrypt [message] [cipher]` Change text into a cipher.\n    - `[cipher]` choices: Caesar, A1Z26, Atbash\n\n- `/poll [prompt] [option]*4` Create a poll.\n  - `[option]*4` usage: You must provide 2-4 options. These are essentially the poll's choices. \n\n- `/ship [user]*2` See how good of a match 2 users are.")
+        .AddField(name: "✨ Other:", value: "- `/fonts [text] [font]` Change your text to a different font.\n  - `[font]` choices: 𝖒𝖊𝖉𝖎𝖊𝖛𝖆𝖑, 𝓯𝓪𝓷𝓬𝔂, 𝕠𝕦𝕥𝕝𝕚𝕟𝕖𝕕, s̷l̷̷a̷s̷h̷e̷d̷, and 🄱🄾🅇🄴🄳.\n\n- `/encrypt [message] [cipher]` Change text into a cipher.\n    - `[cipher]` choices: Caesar, A1Z26, Atbash\n\n- `/poll [prompt] [option]*4` Create a poll.\n  - `[option]*4` usage: You must provide 2-4 options. These are essentially the poll's choices.\n\n- `/ship [user]*2` See how good of a match 2 users are.\n\n- `/hug [user]*5` Show your friends some love with a hug.")
         .AddField(name: "🗄️ Informational / Help:", value: "- `/new` See the latest updates to Bob.\n\n- `/quote-prompts` See all valid prompts for `/quote`.\n\n- `/ping` Find the client's latency.\n\n- `/info` Learn about Bob.\n\n- `/suggest` Join Bob's official server, and share you ideas!");
 
         await Context.User.SendMessageAsync(embed: embed.Build());
