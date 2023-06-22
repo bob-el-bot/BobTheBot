@@ -9,6 +9,7 @@ using Discord;
 using System.Collections.Generic;
 using System.Linq;
 using Discord.Rest;
+using ColorHelper;
 
 public class Commands : InteractionModuleBase<SocketInteractionContext>
 {
@@ -435,11 +436,18 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     public async Task Color()
     {
         var hex = String.Format("{0:X6}", random.Next(0x1000000));
-        System.Drawing.Color rgb = System.Drawing.Color.FromArgb(int.Parse(hex, System.Globalization.NumberStyles.HexNumber));
+        CMYK cmyk = ColorConverter.HexToCmyk(new HEX(hex));
+        HSL hsl = ColorConverter.HexToHsl(new HEX(hex));
+        HSV hsv = ColorConverter.HexToHsv(new HEX(hex));
+        RGB rgb = ColorConverter.HexToRgb(new HEX(hex));
         Discord.Color displayColor = new Discord.Color(Convert.ToUInt32(hex, 16));
 
         var embed = new Discord.EmbedBuilder { };
-        embed.AddField("Hex Value", "`" + hex + "`").AddField("RGB Value", $"`R: {rgb.R}, G: {rgb.G}, B: {rgb.B}`")
+        embed.AddField("Hex", "`" + hex + "`")
+        .AddField("RGB", $"`R: {rgb.R}, G: {rgb.G}, B: {rgb.B}`")
+        .AddField("CMYK", $"`C: {cmyk.C}, M: {cmyk.M}, Y: {cmyk.Y}, K: {cmyk.K}`")
+        .AddField("HSL", $"`H: {hsl.H}, S: {hsl.S}, L: {hsl.L}`")
+        .AddField("HSV", $"`H: {hsv.H}, S: {hsv.S}, V: {hsv.V}`")
         .WithColor(displayColor);
 
         await RespondAsync(embed: embed.Build());

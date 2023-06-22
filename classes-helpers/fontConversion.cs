@@ -1,11 +1,18 @@
+using Discord.Interactions;
+
 public class FontConversion
 {
     public enum FontTypes
     {
+        [ChoiceDisplay("𝖒𝖊𝖉𝖎𝖊𝖛𝖆𝖑")]
         medieval,
+        [ChoiceDisplay("𝓯𝓪𝓷𝓬𝔂")]
         fancy,
+        [ChoiceDisplay("s̷l̷̷a̷s̷h̷e̷d̷")]
         slashed,
+        [ChoiceDisplay("𝕠𝕦𝕥𝕝𝕚𝕟𝕖𝕕")]
         outlined,
+        [ChoiceDisplay("🄱🄾🅇🄴🄳")]
         boxed
     }
 
