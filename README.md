@@ -27,7 +27,7 @@ The order is irrelevant, and features are added from one of the to do sections a
 Bob The Bot has many features all of which are `/slash` commands for ease of use!
 
 ### 🎲 RNG (randomly generated) commands: 
-- `/color` Get a color with hex, and RGB codes.
+- `/color` Get a color with Hex, CMYK, HSL, HSV and RGB codes.
 - `/dice-roll [sides]` Roll a die with a specified # of sides.
 - `/coin-toss` Flip a coin.
 - `/quote [prompt]` Get a random quote.
