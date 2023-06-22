@@ -75,7 +75,7 @@ public class Encryption
                 finalText += letterVal.ToString();
                 if (text.Length > place + 1)
                 {
-                    if (alpha.IndexOf(text[place + 1]) > -1)
+                    if (alpha.IndexOf(text[place + 1]) > -1 || ALPHA.IndexOf(text[place + 1]) > -1)
                     {
                         finalText += "-";
                     }
