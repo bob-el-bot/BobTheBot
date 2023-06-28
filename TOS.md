@@ -1,3 +1,12 @@
+# Limitation of Liability
+
+By using this Discord bot ("the Bot"), you acknowledge and agree that the creator and any contributors of the Bot shall not be held liable or responsible for any direct, indirect, incidental, consequential, or exemplary damages, including but not limited to damages for loss of profits, data, or other intangible losses, arising out of or in connection with the use or performance of the Bot or its related services.
+
+The creator and contributors of the Bot make no representations or warranties, expressed or implied, regarding the Bot's accuracy, reliability, availability, or suitability for any purpose. They disclaim all liability for any harm, errors, or omissions arising from the use of the Bot.
+
+You understand and acknowledge that the Bot is provided on an "as is" and "as available" basis, and you use it at your own risk. The creator and contributors of the Bot do not guarantee continuous, uninterrupted, or secure access to the Bot, and they shall not be held responsible for any disruptions, errors, or technical issues that may arise.
+
+Furthermore, you agree to release, indemnify, and hold harmless the creator and contributors of the Bot from any claims, demands, liabilities, damages, losses, or expenses, including legal fees, arising from your use of the Bot or any violation of these terms of service.
 
 # Intellectual Property
 
@@ -17,6 +26,7 @@ You agree not to use the Bot for any unlawful, harmful, malicious, or harassing 
 - Attempt to gain unauthorized access to the Bot or any related systems or networks.
 - Introduce any viruses, worms, or other harmful or disruptive code into the Bot or its infrastructure.
 - Engage in any activity that may interfere with or disrupt the functionality or performance of the Bot or its associated services.
+
 The creator and contributors of the Bot reserve the right to monitor the use of the Bot and to investigate any suspected violations of this section. They may take appropriate actions, including but not limited to suspending or terminating access to the Bot and reporting any illegal activities to the relevant authorities.
 
 # Compliance with National and International Laws
@@ -36,14 +46,4 @@ You acknowledge and agree that any ideas, suggestions, feedback, comments, or ot
 By providing Feedback, you grant the creator and contributors a non-exclusive, worldwide, perpetual, irrevocable, royalty-free, sublicensable right to use, modify, reproduce, distribute, display, and otherwise exploit the Feedback for any purpose, including but not limited to improving, enhancing, or modifying the Bot or developing new features.
 
 You represent and warrant that you have the necessary rights to provide the Feedback and that the Feedback does not infringe upon any third-party intellectual property rights.
-
-# Limitation of Liability
-
-By using this Discord bot ("the Bot"), you acknowledge and agree that the creator and any contributors of the Bot shall not be held liable or responsible for any direct, indirect, incidental, consequential, or exemplary damages, including but not limited to damages for loss of profits, data, or other intangible losses, arising out of or in connection with the use or performance of the Bot or its related services.
-
-The creator and contributors of the Bot make no representations or warranties, expressed or implied, regarding the Bot's accuracy, reliability, availability, or suitability for any purpose. They disclaim all liability for any harm, errors, or omissions arising from the use of the Bot.
-
-You understand and acknowledge that the Bot is provided on an "as is" and "as available" basis, and you use it at your own risk. The creator and contributors of the Bot do not guarantee continuous, uninterrupted, or secure access to the Bot, and they shall not be held responsible for any disruptions, errors, or technical issues that may arise.
-
-Furthermore, you agree to release, indemnify, and hold harmless the creator and contributors of the Bot from any claims, demands, liabilities, damages, losses, or expenses, including legal fees, arising from your use of the Bot or any violation of these terms of service.
 
