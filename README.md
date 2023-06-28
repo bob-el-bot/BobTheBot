@@ -68,3 +68,9 @@ Bob runs on a Raspberry Pi 4 running Raspberry Pi OS Lite. This enables a lot of
 # Framework
 This bot is written with the [Discord.NET](https://github.com/discord-net/Discord.Net) framework.
 
+# Privacy Policy
+View the [Privacy Policy](https://github.com/bob-el-bot/BobTheBot/blob/main/PRIVACY.md).
+
+# Terms of Service
+View the [Terms of Service](https://github.com/bob-el-bot/BobTheBot/blob/main/TOS.md).
+
