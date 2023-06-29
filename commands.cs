@@ -281,7 +281,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         var request = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, "https://uselessfacts.jsph.pl/api/v2/facts/random?language=en");
 
         var productValue = new ProductInfoHeaderValue("BobTheBot", "1.0");
-        var commentValue = new ProductInfoHeaderValue("(+https://github.com/Quantam-Studios/BobTheBot)");
+        var commentValue = new ProductInfoHeaderValue("(+https://github.com/bob-el-bot/BobTheBot)");
         var acceptValue = new MediaTypeWithQualityHeaderValue("application/json");
         request.Headers.UserAgent.Add(productValue);
         request.Headers.UserAgent.Add(commentValue);
@@ -318,7 +318,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         var request = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, "https://icanhazdadjoke.com");
 
         var productValue = new ProductInfoHeaderValue("BobTheBot", "1.0");
-        var commentValue = new ProductInfoHeaderValue("(+https://github.com/Quantam-Studios/BobTheBot)");
+        var commentValue = new ProductInfoHeaderValue("(+https://github.com/bob-el-bot/BobTheBot)");
         var acceptValue = new MediaTypeWithQualityHeaderValue("text/plain");
         request.Headers.UserAgent.Add(productValue);
         request.Headers.UserAgent.Add(commentValue);
@@ -343,7 +343,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         var request = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, $"https://api.quotable.io/quotes/random?tags={prompt}");
 
         var productValue = new ProductInfoHeaderValue("BobTheBot", "1.0");
-        var commentValue = new ProductInfoHeaderValue("(+https://github.com/Quantam-Studios/BobTheBot)");
+        var commentValue = new ProductInfoHeaderValue("(+https://github.com/bob-el-bot/BobTheBot)");
         var acceptValue = new MediaTypeWithQualityHeaderValue("application/json");
         request.Headers.UserAgent.Add(productValue);
         request.Headers.UserAgent.Add(commentValue);
@@ -388,7 +388,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
             Title = $"Bob's Info",
             Color = new Discord.Color(6689298),
         };
-        embed.AddField(name: "📛 Username", value: $"{Bot.Client.CurrentUser.Username}", inline: true).AddField(name: "🪪 ID", value: $"`{Bot.Client.CurrentUser.Id}`", inline: true).AddField(name: "📈 Server Count", value: $"`{Bot.Client.Guilds.Count}`").AddField(name: ":calendar_spiral: Date Created", value: $"`{Bot.Client.CurrentUser.CreatedAt}`", inline: true).AddField(name: "⚡ Github Repository", value: "https://github.com/Quantam-Studios/BobTheBot").AddField(name: "🏗️ Made With", value: "C#, .NET", inline: true).AddField(name: "📡 Hosted With", value: "Raspberry PI 4", inline: true);
+        embed.AddField(name: "📛 Username", value: $"{Bot.Client.CurrentUser.Username}", inline: true).AddField(name: "🪪 ID", value: $"`{Bot.Client.CurrentUser.Id}`", inline: true).AddField(name: "📈 Server Count", value: $"`{Bot.Client.Guilds.Count}`").AddField(name: ":calendar_spiral: Date Created", value: $"`{Bot.Client.CurrentUser.CreatedAt}`", inline: true).AddField(name: "⚡ Github Repository", value: "https://github.com/bob-el-bot/BobTheBot").AddField(name: "🏗️ Made With", value: "C#, .NET", inline: true).AddField(name: "📡 Hosted With", value: "Raspberry PI 4", inline: true);
 
         await RespondAsync(embed: embed.Build());
     }
@@ -400,10 +400,10 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         // Formulate Request
         var httpClient = new HttpClient();
 
-        var request = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, "https://api.github.com/repos/Quantam-Studios/BobTheBot/commits/main");
+        var request = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, "https://api.github.com/repos/bob-el-bot/BobTheBot/commits/main");
 
         var productValue = new ProductInfoHeaderValue("BobTheBot", "1.0");
-        var commentValue = new ProductInfoHeaderValue("(+https://github.com/Quantam-Studios/BobTheBot)");
+        var commentValue = new ProductInfoHeaderValue("(+https://github.com/bob-el-bot/BobTheBot)");
         var acceptValue = new MediaTypeWithQualityHeaderValue("application/json");
         request.Headers.UserAgent.Add(productValue);
         request.Headers.UserAgent.Add(commentValue);
