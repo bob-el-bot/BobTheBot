@@ -252,7 +252,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         string result = results[random.Next(0, results.Length)];
 
         // Respond
-        await RespondAsync(text: $"🎱 The magic 8 ball says **{result}** in response to {prompt}");
+        await RespondAsync(text: $"🎱 **{result}** in response to {prompt}");
     }
 
     [EnabledInDm(true)]
