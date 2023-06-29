@@ -18,7 +18,7 @@ public static class Bot
 
     private static InteractionService Service;
 
-    private static readonly string Token = Config.GetToken();
+    private static readonly string Token = Config.GetTestToken();
 
     public static async Task Main()
     {
@@ -75,8 +75,13 @@ public static class Bot
         int totalUsers = 0;
         foreach (var guild in Bot.Client.Guilds)
         {
+            await guild.DownloadUsersAsync();
+            foreach (var member in guild.Users) 
+            {
+                if (!member.IsBot)
+                    totalUsers += 1;
+            }
             Console.WriteLine($"{guild.Name}, {guild.MemberCount}");
-            totalUsers += guild.MemberCount;
         }
 
         Console.WriteLine($"Total Users: {totalUsers}");
