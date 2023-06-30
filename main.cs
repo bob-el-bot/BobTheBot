@@ -50,7 +50,7 @@ public static class Bot
         Client.InteractionCreated += InteractionCreated;
         Service.SlashCommandExecuted += SlashCommandResulted;
 
-        string[] statuses = { "/help | Fonts!", "/help | New Commands!", "/help | RNG!", "/help | New Games!", "/help | 3,000+ users" };
+        string[] statuses = { "/help | Fonts!", "/help | New Commands!", "/help | RNG!", "/help | New Games!", "/help | 3,500+ users" };
         int index = 0;
 
         timer = new Timer(async x =>
@@ -75,8 +75,13 @@ public static class Bot
         int totalUsers = 0;
         foreach (var guild in Bot.Client.Guilds)
         {
+            await guild.DownloadUsersAsync();
+            foreach (var member in guild.Users) 
+            {
+                if (!member.IsBot)
+                    totalUsers += 1;
+            }
             Console.WriteLine($"{guild.Name}, {guild.MemberCount}");
-            totalUsers += guild.MemberCount;
         }
 
         Console.WriteLine($"Total Users: {totalUsers}");

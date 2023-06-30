@@ -252,7 +252,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         string result = results[random.Next(0, results.Length)];
 
         // Respond
-        await RespondAsync(text: $"🎱 The magic 8 ball says **{result}** in response to {prompt}");
+        await RespondAsync(text: $"🎱 **{result}** in response to {prompt}");
     }
 
     [EnabledInDm(true)]
@@ -281,7 +281,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         var request = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, "https://uselessfacts.jsph.pl/api/v2/facts/random?language=en");
 
         var productValue = new ProductInfoHeaderValue("BobTheBot", "1.0");
-        var commentValue = new ProductInfoHeaderValue("(+https://github.com/Quantam-Studios/BobTheBot)");
+        var commentValue = new ProductInfoHeaderValue("(+https://github.com/bob-el-bot/BobTheBot)");
         var acceptValue = new MediaTypeWithQualityHeaderValue("application/json");
         request.Headers.UserAgent.Add(productValue);
         request.Headers.UserAgent.Add(commentValue);
@@ -307,7 +307,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
         await RespondAsync(text: $"🤓 {factFormatted}");
     }
-
+       
     [EnabledInDm(false)]
     [SlashCommand("dad-joke", "Bob will tell you a dad joke.")]
     public async Task DadJoke()
@@ -318,7 +318,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         var request = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, "https://icanhazdadjoke.com");
 
         var productValue = new ProductInfoHeaderValue("BobTheBot", "1.0");
-        var commentValue = new ProductInfoHeaderValue("(+https://github.com/Quantam-Studios/BobTheBot)");
+        var commentValue = new ProductInfoHeaderValue("(+https://github.com/bob-el-bot/BobTheBot)");
         var acceptValue = new MediaTypeWithQualityHeaderValue("text/plain");
         request.Headers.UserAgent.Add(productValue);
         request.Headers.UserAgent.Add(commentValue);
@@ -335,7 +335,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
     [EnabledInDm(false)]
     [SlashCommand("quote", "Bob will tell you a quote.")]
-    public async Task Quote(string prompt = "")
+    public async Task Quote([Summary("prompt", "use /quote-prompts to see all valid prompts")]  string prompt = "")
     {
         // Formulate Request
         var httpClient = new HttpClient();
@@ -343,7 +343,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         var request = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, $"https://api.quotable.io/quotes/random?tags={prompt}");
 
         var productValue = new ProductInfoHeaderValue("BobTheBot", "1.0");
-        var commentValue = new ProductInfoHeaderValue("(+https://github.com/Quantam-Studios/BobTheBot)");
+        var commentValue = new ProductInfoHeaderValue("(+https://github.com/bob-el-bot/BobTheBot)");
         var acceptValue = new MediaTypeWithQualityHeaderValue("application/json");
         request.Headers.UserAgent.Add(productValue);
         request.Headers.UserAgent.Add(commentValue);
@@ -388,7 +388,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
             Title = $"Bob's Info",
             Color = new Discord.Color(6689298),
         };
-        embed.AddField(name: "📛 Username", value: $"{Bot.Client.CurrentUser.Username}", inline: true).AddField(name: "🪪 ID", value: $"`{Bot.Client.CurrentUser.Id}`", inline: true).AddField(name: "📈 Server Count", value: $"`{Bot.Client.Guilds.Count}`").AddField(name: ":calendar_spiral: Date Created", value: $"`{Bot.Client.CurrentUser.CreatedAt}`", inline: true).AddField(name: "⚡ Github Repository", value: "https://github.com/Quantam-Studios/BobTheBot").AddField(name: "🏗️ Made With", value: "C#, .NET", inline: true).AddField(name: "📡 Hosted With", value: "Raspberry PI 4", inline: true);
+        embed.AddField(name: "📛 Username", value: $"{Bot.Client.CurrentUser.Username}", inline: true).AddField(name: "🪪 ID", value: $"`{Bot.Client.CurrentUser.Id}`", inline: true).AddField(name: "📈 Server Count", value: $"`{Bot.Client.Guilds.Count}`").AddField(name: ":calendar_spiral: Date Created", value: $"`{Bot.Client.CurrentUser.CreatedAt}`", inline: true).AddField(name: "⚡ Github Repository", value: "https://github.com/bob-el-bot/BobTheBot").AddField(name: "🏗️ Made With", value: "C#, .NET", inline: true).AddField(name: "📡 Hosted With", value: "Raspberry PI 4", inline: true);
 
         await RespondAsync(embed: embed.Build());
     }
@@ -400,10 +400,10 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         // Formulate Request
         var httpClient = new HttpClient();
 
-        var request = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, "https://api.github.com/repos/Quantam-Studios/BobTheBot/commits/main");
+        var request = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, "https://api.github.com/repos/bob-el-bot/BobTheBot/commits/main");
 
         var productValue = new ProductInfoHeaderValue("BobTheBot", "1.0");
-        var commentValue = new ProductInfoHeaderValue("(+https://github.com/Quantam-Studios/BobTheBot)");
+        var commentValue = new ProductInfoHeaderValue("(+https://github.com/bob-el-bot/BobTheBot)");
         var acceptValue = new MediaTypeWithQualityHeaderValue("application/json");
         request.Headers.UserAgent.Add(productValue);
         request.Headers.UserAgent.Add(commentValue);
@@ -426,7 +426,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
             Color = new Discord.Color(6689298),
         };
 
-        embed.AddField(name: "✨ Latest Update", value: commitMessage, inline: true).AddField(name: ":calendar_spiral: Date", value: $"`{commitDate}`", inline: true).AddField(name: "🔮 See What's In the Works", value: "https://github.com/users/Quantam-Studios/projects/3/views/1");
+        embed.AddField(name: "🗒️ Creators Notes", value: "Bob is now 🎉 **verified**!", inline: false).AddField(name: "✨ Latest Update", value: commitMessage, inline: true).AddField(name: ":calendar_spiral: Date", value: $"`{commitDate}`", inline: true).AddField(name: "🔮 See What's In the Works", value: "https://github.com/users/Quantam-Studios/projects/3/views/1");
 
         await RespondAsync(embed: embed.Build());
     }
@@ -535,7 +535,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
     [EnabledInDm(false)]
     [SlashCommand("poll", "Bob will create a poll.")]
-    public async Task Poll(string prompt, string option1, string option2, string option3 = "", string option4 = "")
+    public async Task Poll([Summary("prompt", "The question you are asking.")] string prompt, [Summary("option1", "an answer / response to your question")] string option1, [Summary("option2", "an answer / response to your question")] string option2, [Summary("option3", "an answer / response to your question")] string option3 = "", [Summary("option4", "an answer / response to your question")] string option4 = "")
     {
         // Setup base data
         string footerText = Context.User.Username + " created this poll.";
@@ -584,7 +584,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
     [EnabledInDm(true)]
     [SlashCommand("fonts", "Bob will type your text in a font of your choice")]
-    public async Task Fonts(string text, FontConversion.FontTypes font)
+    public async Task Fonts([Summary("text", "the text you want converted. NOTE: only the alphabet is converted.")] string text, FontConversion.FontTypes font)
     {
         string finalText = "";
 
@@ -677,7 +677,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
     [EnabledInDm(true)]
     [SlashCommand("encrypt", "Bob will encrypt your message with a cipher of your choice.")]
-    public async Task Encrypt(string message, Encryption.CipherTypes cipher)
+    public async Task Encrypt([Summary("message", "the text you want to encrypt")] string message, Encryption.CipherTypes cipher)
     {
         string finalText = "";
 
