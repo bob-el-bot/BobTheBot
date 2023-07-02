@@ -242,11 +242,11 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     }
 
     [EnabledInDm(true)]
-    [SlashCommand("8ball", "Bob will shake a magic 8 ball in repsonse to a question.")]
+    [SlashCommand("8ball", "Bob will shake a magic 8 ball in response to a question.")]
     public async Task Magic8Ball(string prompt)
     {
         // Possible Answers
-        string[] results = { "'no'", "'yes'", "'maybe'", "'ask again'", "'probably not'", "'affirmative'", "'it is certain'", "'very doubtful'" };
+        string[] results = { "'no'", "'yes'", "'maybe'", "'ask again'", "'probably not'", "'affirmative'", "'it is certain'", "'very doubtful'", "'regretfully.. yes'", "'try again later...'" };
 
         // Get Random Result
         string result = results[random.Next(0, results.Length)];
