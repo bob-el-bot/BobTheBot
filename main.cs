@@ -50,7 +50,7 @@ public static class Bot
         Client.InteractionCreated += InteractionCreated;
         Service.SlashCommandExecuted += SlashCommandResulted;
 
-        string[] statuses = { "/help | Fonts!", "/help | New Commands!", "/help | RNG!", "/help | New Games!", "/help | 3,500+ users" };
+        string[] statuses = { "/help | Fonts!", "/help | New Commands!", "/help | RNG!", "/help | New Games!", "/help | 4,000+ users" };
         int index = 0;
 
         timer = new Timer(async x =>
