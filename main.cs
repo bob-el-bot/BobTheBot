@@ -12,8 +12,8 @@ public static class Bot
 {
     public static readonly DiscordSocketClient Client = new(new DiscordSocketConfig()
     {
-        GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers,
-        AlwaysDownloadUsers = true
+        GatewayIntents = GatewayIntents.Guilds,
+        AlwaysDownloadUsers = true,
     });
 
     private static InteractionService Service;
@@ -50,7 +50,7 @@ public static class Bot
         Client.InteractionCreated += InteractionCreated;
         Service.SlashCommandExecuted += SlashCommandResulted;
 
-        string[] statuses = { "/help | Fonts!", "/help | New Commands!", "/help | RNG!", "/help | New Games!", "/help | 3,500+ users" };
+        string[] statuses = { "/help | Fonts!", "/help | New Commands!", "/help | RNG!", "/help | New Games!", "/help | 4,000+ users" };
         int index = 0;
 
         timer = new Timer(async x =>
@@ -75,13 +75,8 @@ public static class Bot
         int totalUsers = 0;
         foreach (var guild in Bot.Client.Guilds)
         {
-            await guild.DownloadUsersAsync();
-            foreach (var member in guild.Users) 
-            {
-                if (!member.IsBot)
-                    totalUsers += 1;
-            }
             Console.WriteLine($"{guild.Name}, {guild.MemberCount}");
+            totalUsers += guild.MemberCount;
         }
 
         Console.WriteLine($"Total Users: {totalUsers}");
@@ -139,12 +134,6 @@ public static class Bot
 
     private static async Task SlashCommandResulted(SlashCommandInfo info, IInteractionContext ctx, IResult res)
     {
-
-        var cpuUsage = await Performance.GetCpuUsageForProcess();
-        var ramUsage = Performance.GetRamUsageForProcess();
-        var Location = ctx.Interaction.GuildId == null ? "a DM" : Client.GetGuild(ulong.Parse(ctx.Interaction.GuildId.ToString())).ToString();
-        Console.WriteLine($"{DateTime.Now:dd/MM. H:mm:ss} CPU: {cpuUsage.ToString()} RAM: {ramUsage.ToString()} Location: {Location} Command: /{info.Name}");
-
         if (!res.IsSuccess)
         {
             switch (res.Error)
@@ -160,14 +149,22 @@ public static class Bot
                     break;
                 case InteractionCommandError.Exception:
                     await ctx.Interaction.FollowupAsync($"❌ Command exception: {res.ErrorReason}");
-                    await ctx.Interaction.FollowupAsync("This might be because the server IP needs to changed.");
+                    await ctx.Interaction.FollowupAsync("This might be because the server IP needs to be changed.");
                     break;
                 case InteractionCommandError.Unsuccessful:
                     await ctx.Interaction.FollowupAsync("❌ Command could not be executed");
                     break;
                 default:
+                    await ctx.Interaction.FollowupAsync("❌ Command could not be executed, but it is not Bob's fualt. Please try again later while the developers work out what is wrong.");
                     break;
             }
+        }
+        else
+        {
+            var cpuUsage = await Performance.GetCpuUsageForProcess();
+            var ramUsage = Performance.GetRamUsageForProcess();
+            var Location = ctx.Interaction.GuildId == null ? "a DM" : Client.GetGuild(ulong.Parse(ctx.Interaction.GuildId.ToString())).ToString();
+            Console.WriteLine($"{DateTime.Now:dd/MM. H:mm:ss} CPU: {cpuUsage.ToString()} RAM: {ramUsage.ToString()} Location: {Location} Command: /{info.Name}");
         }
     }
 

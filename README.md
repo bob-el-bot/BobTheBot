@@ -1,10 +1,10 @@
 <div align="center">
-    <img src="https://cdn.discordapp.com/app-icons/705680059809398804/299eecd0b113960b0b8109908b9347ca.png?size=128">
+    <img style="border-radius: 50%;" src="BobLogo.png">
 <p>
     <img src="https://skillicons.dev/icons?i=cs,net,raspberrypi,discord">
 <p>
 
-<p>A bot for 🎲 RNG, new 📜 fonts, 🔒 encryption, and ✨ more! Currently serving 3,500+ users!</p>
+<p>A bot for 🎲 RNG, new 📜 fonts, 🔒 encryption, and ✨ more! Currently serving 4,000+ users!</p>
 
 <a href="https://discord.com/oauth2/authorize?client_id=705680059809398804&permissions=1110719392886&scope=bot%20applications.commands">Invite</a>
 <span>|
