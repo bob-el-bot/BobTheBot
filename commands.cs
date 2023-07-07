@@ -92,7 +92,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
                 var embed = new Discord.EmbedBuilder
                 {
                     Title = "🧠 Master Mind",
-                    Color = new Discord.Color(6689298),
+                    Color = new Discord.Color(9261821),
                 };
                 embed.AddField(name: "How to Play.", value: "The goal of the game is to guess the correct randomly generated code. **Each code is 4 digits** long where each digit is an integer from **1-9**. Use the command `/master-mind guess` to make your guess. Be warned you only have **8 tries**!");
 
@@ -133,7 +133,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
                 var embed = new Discord.EmbedBuilder
                 {
                     Title = "🧠 Master Mind",
-                    Color = new Discord.Color(6689298),
+                    Color = new Discord.Color(9261821),
                 };
 
                 if (result == "🟩🟩🟩🟩") // it is solved
@@ -185,7 +185,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         var embed = new Discord.EmbedBuilder
         {
             Title = "🧠 Master Mind",
-            Color = new Discord.Color(6689298),
+            Color = new Discord.Color(9261821),
         };
         embed.AddField(name: "Guesses Left:", value: $"`{game.guessesLeft}`", inline: true).AddField(name: "Last Guess:", value: "use `/master-mind guess`", inline: true).AddField(name: "Result:", value: "use `/master-mind guess`");
 
@@ -215,7 +215,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         var embed = new Discord.EmbedBuilder
         {
             Title = "🧠 Master Mind",
-            Color = new Discord.Color(6689298),
+            Color = new Discord.Color(9261821),
             Description = "This was certainly difficult, try again with `/master-mind new-game`",
         };
 
@@ -386,7 +386,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         var embed = new Discord.EmbedBuilder
         {
             Title = $"Bob's Info",
-            Color = new Discord.Color(6689298),
+            Color = new Discord.Color(9261821),
         };
         embed.AddField(name: "📛 Username", value: $"{Bot.Client.CurrentUser.Username}", inline: true).AddField(name: "🪪 ID", value: $"`{Bot.Client.CurrentUser.Id}`", inline: true).AddField(name: "📈 Server Count", value: $"`{Bot.Client.Guilds.Count}`").AddField(name: ":calendar_spiral: Date Created", value: $"`{Bot.Client.CurrentUser.CreatedAt}`", inline: true).AddField(name: "⚡ Github Repository", value: "https://github.com/bob-el-bot/BobTheBot").AddField(name: "🏗️ Made With", value: "C#, .NET", inline: true).AddField(name: "📡 Hosted With", value: "Raspberry PI 4", inline: true);
 
@@ -423,7 +423,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         var embed = new Discord.EmbedBuilder
         {
             Title = $"What's New?",
-            Color = new Discord.Color(6689298),
+            Color = new Discord.Color(9261821),
         };
 
         embed.AddField(name: "🗒️ Creators Notes", value: "Bob is now 🎉 **verified**!", inline: false).AddField(name: "✨ Latest Update", value: commitMessage, inline: true).AddField(name: ":calendar_spiral: Date", value: $"`{commitDate}`", inline: true).AddField(name: "🔮 See What's In the Works", value: "https://github.com/users/Quantam-Studios/projects/3/views/1");
@@ -476,7 +476,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         var embed = new Discord.EmbedBuilder
         {
             Title = $"📖 Here is a list of all of my commands.",
-            Color = new Discord.Color(6689298),
+            Color = new Discord.Color(9261821),
         };
         embed.AddField(name: "🎲 Randomly Generated (RNG):", value: "- `/color` Get a color with Hex, CMYK, HSL, HSV and RGB codes.\n\n- `/dice-roll [sides]` Roll a die with a specified # of sides.\n\n- `/coin-toss` Flip a coin.\n\n- `/quote [prompt]` Get a random quote.\n  - `[prompt]`choices: This is optional, use `/quote-prompts` to view all valid prompts.\n\n- `/dad-joke` Get a random dad joke.\n\n- `/random-fact` Get an outrageous fact.\n\n- `/8ball [prompt]` Get an 8 ball response to a prompt.")
         .AddField(name: "🎮 Games:", value: "- `/rock-paper-scissors` Play Bob in a game of rock paper scissors.\n\n- `/master-mind new-game` Play a game of Master Mind, the rules will shared upon usage.\n\n- `/master-mind guess` Make a guess in a game of Master Mind.")
@@ -542,7 +542,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         string instructions = "React with the corresponding number to cast your vote.";
 
         // Prepare color
-        Discord.Color displayColor = new Discord.Color(6689298);
+        Discord.Color displayColor = new Discord.Color(9261821);
 
         // Embed
         var embed = new Discord.EmbedBuilder
