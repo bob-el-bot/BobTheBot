@@ -426,7 +426,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
             Color = new Discord.Color(9261821),
         };
 
-        embed.AddField(name: "🗒️ Creators Notes", value: "Bob is now 🎉 **verified**!", inline: false).AddField(name: "✨ Latest Update", value: commitMessage, inline: true).AddField(name: ":calendar_spiral: Date", value: $"`{commitDate}`", inline: true).AddField(name: "🔮 See What's In the Works", value: "https://github.com/users/Quantam-Studios/projects/3/views/1");
+        embed.AddField(name: "🗒️ Creators Notes", value: "- Bob has a new 😎 style, specifically `#8D52FD`\n- Bob is now 🎉 **verified**!", inline: false).AddField(name: "✨ Latest Update", value: commitMessage, inline: true).AddField(name: ":calendar_spiral: Date", value: $"`{commitDate}`", inline: true).AddField(name: "🔮 See What's In the Works", value: "https://github.com/users/Quantam-Studios/projects/3/views/1");
 
         await RespondAsync(embed: embed.Build());
     }
