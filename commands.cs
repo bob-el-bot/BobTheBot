@@ -489,39 +489,16 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
     [EnabledInDm(false)]
     [SlashCommand("confess", "Bob will send someone a message anonymously")]
-    public async Task confess(string message, SocketUser user, Confession.SignOffs signOff)
+    public async Task confess(string message, SocketUser user, string signoff)
     {
-        string signed = "";
-        switch (signOff)
-        {
-            case Confession.SignOffs.Anon:
-                signed = "- Anon";
-                break;
-            case Confession.SignOffs.Secret_Admirer:
-                signed = "- your *secret* admirer";
-                break;
-            case Confession.SignOffs.You_Know_Who:
-                signed = "- *you know who*";
-                break;
-            case Confession.SignOffs.Guess:
-                signed = "- guess who!";
-                break;
-            case Confession.SignOffs.FBI:
-                signed = "- The FBI ... (not actually)";
-                break;
-            case Confession.SignOffs.Your_Dad:
-                signed = "- your father ... you thought";
-                break;
-        }
-
         if (user.IsBot)
         {
             await RespondAsync(text: "❌ Sorry, but no sending messages to bots.", ephemeral: true);
         }
         else
         {
-            await user.SendMessageAsync($"{message} {signed}");
-            await RespondAsync(text: $"✉️ Your message has been sent!\nMessage: **{message}** was sent to **{user.Username}**", ephemeral: true);
+            await user.SendMessageAsync($"{message} - {signoff}");
+            await RespondAsync(text: $"✉️ Your message has been sent!\nMessage: **{message} - {signoff}** was sent to **{user.Username}**", ephemeral: true);
         }
     }
 
