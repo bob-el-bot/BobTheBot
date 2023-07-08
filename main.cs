@@ -55,8 +55,11 @@ public static class Bot
 
         timer = new Timer(async x =>
         {
-            await Client.SetGameAsync(statuses[index], null, ActivityType.Playing);
-            index = index + 1 == statuses.Length ? 0 : index + 1;
+            if (Client.ConnectionState == ConnectionState.Connected)
+            {
+                await Client.SetGameAsync(statuses[index], null, ActivityType.Playing);
+                index = index + 1 == statuses.Length ? 0 : index + 1;
+            }
         }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(16));
 
         // Update Top.GG stats.
