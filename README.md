@@ -13,6 +13,8 @@
 <a href="https://top.gg/bot/705680059809398804/vote">Vote For Bob</a>
 <span>|
 <a href="https://top.gg/bot/705680059809398804">Write a Review</a>
+<span>|
+<a href="https://bobthebot.net">Visit Bob's Website</a>
 
 </div>
 
