@@ -8,7 +8,11 @@
 
 <a href="https://discord.com/oauth2/authorize?client_id=705680059809398804&permissions=1110719392886&scope=bot%20applications.commands">Invite</a>
 <span>|
+<a href="https://discord.com/invite/HvGMRZD8jQ">The Official Bob Server</a>
+<span>|
 <a href="https://github.com/Quantam-Studios/BobTheBot#all-commands">See Commands</a>
+<span>|
+<a href="https://bobthebot.net">Visit Bob's Website</a>
 <span>|
 <a href="https://top.gg/bot/705680059809398804/vote">Vote For Bob</a>
 <span>|
@@ -68,4 +72,13 @@ Bob runs on a Raspberry Pi 4 running Raspberry Pi OS Lite. This enables a lot of
 
 # Framework
 This bot is written with the [Discord.NET](https://github.com/discord-net/Discord.Net) framework.
+
+# Request Deletion of Data
+You may DM `vorlon.` or email `quantamstudios@gmail.com` to request your data is deleted. Please provide your, and user ID whe doing so.
+
+# Privacy Policy
+View the [Privacy Policy](https://github.com/bob-el-bot/BobTheBot/blob/main/PRIVACY.md).
+
+# Terms of Service
+View the [Terms of Service](https://github.com/bob-el-bot/BobTheBot/blob/main/TOS.md).
 
