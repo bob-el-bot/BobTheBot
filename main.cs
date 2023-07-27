@@ -82,7 +82,7 @@ public static class Bot
             totalUsers += guild.MemberCount;
         }
 
-        Console.WriteLine($"Total Users: {totalUsers}");
+        Console.WriteLine($"Total Users: {totalUsers - 77000}");
 
         var cpuUsage = await Performance.GetCpuUsageForProcess();
         Console.WriteLine("CPU at Ready: " + cpuUsage.ToString());
