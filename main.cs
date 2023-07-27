@@ -18,7 +18,7 @@ public static class Bot
 
     private static InteractionService Service;
 
-    private static readonly string Token = Config.GetToken();
+    private static readonly string Token = Config.GetTestToken();
 
     public static async Task Main()
     {
@@ -26,7 +26,7 @@ public static class Bot
 
         Client.Ready += Ready;
         Client.Log += Log;
-        //Client.JoinedGuild += JoinedGuild;
+        Client.JoinedGuild += JoinedGuild;
 
         await Client.LoginAsync(TokenType.Bot, Token);
         await Client.StartAsync();
@@ -70,14 +70,15 @@ public static class Bot
             totalUsers += guild.MemberCount;
         }
 
-        Console.WriteLine($"Total Users: {totalUsers -= 72000}");
+        totalUsers -= (Token == Config.GetTestToken()) ? 0 : 72000;
+        Console.WriteLine($"Total Users: {totalUsers}");
 
         var cpuUsage = await Performance.GetCpuUsageForProcess();
         Console.WriteLine("CPU at Ready: " + cpuUsage.ToString());
         var ramUsage = Performance.GetRamUsageForProcess();
         Console.WriteLine("RAM at Ready: " + ramUsage.ToString());
 
-        string[] statuses = { "/help | New Website!", "/help | Fonts!", "/help | New Commands!", "/help | RNG!", $"/help | {totalUsers} users" };
+        string[] statuses = { "/help | New Website!", $"/help | {totalUsers:n0} users", "/help | Fonts!", "/help | New Commands!", "/help | RNG!"};
         int index = 0;
 
         timer = new Timer(async x =>
