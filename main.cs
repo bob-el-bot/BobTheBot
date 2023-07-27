@@ -90,36 +90,39 @@ public static class Bot
         }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(16));
     }
 
-    // private static async Task JoinedGuild(SocketGuild guild)
-    // {
-    //     Random random = new Random();
-    //     string[] greetings = { "G'day, I am Bob!", "Hello there, I'm Bob!", "Thanks for the invite, my name is Bob!" };
+    private static async Task JoinedGuild(SocketGuild guild)
+    {
+        // Update user count
+        totalUsers += guild.MemberCount;
 
-    //     string instructions = "I can do a lot of things now, but I also receive updates almost daily. If you want to see my newest features use `/new`. If you want to learn about all of my commands use `/help` to get sent a list via DM. With that, I look forward to serving you all 🥳!";
+        // Random random = new Random();
+        // string[] greetings = { "G'day, I am Bob!", "Hello there, I'm Bob!", "Thanks for the invite, my name is Bob!" };
 
-    //     var embed = new Discord.EmbedBuilder
-    //     {
-    //         Title = "👋 " + greetings[random.Next(0, greetings.Length)],
-    //         Description = instructions,
-    //         Color = new Discord.Color(6689298)
-    //     };
+        // string instructions = "I can do a lot of things now, but I also receive updates almost daily. If you want to see my newest features use `/new`. If you want to learn about all of my commands use `/help` to get sent a list via DM. With that, I look forward to serving you all 🥳!";
 
-    //     try
-    //     {
-    //         var TextChannels = guild.Channels.OfType<SocketTextChannel>().ToArray();
+        // var embed = new Discord.EmbedBuilder
+        // {
+        //     Title = "👋 " + greetings[random.Next(0, greetings.Length)],
+        //     Description = instructions,
+        //     Color = new Discord.Color(6689298)
+        // };
 
-    //         SocketTextChannel DefaultChannel = TextChannels
-    //                 .Where(c => guild.CurrentUser.GetPermissions(c).SendMessages && guild.CurrentUser.GetPermissions(c).ViewChannel)
-    //                 .OrderBy(c => c.Position)
-    //                 .First();
+        // try
+        // {
+        //     var TextChannels = guild.Channels.OfType<SocketTextChannel>().ToArray();
 
-    //         await DefaultChannel.SendMessageAsync(embed: embed.Build());
-    //     } 
-    //     catch(Exception e)
-    //     {
-    //         Console.WriteLine(e);
-    //     }
-    // }
+        //     SocketTextChannel DefaultChannel = TextChannels
+        //             .Where(c => guild.CurrentUser.GetPermissions(c).SendMessages && guild.CurrentUser.GetPermissions(c).ViewChannel)
+        //             .OrderBy(c => c.Position)
+        //             .First();
+
+        //     await DefaultChannel.SendMessageAsync(embed: embed.Build());
+        // } 
+        // catch(Exception e)
+        // {
+        //     Console.WriteLine(e);
+        // }
+    }
 
     private static async Task InteractionCreated(SocketInteraction interaction)
     {
