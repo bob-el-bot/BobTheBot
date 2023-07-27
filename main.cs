@@ -151,8 +151,8 @@ public static class Bot
                     await ctx.Interaction.FollowupAsync("❌ Invalid number or arguments");
                     break;
                 case InteractionCommandError.Exception:
-                    await ctx.Interaction.FollowupAsync($"❌ Command exception: {res.ErrorReason}");
-                    await ctx.Interaction.FollowupAsync("This might be because the server IP needs to be changed.");
+                    await ctx.Interaction.FollowupAsync($"❌ Something went wrong...\n- Try again later.\n- Join Bob's support server: https://discord.gg/HvGMRZD8jQ");
+                    Console.WriteLine($"Error: {res.ErrorReason}");
                     break;
                 case InteractionCommandError.Unsuccessful:
                     await ctx.Interaction.FollowupAsync("❌ Command could not be executed");
