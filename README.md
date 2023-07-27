@@ -4,13 +4,13 @@
     <img src="https://skillicons.dev/icons?i=cs,net,raspberrypi,discord">
 <p>
 
-<p>A bot for 🎲 RNG, new 📜 fonts, 🔒 encryption, and ✨ more! Currently serving 4,000+ users!</p>
+<p>A bot for 🎲 RNG, new 📜 fonts, 🔒 encryption, and ✨ more! Currently serving 8,000+ users!</p>
 
 <a href="https://discord.com/oauth2/authorize?client_id=705680059809398804&permissions=1110719392886&scope=bot%20applications.commands">Invite</a>
 <span>|
-<a href="https://discord.com/invite/HvGMRZD8jQ">The Official Bob Server</a>
+<a href="https://discord.com/invite/HvGMRZD8jQ">Bob's Official Server</a>
 <span>|
-<a href="https://github.com/Quantam-Studios/BobTheBot#all-commands">See Commands</a>
+<a href="https://github.com/bob-el-bot/BobTheBot#all-commands">See Commands</a>
 <span>|
 <a href="https://bobthebot.net">Visit Bob's Website</a>
 <span>|
@@ -49,7 +49,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/fonts [text] [font]` Change your text to a different font.
     - `[font]` choices: 𝖒𝖊𝖉𝖎𝖊𝖛𝖆𝖑, 𝓯𝓪𝓷𝓬𝔂, 𝕠𝕦𝕥𝕝𝕚𝕟𝕖𝕕, s̷l̷̷a̷s̷h̷e̷d̷, and 🄱🄾🅇🄴🄳.
 - `/encrypt [message] [cipher]` Change text into a cipher.
-    - `[cipher]` choices: Caesar, A1Z26, Atbash
+    - `[cipher]` choices: Caesar, A1Z26, Atbash, Morse Code
 - `/confess [message] [user] [signoff]` Have Bob DM a user a message.
 - `/poll [prompt] [option]*4` Create a poll.
 - `/ship [user]*2` See how good of a match 2 users are.
