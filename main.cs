@@ -18,7 +18,7 @@ public static class Bot
 
     private static InteractionService Service;
 
-    private static readonly string Token = Config.GetToken();
+    private static readonly string Token = Config.GetTestToken();
 
     public static async Task Main()
     {
@@ -35,6 +35,7 @@ public static class Bot
     }
 
     private static Timer timer;
+    private static int totalUsers = 0;
 
     private static async Task Ready()
     {
@@ -50,18 +51,6 @@ public static class Bot
         Client.InteractionCreated += InteractionCreated;
         Service.SlashCommandExecuted += SlashCommandResulted;
 
-        string[] statuses = { "/help | New Website!", "/help | Fonts!", "/help | New Commands!", "/help | RNG!", "/help | New Games!", "/help | 4,000+ users" };
-        int index = 0;
-
-        timer = new Timer(async x =>
-        {
-            if (Client.ConnectionState == ConnectionState.Connected)
-            {
-                await Client.SetGameAsync(statuses[index], null, ActivityType.Playing);
-                index = index + 1 == statuses.Length ? 0 : index + 1;
-            }
-        }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(16));
-
         // Update Top.GG stats.
         if (Token != Config.GetTestToken())
         {
@@ -75,19 +64,30 @@ public static class Bot
         }
 
         // Print the servers bob is in.
-        int totalUsers = 0;
         foreach (var guild in Bot.Client.Guilds)
         {
             Console.WriteLine($"{guild.Name}, {guild.MemberCount}");
             totalUsers += guild.MemberCount;
         }
 
-        Console.WriteLine($"Total Users: {totalUsers - 77000}");
+        Console.WriteLine($"Total Users: {totalUsers -= 72000}");
 
         var cpuUsage = await Performance.GetCpuUsageForProcess();
         Console.WriteLine("CPU at Ready: " + cpuUsage.ToString());
         var ramUsage = Performance.GetRamUsageForProcess();
         Console.WriteLine("RAM at Ready: " + ramUsage.ToString());
+
+        string[] statuses = { "/help | New Website!", "/help | Fonts!", "/help | New Commands!", "/help | RNG!", $"/help | {totalUsers} users" };
+        int index = 0;
+
+        timer = new Timer(async x =>
+        {
+            if (Client.ConnectionState == ConnectionState.Connected)
+            {
+                await Client.SetGameAsync(statuses[index], null, ActivityType.Playing);
+                index = index + 1 == statuses.Length ? 0 : index + 1;
+            }
+        }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(16));
     }
 
     // private static async Task JoinedGuild(SocketGuild guild)
