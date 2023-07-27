@@ -655,7 +655,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     [EnabledInDm(true)]
     [SlashCommand("encrypt", "Bob will encrypt your message with a cipher of your choice.")]
     public async Task Encrypt([Summary("message", "the text you want to encrypt")] string message, Encryption.CipherTypes cipher)
-    {
+    {   
         string finalText = "";
 
         switch (cipher)
@@ -668,6 +668,9 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
                 break;
             case Encryption.CipherTypes.A1Z26:
                 finalText = Encryption.A1Z26(message);
+                break;
+            case Encryption.CipherTypes.Morse:
+                finalText = Encryption.Morse(message);
                 break;
         }
 

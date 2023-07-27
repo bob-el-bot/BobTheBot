@@ -1,14 +1,26 @@
+using Discord.Interactions;
+
 public class Encryption
 {
     public enum CipherTypes
     {
+        [ChoiceDisplay("Atbash")]
         Atbash,
+        [ChoiceDisplay("Caesar")]
         Caesar,
-        A1Z26
+        [ChoiceDisplay("A1-Z26")]
+        A1Z26,
+        [ChoiceDisplay("Morse Code")]
+        Morse
     }
 
     public static string alpha = "abcdefghijklmnopqrstuvwxyz";
     public static string ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    public static string num = "0123456789";
+    public static (string, string)[] morseAlpha = { ("a", ".-"), ("b", "-..."), ("c", "-.-."), ("d", "-.."), ("e", "."), ("f", "..-."), ("g", "--."), ("h", "...."), ("i", ".."), ("j", ".---"), ("k", "-.-"), ("l", ".-.."), ("m", "--"), ("n", "-."), ("o", "---"), ("p", ".--."), ("q", "--.-"), ("r", ".-."), ("s", "..."), ("t", "-"), ("u", "..-"), ("v", "...-"), ("w", ".--"), ("x", "-..-"), ("y", "-.--"), ("z", "--..") };
+    public static (int, string)[] morseNum = { (0, "-----"), (1, ".----"), (2, "..---"), (3, "...--"), (4, "....-"), (5, "....."), (6, "-...."), (7, "--..."), (8, "---.."), (9, "----.") };
+    public static (char, string)[] morseSym = { ('.', ".-.-.-"), (',', "--..--"), ('\'', ".----."), ('?', "..--.."), ('!', "-.-.--"), ('/', "-..-."), ('(', "-.--."), (')', "-.--.-"), ('&', ".-..."), (':', "---..."), (';', "-.-.-."), ('=', "-...-"), ('+', ".-.-."), ('-', "-....-"), ('_', "..--.-"), ('"', ".-..-."), ('$', "...-..-"), ('@', ".--.-.") };
+    public static string morseAcceptedSym = ".,'?!/()&:;=+-_\"$@";
 
     public static string Atbash(string text)
     {
@@ -21,7 +33,7 @@ public class Encryption
                 int finalVal = 25 - alpha.IndexOf(letter);
                 finalText += alpha[finalVal];
             }
-            else if(ALPHA.IndexOf(letter) > -1)
+            else if (ALPHA.IndexOf(letter) > -1)
             {
                 int finalVal = 25 - ALPHA.IndexOf(letter);
                 finalText += ALPHA[finalVal];
@@ -49,7 +61,7 @@ public class Encryption
                 else
                     finalText += alpha[alpha.IndexOf(letter) + shift - 26];
             }
-            else if(ALPHA.IndexOf(letter) > -1)
+            else if (ALPHA.IndexOf(letter) > -1)
             {
                 if (ALPHA.IndexOf(letter) + shift <= 25)
                     finalText += ALPHA[ALPHA.IndexOf(letter) + shift];
@@ -90,5 +102,49 @@ public class Encryption
         }
 
         return $"🔒 {finalText}";
+    }
+
+    public static string Morse(string text)
+    {
+        text.ToLower();
+        string finalText = "";
+
+        foreach (char character in text)
+        {
+            if (alpha.IndexOf(character) > -1) // alphabet
+            {
+                for (int i = 0; i < morseAlpha.Length; i++)
+                {
+                    if (character.ToString() == morseAlpha[i].Item1)
+                        finalText += "  " + morseAlpha[i].Item2;
+                }
+            }
+            else if (num.IndexOf(character) > -1) //numbers
+            {
+                for (int i = 0; i < morseNum.Length; i++)
+                {
+                    if (character == morseNum[i].Item1)
+                        finalText += "  " + morseNum[i].Item2;
+                }
+            }
+            else if (morseAcceptedSym.IndexOf(character) > -1) // symbols
+            {
+                for (int i = 0; i < morseSym.Length; i++)
+                {
+                    if (character == morseSym[i].Item1)
+                        finalText += "  " + morseSym[i].Item2;
+                }
+            }
+            else if (character == ' ') // spaces
+            {
+                finalText += "    ";
+            }
+            else // other
+            {
+                finalText += " " + character;
+            }
+        }
+
+        return $"🔒{finalText}";
     }
 }
