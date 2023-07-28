@@ -36,14 +36,15 @@ jobs:
         fi
 
     - name: Comment on pull request
+      if: ${{ always() }}
       uses: actions/github-script@v4
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
-          const prContext = github.context;
-          const prNumber = prContext.payload.pull_request.number;
-          const owner = prContext.repo.owner;
-          const repo = prContext.repo.repo;
+          const prContext = JSON.parse('${{ toJSON(github) }}');
+          const prNumber = prContext.context.payload.pull_request.number;
+          const owner = prContext.context.repo.owner;
+          const repo = prContext.context.repo.repo;
           const comment = "${{ steps.search.outputs.comment }}";
 
           const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
