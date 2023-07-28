@@ -41,16 +41,19 @@ jobs:
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
-          const prNumber = github.context.payload.pull_request.number;
+          const prNumber = github.context.payload.pull_request?.number;
           const owner = github.context.repo.owner;
           const repo = github.context.repo.repo;
           const comment = process.env.COMMENT;
 
-          const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
-
-          octokit.issues.createComment({
-            owner: owner,
-            repo: repo,
-            issue_number: prNumber,
-            body: comment
-          });
+          if (prNumber) {
+            const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
+            octokit.issues.createComment({
+              owner: owner,
+              repo: repo,
+              issue_number: prNumber,
+              body: comment
+            });
+          } else {
+            console.log("Cannot retrieve the pull request number. Skipping comment.");
+          }
