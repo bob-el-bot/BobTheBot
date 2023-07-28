@@ -1,0 +1,23 @@
+name: Switch From Test Token
+on:
+  pull_request:
+    branches:
+    - main
+jobs:
+  correctToken:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - run: -exec grep -l "private static readonly string Token = Config.GetTTestoken();" {} \;
+        id: result
+        if: result == "0"
+      - uses: mshick/add-pr-comment@v2
+        with:
+          message: |
+            **Test token in use!**
+          
+      
+      
+ 
+
