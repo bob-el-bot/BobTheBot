@@ -1,21 +1,75 @@
-name: Switch From Test Token
+name: Search and Comment
+
 on:
   pull_request:
-    branches:
-    - main
+    types: [opened, synchronize]
+
 jobs:
-  correctToken:
+  search_and_comment:
     runs-on: ubuntu-latest
-    permissions:
-      pull-requests: write
+
     steps:
-      - run: -exec grep -l "private static readonly string Token = Config.GetTTestoken();" {} \;
-        id: result
-        if: result == "0"
-      - uses: mshick/add-pr-comment@v2
-        with:
-          message: |
-            **Test token in use!**
+    - name: Checkout code
+      uses: actions/checkout@v2
+
+    - name: Search for string and comment on pull request
+      run: |
+        # Set the file path and the search string
+        file_path="main.cs"
+        search_string="Config.GetToken();"
+
+        # Check if the search string exists in the file
+        if grep -q "$search_string" "$file_path"; then
+          echo "The string '$search_string' was found in the file."
+
+          # Comment on the pull request
+          comment="Hey there! The test-token is **still** in use!"
+          echo $comment
+          echo "::set-output name=comment::$comment"
+        else
+          echo "The string '$search_string' was not found in the file."
+        fi
+
+    - name: Comment on pull request
+      if: ${{ steps.search_and_comment.outputs.comment }}
+      uses: actions/github-script@v4
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        script: |
+          const context = github.context;
+          const prNumber = context.payload.pull_request.number;
+          const owner = context.repo.owner;
+          const repo = context.repo.repo;
+          const comment = "${{ steps.search_and_comment.outputs.comment }}";
+
+          const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
+
+          octokit.issues.createComment({
+            owner: owner,
+            repo: repo,
+            issue_number: prNumber,
+            body: comment
+          });
+
+
+# name: Switch From Test Token
+# on:
+#   pull_request:
+#     branches:
+#     - main
+# jobs:
+#   correctToken:
+#     runs-on: ubuntu-latest
+#     permissions:
+#       pull-requests: write
+#     steps:
+#       - run: -exec grep -l "private static readonly string Token = Config.GetTTestoken();" {} \;
+#         id: result
+#         if: result == "0"
+#       - uses: mshick/add-pr-comment@v2
+#         with:
+#           message: |
+#             **Test token in use!**
           
       
       
