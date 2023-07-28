@@ -16,22 +16,22 @@ jobs:
       run: |
         # Set the file path and the search string
         file_path="main.cs"
-        search_string="Config.GetToken();"
+        search_string="GetToken();"
 
         # Check if the search string exists in the file
         if grep -q "$search_string" "$file_path"; then
           echo "The string '$search_string' was found in the file."
 
-          # Comment on the pull request
-          comment="Hey there! The test-token is **still** in use!"
-          echo $comment
-          echo "::set-output name=comment::$comment"
+          # Set an environment variable with the comment message
+          greeting="Hello there!"
+          comment="{$greeting} The correct token is in use."
+          echo "comment=$comment" >> $GITHUB_ENV
         else
           echo "The string '$search_string' was not found in the file."
         fi
 
     - name: Comment on pull request
-      if: ${{ steps.search_and_comment.outputs.comment }}
+      if: env.comment
       uses: actions/github-script@v4
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -40,7 +40,7 @@ jobs:
           const prNumber = context.payload.pull_request.number;
           const owner = context.repo.owner;
           const repo = context.repo.repo;
-          const comment = "${{ steps.search_and_comment.outputs.comment }}";
+          const comment = process.env.comment;
 
           const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
 
@@ -50,28 +50,3 @@ jobs:
             issue_number: prNumber,
             body: comment
           });
-
-
-# name: Switch From Test Token
-# on:
-#   pull_request:
-#     branches:
-#     - main
-# jobs:
-#   correctToken:
-#     runs-on: ubuntu-latest
-#     permissions:
-#       pull-requests: write
-#     steps:
-#       - run: -exec grep -l "private static readonly string Token = Config.GetTTestoken();" {} \;
-#         id: result
-#         if: result == "0"
-#       - uses: mshick/add-pr-comment@v2
-#         with:
-#           message: |
-#             **Test token in use!**
-          
-      
-      
- 
-
