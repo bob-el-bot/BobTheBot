@@ -12,7 +12,8 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v2
 
-    - name: Search for string and comment on pull request
+    - name: Search for string and set output if found
+      id: search
       run: |
         # Set the file path and the search string
         file_path="main.cs"
@@ -22,16 +23,19 @@ jobs:
         if grep -q "$search_string" "$file_path"; then
           echo "The string '$search_string' was found in the file."
 
-          # Set an environment variable with the comment message
+          # Set the output variable with the comment message
           greeting="Hello there!"
           comment="{$greeting} The correct token is in use."
-          echo "comment=$comment" >> $GITHUB_ENV
+          echo "::set-output name=comment::$comment"
         else
           echo "The string '$search_string' was not found in the file."
+
+          # Set the output variable with the comment message
+          comment="The test token is in use!"
+          echo "::set-output name=comment::$comment"
         fi
 
     - name: Comment on pull request
-      if: env.comment
       uses: actions/github-script@v4
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -40,7 +44,7 @@ jobs:
           const prNumber = prContext.payload.pull_request.number;
           const owner = prContext.repo.owner;
           const repo = prContext.repo.repo;
-          const comment = process.env.comment;
+          const comment = "${{ steps.search.outputs.comment }}";
 
           const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
 
