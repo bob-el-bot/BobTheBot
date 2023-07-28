@@ -60,7 +60,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         }
 
         await RespondAsync(text: $"🤗🫂 {response}" + "!");
-    }    
+    }
 
     [EnabledInDm(true)]
     [SlashCommand("rock-paper-scissors", "Play a game of Rock Paper Scissors with Bob.")]
@@ -172,7 +172,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         var game = MasterMindGeneral.currentGames.Find(game => game.id == Context.Interaction.ChannelId);
 
         // Set message
-        var component = (SocketMessageComponent) Context.Interaction;
+        var component = (SocketMessageComponent)Context.Interaction;
         game.message = component.Message;
 
         // Set startUser
@@ -194,7 +194,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         {
             Label = "Forfeit",
             Style = Discord.ButtonStyle.Danger,
-            CustomId = "quit"          
+            CustomId = "quit"
         };
         var builder = new ComponentBuilder().WithButton(button);
 
@@ -307,7 +307,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
         await RespondAsync(text: $"🤓 {factFormatted}");
     }
-       
+
     [EnabledInDm(false)]
     [SlashCommand("dad-joke", "Bob will tell you a dad joke.")]
     public async Task DadJoke()
@@ -335,7 +335,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
     [EnabledInDm(false)]
     [SlashCommand("quote", "Bob will tell you a quote.")]
-    public async Task Quote([Summary("prompt", "use /quote-prompts to see all valid prompts")]  string prompt = "")
+    public async Task Quote([Summary("prompt", "use /quote-prompts to see all valid prompts")] string prompt = "")
     {
         // Formulate Request
         var httpClient = new HttpClient();
@@ -426,7 +426,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
             Color = new Discord.Color(9261821),
         };
 
-        embed.AddField(name: "🗒️ Creators Notes", value: "- Bob has a place on the 🌐 web! [bobthebot.net](https://bobthebot.net)\n- Stay 📺 tuned for some awesome updates!\n- Bob has a new 😎 style, specifically `#8D52FD`", inline: false).AddField(name: "✨ Latest Update", value: commitMessage, inline: true).AddField(name: ":calendar_spiral: Date", value: $"`{commitDate}`", inline: true).AddField(name: "🔮 See What's In the Works", value: "https://github.com/users/Quantam-Studios/projects/3/views/1");
+        embed.AddField(name: "🗒️ Creators Notes", value: "- Bob has a place on the 🌐 web! [bobthebot.net](https://bobthebot.net)\n- Stay 📺 tuned for some awesome updates!\n- Bob has a new 😎 style, specifically `#8D52FD`", inline: false).AddField(name: "✨ Latest Update", value: commitMessage, inline: true).AddField(name: ":calendar_spiral: Date", value: $"`{commitDate}`", inline: true).AddField(name: "🔮 See What's In the Works", value: "[Road Map](https://github.com/users/Quantam-Studios/projects/3/views/1)");
 
         await RespondAsync(embed: embed.Build());
     }
@@ -655,7 +655,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     [EnabledInDm(true)]
     [SlashCommand("encrypt", "Bob will encrypt your message with a cipher of your choice.")]
     public async Task Encrypt([Summary("message", "the text you want to encrypt")] string message, Encryption.CipherTypes cipher)
-    {   
+    {
         string finalText = "";
 
         switch (cipher)
