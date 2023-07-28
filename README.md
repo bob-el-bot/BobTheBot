@@ -65,9 +65,6 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/suggest` Join Bob's official server and share your ideas!
 
 # How is Bob Hosted?
-> **Note**
-This is subject to change as the usage of Bob has begun to push the limits of a Raspberry Pi 4. Bob will probably be migrated to Azure.
-
 Bob runs on a Raspberry Pi 4 running Raspberry Pi OS Lite. This enables a lot of freedom in terms of feature sets because Bob no longer relies on [replit](replit.com). Replit was originally used, but after an outrageous price increase it was no longer viable.
 
 # Framework
