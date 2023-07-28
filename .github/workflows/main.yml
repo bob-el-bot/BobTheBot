@@ -36,10 +36,10 @@ jobs:
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
-          const context = github.context;
-          const prNumber = context.payload.pull_request.number;
-          const owner = context.repo.owner;
-          const repo = context.repo.repo;
+          const prContext = github.context;
+          const prNumber = prContext.payload.pull_request.number;
+          const owner = prContext.repo.owner;
+          const repo = prContext.repo.repo;
           const comment = process.env.comment;
 
           const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
