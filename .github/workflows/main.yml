@@ -26,26 +26,26 @@ jobs:
           # Set the output variable with the comment message
           greeting="Hello there!"
           comment="{$greeting} The correct token is in use."
-          echo "::set-output name=comment::$comment"
+          echo "COMMENT::$comment" >> $GITHUB_ENV
         else
           echo "The string '$search_string' was not found in the file."
 
           # Set the output variable with the comment message
           comment="The test token is in use!"
-          echo "::set-output name=comment::$comment"
+          echo "COMMENT::$comment" >> $GITHUB_ENV
         fi
 
     - name: Comment on pull request
-      if: ${{ always() }}
+      if: env.COMMENT
       uses: actions/github-script@v4
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
-          const prContext = JSON.parse('${{ toJSON(github) }}');
-          const prNumber = prContext.context.payload.pull_request.number;
-          const owner = prContext.context.repo.owner;
-          const repo = prContext.context.repo.repo;
-          const comment = "${{ steps.search.outputs.comment }}";
+          const prContext = github.context;
+          const prNumber = prContext.payload.pull_request.number;
+          const owner = prContext.repo.owner;
+          const repo = prContext.repo.repo;
+          const comment = process.env.COMMENT;
 
           const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
 
