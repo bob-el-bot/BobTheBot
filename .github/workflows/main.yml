@@ -37,16 +37,16 @@ jobs:
 
     - name: Comment on pull request
       if: env.COMMENT
-      uses: actions/github-script@v3
+      uses: actions/github-script@v4
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
-          const prNumber = process.env.GITHUB_REF.split('/').pop();
-          const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
-          const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
+          const prNumber = context.payload.pull_request.number;
+          const owner = context.repo.owner;
+          const repo = context.repo.repo;
           const comment = process.env.COMMENT;
 
-          const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
+          const octokit = context.github;
 
           octokit.issues.createComment({
             owner: owner,
