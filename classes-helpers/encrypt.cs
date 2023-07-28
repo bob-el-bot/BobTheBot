@@ -116,7 +116,7 @@ public class Encryption
                 for (int i = 0; i < morseAlpha.Length; i++)
                 {
                     if (character.ToString() == morseAlpha[i].Item1)
-                        finalText += "  " + morseAlpha[i].Item2;
+                        finalText += " " + morseAlpha[i].Item2;
                 }
             }
             else if (num.IndexOf(character) > -1) //numbers
@@ -124,7 +124,7 @@ public class Encryption
                 for (int i = 0; i < morseNum.Length; i++)
                 {
                     if (character == morseNum[i].Item1)
-                        finalText += "  " + morseNum[i].Item2;
+                        finalText += " " + morseNum[i].Item2;
                 }
             }
             else if (morseAcceptedSym.IndexOf(character) > -1) // symbols
@@ -132,12 +132,12 @@ public class Encryption
                 for (int i = 0; i < morseSym.Length; i++)
                 {
                     if (character == morseSym[i].Item1)
-                        finalText += "  " + morseSym[i].Item2;
+                        finalText += " " + morseSym[i].Item2;
                 }
             }
             else if (character == ' ') // spaces
             {
-                finalText += "    ";
+                finalText += "   ";
             }
             else // other
             {
