@@ -1,5 +1,5 @@
 <div align="center">
-    <img style="border-radius: 50%;" src="BobLogo.png">
+    <img src="BobLogo.png">
 <p>
     <img src="https://skillicons.dev/icons?i=cs,net,raspberrypi,discord">
 <p>
