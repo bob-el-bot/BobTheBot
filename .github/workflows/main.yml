@@ -26,13 +26,13 @@ jobs:
           # Set the output variable with the comment message
           greeting="Hello there!"
           comment="{$greeting} The correct token is in use."
-          echo "COMMENT::$comment" >> $GITHUB_ENV
+          echo "COMMENT=$comment" >> $GITHUB_ENV
         else
           echo "The string '$search_string' was not found in the file."
 
           # Set the output variable with the comment message
           comment="The test token is in use!"
-          echo "COMMENT::$comment" >> $GITHUB_ENV
+          echo "COMMENT=$comment" >> $GITHUB_ENV
         fi
 
     - name: Comment on pull request
