@@ -74,7 +74,7 @@ Bob runs on a Raspberry Pi 4 running Raspberry Pi OS Lite. This enables a lot of
 This bot is written with the [Discord.NET](https://github.com/discord-net/Discord.Net) framework.
 
 # Request Deletion of Data
-You may DM `vorlon.` or email `quantamstudios@gmail.com` to request your data is deleted. Please provide your, and user ID whe doing so.
+You may DM `vorlon.` or email `quantamstudios@gmail.com` to request your data be deleted. Please provide your username, and user ID when doing so.
 
 # Privacy Policy
 View the [Privacy Policy](https://github.com/bob-el-bot/BobTheBot/blob/main/PRIVACY.md).
