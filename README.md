@@ -27,6 +27,9 @@ The order is irrelevant, and features are added from one of the to do sections a
 
 - [See what's in the works!](https://github.com/users/Quantam-Studios/projects/3)
 
+### Suggestions
+Have an idea? Share it on the `feature-ideas` channel on [Bob's official server](https://discord.com/invite/HvGMRZD8jQ), for it to be considered.
+
 # All Commands
 Bob The Bot has many features all of which are `/slash` commands for ease of use!
 
