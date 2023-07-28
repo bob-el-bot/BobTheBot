@@ -37,23 +37,20 @@ jobs:
 
     - name: Comment on pull request
       if: env.COMMENT
-      uses: actions/github-script@v4
+      uses: actions/github-script@v3
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         script: |
-          const prNumber = github.context.payload.pull_request?.number;
-          const owner = github.context.repo.owner;
-          const repo = github.context.repo.repo;
+          const prNumber = process.env.GITHUB_REF.split('/').pop();
+          const owner = process.env.GITHUB_REPOSITORY.split('/')[0];
+          const repo = process.env.GITHUB_REPOSITORY.split('/')[1];
           const comment = process.env.COMMENT;
 
-          if (prNumber) {
-            const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
-            octokit.issues.createComment({
-              owner: owner,
-              repo: repo,
-              issue_number: prNumber,
-              body: comment
-            });
-          } else {
-            console.log("Cannot retrieve the pull request number. Skipping comment.");
-          }
+          const octokit = github.getOctokit(process.env.GITHUB_TOKEN);
+
+          octokit.issues.createComment({
+            owner: owner,
+            repo: repo,
+            issue_number: prNumber,
+            body: comment
+          });
