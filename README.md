@@ -1,5 +1,5 @@
 <div align="center">
-    <img style="border-radius: 50%;" src="BobLogo.png">
+    <img src="BobLogo.png">
 <p>
     <img src="https://skillicons.dev/icons?i=cs,net,raspberrypi,discord">
 <p>
@@ -26,6 +26,9 @@ Bob is constantly being updated, and improved! A road map of updates can be foun
 The order is irrelevant, and features are added from one of the to do sections as the developer wants.
 
 - [See what's in the works!](https://github.com/users/Quantam-Studios/projects/3)
+
+### Suggestions
+Have an idea? Share it on the `feature-ideas` channel on [Bob's official server](https://discord.com/invite/HvGMRZD8jQ), for it to be considered.
 
 # All Commands
 Bob The Bot has many features all of which are `/slash` commands for ease of use!
@@ -65,16 +68,13 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/suggest` Join Bob's official server and share your ideas!
 
 # How is Bob Hosted?
-> **Note**
-This is subject to change as the usage of Bob has begun to push the limits of a Raspberry Pi 4. Bob will probably be migrated to Azure.
-
 Bob runs on a Raspberry Pi 4 running Raspberry Pi OS Lite. This enables a lot of freedom in terms of feature sets because Bob no longer relies on [replit](replit.com). Replit was originally used, but after an outrageous price increase it was no longer viable.
 
 # Framework
 This bot is written with the [Discord.NET](https://github.com/discord-net/Discord.Net) framework.
 
 # Request Deletion of Data
-You may DM `vorlon.` or email `quantamstudios@gmail.com` to request your data is deleted. Please provide your, and user ID whe doing so.
+You may DM `vorlon.` or email `quantamstudios@gmail.com` to request your data be deleted. Please provide your username, and user ID when doing so.
 
 # Privacy Policy
 View the [Privacy Policy](https://github.com/bob-el-bot/BobTheBot/blob/main/PRIVACY.md).

@@ -27,6 +27,7 @@ public static class Bot
         Client.Ready += Ready;
         Client.Log += Log;
         Client.JoinedGuild += JoinedGuild;
+        Client.LeftGuild += LeftGuild;
 
         await Client.LoginAsync(TokenType.Bot, Token);
         await Client.StartAsync();
@@ -123,6 +124,12 @@ public static class Bot
         // {
         //     Console.WriteLine(e);
         // }
+    }
+
+    private static async Task LeftGuild(SocketGuild guild)
+    {
+        // Update user count
+        totalUsers -= guild.MemberCount;
     }
 
     private static async Task InteractionCreated(SocketInteraction interaction)
