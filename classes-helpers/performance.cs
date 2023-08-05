@@ -16,7 +16,7 @@ public class Performance
         var totalMsPassed = (endTime - startTime).TotalMilliseconds;
         var cpuUsageTotal = cpuUsedMs / (Environment.ProcessorCount * totalMsPassed);
 
-        return cpuUsageTotal * 100f;
+        return Math.Round(cpuUsageTotal * 100f, 2);
     }
 
     public static double GetRamUsageForProcess()
@@ -24,6 +24,11 @@ public class Performance
         var ramUsage = Process.GetCurrentProcess().WorkingSet64;
 
         // RAM of RPI in Bytes = 4294967296
-        return (ramUsage / 4294967296f) * 100f;
+        return Math.Round((ramUsage / 4294967296f) * 100f, 2);
+    }
+
+    public static string FormatPerformance(double cpu, double ram)
+    {
+        return $"CPU: {cpu}% | RAM: {ram}%";
     }
 }
