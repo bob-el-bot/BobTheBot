@@ -75,9 +75,9 @@ public static class Bot
         Console.WriteLine($"Total Users: {totalUsers}");
 
         var cpuUsage = await Performance.GetCpuUsageForProcess();
-        Console.WriteLine("CPU at Ready: " + cpuUsage.ToString());
+        Console.WriteLine("CPU at Ready: " + cpuUsage.ToString() + "%");
         var ramUsage = Performance.GetRamUsageForProcess();
-        Console.WriteLine("RAM at Ready: " + ramUsage.ToString());
+        Console.WriteLine("RAM at Ready: " + ramUsage.ToString() + "%");
 
         string[] statuses = { "/help | New Website!", $"/help | {totalUsers:n0} users", "/help | Fonts!", "/help | New Commands!", "/help | RNG!"};
         int index = 0;
@@ -178,7 +178,7 @@ public static class Bot
             var cpuUsage = await Performance.GetCpuUsageForProcess();
             var ramUsage = Performance.GetRamUsageForProcess();
             var Location = ctx.Interaction.GuildId == null ? "a DM" : Client.GetGuild(ulong.Parse(ctx.Interaction.GuildId.ToString())).ToString();
-            Console.WriteLine($"{DateTime.Now:dd/MM. H:mm:ss} CPU: {cpuUsage.ToString()} RAM: {ramUsage.ToString()} Location: {Location} Command: /{info.Name}");
+            Console.WriteLine($"{DateTime.Now:dd/MM. H:mm:ss} | {Performance.FormatPerformance(cpuUsage, ramUsage)} | Location: {Location} | Command: /{info.Name}");
         }
     }
 
