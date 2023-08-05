@@ -383,12 +383,15 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("info", "Learn about Bob.")]
     public async Task Info()
     {
+        var createdAt = Bot.Client.CurrentUser.CreatedAt.ToUnixTimeSeconds();
+        
         var embed = new Discord.EmbedBuilder
         {
             Title = $"Bob's Info",
             Color = new Discord.Color(9261821),
         };
-        embed.AddField(name: "📛 Username", value: $"{Bot.Client.CurrentUser.Username}", inline: true).AddField(name: "🪪 ID", value: $"`{Bot.Client.CurrentUser.Id}`", inline: true).AddField(name: "📈 Server Count", value: $"`{Bot.Client.Guilds.Count:n0}`").AddField(name: ":calendar_spiral: Date Created", value: $"`{Bot.Client.CurrentUser.CreatedAt}`", inline: true).AddField(name: "🌐 Website", value: "[bobthebot.net](https://bobthebot.net)").AddField(name: "⚡ Github Repository", value: "[github.com/bob-el-bot/BobTheBot](https://github.com/bob-el-bot/BobTheBot)").AddField(name: "🏗️ Made With", value: "C#, .NET", inline: true).AddField(name: "📡 Hosted With", value: "Raspberry PI 4", inline: true);
+
+        embed.AddField(name: "📛 Username", value: $"{Bot.Client.CurrentUser.Username}", inline: true).AddField(name: "🪪 ID", value: $"`{Bot.Client.CurrentUser.Id}`", inline: true).AddField(name: "📈 Server Count", value: $"`{Bot.Client.Guilds.Count:n0}`").AddField(name: ":calendar_spiral: Date Created", value: $"<t:{createdAt}:f>", inline: true).AddField(name: "🌐 Website", value: "[bobthebot.net](https://bobthebot.net)").AddField(name: "⚡ Github Repository", value: "[github.com/bob-el-bot/BobTheBot](https://github.com/bob-el-bot/BobTheBot)").AddField(name: "🏗️ Made With", value: "C#, .NET", inline: true).AddField(name: "📡 Hosted With", value: "Raspberry PI 4", inline: true);
 
         await RespondAsync(embed: embed.Build());
     }
@@ -419,6 +422,8 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         var commitMessage = commit["message"].ToString();
         var commitAuthor = JsonNode.Parse(commit["author"].ToString()).AsObject();
         var commitDate = commitAuthor["date"].ToString();
+        // 2023-07-29T03:50:42Z -> unix epoch time
+        var commitDateID = DateTimeOffset.Parse(commitDate).ToUnixTimeSeconds();
 
         var embed = new Discord.EmbedBuilder
         {
@@ -426,7 +431,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
             Color = new Discord.Color(9261821),
         };
 
-        embed.AddField(name: "🗒️ Creators Notes", value: "- Bob has a place on the 🌐 web! [bobthebot.net](https://bobthebot.net)\n- Stay 📺 tuned for some awesome updates!\n- Bob has a new 😎 style, specifically `#8D52FD`", inline: false).AddField(name: "✨ Latest Update", value: commitMessage, inline: true).AddField(name: ":calendar_spiral: Date", value: $"`{commitDate}`", inline: true).AddField(name: "🔮 See What's In the Works", value: "[Road Map](https://github.com/users/Quantam-Studios/projects/3/views/1)");
+        embed.AddField(name: "🗒️ Creators Notes", value: "- Bob has a place on the 🌐 web! [bobthebot.net](https://bobthebot.net)\n- Stay 📺 tuned for some awesome updates!\n- Bob has a new 😎 style, specifically `#8D52FD`", inline: false).AddField(name: "✨ Latest Update", value: commitMessage, inline: true).AddField(name: ":calendar_spiral: Date", value: $"<t:{commitDateID}:f>", inline: true).AddField(name: "🔮 See What's In the Works", value: "[Road Map](https://github.com/users/Quantam-Studios/projects/3/views/1)");
 
         await RespondAsync(embed: embed.Build());
     }
