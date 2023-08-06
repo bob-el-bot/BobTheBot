@@ -581,6 +581,9 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
             case FontConversion.FontTypes.outlined:
                 finalText = FontConversion.Outlined(text);
                 break;
+            case FontConversion.FontTypes.flipped:
+                finalText = FontConversion.Flipped(text);
+                break;
             case FontConversion.FontTypes.boxed:
                 finalText = FontConversion.Boxed(text);
                 break;
