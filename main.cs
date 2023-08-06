@@ -79,7 +79,7 @@ public static class Bot
         var ramUsage = Performance.GetRamUsageForProcess();
         Console.WriteLine("RAM at Ready: " + ramUsage.ToString() + "%");
 
-        string[] statuses = { "/help | New Website!", $"/help | {totalUsers:n0} users", "/help | Fonts!", "/help | New Commands!", "/help | RNG!"};
+        string[] statuses = { "/help | New Website!", $"/help | {totalUsers:n0} users", "/help | Fonts!", "/help | New Commands!", "/help | RNG!" };
         int index = 0;
 
         timer = new Timer(async x =>
@@ -97,33 +97,37 @@ public static class Bot
         // Update user count
         totalUsers += guild.MemberCount;
 
-        // Random random = new Random();
-        // string[] greetings = { "G'day, I am Bob!", "Hello there, I'm Bob!", "Thanks for the invite, my name is Bob!" };
+        Random random = new Random();
+        string[] greetings = { "G'day, I am Bob!", "Hello there, I'm Bob!", "Thanks for the invite, my name is Bob!" };
 
-        // string instructions = "I can do a lot of things now, but I also receive updates almost daily. If you want to see my newest features use `/new`. If you want to learn about all of my commands use `/help` to get sent a list via DM. With that, I look forward to serving you all 🥳!";
+        string instructions = "I can do a lot of things now, but I also receive updates often. If you want to see my newest features use `/new`. If you want to learn about all of my commands use `/help` to get sent a list via DM. With that, I look forward to serving you all 🥳!";
 
-        // var embed = new Discord.EmbedBuilder
-        // {
-        //     Title = "👋 " + greetings[random.Next(0, greetings.Length)],
-        //     Description = instructions,
-        //     Color = new Discord.Color(6689298)
-        // };
+        var embed = new Discord.EmbedBuilder
+        {
+            Title = "👋 " + greetings[random.Next(0, greetings.Length)],
+            Description = instructions,
+            Color = new Discord.Color(9261821)
+        };
 
-        // try
-        // {
-        //     var TextChannels = guild.Channels.OfType<SocketTextChannel>().ToArray();
+        try
+        {
+            var TextChannels = guild.Channels.OfType<SocketTextChannel>().ToArray();
+            SocketTextChannel DefaultChannel = TextChannels.Where(c => (guild.CurrentUser.GetPermissions(c).SendMessages && guild.CurrentUser.GetPermissions(c).ViewChannel) && (c.Name == "chat" || c.Name == "talk" || c.Name == "general")).First();
 
-        //     SocketTextChannel DefaultChannel = TextChannels
-        //             .Where(c => guild.CurrentUser.GetPermissions(c).SendMessages && guild.CurrentUser.GetPermissions(c).ViewChannel)
-        //             .OrderBy(c => c.Position)
-        //             .First();
+            if (DefaultChannel == null)
+            {
+                DefaultChannel = TextChannels
+                        .Where(c => guild.CurrentUser.GetPermissions(c).SendMessages && guild.CurrentUser.GetPermissions(c).ViewChannel)
+                        .OrderBy(c => c.Position)
+                        .First();
+            }
 
-        //     await DefaultChannel.SendMessageAsync(embed: embed.Build());
-        // } 
-        // catch(Exception e)
-        // {
-        //     Console.WriteLine(e);
-        // }
+            await DefaultChannel.SendMessageAsync(embed: embed.Build());
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
     }
 
     private static async Task LeftGuild(SocketGuild guild)
@@ -146,6 +150,8 @@ public static class Bot
         }
     }
 
+    private static readonly ulong ownerID = Config.GetOwnerID();
+
     private static async Task SlashCommandResulted(SlashCommandInfo info, IInteractionContext ctx, IResult res)
     {
         if (!res.IsSuccess)
@@ -164,6 +170,8 @@ public static class Bot
                 case InteractionCommandError.Exception:
                     await ctx.Interaction.FollowupAsync($"❌ Something went wrong...\n- Try again later.\n- Join Bob's support server: https://discord.gg/HvGMRZD8jQ");
                     Console.WriteLine($"Error: {res.ErrorReason}");
+                    SocketUser owner = Bot.Client.GetUser(ownerID);
+                    await owner.SendMessageAsync($"Error: {res.ErrorReason} | Guild: {ctx.Guild} | Command: {info.Name}");
                     break;
                 case InteractionCommandError.Unsuccessful:
                     await ctx.Interaction.FollowupAsync("❌ Command could not be executed");

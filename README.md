@@ -50,7 +50,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 
 ### ✨ Miscellaneous commands: 
 - `/fonts [text] [font]` Change your text to a different font.
-    - `[font]` choices: 𝖒𝖊𝖉𝖎𝖊𝖛𝖆𝖑, 𝓯𝓪𝓷𝓬𝔂, 𝕠𝕦𝕥𝕝𝕚𝕟𝕖𝕕, s̷l̷̷a̷s̷h̷e̷d̷, and 🄱🄾🅇🄴🄳.
+    - `[font]` choices: 𝖒𝖊𝖉𝖎𝖊𝖛𝖆𝖑, 𝓯𝓪𝓷𝓬𝔂, 𝕠𝕦𝕥𝕝𝕚𝕟𝕖𝕕, s̷l̷̷a̷s̷h̷e̷d̷, ɟןıddǝp, and 🄱🄾🅇🄴🄳.
 - `/encrypt [message] [cipher]` Change text into a cipher.
     - `[cipher]` choices: Caesar, A1Z26, Atbash, Morse Code
 - `/confess [message] [user] [signoff]` Have Bob DM a user a message.
