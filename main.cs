@@ -150,6 +150,8 @@ public static class Bot
         }
     }
 
+    private static readonly ulong ownerID = Config.GetOwnerID();
+
     private static async Task SlashCommandResulted(SlashCommandInfo info, IInteractionContext ctx, IResult res)
     {
         if (!res.IsSuccess)
@@ -168,6 +170,8 @@ public static class Bot
                 case InteractionCommandError.Exception:
                     await ctx.Interaction.FollowupAsync($"❌ Something went wrong...\n- Try again later.\n- Join Bob's support server: https://discord.gg/HvGMRZD8jQ");
                     Console.WriteLine($"Error: {res.ErrorReason}");
+                    SocketUser owner = Bot.Client.GetUser(ownerID);
+                    await owner.SendMessageAsync($"Error: {res.ErrorReason} | Guild: {ctx.Guild} | Command: {info.Name}");
                     break;
                 case InteractionCommandError.Unsuccessful:
                     await ctx.Interaction.FollowupAsync("❌ Command could not be executed");
