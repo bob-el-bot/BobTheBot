@@ -8,9 +8,7 @@ using Discord.WebSocket;
 using Discord;
 using System.Collections.Generic;
 using System.Linq;
-using Discord.Rest;
 using ColorHelper;
-using System.Runtime.CompilerServices;
 
 public class Commands : InteractionModuleBase<SocketInteractionContext>
 {
@@ -247,6 +245,38 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         {
             int randInt = random.Next(1, (sides + 1));
             await RespondAsync(text: $"🎲 The {sides} sided die landed on **{randInt}**");
+        }
+    }
+
+    [EnabledInDm(true)]
+    [SlashCommand("random-date", "Bob will will pick a random date.")]
+    public async Task RandomDate([Summary("earliestYear", "A year that is as early as you want the date to occur in.")]int earliestYear, [Summary("latestYear", "A year that is as late as you want the date to occur in.")]int latestYear)
+    {
+        if (latestYear < 0 || earliestYear < 0)
+        {
+            await RespondAsync(text: $"🌌 *Whoa!* a *rift* in our dimension! **Maybe** try a year that is **atleast 0**.");
+        }
+        else if (latestYear.ToString().Length > 8 || earliestYear.ToString().Length > 8)
+        {
+            await RespondAsync(text: $"❌ Please, choose a year that is **8 digits or less**.");
+        }
+        else if (earliestYear > latestYear)
+        {
+            await RespondAsync(text: $"❌ Please, make the *earliest year* **smaller** than the *latest year*.");
+        }
+        else
+        {
+            // Pick Year
+            int year = random.Next(earliestYear, latestYear + 1);
+
+            // Pick Month
+            (string name, int days)[] months = { ("January", 31), ("February", 28), ("March", 31), ("April", 30), ("May", 31), ("June", 30), ("July", 31), ("August", 31), ("September", 30), ("October", 31), ("November", 30), ("December", 31) };
+            (string name, int days) month = months[random.Next(0, months.Length)];
+
+            // Pick Day
+            int day = random.Next(1, month.days + 1);
+
+            await RespondAsync(text: $":calendar_spiral: {month.name} {day}, {year}");
         }
     }
 
