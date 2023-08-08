@@ -348,6 +348,36 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     }
 
     [EnabledInDm(false)]
+    [SlashCommand("random-dog", "Bob will find you a cute doggo image!")]
+    public async Task RandomDog()
+    {
+        // Formulate Request
+        var httpClient = new HttpClient();
+
+        var request = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, "https://random.dog/woof.json");
+
+        var productValue = new ProductInfoHeaderValue("BobTheBot", "1.0");
+        var commentValue = new ProductInfoHeaderValue("(+https://github.com/bob-el-bot/BobTheBot)");
+        var acceptValue = new MediaTypeWithQualityHeaderValue("application/json");
+        request.Headers.UserAgent.Add(productValue);
+        request.Headers.UserAgent.Add(commentValue);
+        request.Headers.Accept.Add(acceptValue);
+
+        // Send Request (Get the dog image)
+        var resp = await httpClient.SendAsync(request);
+
+        // Read In Content
+        var content = await resp.Content.ReadAsStringAsync();
+        // Parse Content
+        var jsonData = JsonNode.Parse(content).AsObject();
+        var image = jsonData["url"].ToString();
+
+        string[] dogEmojis = { "🐕", "🐶", "🐕‍🦺", "🐩" };
+
+        await RespondAsync(text: $"{dogEmojis[random.Next(0, dogEmojis.Length)]}\n{image}");
+    }
+
+    [EnabledInDm(false)]
     [SlashCommand("dad-joke", "Bob will tell you a dad joke.")]
     public async Task DadJoke()
     {
