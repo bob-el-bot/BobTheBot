@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Discord.Rest;
 using ColorHelper;
+using System.Runtime.CompilerServices;
 
 public class Commands : InteractionModuleBase<SocketInteractionContext>
 {
@@ -66,9 +67,17 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("rock-paper-scissors", "Play a game of Rock Paper Scissors with Bob.")]
     public async Task RPS()
     {
-        var builder = new ComponentBuilder().WithSelectMenu(RockPaperScissors.RPSOptions);
-        Bot.Client.SelectMenuExecuted += RockPaperScissors.RPSSelectMenuHandler;
+        SelectMenuBuilder RPSOptions = new SelectMenuBuilder().WithPlaceholder("Select an option").WithCustomId("RPSOptions").WithMaxValues(1).WithMinValues(1).AddOption("🪨 Rock", "0").AddOption("📃 Paper", "1").AddOption("✂️ Scissors", "2");
+        var builder = new ComponentBuilder().WithSelectMenu(RPSOptions);
         await RespondAsync(text: "*Game On!* What do you choose?", components: builder.Build());
+    }
+
+    [ComponentInteraction("RPSOptions")]
+    public async Task RPSOptionsHandler()
+    {
+        SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
+        string result = RockPaperScissors.PlayRPS(string.Join("", component.Data.Values));
+        await component.UpdateAsync(x => { x.Content = result + component.User.Mention; x.Components = null; });
     }
 
     [EnabledInDm(false)]
@@ -384,7 +393,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     public async Task Info()
     {
         var createdAt = Bot.Client.CurrentUser.CreatedAt.ToUnixTimeSeconds();
-        
+
         var embed = new Discord.EmbedBuilder
         {
             Title = $"Bob's Info",

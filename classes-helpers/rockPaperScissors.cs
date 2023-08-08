@@ -15,19 +15,10 @@ public class RockPaperScissors
     .AddOption("📃 Paper", "1")
     .AddOption("✂️ Scissors", "2");
 
-    public static async Task RPSButtonHandler(SocketMessageComponent component) {
-        switch(component.Data.CustomId) {
-            case "RPS":
-                await component.ModifyOriginalResponseAsync((Discord.MessageProperties props) => {props.Content = $"";});
-            break;
-        }
-    }
-
     public static async Task RPSSelectMenuHandler(SocketMessageComponent component)
     {
         string result = PlayRPS(string.Join("", component.Data.Values));
         await component.UpdateAsync(x => {x.Content = result + component.User.Mention; x.Components = null;});
-        Bot.Client.SelectMenuExecuted -= RockPaperScissors.RPSSelectMenuHandler;
     }
 
     public static string PlayRPS(string userChoice)
