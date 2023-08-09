@@ -34,14 +34,18 @@ Have an idea? Share it on the `feature-ideas` channel on [Bob's official server]
 Bob The Bot has many features all of which are `/slash` commands for ease of use!
 
 ### 🎲 RNG (randomly generated) commands: 
-- `/color` Get a color with Hex, CMYK, HSL, HSV and RGB codes.
-- `/dice-roll [sides]` Roll a die with a specified # of sides.
-- `/coin-toss` Flip a coin.
-- `/quote [prompt]` Get a random quote.
+- `/random color` Get a color with Hex, CMYK, HSL, HSV and RGB codes.
+- `/random dice-roll [sides]` Roll a die with a specified # of sides.
+- `/random coin-toss` Flip a coin.
+- `/random quote [prompt]` Get a random quote.
     - `[prompt]` choices: use `/quote-prompts` to view all valid prompts.
-- `/dad-joke` Get a random dad joke.
-- `/random-fact` Get an outrageous fact.
-- `/8ball [prompt]` Get an 8 ball response to a prompt. 
+- `/random dad-joke` Get a random dad joke.
+- `/random fact` Get an outrageous fact.
+- `/random 8ball [prompt]` Get an 8 ball response to a prompt. 
+- `/random dog` Get a random picture of a dog.
+- `/random date [earliestYear] [latestYear]` Get a random date between the inputed years.
+- `/random advice` Get a random piece of advice.
+- `/random choose [option]*5` Bob will pick from the options provided.
 
 ### 🎮 Game commands:
 - `/rock-paper-scissors` Play Bob in a game of rock paper scissors.
