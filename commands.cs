@@ -378,6 +378,36 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     }
 
     [EnabledInDm(false)]
+    [SlashCommand("random-advice", "Bob will provide you with random advice.")]
+    public async Task RandomAdvice()
+    {
+        // Formulate Request
+        var httpClient = new HttpClient();
+
+        var request = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, "https://api.adviceslip.com/advice");
+
+        var productValue = new ProductInfoHeaderValue("BobTheBot", "1.0");
+        var commentValue = new ProductInfoHeaderValue("(+https://github.com/bob-el-bot/BobTheBot)");
+        var acceptValue = new MediaTypeWithQualityHeaderValue("application/json");
+        request.Headers.UserAgent.Add(productValue);
+        request.Headers.UserAgent.Add(commentValue);
+        request.Headers.Accept.Add(acceptValue);
+
+        // Send Request (Get the advice)
+        var resp = await httpClient.SendAsync(request);
+
+        // Read In Content
+        var content = await resp.Content.ReadAsStringAsync();
+        // Parse Content
+        var jsonData = JsonNode.Parse(content).AsObject();
+        var slip = JsonNode.Parse(jsonData["slip"].ToString()).AsObject();
+        var advice = slip["advice"].ToString();
+
+        // Respond
+        await RespondAsync(text: $"🦉 *{advice}*");
+    }
+
+    [EnabledInDm(false)]
     [SlashCommand("dad-joke", "Bob will tell you a dad joke.")]
     public async Task DadJoke()
     {
