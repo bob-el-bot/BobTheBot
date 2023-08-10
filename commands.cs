@@ -519,7 +519,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
 
             string[] dogEmojis = { "🐕", "🐶", "🐕‍🦺", "🐩" };
 
-            await RespondAsync(text: $"{dogEmojis[random.Next(0, dogEmojis.Length)]}\n{image}");
+            await RespondAsync(text: $"{dogEmojis[random.Next(0, dogEmojis.Length)]}[dog]({image})");
         }
 
         [EnabledInDm(false)]
