@@ -672,6 +672,23 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
             // Send quote in quotes channel of server
             await Context.Channel.SendMessageAsync(embed: embed.Build());
         }
+
+        [EnabledInDm(false)]
+        [SlashCommand("channel", "Configure /quote channel.")]
+        public async Task Settings([Summary("channel", "The quotes channel for the server.")] SocketChannel channel)
+        {
+            // Check permissions
+            if (!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageChannels)
+                await RespondAsync(text: "❌ Ask an admin or mod to configure this for you.\n- Permission(s) needed: **Manage Channels**\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+            // Check if Bob has permission to send messages in given channel
+            else if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GuildPermissions.SendMessages || !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GuildPermissions.ViewChannel) 
+                await RespondAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{channel.Id}>\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+            else
+            {
+                // Check if Bob has a record for this server in DB.
+                await RespondAsync(text: $"✅ <#{channel.Id}> is now the quote channel for the server.", ephemeral: true);
+            }
+        }
     }
 
     [EnabledInDm(false)]
