@@ -30,6 +30,23 @@ The order is irrelevant, and features are added from one of the to do sections a
 ### Suggestions
 Have an idea? Share it on the `feature-ideas` channel on [Bob's official server](https://discord.com/invite/HvGMRZD8jQ), for it to be considered.
 
+# Features
+
+### ❤️ Make your server feel closer!
+Bob *loves* to make people feel connected with tons of friendly features such as `/hug`, `/hi`, `/poll`, and **more**. Plus if you want to spice things up you can use `/ship` to determine how good of a match people could make (according to the universe), or if you are *too shy* to tell someone how you really feel you can use `/confess` to have Bob send DM with your handwritten message!
+
+### ✨ Stand out!
+Use `/fonts`, to transform your text into something that is *guaranteed* to grab users' attention., or use `/encrypt` to secure your message.
+
+### 🎮 Play games!
+With multiple games to choose from like `/rock-paper-scissors`, `/master-mind`, and *only more* on the way, Bob is ready to keep provide your server with the entertainment it *needs* to thrive.
+
+### 🎲 All the RNG!
+Bob has a ***plethora*** of random commands to either fuel your Dungeons and Dragons experience like `/random dice-roll`, or simply cure your boredom with `/random 8ball`, `/random dad-joke`, `/random fact`, and many more!
+
+### 🤖 Easily confused? no worries!
+Bob has many features *built in* to ensure that you never get stuck. Give an invalid input to a command? *Fear not* as Bob will let you know, and inform you about valid inputs.
+
 # All Commands
 Bob The Bot has many features all of which are `/slash` commands for ease of use!
 
@@ -43,7 +60,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/random fact` Get an outrageous fact.
 - `/random 8ball [prompt]` Get an 8 ball response to a prompt. 
 - `/random dog` Get a random picture of a dog.
-- `/random date [earliestYear] [latestYear]` Get a random date between the inputed years.
+- `/random date [earliestYear] [latestYear]` Get a random date between the inputted years.
 - `/random advice` Get a random piece of advice.
 - `/random choose [option]*5` Bob will pick from the options provided.
 
@@ -66,7 +83,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 ### 🗄️ Informational / help commands:
 - `/help` Get DMed information for *all* commands.
 - `/new` See the latest updates to Bob.
-- `/quote-prompts` See all valid prompts for `/quote`.
+- `/quote-prompts` See all valid prompts for `/random quote`.
 - `/ping` Find the client's latency.
 - `/info` Learn about Bob.
 - `/suggest` Join Bob's official server and share your ideas!
