@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ColorHelper;
 using System.Diagnostics;
+using Discord.Rest;
 
 public class Commands : InteractionModuleBase<SocketInteractionContext>
 {
@@ -681,7 +682,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
             if (!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageChannels)
                 await RespondAsync(text: "❌ Ask an admin or mod to configure this for you.\n- Permission(s) needed: **Manage Channels**\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             // Check if Bob has permission to send messages in given channel
-            else if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GuildPermissions.SendMessages || !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GuildPermissions.ViewChannel) 
+            else if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GuildPermissions.SendMessages || !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GuildPermissions.ViewChannel)
                 await RespondAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{channel.Id}>\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             else
             {
@@ -695,47 +696,55 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("poll", "Bob will create a poll.")]
     public async Task Poll([Summary("prompt", "The question you are asking.")] string prompt, [Summary("option1", "an answer / response to your question")] string option1, [Summary("option2", "an answer / response to your question")] string option2, [Summary("option3", "an answer / response to your question")] string option3 = "", [Summary("option4", "an answer / response to your question")] string option4 = "")
     {
-        // Setup base data
-        string footerText = Context.User.Username + " created this poll.";
-        string instructions = "React with the corresponding number to cast your vote.";
-
-        // Prepare color
-        Discord.Color displayColor = new Discord.Color(9261821);
-
-        // Embed
-        var embed = new Discord.EmbedBuilder
+        // Check for permissions
+        if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GuildPermissions.AddReactions)
         {
-            Title = "📊 " + prompt,
-            Description = instructions,
-            Color = displayColor,
-        };
-
-        // Embed Setup
-        embed.WithFooter(footer => footer.Text = footerText);
-
-        string[] possibleOptions = { option1, option2, option3, option4 };
-        string[] optionLabels = { "1️⃣", "2️⃣", "3️⃣", "4️⃣" };
-        int index = 0;
-        foreach (string option in possibleOptions)
-        {
-            if (option != "")
-            {
-                embed.AddField(name: $"Option {optionLabels[index]}", value: option);
-                index++;
-            }
+            await RespondAsync("❌ Bob needs the **Add Reactions** permission to use `/poll`\n- Try asking an administrator.", ephemeral: true);
         }
-
-        await RespondAsync("Your poll has been made.", ephemeral: true);
-
-        var response = await Context.Channel.SendMessageAsync(embed: embed.Build());
-
-        int index2 = 0;
-        foreach (string option in possibleOptions)
+        else
         {
-            if (option != "")
+            // Setup base data
+            string footerText = Context.User.Username + " created this poll.";
+            string instructions = "React with the corresponding number to cast your vote.";
+
+            // Prepare color
+            Discord.Color displayColor = new Discord.Color(9261821);
+
+            // Embed
+            var embed = new Discord.EmbedBuilder
             {
-                await response.AddReactionAsync(new Emoji(optionLabels[index2]));
-                index2++;
+                Title = "📊 " + prompt,
+                Description = instructions,
+                Color = displayColor,
+            };
+
+            // Embed Setup
+            embed.WithFooter(footer => footer.Text = footerText);
+
+            string[] possibleOptions = { option1, option2, option3, option4 };
+            string[] optionLabels = { "1️⃣", "2️⃣", "3️⃣", "4️⃣" };
+            int index = 0;
+            foreach (string option in possibleOptions)
+            {
+                if (option != "")
+                {
+                    embed.AddField(name: $"Option {optionLabels[index]}", value: option);
+                    index++;
+                }
+            }
+
+            await RespondAsync("Your poll has been made.", ephemeral: true);
+
+            var response = await Context.Channel.SendMessageAsync(embed: embed.Build());
+
+            int index2 = 0;
+            foreach (string option in possibleOptions)
+            {
+                if (option != "")
+                {
+                    await response.AddReactionAsync(new Emoji(optionLabels[index2]));
+                    index2++;
+                }
             }
         }
     }
