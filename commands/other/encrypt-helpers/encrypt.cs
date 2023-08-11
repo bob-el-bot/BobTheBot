@@ -137,7 +137,7 @@ public class Encryption
             }
             else if (character == ' ') // spaces
             {
-                finalText += "   ";
+                finalText += " / ";
             }
             else // other
             {
