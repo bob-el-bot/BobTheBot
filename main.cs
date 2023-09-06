@@ -52,18 +52,6 @@ public static class Bot
         Client.InteractionCreated += InteractionCreated;
         Service.SlashCommandExecuted += SlashCommandResulted;
 
-        // Update Top.GG stats.
-        if (Token != Config.GetTestToken())
-        {
-            TopGG topGG = new TopGG();
-            await topGG.PostStats();
-            Console.WriteLine("Top.GG stats updated");
-        }
-        else
-        {
-            Console.WriteLine("Top.GG stats NOT updated because test bot is in use.");
-        }
-
         // Print the servers bob is in.
         foreach (var guild in Bot.Client.Guilds)
         {
@@ -73,6 +61,22 @@ public static class Bot
 
         totalUsers -= (Token == Config.GetTestToken()) ? 0 : 72000;
         Console.WriteLine($"Total Users: {totalUsers}");
+
+        // Update third party stats
+        if (Token != Config.GetTestToken())
+        {
+            // Top GG
+            TopGG topGG = new();
+            await topGG.PostStats();
+
+            // Discord Bots GG
+            DiscordBots discordBots = new();
+            await discordBots.PostStats();
+        }
+        else
+        {
+            Console.WriteLine("Third party stats NOT updated because test bot is in use.");
+        }
 
         var cpuUsage = await Performance.GetCpuUsageForProcess();
         Console.WriteLine("CPU at Ready: " + cpuUsage.ToString() + "%");
