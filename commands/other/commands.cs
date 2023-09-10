@@ -137,7 +137,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
             Color = new Discord.Color(9261821),
         };
 
-        embed.AddField(name: "🗒️ Creators Notes", value: "- Bob has a place on the 🌐 web! [bobthebot.net](https://bobthebot.net)\n- Stay 📺 tuned for some awesome updates!\n- Bob has a new 😎 style, specifically `#8D52FD`", inline: false).AddField(name: "✨ Latest Update", value: commitMessage, inline: true).AddField(name: ":calendar_spiral: Date", value: $"<t:{commitDateID}:f>", inline: true).AddField(name: "🔮 See What's In the Works", value: "[Road Map](https://github.com/users/Quantam-Studios/projects/3/views/1)");
+        embed.AddField(name: "🗒️ Creators Notes", value: "- 🖊️ Need to save memories on Discord? Get ready for *the best* quote system (coming this November).\n- Bob has a place on the 🌐 web! [bobthebot.net](https://bobthebot.net)\n- Stay 📺 tuned for some awesome updates!", inline: false).AddField(name: "✨ Latest Update", value: commitMessage, inline: true).AddField(name: ":calendar_spiral: Date", value: $"<t:{commitDateID}:f>", inline: true).AddField(name: "🔮 See What's In the Works", value: "[Road Map](https://github.com/orgs/bob-el-bot/projects/4)");
 
         await RespondAsync(embed: embed.Build());
     }
