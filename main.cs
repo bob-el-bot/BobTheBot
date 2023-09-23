@@ -7,6 +7,9 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Linq;
+using Database;
+using Newtonsoft.Json.Bson;
+using Microsoft.EntityFrameworkCore.Storage;
 
 public static class Bot
 {
@@ -16,9 +19,11 @@ public static class Bot
         AlwaysDownloadUsers = true,
     });
 
+    public static BobEntities serverDB = new();
+
     private static InteractionService Service;
 
-    private static readonly string Token = Config.GetToken();
+    private static readonly string Token = Config.GetTestToken();
 
     public static async Task Main()
     {
@@ -101,7 +106,17 @@ public static class Bot
         // Update user count
         totalUsers += guild.MemberCount;
 
-        Random random = new Random();
+        // Add server to DB
+        Server server = new()
+        {
+            Id = guild.Id
+        };
+
+        await serverDB.AddAsync(server);
+        await serverDB.SaveChangesAsync();
+
+        // Welcome Message
+        Random random = new();
         string[] greetings = { "G'day, I am Bob!", "Hello there, I'm Bob!", "Thanks for the invite, my name is Bob!" };
 
         string instructions = "I can do a lot of things now, but I also receive updates often. If you want to see my newest features use `/new`. If you want to learn about all of my commands use `/help` to get sent a list via DM. With that, I look forward to serving you all 🥳!";
