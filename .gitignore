@@ -482,6 +482,8 @@ config.cs
 # Databases
 *.db
 *.db-wal
+*.db-shm
+*.sqbpro
 Migrations/
 
 # bin & obj

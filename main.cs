@@ -22,7 +22,7 @@ public static class Bot
 
     private static InteractionService Service;
 
-    private static readonly string Token = Config.GetTestToken();
+    private static readonly string Token = Config.GetToken();
 
     public static async Task Main()
     {
@@ -86,7 +86,7 @@ public static class Bot
         var ramUsage = Performance.GetRamUsageForProcess();
         Console.WriteLine("RAM at Ready: " + ramUsage.ToString() + "%");
 
-        string[] statuses = { "/help | New Website!", $"/help | {totalUsers:n0} users", "/help | Fonts!", "/help | New Commands!", "/help | RNG!" };
+        string[] statuses = { "/help | Try /quote!", $"/help | {totalUsers:n0} users", "/help | Fonts!", "/help | ", "/help | RNG!" };
         int index = 0;
 
         Timer timer = new(async x =>

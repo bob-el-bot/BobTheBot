@@ -4,7 +4,7 @@
     <img src="https://skillicons.dev/icons?i=cs,net,raspberrypi,discord">
 <p>
 
-<p>A bot for 🎲 RNG, new 📜 fonts, 🔒 encryption, and ✨ more! Currently serving 8,000+ users!</p>
+<p>A bot for 🎲 RNG, new 📜 fonts, 🔒 encryption, and ✨ more! Currently serving 11,000+ users!</p>
 
 <a href="https://discord.com/oauth2/authorize?client_id=705680059809398804&permissions=1110719392886&scope=bot%20applications.commands">Invite</a>
 <span>|
@@ -34,6 +34,9 @@ Have an idea? Share it on the `feature-ideas` channel on [Bob's official server]
 
 ### ❤️ Make your server feel closer!
 Bob *loves* to make people feel connected with tons of friendly features such as `/hug`, `/hi`, `/poll`, and **more**. Plus if you want to spice things up you can use `/ship` to determine how good of a match people could make (according to the universe), or if you are *too shy* to tell someone how you really feel you can use `/confess` to have Bob send DM with your handwritten message!
+
+### 🖊️ The best quote system!
+Making memories is important and with `/quote new` you can do just that! Bob will *automatically* format the message, *and* dynamically let you know how long ago a quote was made. On top of that, you can add tags for searching through specific types of quotes.
 
 ### ✨ Stand out!
 Use `/fonts`, to transform your text into something that is *guaranteed* to grab users' attention., or use `/encrypt` to secure your message.
@@ -68,6 +71,10 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/rock-paper-scissors` Play Bob in a game of rock paper scissors.
 - `/master-mind new-game` Play a game of Master Mind, the rules will shared upon usage.
 - `/master-mind guess` Make a guess in a game of Master Mind.
+
+### 🖊️ Quoting commands:
+- `/quote new [quote] [user] [tag]*3` Formats and shares the quote in designated channel.
+- `/quote channel [channel]` Sets the quote channel for the server.
 
 ### ✨ Miscellaneous commands: 
 - `/fonts [text] [font]` Change your text to a different font.

@@ -10,6 +10,8 @@ The privacy of our users is important to us. This privacy policy explains how we
 
 - Personal Information: We do not collect or store any personal information about you unless explicitly provided by you for specific functionalities or features of the Bot. We strongly encourage you to avoid sharing personal or sensitive information through the Bot.
 
+- Server Information: We collect Guild Ids and channel Ids.
+
 ## Data Security and Retention
 
 We take reasonable measures to protect the data collected by the Bot and to prevent unauthorized access, disclosure, or alteration of the information. However, please note that no method of transmission or storage over the internet is completely secure, and we cannot guarantee the absolute security of your data.
