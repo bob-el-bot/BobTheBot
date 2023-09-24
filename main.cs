@@ -39,7 +39,6 @@ public static class Bot
         while (Console.ReadKey().Key != ConsoleKey.Q) { };
     }
 
-    private static Timer timer;
     public static int totalUsers = 0;
 
     private static async Task Ready()
@@ -90,7 +89,7 @@ public static class Bot
         string[] statuses = { "/help | New Website!", $"/help | {totalUsers:n0} users", "/help | Fonts!", "/help | New Commands!", "/help | RNG!" };
         int index = 0;
 
-        timer = new Timer(async x =>
+        Timer timer = new(async x =>
         {
             if (Client.ConnectionState == ConnectionState.Connected)
             {

@@ -26,7 +26,7 @@ public class QuoteCommands : InteractionModuleBase<SocketInteractionContext>
 
             // Fomrat Quote
             string formattedQuote = quote;
-            if (quote[0] != '"' && quote[quote.Length - 1] != '"')
+            if (quote[0] != '"' && quote[^1] != '"')
             {
                 formattedQuote = "\"" + quote + "\"";
             }
