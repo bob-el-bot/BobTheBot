@@ -13,18 +13,7 @@ public class QuoteCommands : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("new", "Create a quote.")]
     public async Task New([Summary("quote", "The text you want quoted. Quotation marks (\") will be added.")] string quote, [Summary("user", "The user who the quote belongs to.")] SocketUser user, [Summary("tag1", "A tag for sorting quotes later on.")] string tag1 = "", [Summary("tag2", "A tag for sorting quotes later on.")] string tag2 = "", [Summary("tag3", "A tag for sorting quotes later on.")] string tag3 = "")
     {
-        var server = await Bot.serverDB.FindAsync<Server>(keyValues: Context.Guild.Id);
-        if (server == null)
-        {
-            // Add server to DB
-            server = new()
-            {
-                Id = Context.Guild.Id
-            };
-
-            await Bot.serverDB.AddAsync(server);
-            await Bot.serverDB.SaveChangesAsync();
-        }
+        var server = await Bot.DB.GetServer(Context.Guild.Id);
 
         if (server.QuoteChannelId == null)
         {
@@ -74,7 +63,7 @@ public class QuoteCommands : InteractionModuleBase<SocketInteractionContext>
             await RespondAsync(text: $"🖊️ The quote: **{formattedQuote}**\n-{user.Mention}", ephemeral: true);
 
             // Send quote in quotes channel of server
-            var channel = (ISocketMessageChannel)Context.Guild.GetChannel((ulong)server.QuoteChannelId);
+            var channel = (ISocketMessageChannel) Context.Guild.GetChannel((ulong) server.QuoteChannelId);
 
             await channel.SendMessageAsync(embed: embed.Build());
         }
@@ -84,19 +73,6 @@ public class QuoteCommands : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("channel", "Configure /quote channel.")]
     public async Task Settings([Summary("channel", "The quotes channel for the server.")] SocketChannel channel)
     {
-        var server = await Bot.serverDB.FindAsync<Server>(keyValues: Context.Guild.Id);
-        if (server == null)
-        {
-            // Add server to DB
-            server = new()
-            {
-                Id = Context.Guild.Id
-            };
-
-            await Bot.serverDB.AddAsync(server);
-            await Bot.serverDB.SaveChangesAsync();
-        }
-
         // Check permissions
         if (!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageChannels)
             await RespondAsync(text: "❌ Ask an admin or mod to configure this for you.\n- Permission(s) needed: **Manage Channels**\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
@@ -105,11 +81,11 @@ public class QuoteCommands : InteractionModuleBase<SocketInteractionContext>
             await RespondAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{channel.Id}>\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
         else
         {
+            var server = await Bot.DB.GetServer(Context.Guild.Id);
+
             // Set the channel for this server
             server.QuoteChannelId = channel.Id;
-            Bot.serverDB.Update(server);
-            await Bot.serverDB.SaveChangesAsync();
-
+            await Bot.DB.UpdateServer(server);
             await RespondAsync(text: $"✅ <#{channel.Id}> is now the quote channel for the server.", ephemeral: true);
         }
     }

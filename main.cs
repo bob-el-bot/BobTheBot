@@ -8,8 +8,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Linq;
 using Database;
-using Newtonsoft.Json.Bson;
-using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore;
 
 public static class Bot
 {
@@ -19,7 +18,7 @@ public static class Bot
         AlwaysDownloadUsers = true,
     });
 
-    public static BobEntities serverDB = new();
+    public static readonly BobEntities DB = new();
 
     private static InteractionService Service;
 
@@ -107,13 +106,7 @@ public static class Bot
         totalUsers += guild.MemberCount;
 
         // Add server to DB
-        Server server = new()
-        {
-            Id = guild.Id
-        };
-
-        await serverDB.AddAsync(server);
-        await serverDB.SaveChangesAsync();
+        await DB.AddServer(new Server { Id = guild.Id });
 
         // Welcome Message
         Random random = new();
