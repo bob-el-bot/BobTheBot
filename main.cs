@@ -7,6 +7,8 @@ using System.Reflection;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Linq;
+using Database;
+using Microsoft.EntityFrameworkCore;
 
 public static class Bot
 {
@@ -15,6 +17,8 @@ public static class Bot
         GatewayIntents = GatewayIntents.Guilds,
         AlwaysDownloadUsers = true,
     });
+
+    public static readonly BobEntities DB = new();
 
     private static InteractionService Service;
 
@@ -35,7 +39,6 @@ public static class Bot
         while (Console.ReadKey().Key != ConsoleKey.Q) { };
     }
 
-    private static Timer timer;
     public static int totalUsers = 0;
 
     private static async Task Ready()
@@ -83,10 +86,10 @@ public static class Bot
         var ramUsage = Performance.GetRamUsageForProcess();
         Console.WriteLine("RAM at Ready: " + ramUsage.ToString() + "%");
 
-        string[] statuses = { "/help | New Website!", $"/help | {totalUsers:n0} users", "/help | Fonts!", "/help | New Commands!", "/help | RNG!" };
+        string[] statuses = { "/help | Try /quote!", $"/help | {totalUsers:n0} users", "/help | Fonts!", "/help | ", "/help | RNG!" };
         int index = 0;
 
-        timer = new Timer(async x =>
+        Timer timer = new(async x =>
         {
             if (Client.ConnectionState == ConnectionState.Connected)
             {
@@ -101,7 +104,11 @@ public static class Bot
         // Update user count
         totalUsers += guild.MemberCount;
 
-        Random random = new Random();
+        // Add server to DB
+        await DB.AddServer(new Server { Id = guild.Id });
+
+        // Welcome Message
+        Random random = new();
         string[] greetings = { "G'day, I am Bob!", "Hello there, I'm Bob!", "Thanks for the invite, my name is Bob!" };
 
         string instructions = "I can do a lot of things now, but I also receive updates often. If you want to see my newest features use `/new`. If you want to learn about all of my commands use `/help` to get sent a list via DM. With that, I look forward to serving you all 🥳!";
