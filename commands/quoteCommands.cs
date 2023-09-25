@@ -129,6 +129,9 @@ public class QuoteCommands : InteractionModuleBase<SocketInteractionContext>
         // Check permissions
         if (!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageChannels)
             await RespondAsync(text: "❌ Ask an admin or mod to configure this for you.\n- Permission(s) needed: **Manage Channels**\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+        // Check if the channel is a text channel
+        if (channel.GetChannelType() != ChannelType.Text)
+            await RespondAsync(text: $"❌ The channel <#{channel.Id}> is not a text channel\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
         // Check if Bob has permission to send messages in given channel
         else if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((Discord.IGuildChannel)channel).SendMessages || !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((Discord.IGuildChannel)channel).ViewChannel)
             await RespondAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{channel.Id}>\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
