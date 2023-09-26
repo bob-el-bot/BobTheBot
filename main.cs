@@ -30,6 +30,7 @@ public static class Bot
 
         Client.Ready += Ready;
         Client.Log += Log;
+        Client.GuildAvailable += GuildAvailable;
         Client.JoinedGuild += JoinedGuild;
         Client.LeftGuild += LeftGuild;
 
@@ -100,6 +101,15 @@ public static class Bot
         }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(16));
 
         Client.Ready -= Ready;
+    }
+
+    private static async Task GuildAvailable(SocketGuild guild)
+    {
+        // Download all of the users SEPARATELY from the Gateway Connection to keep WebSocket Connection Alive
+        // (This is opposed to the standard: AlwaysDownloadUsers = true; flag) 
+        _ = Task.Run(async () => {
+            await guild.DownloadUsersAsync();
+        });
     }
 
     private static async Task JoinedGuild(SocketGuild guild)
