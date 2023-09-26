@@ -40,6 +40,7 @@ public static class Bot
     }
 
     public static int totalUsers = 0;
+    private static Timer timer;
 
     private static async Task Ready()
     {
@@ -86,10 +87,10 @@ public static class Bot
         var ramUsage = Performance.GetRamUsageForProcess();
         Console.WriteLine("RAM at Ready: " + ramUsage.ToString() + "%");
 
-        string[] statuses = { "/help | Try /quote!", $"/help | {totalUsers:n0} users", "/help | Fonts!", "/help | ", "/help | RNG!" };
+        string[] statuses = { "/help | Try /quote!", $"/help | {totalUsers:n0} users!", "/help | Fonts!", "/help | ", "/help | RNG!", "/help | Quotes!" };
         int index = 0;
 
-        Timer timer = new(async x =>
+        timer = new(async x =>
         {
             if (Client.ConnectionState == ConnectionState.Connected)
             {
