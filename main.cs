@@ -30,6 +30,7 @@ public static class Bot
 
         Client.Ready += Ready;
         Client.Log += Log;
+        Client.GuildAvailable += GuildAvailable;
         Client.JoinedGuild += JoinedGuild;
         Client.LeftGuild += LeftGuild;
 
@@ -40,6 +41,7 @@ public static class Bot
     }
 
     public static int totalUsers = 0;
+    private static Timer timer;
 
     private static async Task Ready()
     {
@@ -86,10 +88,10 @@ public static class Bot
         var ramUsage = Performance.GetRamUsageForProcess();
         Console.WriteLine("RAM at Ready: " + ramUsage.ToString() + "%");
 
-        string[] statuses = { "/help | Try /quote!", $"/help | {totalUsers:n0} users", "/help | Fonts!", "/help | ", "/help | RNG!" };
+        string[] statuses = { "/help | Try /quote!", $"/help | {totalUsers:n0} users!", "/help | Fonts!", "/help | ", "/help | RNG!", "/help | Quotes!" };
         int index = 0;
 
-        Timer timer = new(async x =>
+        timer = new(async x =>
         {
             if (Client.ConnectionState == ConnectionState.Connected)
             {
@@ -97,6 +99,17 @@ public static class Bot
                 index = index + 1 == statuses.Length ? 0 : index + 1;
             }
         }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(16));
+
+        Client.Ready -= Ready;
+    }
+
+    private static async Task GuildAvailable(SocketGuild guild)
+    {
+        // Download all of the users SEPARATELY from the Gateway Connection to keep WebSocket Connection Alive
+        // (This is opposed to the standard: AlwaysDownloadUsers = true; flag) 
+        _ = Task.Run(async () => {
+            await guild.DownloadUsersAsync();
+        });
     }
 
     private static async Task JoinedGuild(SocketGuild guild)
