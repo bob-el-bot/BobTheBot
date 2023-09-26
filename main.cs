@@ -97,6 +97,8 @@ public static class Bot
                 index = index + 1 == statuses.Length ? 0 : index + 1;
             }
         }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(16));
+
+        Client.Ready -= Ready;
     }
 
     private static async Task JoinedGuild(SocketGuild guild)
