@@ -210,7 +210,8 @@ public static class Bot
             var cpuUsage = await Performance.GetCpuUsageForProcess();
             var ramUsage = Performance.GetRamUsageForProcess();
             var Location = ctx.Interaction.GuildId == null ? "a DM" : Client.GetGuild(ulong.Parse(ctx.Interaction.GuildId.ToString())).ToString();
-            Console.WriteLine($"{DateTime.Now:dd/MM. H:mm:ss} | {Performance.FormatPerformance(cpuUsage, ramUsage)} | Location: {Location} | Command: /{info.Name}");
+            var commandName = (info.IsTopLevelCommand) ? $"/{info.Name}" : $"/{info.Module.SlashGroupName} {info.Name}";
+            Console.WriteLine($"{DateTime.Now:dd/MM. H:mm:ss} | {Performance.FormatPerformance(cpuUsage, ramUsage)} | Location: {Location} | Command: {commandName}");
         }
     }
 
