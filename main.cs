@@ -88,7 +88,7 @@ public static class Bot
         var ramUsage = Performance.GetRamUsageForProcess();
         Console.WriteLine("RAM at Ready: " + ramUsage.ToString() + "%");
 
-        string[] statuses = { "/help | Try /quote!", $"/help | {totalUsers:n0} users!", "/help | Fonts!", "/help | ", "/help | RNG!", "/help | Quotes!" };
+        string[] statuses = { "/help | Try /quote!", $"/help | {totalUsers:n0} users!", "/help | Fonts!", "/help | RNG!", "/help | Quotes!" };
         int index = 0;
 
         timer = new(async x =>
