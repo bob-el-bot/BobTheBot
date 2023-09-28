@@ -19,22 +19,22 @@ public class MasterMindCommands : InteractionModuleBase<SocketInteractionContext
             }
             else // Display Rules / Initial Embed
             {
-                MasterMindGame game = new MasterMindGame();
+                MasterMindGame game = new();
                 MasterMindGeneral.currentGames.Add(game);
                 game.id = Context.Channel.Id;
 
-                var embed = new Discord.EmbedBuilder
+                var embed = new EmbedBuilder
                 {
                     Title = "🧠 Master Mind",
-                    Color = new Discord.Color(9261821),
+                    Color = new Color(9261821),
                 };
                 embed.AddField(name: "How to Play.", value: "The goal of the game is to guess the correct randomly generated code. **Each code is 4 digits** long where each digit is an integer from **1-9**. Use the command `/master-mind guess` to make your guess. Be warned you only have **8 tries**!");
 
                 // Begin Button
-                var button = new Discord.ButtonBuilder
+                var button = new ButtonBuilder
                 {
                     Label = "Begin Game!",
-                    Style = Discord.ButtonStyle.Success,
+                    Style = ButtonStyle.Success,
                     CustomId = "begin"
                 };
 
@@ -64,10 +64,10 @@ public class MasterMindCommands : InteractionModuleBase<SocketInteractionContext
                 string result = MasterMindGeneral.GetResult(guess, game.key);
 
                 // Ready Embed
-                var embed = new Discord.EmbedBuilder
+                var embed = new EmbedBuilder
                 {
                     Title = "🧠 Master Mind",
-                    Color = new Discord.Color(9261821),
+                    Color = new Color(9261821),
                 };
 
                 if (result == "🟩🟩🟩🟩") // it is solved
@@ -116,18 +116,18 @@ public class MasterMindCommands : InteractionModuleBase<SocketInteractionContext
         game.key = MasterMindGeneral.CreateKey();
 
         // Initialize Embed  
-        var embed = new Discord.EmbedBuilder
+        var embed = new EmbedBuilder
         {
             Title = "🧠 Master Mind",
-            Color = new Discord.Color(9261821),
+            Color = new Color(9261821),
         };
         embed.AddField(name: "Guesses Left:", value: $"`{game.guessesLeft}`", inline: true).AddField(name: "Last Guess:", value: "use `/master-mind guess`", inline: true).AddField(name: "Result:", value: "use `/master-mind guess`");
 
         // Forfeit Button
-        var button = new Discord.ButtonBuilder
+        var button = new ButtonBuilder
         {
             Label = "Forfeit",
-            Style = Discord.ButtonStyle.Danger,
+            Style = ButtonStyle.Danger,
             CustomId = "quit"
         };
         var builder = new ComponentBuilder().WithButton(button);
@@ -146,10 +146,10 @@ public class MasterMindCommands : InteractionModuleBase<SocketInteractionContext
         // Get Game
         var game = MasterMindGeneral.currentGames.Find(game => game.id == Context.Interaction.Channel.Id);
 
-        var embed = new Discord.EmbedBuilder
+        var embed = new EmbedBuilder
         {
             Title = "🧠 Master Mind",
-            Color = new Discord.Color(9261821),
+            Color = new Color(9261821),
             Description = "This was certainly difficult, try again with `/master-mind new-game`",
         };
 

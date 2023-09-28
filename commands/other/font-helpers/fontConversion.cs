@@ -18,8 +18,8 @@ public class FontConversion
         boxed
     }
 
-    public static string alpha = "abcdefghijklmnopqrstuvwxyz";
-    public static string ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private static readonly string alpha = "abcdefghijklmnopqrstuvwxyz";
+    private static readonly string ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     public static string Medieval(string text)
     {
