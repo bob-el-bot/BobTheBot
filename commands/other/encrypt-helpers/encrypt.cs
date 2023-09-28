@@ -106,9 +106,10 @@ public class Encryption
 
     public static string Morse(string text)
     {
+        string lowerText = text.ToLower();
         string finalText = "";
 
-        foreach (char character in text)
+        foreach (char character in lowerText)
         {
             if (alpha.IndexOf(character) > -1) // alphabet
             {
