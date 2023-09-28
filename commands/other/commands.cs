@@ -106,22 +106,8 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("new", "See the newest changes to Bob, and find out what's next.")]
     public async Task New()
     {
-        // Formulate Request
-        var httpClient = new HttpClient();
+        string content = await APIInterface.GetFromAPI("https://api.github.com/repos/bob-el-bot/BobTheBot/commits/main", APIInterface.AcceptTypes.application_json);
 
-        var request = new HttpRequestMessage(HttpMethod.Get, "https://api.github.com/repos/bob-el-bot/BobTheBot/commits/main");
-
-        var productValue = new ProductInfoHeaderValue("BobTheBot", "1.0");
-        var commentValue = new ProductInfoHeaderValue("(+https://github.com/bob-el-bot/BobTheBot)");
-        var acceptValue = new MediaTypeWithQualityHeaderValue("application/json");
-        request.Headers.UserAgent.Add(productValue);
-        request.Headers.UserAgent.Add(commentValue);
-        request.Headers.Accept.Add(acceptValue);
-
-        // Send Request (Get the Commit Data)
-        var resp = await httpClient.SendAsync(request);
-        // Read In Content
-        var content = await resp.Content.ReadAsStringAsync();
         // Parse Content
         var jsonData = JsonNode.Parse(content).AsObject();
         var commit = JsonNode.Parse(jsonData["commit"].ToString()).AsObject();
@@ -287,8 +273,8 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         // determine amount of each digit
         for (int i = 0; i < 18; i++)
         {
-            id1MakeUp[Int32.Parse($"{id1[i]}")] += 1;
-            id2MakeUp[Int32.Parse($"{id2[i]}")] += 1;
+            id1MakeUp[int.Parse($"{id1[i]}")] += 1;
+            id2MakeUp[int.Parse($"{id2[i]}")] += 1;
         }
 
         // determine difference in name length
