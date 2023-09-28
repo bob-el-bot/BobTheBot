@@ -318,7 +318,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         }
 
         // calculate perecentage of similarity.
-        float matchPercent = ((matchDifference + nameLengthDifference + nameDifference) / 135) * 100;
+        float matchPercent = (matchDifference + nameLengthDifference + nameDifference) / 135 * 100;
         if (matchPercent > 100)
             matchPercent = 100;
 
