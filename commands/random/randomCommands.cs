@@ -118,22 +118,7 @@ public class RandomCommands : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("quote", "Bob will tell you a quote.")]
     public async Task Quote([Summary("prompt", "use /quote-prompts to see all valid prompts")] string prompt = "")
     {
-        // Formulate Request
-        var httpClient = new HttpClient();
-
-        var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.quotable.io/quotes/random?tags={prompt}");
-
-        var productValue = new ProductInfoHeaderValue("BobTheBot", "1.0");
-        var commentValue = new ProductInfoHeaderValue("(+https://github.com/bob-el-bot/BobTheBot)");
-        var acceptValue = new MediaTypeWithQualityHeaderValue("application/json");
-        request.Headers.UserAgent.Add(productValue);
-        request.Headers.UserAgent.Add(commentValue);
-        request.Headers.Accept.Add(acceptValue);
-
-        // Send Request (Get The Quote)
-        var resp = await httpClient.SendAsync(request);
-        // Read In Content
-        var content = await resp.Content.ReadAsStringAsync();
+        string content = await APIInterface.GetFromAPI($"https://api.quotable.io/quotes/random?tags={prompt}", APIInterface.AcceptTypes.application_json);
 
         if (content != "[]") // no quotes match the prompt
         {
@@ -148,7 +133,7 @@ public class RandomCommands : InteractionModuleBase<SocketInteractionContext>
         else
         {
             // Respond
-            await RespondAsync(text: $"Sorry, but no quotes could be found for the prompt: {prompt} \nTry a different prompt, and make sure you spelled everything correctly.\nYou can also use `/quoteprompts` to see all valid prompts.");
+            await RespondAsync(text: $"❌ The prompt: {prompt} was not recognized. Use `/quote-prompts` to see all valid prompts.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
         }
     }
 
@@ -170,23 +155,8 @@ public class RandomCommands : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("fact", "Bob will provide you with an outrageous fact.")]
     public async Task RandomFacts()
     {
-        // Formulate Request
-        var httpClient = new HttpClient();
+        string content = await APIInterface.GetFromAPI("https://uselessfacts.jsph.pl/api/v2/facts/random?language=en", APIInterface.AcceptTypes.application_json);
 
-        var request = new HttpRequestMessage(HttpMethod.Get, "https://uselessfacts.jsph.pl/api/v2/facts/random?language=en");
-
-        var productValue = new ProductInfoHeaderValue("BobTheBot", "1.0");
-        var commentValue = new ProductInfoHeaderValue("(+https://github.com/bob-el-bot/BobTheBot)");
-        var acceptValue = new MediaTypeWithQualityHeaderValue("application/json");
-        request.Headers.UserAgent.Add(productValue);
-        request.Headers.UserAgent.Add(commentValue);
-        request.Headers.Accept.Add(acceptValue);
-
-        // Send Request (Get the fact)
-        var resp = await httpClient.SendAsync(request);
-
-        // Read In Content
-        var content = await resp.Content.ReadAsStringAsync();
         // Parse Content
         var jsonData = JsonNode.Parse(content).AsObject();
         var fact = jsonData["text"].ToString();
@@ -207,23 +177,8 @@ public class RandomCommands : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("dog", "Bob will find you a cute doggo image!")]
     public async Task RandomDog()
     {
-        // Formulate Request
-        var httpClient = new HttpClient();
+        string content = await APIInterface.GetFromAPI("https://random.dog/woof.json", APIInterface.AcceptTypes.application_json);
 
-        var request = new HttpRequestMessage(HttpMethod.Get, "https://random.dog/woof.json");
-
-        var productValue = new ProductInfoHeaderValue("BobTheBot", "1.0");
-        var commentValue = new ProductInfoHeaderValue("(+https://github.com/bob-el-bot/BobTheBot)");
-        var acceptValue = new MediaTypeWithQualityHeaderValue("application/json");
-        request.Headers.UserAgent.Add(productValue);
-        request.Headers.UserAgent.Add(commentValue);
-        request.Headers.Accept.Add(acceptValue);
-
-        // Send Request (Get the dog image)
-        var resp = await httpClient.SendAsync(request);
-
-        // Read In Content
-        var content = await resp.Content.ReadAsStringAsync();
         // Parse Content
         var jsonData = JsonNode.Parse(content).AsObject();
         var image = jsonData["url"].ToString();
@@ -237,23 +192,8 @@ public class RandomCommands : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("advice", "Bob will provide you with random advice.")]
     public async Task RandomAdvice()
     {
-        // Formulate Request
-        var httpClient = new HttpClient();
+        string content = await APIInterface.GetFromAPI("https://api.adviceslip.com/advice", APIInterface.AcceptTypes.application_json);
 
-        var request = new HttpRequestMessage(HttpMethod.Get, "https://api.adviceslip.com/advice");
-
-        var productValue = new ProductInfoHeaderValue("BobTheBot", "1.0");
-        var commentValue = new ProductInfoHeaderValue("(+https://github.com/bob-el-bot/BobTheBot)");
-        var acceptValue = new MediaTypeWithQualityHeaderValue("application/json");
-        request.Headers.UserAgent.Add(productValue);
-        request.Headers.UserAgent.Add(commentValue);
-        request.Headers.Accept.Add(acceptValue);
-
-        // Send Request (Get the advice)
-        var resp = await httpClient.SendAsync(request);
-
-        // Read In Content
-        var content = await resp.Content.ReadAsStringAsync();
         // Parse Content
         var jsonData = JsonNode.Parse(content).AsObject();
         var slip = JsonNode.Parse(jsonData["slip"].ToString()).AsObject();
@@ -267,22 +207,7 @@ public class RandomCommands : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("dad-joke", "Bob will tell you a dad joke.")]
     public async Task DadJoke()
     {
-        // Formulate Request
-        var httpClient = new HttpClient();
-
-        var request = new HttpRequestMessage(HttpMethod.Get, "https://icanhazdadjoke.com");
-
-        var productValue = new ProductInfoHeaderValue("BobTheBot", "1.0");
-        var commentValue = new ProductInfoHeaderValue("(+https://github.com/bob-el-bot/BobTheBot)");
-        var acceptValue = new MediaTypeWithQualityHeaderValue("text/plain");
-        request.Headers.UserAgent.Add(productValue);
-        request.Headers.UserAgent.Add(commentValue);
-        request.Headers.Accept.Add(acceptValue);
-
-        // Send Request (Get the joke)
-        var resp = await httpClient.SendAsync(request);
-        // Parse Content
-        var content = await resp.Content.ReadAsStringAsync();
+        string content = await APIInterface.GetFromAPI("https://icanhazdadjoke.com", APIInterface.AcceptTypes.text_plain);
 
         // Respond
         await RespondAsync(text: $"😉  *{content}*");

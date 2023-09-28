@@ -10,7 +10,7 @@ public class TopGG
         // Formulate Request
         var httpClient = new HttpClient();
 
-        var request = new HttpRequestMessage(System.Net.Http.HttpMethod.Post, "https://top.gg/api/bots/705680059809398804/stats");
+        var request = new HttpRequestMessage(HttpMethod.Post, "https://top.gg/api/bots/705680059809398804/stats");
 
         var productValue = new ProductInfoHeaderValue("BobTheBot", "1.0");
         var commentValue = new ProductInfoHeaderValue("(+https://github.com/Quantam-Studios/BobTheBot)");
