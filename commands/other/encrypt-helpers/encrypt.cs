@@ -14,13 +14,13 @@ public class Encryption
         Morse
     }
 
-    public static string alpha = "abcdefghijklmnopqrstuvwxyz";
-    public static string ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-    public static string num = "0123456789";
-    public static (string, string)[] morseAlpha = { ("a", ".-"), ("b", "-..."), ("c", "-.-."), ("d", "-.."), ("e", "."), ("f", "..-."), ("g", "--."), ("h", "...."), ("i", ".."), ("j", ".---"), ("k", "-.-"), ("l", ".-.."), ("m", "--"), ("n", "-."), ("o", "---"), ("p", ".--."), ("q", "--.-"), ("r", ".-."), ("s", "..."), ("t", "-"), ("u", "..-"), ("v", "...-"), ("w", ".--"), ("x", "-..-"), ("y", "-.--"), ("z", "--..") };
-    public static (int, string)[] morseNum = { (0, "-----"), (1, ".----"), (2, "..---"), (3, "...--"), (4, "....-"), (5, "....."), (6, "-...."), (7, "--..."), (8, "---.."), (9, "----.") };
-    public static (char, string)[] morseSym = { ('.', ".-.-.-"), (',', "--..--"), ('\'', ".----."), ('?', "..--.."), ('!', "-.-.--"), ('/', "-..-."), ('(', "-.--."), (')', "-.--.-"), ('&', ".-..."), (':', "---..."), (';', "-.-.-."), ('=', "-...-"), ('+', ".-.-."), ('-', "-....-"), ('_', "..--.-"), ('"', ".-..-."), ('$', "...-..-"), ('@', ".--.-.") };
-    public static string morseAcceptedSym = ".,'?!/()&:;=+-_\"$@";
+    private static readonly string alpha = "abcdefghijklmnopqrstuvwxyz";
+    private static readonly string ALPHA = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    private static readonly string num = "0123456789";
+    private static readonly (string, string)[] morseAlpha = { ("a", ".-"), ("b", "-..."), ("c", "-.-."), ("d", "-.."), ("e", "."), ("f", "..-."), ("g", "--."), ("h", "...."), ("i", ".."), ("j", ".---"), ("k", "-.-"), ("l", ".-.."), ("m", "--"), ("n", "-."), ("o", "---"), ("p", ".--."), ("q", "--.-"), ("r", ".-."), ("s", "..."), ("t", "-"), ("u", "..-"), ("v", "...-"), ("w", ".--"), ("x", "-..-"), ("y", "-.--"), ("z", "--..") };
+    private static readonly (int, string)[] morseNum = { (0, "-----"), (1, ".----"), (2, "..---"), (3, "...--"), (4, "....-"), (5, "....."), (6, "-...."), (7, "--..."), (8, "---.."), (9, "----.") };
+    private static readonly (char, string)[] morseSym = { ('.', ".-.-.-"), (',', "--..--"), ('\'', ".----."), ('?', "..--.."), ('!', "-.-.--"), ('/', "-..-."), ('(', "-.--."), (')', "-.--.-"), ('&', ".-..."), (':', "---..."), (';', "-.-.-."), ('=', "-...-"), ('+', ".-.-."), ('-', "-....-"), ('_', "..--.-"), ('"', ".-..-."), ('$', "...-..-"), ('@', ".--.-.") };
+    private static readonly string morseAcceptedSym = ".,'?!/()&:;=+-_\"$@";
 
     public static string Atbash(string text)
     {
@@ -106,10 +106,10 @@ public class Encryption
 
     public static string Morse(string text)
     {
-        text.ToLower();
+        string lowerText = text.ToLower();
         string finalText = "";
 
-        foreach (char character in text)
+        foreach (char character in lowerText)
         {
             if (alpha.IndexOf(character) > -1) // alphabet
             {

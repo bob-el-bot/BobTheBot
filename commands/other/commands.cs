@@ -91,10 +91,10 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     {
         var createdAt = Bot.Client.CurrentUser.CreatedAt.ToUnixTimeSeconds();
 
-        var embed = new Discord.EmbedBuilder
+        var embed = new EmbedBuilder
         {
             Title = $"Bob's Info",
-            Color = new Discord.Color(9261821),
+            Color = new(9261821),
         };
 
         embed.AddField(name: "📛 Username", value: $"{Bot.Client.CurrentUser.Username}", inline: true).AddField(name: "🪪 ID", value: $"`{Bot.Client.CurrentUser.Id}`", inline: true).AddField(name: ":calendar_spiral: Date Created", value: $"<t:{createdAt}:f>", inline: false).AddField(name: "📈 Servers", value: $"`{Bot.Client.Guilds.Count:n0}`", inline: true).AddField(name: "🤗 Users", value: $"`{Bot.totalUsers:n0}`", inline: true).AddField(name: "🌐 Website", value: "[bobthebot.net](https://bobthebot.net)").AddField(name: "⚡ Github Repository", value: "[github.com/bob-el-bot/BobTheBot](https://github.com/bob-el-bot/BobTheBot)").AddField(name: "🏗️ Made With", value: "C#, .NET", inline: true).AddField(name: "📡 Hosted With", value: "Raspberry PI 4", inline: true);
@@ -109,7 +109,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         // Formulate Request
         var httpClient = new HttpClient();
 
-        var request = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, "https://api.github.com/repos/bob-el-bot/BobTheBot/commits/main");
+        var request = new HttpRequestMessage(HttpMethod.Get, "https://api.github.com/repos/bob-el-bot/BobTheBot/commits/main");
 
         var productValue = new ProductInfoHeaderValue("BobTheBot", "1.0");
         var commentValue = new ProductInfoHeaderValue("(+https://github.com/bob-el-bot/BobTheBot)");
@@ -131,10 +131,10 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         // 2023-07-29T03:50:42Z -> unix epoch time
         var commitDateID = DateTimeOffset.Parse(commitDate).ToUnixTimeSeconds();
 
-        var embed = new Discord.EmbedBuilder
+        var embed = new EmbedBuilder
         {
             Title = $"What's New?",
-            Color = new Discord.Color(9261821),
+            Color = new Color(9261821),
         };
 
         embed.AddField(name: "🗒️ Creators Notes", value: "- 🖊️ *The best* quote system is out now :partying_face: :tada: .\n- Bob has a place on the 🌐 web! [bobthebot.net](https://bobthebot.net)\n- Stay 📺 tuned for some awesome updates!", inline: false).AddField(name: "✨ Latest Update", value: commitMessage, inline: true).AddField(name: ":calendar_spiral: Date", value: $"<t:{commitDateID}:f>", inline: true).AddField(name: "🔮 See What's In the Works", value: "[Road Map](https://github.com/orgs/bob-el-bot/projects/4)");
@@ -146,10 +146,10 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("help", "Bob will DM you all relevant information for every command.")]
     public async Task help()
     {
-        var embed = new Discord.EmbedBuilder
+        var embed = new EmbedBuilder
         {
             Title = $"📖 Here is a list of all of my commands.",
-            Color = new Discord.Color(9261821),
+            Color = new Color(9261821),
         };
         embed.AddField(name: "🎲 Randomly Generated (RNG):", value: "- `/random color` Get a color with Hex, CMYK, HSL, HSV and RGB codes.\n\n- `/random dice-roll [sides]` Roll a die with a specified # of sides.\n\n- `/random coin-toss` Flip a coin.\n\n- `/random quote [prompt]` Get a random quote.\n  - `[prompt]`choices: This is optional, use `/quote-prompts` to view all valid prompts.\n\n- `/random dad-joke` Get a random dad joke.\n\n- `/random fact` Get an outrageous fact.\n\n- `/random 8ball [prompt]` Get an 8 ball response to a prompt.\n\n- `/random dog` Get a random picture of a dog.\n\n- `/random date [earliestYear] [latestYear]` Get a random date between the inputed years.\n\n- `/random advice` Get a random piece of advice.\n\n- `/random choose [option]*5` Bob will pick from the options provided.")
         .AddField(name: "🎮 Games:", value: "- `/rock-paper-scissors` Play Bob in a game of rock paper scissors.\n\n- `/master-mind new-game` Play a game of Master Mind, the rules will shared upon usage.\n\n- `/master-mind guess` Make a guess in a game of Master Mind.")
@@ -200,10 +200,10 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
             string instructions = "React with the corresponding number to cast your vote.";
 
             // Prepare color
-            Discord.Color displayColor = new Discord.Color(9261821);
+            Color displayColor = new(9261821);
 
             // Embed
-            var embed = new Discord.EmbedBuilder
+            var embed = new EmbedBuilder
             {
                 Title = "📊 " + prompt,
                 Description = instructions,
@@ -307,7 +307,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
                 nameDifference += 20;
         }
 
-        if (name1[name1.Length - 1] != name2[name2.Length - 1])
+        if (name1[^1] != name2[^1])
             nameDifference += 10;
 
         // determine difference between digits
@@ -326,10 +326,10 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         string heartLevel = HeartLevels.CalculateHeartLevel(matchPercent);
 
         // Embed
-        var embed = new Discord.EmbedBuilder
+        var embed = new EmbedBuilder
         {
             Title = $"{person1.Username} ❤️ {person2.Username}",
-            Color = new Discord.Color(15548997),
+            Color = new Color(15548997),
         };
 
         embed.AddField(name: $"Match of:", value: $"`{matchPercent}%`", inline: true).AddField(name: "Heart Level", value: heartLevel, inline: true);

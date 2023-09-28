@@ -70,6 +70,7 @@ public class QuoteCommands : InteractionModuleBase<SocketInteractionContext>
         }
     }
 
+    [EnabledInDm(false)]
     [MessageCommand(name: "Quote")]
     public async Task Quote(IMessage message)
     {

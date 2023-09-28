@@ -24,12 +24,11 @@ public class RockPaperScissors
     public static string PlayRPS(string userChoice)
     {
         string[] options = { "🪨", "📃", "✂️"};
-        Random random = new Random();
+        Random random = new();
         string botOption = options[random.Next(0, RPSOptions.Options.Count)];
 
         string userOption = options[Int32.Parse(userChoice)];
-        string resultMeaning = "";
-
+        string resultMeaning;
         if (userOption == botOption)
         {
             resultMeaning = "*That's a draw!* Let's play again!";

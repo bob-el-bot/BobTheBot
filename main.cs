@@ -22,7 +22,7 @@ public static class Bot
 
     private static InteractionService Service;
 
-    private static readonly string Token = Config.GetToken();
+    private static readonly string Token = Config.GetTestToken();
 
     public static async Task Main()
     {
@@ -88,7 +88,7 @@ public static class Bot
         var ramUsage = Performance.GetRamUsageForProcess();
         Console.WriteLine("RAM at Ready: " + ramUsage.ToString() + "%");
 
-        string[] statuses = { "/help | Try /quote!", $"/help | {totalUsers:n0} users!", "/help | Fonts!", "/help | ", "/help | RNG!", "/help | Quotes!" };
+        string[] statuses = { "/help | Try /quote!", $"/help | {totalUsers:n0} users!", "/help | Fonts!", "/help | RNG!", "/help | Quotes!" };
         int index = 0;
 
         timer = new(async x =>
@@ -103,13 +103,15 @@ public static class Bot
         Client.Ready -= Ready;
     }
 
-    private static async Task GuildAvailable(SocketGuild guild)
+    private static Task GuildAvailable(SocketGuild guild)
     {
         // Download all of the users SEPARATELY from the Gateway Connection to keep WebSocket Connection Alive
         // (This is opposed to the standard: AlwaysDownloadUsers = true; flag) 
         _ = Task.Run(async () => {
             await guild.DownloadUsersAsync();
         });
+
+        return Task.CompletedTask;
     }
 
     private static async Task JoinedGuild(SocketGuild guild)
@@ -136,7 +138,7 @@ public static class Bot
         try
         {
             var TextChannels = guild.Channels.OfType<SocketTextChannel>().ToArray();
-            SocketTextChannel DefaultChannel = TextChannels.Where(c => (guild.CurrentUser.GetPermissions(c).SendMessages && guild.CurrentUser.GetPermissions(c).ViewChannel) && (c.Name == "chat" || c.Name == "talk" || c.Name == "general")).First();
+            SocketTextChannel DefaultChannel = TextChannels.Where(c => guild.CurrentUser.GetPermissions(c).SendMessages && guild.CurrentUser.GetPermissions(c).ViewChannel && (c.Name == "chat" || c.Name == "talk" || c.Name == "general")).First();
 
             if (DefaultChannel == null)
             {
@@ -154,10 +156,12 @@ public static class Bot
         }
     }
 
-    private static async Task LeftGuild(SocketGuild guild)
+    private static Task LeftGuild(SocketGuild guild)
     {
         // Update user count
         totalUsers -= guild.MemberCount;
+
+        return Task.CompletedTask;
     }
 
     private static async Task InteractionCreated(SocketInteraction interaction)
@@ -210,7 +214,8 @@ public static class Bot
             var cpuUsage = await Performance.GetCpuUsageForProcess();
             var ramUsage = Performance.GetRamUsageForProcess();
             var Location = ctx.Interaction.GuildId == null ? "a DM" : Client.GetGuild(ulong.Parse(ctx.Interaction.GuildId.ToString())).ToString();
-            Console.WriteLine($"{DateTime.Now:dd/MM. H:mm:ss} | {Performance.FormatPerformance(cpuUsage, ramUsage)} | Location: {Location} | Command: /{info.Name}");
+            var commandName = (info.IsTopLevelCommand) ? $"/{info.Name}" : $"/{info.Module.SlashGroupName} {info.Name}";
+            Console.WriteLine($"{DateTime.Now:dd/MM. H:mm:ss} | {Performance.FormatPerformance(cpuUsage, ramUsage)} | Location: {Location} | Command: {commandName}");
         }
     }
 

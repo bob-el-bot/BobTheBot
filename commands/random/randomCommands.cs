@@ -11,7 +11,7 @@ using Discord.Interactions;
 [Group("random", "All random (RNG) commands.")]
 public class RandomCommands : InteractionModuleBase<SocketInteractionContext>
 {
-    public Random random = new Random();
+    public Random random = new();
 
     [EnabledInDm(true)]
     [SlashCommand("dice-roll", "Bob will roll a die with the side amount specified.")]
@@ -23,7 +23,7 @@ public class RandomCommands : InteractionModuleBase<SocketInteractionContext>
         }
         else
         {
-            int randInt = random.Next(1, (sides + 1));
+            int randInt = random.Next(1, sides + 1);
             await RespondAsync(text: $"🎲 The {sides} sided die landed on **{randInt}**");
         }
     }
@@ -51,12 +51,12 @@ public class RandomCommands : InteractionModuleBase<SocketInteractionContext>
 
             // Pick Month
             (string name, int days)[] months = { ("January", 31), ("February", 28), ("March", 31), ("April", 30), ("May", 31), ("June", 30), ("July", 31), ("August", 31), ("September", 30), ("October", 31), ("November", 30), ("December", 31) };
-            (string name, int days) month = months[random.Next(0, months.Length)];
+            (string name, int days) = months[random.Next(0, months.Length)];
 
             // Pick Day
-            int day = random.Next(1, month.days + 1);
+            int day = random.Next(1, days + 1);
 
-            await RespondAsync(text: $":calendar_spiral: {month.name} {day}, {year}");
+            await RespondAsync(text: $":calendar_spiral: {name} {day}, {year}");
         }
     }
 
@@ -78,9 +78,11 @@ public class RandomCommands : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("choose", "Can't make up your mind? Bob can for you!")]
     public async Task Pick(string option1, string option2, string option3 = "", string option4 = "", string option5 = "")
     {
-        List<string> choices = new List<string>();
-        choices.Add(option1);
-        choices.Add(option2);
+        List<string> choices = new()
+        {
+            option1,
+            option2
+        };
         Choose.TestAdd(option3, choices);
         Choose.TestAdd(option4, choices);
         Choose.TestAdd(option5, choices);
@@ -99,7 +101,7 @@ public class RandomCommands : InteractionModuleBase<SocketInteractionContext>
         HSL hsl = ColorConverter.HexToHsl(new HEX(hex));
         HSV hsv = ColorConverter.HexToHsv(new HEX(hex));
         RGB rgb = ColorConverter.HexToRgb(new HEX(hex));
-        Discord.Color displayColor = new Discord.Color(Convert.ToUInt32(hex, 16));
+        Discord.Color displayColor = new(Convert.ToUInt32(hex, 16));
 
         var embed = new Discord.EmbedBuilder { };
         embed.AddField("Hex", "`" + hex + "`")
@@ -119,7 +121,7 @@ public class RandomCommands : InteractionModuleBase<SocketInteractionContext>
         // Formulate Request
         var httpClient = new HttpClient();
 
-        var request = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, $"https://api.quotable.io/quotes/random?tags={prompt}");
+        var request = new HttpRequestMessage(HttpMethod.Get, $"https://api.quotable.io/quotes/random?tags={prompt}");
 
         var productValue = new ProductInfoHeaderValue("BobTheBot", "1.0");
         var commentValue = new ProductInfoHeaderValue("(+https://github.com/bob-el-bot/BobTheBot)");
@@ -156,7 +158,7 @@ public class RandomCommands : InteractionModuleBase<SocketInteractionContext>
     {
         var random = new Random();
         int randInt = random.Next(0, 2);
-        string result = "";
+        string result;
         if (randInt == 1)
             result = "heads";
         else
@@ -171,7 +173,7 @@ public class RandomCommands : InteractionModuleBase<SocketInteractionContext>
         // Formulate Request
         var httpClient = new HttpClient();
 
-        var request = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, "https://uselessfacts.jsph.pl/api/v2/facts/random?language=en");
+        var request = new HttpRequestMessage(HttpMethod.Get, "https://uselessfacts.jsph.pl/api/v2/facts/random?language=en");
 
         var productValue = new ProductInfoHeaderValue("BobTheBot", "1.0");
         var commentValue = new ProductInfoHeaderValue("(+https://github.com/bob-el-bot/BobTheBot)");
@@ -208,7 +210,7 @@ public class RandomCommands : InteractionModuleBase<SocketInteractionContext>
         // Formulate Request
         var httpClient = new HttpClient();
 
-        var request = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, "https://random.dog/woof.json");
+        var request = new HttpRequestMessage(HttpMethod.Get, "https://random.dog/woof.json");
 
         var productValue = new ProductInfoHeaderValue("BobTheBot", "1.0");
         var commentValue = new ProductInfoHeaderValue("(+https://github.com/bob-el-bot/BobTheBot)");
@@ -238,7 +240,7 @@ public class RandomCommands : InteractionModuleBase<SocketInteractionContext>
         // Formulate Request
         var httpClient = new HttpClient();
 
-        var request = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, "https://api.adviceslip.com/advice");
+        var request = new HttpRequestMessage(HttpMethod.Get, "https://api.adviceslip.com/advice");
 
         var productValue = new ProductInfoHeaderValue("BobTheBot", "1.0");
         var commentValue = new ProductInfoHeaderValue("(+https://github.com/bob-el-bot/BobTheBot)");
@@ -268,7 +270,7 @@ public class RandomCommands : InteractionModuleBase<SocketInteractionContext>
         // Formulate Request
         var httpClient = new HttpClient();
 
-        var request = new HttpRequestMessage(System.Net.Http.HttpMethod.Get, "https://icanhazdadjoke.com");
+        var request = new HttpRequestMessage(HttpMethod.Get, "https://icanhazdadjoke.com");
 
         var productValue = new ProductInfoHeaderValue("BobTheBot", "1.0");
         var commentValue = new ProductInfoHeaderValue("(+https://github.com/bob-el-bot/BobTheBot)");
