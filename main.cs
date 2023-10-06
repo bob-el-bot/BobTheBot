@@ -59,7 +59,7 @@ public static class Bot
         Service.SlashCommandExecuted += SlashCommandResulted;
 
         // Print the servers bob is in.
-        foreach (var guild in Bot.Client.Guilds)
+        foreach (var guild in Client.Guilds)
         {
             Console.WriteLine($"{guild.Name}, {guild.MemberCount}");
             totalUsers += guild.MemberCount;
