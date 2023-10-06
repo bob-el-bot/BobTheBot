@@ -9,6 +9,7 @@ using System.Threading;
 using System.Linq;
 using Database;
 using Microsoft.EntityFrameworkCore;
+using System.Net.Http;
 
 public static class Bot
 {
@@ -58,7 +59,7 @@ public static class Bot
         Service.SlashCommandExecuted += SlashCommandResulted;
 
         // Print the servers bob is in.
-        foreach (var guild in Bot.Client.Guilds)
+        foreach (var guild in Client.Guilds)
         {
             Console.WriteLine($"{guild.Name}, {guild.MemberCount}");
             totalUsers += guild.MemberCount;
@@ -71,12 +72,12 @@ public static class Bot
         if (Token != Config.GetTestToken())
         {
             // Top GG
-            TopGG topGG = new();
-            await topGG.PostStats();
+            var topGGResult = await APIInterface.PostToAPI("https://top.gg/api/bots/705680059809398804/stats", Config.GetTopGGToken(), new StringContent("{\"server_count\":" + Client.Guilds.Count.ToString() + "}", System.Text.Encoding.UTF8, "application/json"));
+            Console.WriteLine($"TopGG POST status: {topGGResult}");
 
             // Discord Bots GG
-            DiscordBots discordBots = new();
-            await discordBots.PostStats();
+            var discordBotsResult = await APIInterface.PostToAPI("https://discord.bots.gg/api/v1/bots/705680059809398804/stats", Config.GetDiscordBotsToken(), new StringContent("{\"guildCount\":" + Client.Guilds.Count.ToString() + "}", System.Text.Encoding.UTF8, "application/json"));
+            Console.WriteLine($"Discord Bots GG POST status: {discordBotsResult}");
         }
         else
         {
