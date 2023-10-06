@@ -77,6 +77,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/quote channel [channel]` Sets the quote channel for the server.
 
 ### ✨ Miscellaneous commands: 
+- `/code preview [link]` Preview specific lines of code from a file on GitHub. 
 - `/fonts [text] [font]` Change your text to a different font.
     - `[font]` choices: 𝖒𝖊𝖉𝖎𝖊𝖛𝖆𝖑, 𝓯𝓪𝓷𝓬𝔂, 𝕠𝕦𝕥𝕝𝕚𝕟𝕖𝕕, s̷l̷̷a̷s̷h̷e̷d̷, ɟןıddǝp, and 🄱🄾🅇🄴🄳.
 - `/encrypt [message] [cipher]` Change text into a cipher.
