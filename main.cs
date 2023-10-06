@@ -58,10 +58,9 @@ public static class Bot
         Client.InteractionCreated += InteractionCreated;
         Service.SlashCommandExecuted += SlashCommandResulted;
 
-        // Print the servers bob is in.
+        // Determine the user count;
         foreach (var guild in Client.Guilds)
         {
-            Console.WriteLine($"{guild.Name}, {guild.MemberCount}");
             totalUsers += guild.MemberCount;
         }
 
@@ -88,8 +87,8 @@ public static class Bot
         Console.WriteLine("CPU at Ready: " + cpuUsage.ToString() + "%");
         var ramUsage = Performance.GetRamUsageForProcess();
         Console.WriteLine("RAM at Ready: " + ramUsage.ToString() + "%");
-
-        string[] statuses = { "/help | Try /quote!", $"/help | {totalUsers:n0} users!", "/help | Fonts!", "/help | RNG!", "/help | Quotes!" };
+                                       
+        string[] statuses = { "/help | 🎃👻🍂", "/help | Try /quote!", $"/help | {totalUsers:n0} users!", "/help | Fonts!", "/help | RNG!", "/help | Quotes!" };
         int index = 0;
 
         timer = new(async x =>
@@ -129,11 +128,11 @@ public static class Bot
 
         string instructions = "I can do a lot of things now, but I also receive updates often. If you want to see my newest features use `/new`. If you want to learn about all of my commands use `/help` to get sent a list via DM. With that, I look forward to serving you all 🥳!";
 
-        var embed = new Discord.EmbedBuilder
+        var embed = new EmbedBuilder
         {
             Title = "👋 " + greetings[random.Next(0, greetings.Length)],
             Description = instructions,
-            Color = new Discord.Color(9261821)
+            Color = new Color(9261821)
         };
 
         try
@@ -199,8 +198,9 @@ public static class Bot
                 case InteractionCommandError.Exception:
                     await ctx.Interaction.FollowupAsync($"❌ Something went wrong...\n- Try again later.\n- Join Bob's support server: https://discord.gg/HvGMRZD8jQ");
                     Console.WriteLine($"Error: {res.ErrorReason}");
-                    SocketUser owner = Bot.Client.GetUser(ownerID);
-                    await owner.SendMessageAsync($"Error: {res.ErrorReason} | Guild: {ctx.Guild} | Command: {info.Name}");
+                    SocketUser owner = Client.GetUser(ownerID);
+                    var commandName = info.IsTopLevelCommand ? $"/{info.Name}" : $"/{info.Module.SlashGroupName} {info.Name}";
+                    await owner.SendMessageAsync($"Error: {res.ErrorReason} | Guild: {ctx.Guild} | Command: {commandName}");
                     break;
                 case InteractionCommandError.Unsuccessful:
                     await ctx.Interaction.FollowupAsync("❌ Command could not be executed");
@@ -215,7 +215,7 @@ public static class Bot
             var cpuUsage = await Performance.GetCpuUsageForProcess();
             var ramUsage = Performance.GetRamUsageForProcess();
             var Location = ctx.Interaction.GuildId == null ? "a DM" : Client.GetGuild(ulong.Parse(ctx.Interaction.GuildId.ToString())).ToString();
-            var commandName = (info.IsTopLevelCommand) ? $"/{info.Name}" : $"/{info.Module.SlashGroupName} {info.Name}";
+            var commandName = info.IsTopLevelCommand ? $"/{info.Name}" : $"/{info.Module.SlashGroupName} {info.Name}";
             Console.WriteLine($"{DateTime.Now:dd/MM. H:mm:ss} | {Performance.FormatPerformance(cpuUsage, ramUsage)} | Location: {Location} | Command: {commandName}");
         }
     }

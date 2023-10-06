@@ -90,7 +90,7 @@ public class CodeCommands : InteractionModuleBase<SocketInteractionContext>
             var jsonData = JsonNode.Parse(content).AsObject();
             var fileData = Convert.FromBase64String(jsonData["content"].ToString());
             var fileContent = System.Text.Encoding.UTF8.GetString(fileData);
-            string previewLines = GetLines(fileContent, (short)startLine, (short)endLine);
+            string previewLines = CodeReader.GetLines(fileContent, (short)startLine, (short)endLine);
 
             // Format final response
             string preview = $"Showing {lineNumbers} of [{file}](<{link}>) on {branch} branch.\n```{file[(file.IndexOf('.') + 1)..]}\n{previewLines}```";
@@ -108,25 +108,5 @@ public class CodeCommands : InteractionModuleBase<SocketInteractionContext>
             await RespondAsync(text: "❌ Your link is not valid. Here are some things to know: \n- Your link needs to start with `https://github.com/` or `github.com/`.\n- Your link needs line specifications. Put `#L15` or `#L15-L18` at the end of the link to the file. (see below).\n- If you are sharing a single line it could look like this: `https://github.com/bob-el-bot/website/blob/main/index.html#L15`\n- If you are sharing multiple lines it could look like this: `https://github.com/bob-el-bot/website/blob/main/index.html#L15-L18`\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             Console.WriteLine(e);
         }
-    }
-
-    private static string GetLines(string fileContent, short startLine, short endLine)
-    {
-        if (startLine != endLine)
-        {
-            var allLines = fileContent.Split("\n");
-            string lines = "";
-            for (int i = startLine - 1; i < endLine; i++)
-            {
-                lines += (i + 1).ToString() + " " + allLines[i] + "\n";
-            }
-            return lines;
-        }
-        else if (startLine == endLine)
-        {
-            var allLines = fileContent.Split("\n");
-            return startLine.ToString() + " " + allLines[startLine - 1];
-        }
-        return "There was an error parsing the requested lines of code.";
     }
 }
