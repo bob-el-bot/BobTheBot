@@ -51,7 +51,7 @@ public static class APIInterface
         HttpClient httpClient = new();
 
         HttpRequestMessage request = new(HttpMethod.Post, link);
-        MediaTypeWithQualityHeaderValue acceptValue = new(content.Headers.ContentType.ToString());
+        MediaTypeWithQualityHeaderValue acceptValue = new("application/json");
         
         request.Headers.UserAgent.Add(productValue);
         request.Headers.UserAgent.Add(commentValue);
