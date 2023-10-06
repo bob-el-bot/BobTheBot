@@ -2,8 +2,6 @@ using Discord.Interactions;
 using System.Threading.Tasks;
 using System;
 using System.Text.Json.Nodes;
-using System.Net.Http.Headers;
-using System.Net.Http;
 using Discord.WebSocket;
 using Discord;
 using System.Linq;
