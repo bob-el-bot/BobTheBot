@@ -33,10 +33,10 @@ public class QuoteCommands : InteractionModuleBase<SocketInteractionContext>
             }
 
             // Create embed
-            var embed = new Discord.EmbedBuilder
+            var embed = new EmbedBuilder
             {
                 Title = $"{formattedQuote}",
-                Color = new Discord.Color(2895667),
+                Color = new Color(2895667),
                 Description = $"-{user.Mention}, <t:{dateTime}:R>"
             };
 
@@ -101,10 +101,10 @@ public class QuoteCommands : InteractionModuleBase<SocketInteractionContext>
             }
 
             // Create embed
-            var embed = new Discord.EmbedBuilder
+            var embed = new EmbedBuilder
             {
                 Title = $"{formattedQuote}",
-                Color = new Discord.Color(2895667),
+                Color = new Color(2895667),
                 Description = $"-{user.Mention}, <t:{dateTime}:R>"
             };
 
@@ -117,7 +117,7 @@ public class QuoteCommands : InteractionModuleBase<SocketInteractionContext>
             await RespondAsync(text: $"🖊️ The quote: **{formattedQuote}**\n-{user.Mention}", ephemeral: true);
 
             // Send quote in quotes channel of server
-            var channel = (ISocketMessageChannel)Context.Guild.GetChannel((ulong)server.QuoteChannelId);
+            var channel = (ISocketMessageChannel)Context.Guild.GetChannel((ulong) server.QuoteChannelId);
 
             await channel.SendMessageAsync(embed: embed.Build());
         }
@@ -134,7 +134,7 @@ public class QuoteCommands : InteractionModuleBase<SocketInteractionContext>
         if (channel.GetChannelType() != ChannelType.Text)
             await RespondAsync(text: $"❌ The channel <#{channel.Id}> is not a text channel\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
         // Check if Bob has permission to send messages in given channel
-        else if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((Discord.IGuildChannel)channel).SendMessages || !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((Discord.IGuildChannel)channel).ViewChannel)
+        else if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)channel).SendMessages || !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)channel).ViewChannel)
             await RespondAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{channel.Id}>\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
         else
         {

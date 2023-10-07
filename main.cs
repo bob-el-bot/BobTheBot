@@ -198,9 +198,9 @@ public static class Bot
                 case InteractionCommandError.Exception:
                     await ctx.Interaction.FollowupAsync($"❌ Something went wrong...\n- Try again later.\n- Join Bob's support server: https://discord.gg/HvGMRZD8jQ");
                     Console.WriteLine($"Error: {res.ErrorReason}");
-                    SocketUser owner = Client.GetUser(ownerID);
+                    IMessageChannel logChannel = (IMessageChannel) Client.GetGuild(1058077635692994651).GetChannel(1160105468082004029);
                     var commandName = info.IsTopLevelCommand ? $"/{info.Name}" : $"/{info.Module.SlashGroupName} {info.Name}";
-                    await owner.SendMessageAsync($"Error: {res.ErrorReason} | Guild: {ctx.Guild} | Command: {commandName}");
+                    await logChannel.SendMessageAsync($"**Error:** ```cs\n{res.ErrorReason}```Guild: **{ctx.Guild}** | Command: **{commandName}**");
                     break;
                 case InteractionCommandError.Unsuccessful:
                     await ctx.Interaction.FollowupAsync("❌ Command could not be executed");

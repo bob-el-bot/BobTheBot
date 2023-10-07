@@ -2,8 +2,6 @@ using Discord.Interactions;
 using System.Threading.Tasks;
 using System;
 using System.Text.Json.Nodes;
-using System.Net.Http.Headers;
-using System.Net.Http;
 using Discord.WebSocket;
 using Discord;
 using System.Linq;
@@ -175,9 +173,9 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     public async Task Poll([Summary("prompt", "The question you are asking.")] string prompt, [Summary("option1", "an answer / response to your question")] string option1, [Summary("option2", "an answer / response to your question")] string option2, [Summary("option3", "an answer / response to your question")] string option3 = "", [Summary("option4", "an answer / response to your question")] string option4 = "")
     {
         // Check for permissions
-        if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GuildPermissions.AddReactions)
+        if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel) Context.Channel).AddReactions)
         {
-            await RespondAsync("❌ Bob needs the **Add Reactions** permission to use `/poll`\n- Try asking an administrator.", ephemeral: true);
+            await RespondAsync("❌ Bob needs the **Add Reactions** permission to use `/poll`\n- Try asking an administrator.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
         }
         else
         {
