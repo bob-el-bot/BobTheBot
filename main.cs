@@ -25,6 +25,8 @@ public static class Bot
 
     private static readonly string Token = Config.GetToken();
 
+    public static readonly Color theme = new(9261821);
+
     public static async Task Main()
     {
         if (Token is null) throw new Exception("Discord bot token not set properly.");
