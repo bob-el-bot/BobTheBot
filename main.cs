@@ -25,7 +25,8 @@ public static class Bot
 
     private static readonly string Token = Config.GetToken();
 
-    public static readonly Color theme = new(9261821);
+    // Purple (normal) Theme: 9261821 |  Orange (halloween) Theme: 16760153
+    public static readonly Color theme = new(16760153);
 
     public static async Task Main()
     {
