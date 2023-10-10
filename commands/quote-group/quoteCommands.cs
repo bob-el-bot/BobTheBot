@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Interactions;
@@ -138,12 +139,13 @@ public class QuoteCommands : InteractionModuleBase<SocketInteractionContext>
             await RespondAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{channel.Id}>\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
         else
         {
+            await DeferAsync();
             var server = await Bot.DB.GetServer(Context.Guild.Id);
 
             // Set the channel for this server
             server.QuoteChannelId = channel.Id;
             await Bot.DB.UpdateServer(server);
-            await RespondAsync(text: $"✅ <#{channel.Id}> is now the quote channel for the server.", ephemeral: true);
+            await FollowupAsync(text: $"✅ <#{channel.Id}> is now the quote channel for the server.", ephemeral: true);
         }
     }
 }

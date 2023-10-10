@@ -52,7 +52,7 @@ public class FontConversion
         return TextToFont(upperOutLineAlpha, lowerOutLineAlpha, text);
     }
 
-        public static string Flipped(string text)
+    public static string Flipped(string text)
     {
         string[] upperOutLineAlpha = { "∀", "ᗺ", "Ɔ", "ᗡ", "Ǝ", "Ⅎ", "⅁", "H", "I", "ſ", "ꓘ", "˥", "W", "N", "O", "Ԁ", "ტ", "ᴚ", "S", "⊥", "∩", "Λ", "M", "X", "⅄", "Z" };
         string[] lowerOutLineAlpha = { "ɐ", "q", "ɔ", "p", "ǝ", "ɟ", "ƃ", "ɥ", "ı", "ɾ", "ʞ", "ן", "ɯ", "u", "o", "d", "b", "ɹ", "s", "ʇ", "n", "ʌ", "ʍ", "x", "ʎ", "z" };
@@ -78,7 +78,7 @@ public class FontConversion
                 int letterIndex = alpha.IndexOf(letter);
                 finalText += font[letterIndex];
             }
-            else if(ALPHA.Contains(letter))
+            else if (ALPHA.Contains(letter))
             {
                 int letterIndex = ALPHA.IndexOf(letter);
                 finalText += FONT[letterIndex];

@@ -92,7 +92,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         var embed = new EmbedBuilder
         {
             Title = $"Bob's Info",
-            Color = new(9261821),
+            Color = Bot.theme
         };
 
         embed.AddField(name: "📛 Username", value: $"{Bot.Client.CurrentUser.Username}", inline: true).AddField(name: "🪪 ID", value: $"`{Bot.Client.CurrentUser.Id}`", inline: true).AddField(name: ":calendar_spiral: Date Created", value: $"<t:{createdAt}:f>", inline: false).AddField(name: "📈 Servers", value: $"`{Bot.Client.Guilds.Count:n0}`", inline: true).AddField(name: "🤗 Users", value: $"`{Bot.totalUsers:n0}`", inline: true).AddField(name: "🌐 Website", value: "[bobthebot.net](https://bobthebot.net)").AddField(name: "⚡ Github Repository", value: "[github.com/bob-el-bot/BobTheBot](https://github.com/bob-el-bot/BobTheBot)").AddField(name: "🏗️ Made With", value: "C#, .NET", inline: true).AddField(name: "📡 Hosted With", value: "Raspberry PI 4", inline: true);
@@ -118,7 +118,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         var embed = new EmbedBuilder
         {
             Title = $"What's New?",
-            Color = new Color(9261821),
+            Color = Bot.theme
         };
 
         embed.AddField(name: "🗒️ Creators Notes", value: "- 🖊️ *The best* quote system is out now :partying_face: :tada: .\n- Bob has a place on the 🌐 web! [bobthebot.net](https://bobthebot.net)\n- Stay 📺 tuned for some awesome updates!", inline: false).AddField(name: "✨ Latest Update", value: commitMessage, inline: true).AddField(name: ":calendar_spiral: Date", value: $"<t:{commitDateID}:f>", inline: true).AddField(name: "🔮 See What's In the Works", value: "[Road Map](https://github.com/orgs/bob-el-bot/projects/4)");
@@ -133,7 +133,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         var embed = new EmbedBuilder
         {
             Title = $"📖 Here is a list of all of my commands.",
-            Color = new Color(9261821),
+            Color = Bot.theme
         };
         embed.AddField(name: "🎲 Randomly Generated (RNG):", value: "- `/random color` Get a color with Hex, CMYK, HSL, HSV and RGB codes.\n\n- `/random dice-roll [sides]` Roll a die with a specified # of sides.\n\n- `/random coin-toss` Flip a coin.\n\n- `/random quote [prompt]` Get a random quote.\n  - `[prompt]`choices: This is optional, use `/quote-prompts` to view all valid prompts.\n\n- `/random dad-joke` Get a random dad joke.\n\n- `/random fact` Get an outrageous fact.\n\n- `/random 8ball [prompt]` Get an 8 ball response to a prompt.\n\n- `/random dog` Get a random picture of a dog.\n\n- `/random date [earliestYear] [latestYear]` Get a random date between the inputed years.\n\n- `/random advice` Get a random piece of advice.\n\n- `/random choose [option]*5` Bob will pick from the options provided.")
         .AddField(name: "🎮 Games:", value: "- `/rock-paper-scissors` Play Bob in a game of rock paper scissors.\n\n- `/master-mind new-game` Play a game of Master Mind, the rules will shared upon usage.\n\n- `/master-mind guess` Make a guess in a game of Master Mind.")
@@ -183,15 +183,12 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
             string footerText = Context.User.Username + " created this poll.";
             string instructions = "React with the corresponding number to cast your vote.";
 
-            // Prepare color
-            Color displayColor = new(9261821);
-
             // Embed
             var embed = new EmbedBuilder
             {
                 Title = "📊 " + prompt,
                 Description = instructions,
-                Color = displayColor,
+                Color = Bot.theme
             };
 
             // Embed Setup

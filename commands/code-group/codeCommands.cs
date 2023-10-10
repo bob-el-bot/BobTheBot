@@ -93,7 +93,7 @@ public class CodeCommands : InteractionModuleBase<SocketInteractionContext>
             string previewLines = CodeReader.GetLines(fileContent, (short)startLine, (short)endLine);
 
             // Format final response
-            string preview = $"Showing {lineNumbers} of [{file}](<{link}>) on {branch} branch.\n```{file[(file.IndexOf('.') + 1)..]}\n{previewLines}```";
+            string preview = $"🔎 Showing {lineNumbers} of [{file}](<{link}>) on {branch} branch.\n```{file[(file.IndexOf('.') + 1)..]}\n{previewLines}```";
 
             // Check if message is too long for Discord API.
             if (preview.Length >= 2000)

@@ -26,7 +26,7 @@ public class MasterMindCommands : InteractionModuleBase<SocketInteractionContext
                 var embed = new EmbedBuilder
                 {
                     Title = "🧠 Master Mind",
-                    Color = new Color(9261821),
+                    Color = Bot.theme,
                 };
                 embed.AddField(name: "How to Play.", value: "The goal of the game is to guess the correct randomly generated code. **Each code is 4 digits** long where each digit is an integer from **1-9**. Use the command `/master-mind guess` to make your guess. Be warned you only have **8 tries**!");
 
@@ -67,7 +67,7 @@ public class MasterMindCommands : InteractionModuleBase<SocketInteractionContext
                 var embed = new EmbedBuilder
                 {
                     Title = "🧠 Master Mind",
-                    Color = new Color(9261821),
+                    Color = Bot.theme,
                 };
 
                 if (result == "🟩🟩🟩🟩") // it is solved
@@ -119,7 +119,7 @@ public class MasterMindCommands : InteractionModuleBase<SocketInteractionContext
         var embed = new EmbedBuilder
         {
             Title = "🧠 Master Mind",
-            Color = new Color(9261821),
+            Color = Bot.theme,
         };
         embed.AddField(name: "Guesses Left:", value: $"`{game.guessesLeft}`", inline: true).AddField(name: "Last Guess:", value: "use `/master-mind guess`", inline: true).AddField(name: "Result:", value: "use `/master-mind guess`");
 
@@ -149,7 +149,7 @@ public class MasterMindCommands : InteractionModuleBase<SocketInteractionContext
         var embed = new EmbedBuilder
         {
             Title = "🧠 Master Mind",
-            Color = new Color(9261821),
+            Color = Bot.theme,
             Description = "This was certainly difficult, try again with `/master-mind new-game`",
         };
 
