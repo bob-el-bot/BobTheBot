@@ -139,7 +139,7 @@ public class QuoteCommands : InteractionModuleBase<SocketInteractionContext>
             await RespondAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{channel.Id}>\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
         else
         {
-            await DeferAsync();
+            await DeferAsync(ephemeral: true);
             var server = await Bot.DB.GetServer(Context.Guild.Id);
 
             // Set the channel for this server
