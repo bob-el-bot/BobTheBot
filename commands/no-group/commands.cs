@@ -173,7 +173,7 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     public async Task Poll([Summary("prompt", "The question you are asking.")] string prompt, [Summary("option1", "an answer / response to your question")] string option1, [Summary("option2", "an answer / response to your question")] string option2, [Summary("option3", "an answer / response to your question")] string option3 = "", [Summary("option4", "an answer / response to your question")] string option4 = "")
     {
         // Check for permissions
-        if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel) Context.Channel).AddReactions)
+        if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel).AddReactions)
         {
             await RespondAsync("❌ Bob needs the **Add Reactions** permission to use `/poll`\n- Try asking an administrator.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
         }
@@ -259,49 +259,51 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     {
         // Prepare for calculations
         string id1 = person1.Id.ToString();
-        string name1 = person1.Username;
-        int[] id1MakeUp = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        int[] id1MakeUp = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         string id2 = person2.Id.ToString();
-        string name2 = person2.Username;
-        int[] id2MakeUp = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        int[] id2MakeUp = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+        int longestIdLength = id1.Length >= id2.Length ? id1.Length : id2.Length;
 
         // determine amount of each digit
-        for (int i = 0; i < 18; i++)
+        for (int i = 0; i < longestIdLength; i++)
         {
-            id1MakeUp[int.Parse($"{id1[i]}")] += 1;
-            id2MakeUp[int.Parse($"{id2[i]}")] += 1;
+            if (i < id1.Length)
+                id1MakeUp[int.Parse($"{id1[i]}")] += 1;
+            else
+                id1MakeUp[10] += 1;
+
+            if (i < id2.Length)
+                id2MakeUp[int.Parse($"{id2[i]}")] += 1;
+            else
+                id2MakeUp[10] += 1;
         }
 
-        // determine difference in name length
-        float nameLengthDifference = Math.Abs(name1.Length - name2.Length);
-        float[] specialDifference = { 1f, 2f, 3f, 5f, 8f, 13f, 21f };
-        if (specialDifference.ToList().Contains(nameLengthDifference))
-            nameLengthDifference += 20;
-        nameLengthDifference *= 0.6f;
+        // determine difference between digits
+        float idDifference = 0;
+        for (int i = 0; i < 10; i++)
+        {
+            idDifference += MathF.Abs(id1MakeUp[i] - id2MakeUp[i]);
+        }
+
+        // determine difference in name lengths
+        float nameLengthDifference = MathF.Abs(person1.Username.Length - person2.Username.Length);
 
         // determine difference in names
         int nameDifference = 0;
-        if (name1[0] != name2[0])
+        if (person1.Username[0] != person2.Username[0])
         {
             nameDifference += 10;
-            if (name1[1] != name2[1])
+            if (person1.Username[1] != person2.Username[1])
                 nameDifference += 20;
         }
-
-        if (name1[^1] != name2[^1])
+        if (person1.Username[^1] != person2.Username[^1])
             nameDifference += 10;
 
-        // determine difference between digits
-        float matchDifference = 0;
-        for (int i = 0; i < 9; i++)
-        {
-            matchDifference += MathF.Abs(id1MakeUp[i] - id2MakeUp[i]);
-        }
-
         // calculate perecentage of similarity.
-        float matchPercent = (matchDifference + nameLengthDifference + nameDifference) / 135 * 100;
-        if (matchPercent > 100)
-            matchPercent = 100;
+        float matchPercent = (idDifference / longestIdLength + nameLengthDifference / 30 + nameDifference / 40) / 3 * 100;
+        // if (matchPercent > 100)
+        //     matchPercent = 100;
+        // matchPercent = MathF.Ceiling(matchPercent);
 
         // Determine Heart Level
         string heartLevel = HeartLevels.CalculateHeartLevel(matchPercent);
