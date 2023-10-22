@@ -226,31 +226,35 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("fonts", "Bob will type your text in a font of your choice")]
     public async Task Fonts([Summary("text", "the text you want converted. NOTE: only the alphabet is converted.")] string text, FontConversion.FontTypes font)
     {
-        string finalText = "";
-
-        switch (font)
+        if (text.Length > 2000) // 2000 is max characters in a message.
+            await RespondAsync($"❌ The inputted text *cannot* be converted to a different font because it contains **{text.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **2000** characters.", ephemeral: true);
+        else
         {
-            case FontConversion.FontTypes.fancy:
-                finalText = FontConversion.Fancy(text);
-                break;
-            case FontConversion.FontTypes.slashed:
-                finalText = FontConversion.Slashed(text);
-                break;
-            case FontConversion.FontTypes.outlined:
-                finalText = FontConversion.Outlined(text);
-                break;
-            case FontConversion.FontTypes.flipped:
-                finalText = FontConversion.Flipped(text);
-                break;
-            case FontConversion.FontTypes.boxed:
-                finalText = FontConversion.Boxed(text);
-                break;
-            case FontConversion.FontTypes.medieval:
-                finalText = FontConversion.Medieval(text);
-                break;
-        }
+            string finalText = "";
 
-        await RespondAsync(finalText);
+            switch (font)
+            {
+                case FontConversion.FontTypes.fancy:
+                    finalText = FontConversion.Fancy(text);
+                    break;
+                case FontConversion.FontTypes.slashed:
+                    finalText = FontConversion.Slashed(text);
+                    break;
+                case FontConversion.FontTypes.outlined:
+                    finalText = FontConversion.Outlined(text);
+                    break;
+                case FontConversion.FontTypes.flipped:
+                    finalText = FontConversion.Flipped(text);
+                    break;
+                case FontConversion.FontTypes.boxed:
+                    finalText = FontConversion.Boxed(text);
+                    break;
+                case FontConversion.FontTypes.medieval:
+                    finalText = FontConversion.Medieval(text);
+                    break;
+            }
+            await RespondAsync(finalText);
+        }
     }
 
     [EnabledInDm(false)]
