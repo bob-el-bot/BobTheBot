@@ -98,7 +98,7 @@ public class CodeCommands : InteractionModuleBase<SocketInteractionContext>
             // Check if message is too long for Discord API.
             if (preview.Length > 2000) 
             {
-                await RespondAsync(text: $"❌ The preview of lines {lineNumbers} *cannot* be shown because it contains **{preview.Length}** characters.\n- Try previewiing fewer lines.\n- Discord has a limit of **2000** characters.", ephemeral: true);
+                await RespondAsync(text: $"❌ The preview of lines {lineNumbers} *cannot* be shown because it contains **{preview.Length}** characters.\n- Try previewing fewer lines.\n- Discord has a limit of **2000** characters.", ephemeral: true);
             }
             else
                 await RespondAsync(text: preview);
