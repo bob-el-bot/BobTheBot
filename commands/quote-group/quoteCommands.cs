@@ -50,47 +50,49 @@ public class QuoteCommands : InteractionModuleBase<SocketInteractionContext>
             }
             else  // use description for quote to fit up to 4096 characters
             {
-                embed = new EmbedBuilder
-                {
-                    Title = "",
-                    Color = new Color(2895667),
-                    Description = $"**{formattedQuote}**\n-{user.Mention}, <t:{dateTime}:R>"
-                };
-            }
+                string description = $"**{formattedQuote}**\n-{user.Mention}, <t:{dateTime}:R>";
 
-            if (embed.Description.Length > 4096)
-            {
-                await RespondAsync($"❌ The quote *cannot* be made because it contains **{embed.Description.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **4096** characters in embed descriptions.", ephemeral: true);
-            }
-            else
-            {
-                // Footer
-                string footerText = "";
-                if (tag1 != "" || tag2 != "" || tag3 != "")
+                if (description.Length > 4096)
                 {
-                    footerText += "Tag(s): ";
-                    string[] tags = { tag1, tag2, tag3 };
-                    for (int index = 0; index < tags.Length; index++)
-                    {
-                        if (tags[index] != "")
-                        {
-                            footerText += tags[index];
-                            if (index < tags.Length - 1)
-                                footerText += ", ";
-                        }
-                    }
-                    footerText += " | ";
+                    await RespondAsync($"❌ The quote *cannot* be made because it contains **{description.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **4096** characters in embed descriptions.", ephemeral: true);
                 }
-                footerText += $"Quoted by {Context.User.GlobalName}";
-                embed.WithFooter(footer => footer.Text = footerText);
+                else
+                {
+                    embed = new EmbedBuilder
+                    {
+                        Title = "",
+                        Color = new Color(2895667),
+                        Description = description
+                    };
 
-                // Respond
-                await RespondAsync(text: $"🖊️ Quote made.", ephemeral: true);
+                    // Footer
+                    string footerText = "";
+                    if (tag1 != "" || tag2 != "" || tag3 != "")
+                    {
+                        footerText += "Tag(s): ";
+                        string[] tags = { tag1, tag2, tag3 };
+                        for (int index = 0; index < tags.Length; index++)
+                        {
+                            if (tags[index] != "")
+                            {
+                                footerText += tags[index];
+                                if (index < tags.Length - 1)
+                                    footerText += ", ";
+                            }
+                        }
+                        footerText += " | ";
+                    }
+                    footerText += $"Quoted by {Context.User.GlobalName}";
+                    embed.WithFooter(footer => footer.Text = footerText);
 
-                // Send quote in quotes channel of server
-                var channel = (ISocketMessageChannel)Context.Guild.GetChannel((ulong)server.QuoteChannelId);
+                    // Respond
+                    await RespondAsync(text: $"🖊️ Quote made.", ephemeral: true);
 
-                await channel.SendMessageAsync(embed: embed.Build());
+                    // Send quote in quotes channel of server
+                    var channel = (ISocketMessageChannel)Context.Guild.GetChannel((ulong)server.QuoteChannelId);
+
+                    await channel.SendMessageAsync(embed: embed.Build());
+                }
             }
         }
     }
@@ -149,7 +151,6 @@ public class QuoteCommands : InteractionModuleBase<SocketInteractionContext>
                     Description = $"**{formattedQuote}**\n-{user.Mention}, <t:{dateTime}:R>"
                 };
             }
-
 
             if (embed.Description.Length > 4096)
             {
