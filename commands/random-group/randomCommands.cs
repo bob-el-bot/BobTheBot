@@ -19,7 +19,7 @@ public class RandomCommands : InteractionModuleBase<SocketInteractionContext>
     {
         if (sides <= 0)
         {
-            await RespondAsync(text: $"🌌 The die formed a *rift* in our dimension! **Maybe** try using a number **greater than 0**");
+            await RespondAsync(text: $"🌌 The die formed a *rift* in our dimension! **Maybe** try using a number **greater than 0**", ephemeral: true);
         }
         else
         {
@@ -71,7 +71,11 @@ public class RandomCommands : InteractionModuleBase<SocketInteractionContext>
         string result = results[random.Next(0, results.Length)];
 
         // Respond
-        await RespondAsync(text: $"🎱 **{result}** in response to {prompt}");
+        string formattedText = $"🎱 **{result}** in response to {prompt}";
+        if (formattedText.Length > 2000)
+             await RespondAsync($"❌ The magic 8ball broke because your prompt had **{formattedText.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **2000** characters.", ephemeral: true);
+        else
+            await RespondAsync(text: formattedText);
     }
 
     [EnabledInDm(true)]
@@ -87,9 +91,21 @@ public class RandomCommands : InteractionModuleBase<SocketInteractionContext>
         Choose.TestAdd(option4, choices);
         Choose.TestAdd(option5, choices);
 
-        string choice = choices[random.Next(0, choices.Count)];
+        foreach (string s in choices)
+        {
+            if (s.Length > 1024) // 1024 is arbitrary
+                choices.Remove(s);
+        }
 
-        await RespondAsync(text: "🤔 " + Choose.GetRandomDecisionText() + $"**{choice}**");
+        if (choices.Count <= 0)
+        {
+             await RespondAsync($"❌ Bob *cannot* decide because your choices contain to many characters.\n- Try having fewer characters.", ephemeral: true);
+        }
+        else
+        {
+            string choice = choices[random.Next(0, choices.Count)];
+            await RespondAsync(text: "🤔 " + Choose.GetRandomDecisionText() + $"**{choice}**");
+        }
     }
 
     [EnabledInDm(true)]

@@ -21,6 +21,10 @@ public class QuoteCommands : InteractionModuleBase<SocketInteractionContext>
         {
             await RespondAsync(text: "❌ Use `/quote channel` first (a quote channel is not set in this server).\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
         }
+        else if (quote.Length > 1024) // 1024 is max characters in an embed field.
+        {
+            await RespondAsync($"❌ The quote *cannot* be made because it contains **{quote.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **1024** characters in embeds.", ephemeral: true);
+        }
         else
         {
             // Date
@@ -88,6 +92,10 @@ public class QuoteCommands : InteractionModuleBase<SocketInteractionContext>
         else if (quote == null || quote == "")
         {
             await RespondAsync(text: "❌ The message you tried quoting is invalid. \n- Embeds can't be quoted. \n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+        }
+        else if (quote.Length > 1024) // 1024 is max characters in an embed field.
+        {
+            await RespondAsync($"❌ The quote *cannot* be made because it contains **{quote.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **1024** characters in embeds.", ephemeral: true);
         }
         else
         {

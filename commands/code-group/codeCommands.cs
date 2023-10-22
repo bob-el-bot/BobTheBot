@@ -96,7 +96,7 @@ public class CodeCommands : InteractionModuleBase<SocketInteractionContext>
             string preview = $"🔎 Showing **{lineNumbers}** of [{file}](<{link}>) on branch **{branch}** in **{repository}** repo.\n```{file[(file.IndexOf('.') + 1)..]}\n{previewLines}```";
 
             // Check if message is too long for Discord API.
-            if (preview.Length >= 2000)
+            if (preview.Length > 2000) 
             {
                 await RespondAsync(text: $"❌ The preview of lines {lineNumbers} *cannot* be shown because it contains **{preview.Length}** characters.\n- Try previewiing fewer lines.\n- Discord has a limit of **2000** characters.", ephemeral: true);
             }

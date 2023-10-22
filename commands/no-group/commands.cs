@@ -153,6 +153,10 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         {
             await RespondAsync(text: "❌ Sorry, but no sending messages to bots.", ephemeral: true);
         }
+        else if (message.Length + 3 + signoff.Length > 2000) // 2000 is max characters in a message.
+        {
+            await RespondAsync($"❌ The message *cannot* be delivered because it contains **{message.Length + 3 + signoff.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **2000** characters.", ephemeral: true);
+        }
         else
         {
             await user.SendMessageAsync($"{message} - {signoff}");
@@ -346,7 +350,10 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
                 break;
         }
 
-        await RespondAsync($"{finalText}", ephemeral: true);
+        if (finalText.Length > 2000)
+            await RespondAsync(text: $"❌ The message *cannot* be encrypted because the encryption contains **{finalText.Length}** characters.\n- Try encrypting fewer lines.\n- Try breaking it up.\n- Discord has a limit of **2000** characters.", ephemeral: true);
+        else
+            await RespondAsync($"{finalText}", ephemeral: true);
     }
 }
 
