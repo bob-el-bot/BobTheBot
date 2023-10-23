@@ -25,14 +25,18 @@ public class CodeCommands : InteractionModuleBase<SocketInteractionContext>
             // Parse Link
             string formattedLink;
             if (link[..19] == "https://github.com/")
+            {
                 formattedLink = link[19..];
+            }
             else if (link[..11] == "github.com/")
             {
                 formattedLink = link[11..];
                 link = "https://" + link;
             }
             else
+            {
                 throw new Exception();
+            }
             //bob-el-bot/website/blob/main/index.html#L15-L18
             string organization = formattedLink[..formattedLink.IndexOf("/")];
             formattedLink = formattedLink[(formattedLink.IndexOf("/") + 1)..];
@@ -58,10 +62,19 @@ public class CodeCommands : InteractionModuleBase<SocketInteractionContext>
             {
                 if (lineNumbers.Contains('-'))
                 {
-                    if (lineNumbers[..lineNumbers.IndexOf('-')].Contains('C')) lineNumbers = lineNumbers[..lineNumbers.IndexOf("C")] + lineNumbers[lineNumbers.IndexOf("-")..];
-                    if (lineNumbers.Contains('C')) lineNumbers = lineNumbers[..lineNumbers.IndexOf("C")];
+                    if (lineNumbers[..lineNumbers.IndexOf('-')].Contains('C'))
+                    {
+                        lineNumbers = lineNumbers[..lineNumbers.IndexOf("C")] + lineNumbers[lineNumbers.IndexOf("-")..];
+                    }
+                    if (lineNumbers.Contains('C'))
+                    {
+                        lineNumbers = lineNumbers[..lineNumbers.IndexOf("C")];
+                    }
                 }
-                else lineNumbers = lineNumbers[..lineNumbers.IndexOf("C")];
+                else
+                {
+                    lineNumbers = lineNumbers[..lineNumbers.IndexOf("C")];
+                }
             }
 
             lineNumbers = lineNumbers.Replace("L", "");
@@ -79,9 +92,13 @@ public class CodeCommands : InteractionModuleBase<SocketInteractionContext>
             }
 
             if (endLine == null || startLine == null)
+            {
                 throw new Exception();
+            }
             else if (endLine < startLine)
+            {
                 throw new Exception();
+            }
 
             // Send Request
             string content = await APIInterface.GetFromAPI($"https://api.github.com/repos/{organization}/{repository}/contents/{file}?ref={branch}", APIInterface.AcceptTypes.application_json);
@@ -96,12 +113,14 @@ public class CodeCommands : InteractionModuleBase<SocketInteractionContext>
             string preview = $"🔎 Showing **{lineNumbers}** of [{file}](<{link}>) on branch **{branch}** in **{repository}** repo.\n```{file[(file.IndexOf('.') + 1)..]}\n{previewLines}```";
 
             // Check if message is too long for Discord API.
-            if (preview.Length > 2000) 
+            if (preview.Length > 2000)
             {
                 await RespondAsync(text: $"❌ The preview of lines {lineNumbers} *cannot* be shown because it contains **{preview.Length}** characters.\n- Try previewing fewer lines.\n- Discord has a limit of **2000** characters.", ephemeral: true);
             }
             else
+            {
                 await RespondAsync(text: preview);
+            }
         }
         catch (Exception e)
         {

@@ -23,14 +23,17 @@ public static class Bot
 
     private static InteractionService Service;
 
-    private static readonly string Token = Config.GetTestToken();
+    private static readonly string Token = Config.GetToken();
 
     // Purple (normal) Theme: 9261821 |  Orange (halloween) Theme: 16760153
     public static readonly Color theme = new(16760153);
 
     public static async Task Main()
     {
-        if (Token is null) throw new Exception("Discord bot token not set properly.");
+        if (Token is null) 
+        {
+            throw new Exception("Discord bot token not set properly.");
+        }
 
         Client.Ready += Ready;
         Client.Log += Log;
@@ -44,7 +47,7 @@ public static class Bot
         while (Console.ReadKey().Key != ConsoleKey.Q) { };
     }
 
-    public static int totalUsers = 0;
+    public static int totalUsers;
     private static Timer timer;
 
     private static async Task Ready()
@@ -172,12 +175,14 @@ public static class Bot
         try
         {
             SocketInteractionContext ctx = new(Client, interaction);
-            IResult res = await Service.ExecuteCommandAsync(ctx, null);
+            await Service.ExecuteCommandAsync(ctx, null);
         }
         catch
         {
             if (interaction.Type == InteractionType.ApplicationCommand)
+            {
                 await interaction.GetOriginalResponseAsync().ContinueWith(async (msg) => await msg.Result.DeleteAsync());
+            }
         }
     }
 

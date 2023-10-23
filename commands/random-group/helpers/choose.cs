@@ -5,7 +5,10 @@ public class Choose
 {
     public static List<string> TestAdd(string option, List<string> choices)
     {
-        if (option != "") choices.Add(option);
+        if (option != "")
+        {
+            choices.Add(option);
+        }
         return choices;
     }
 

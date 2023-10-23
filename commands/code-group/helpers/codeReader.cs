@@ -1,4 +1,4 @@
-
+using System.Text;
 
 public static class CodeReader
 {
@@ -7,12 +7,12 @@ public static class CodeReader
         if (startLine != endLine)
         {
             var allLines = fileContent.Split("\n");
-            string lines = "";
+            StringBuilder lines = new();
             for (int i = startLine - 1; i < endLine; i++)
             {
-                lines += (i + 1).ToString() + " " + allLines[i] + "\n";
+                lines.Append((i + 1).ToString() + " " + allLines[i] + "\n");
             }
-            return lines;
+            return lines.ToString();
         }
         else if (startLine == endLine)
         {
