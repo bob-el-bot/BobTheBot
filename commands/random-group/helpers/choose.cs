@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-public class Choose
+public static class Choose
 {
     public static List<string> TestAdd(string option, List<string> choices)
     {

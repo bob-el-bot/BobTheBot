@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Linq;
 using Database;
-using Microsoft.EntityFrameworkCore;
 using System.Net.Http;
 
 public static class Bot
@@ -52,7 +51,7 @@ public static class Bot
 
     private static async Task Ready()
     {
-        Service = new InteractionService(Client, new InteractionServiceConfig()
+        Service = new(Client, new InteractionServiceConfig()
         {
             UseCompiledLambda = true,
             ThrowOnError = true
@@ -64,7 +63,7 @@ public static class Bot
         Client.InteractionCreated += InteractionCreated;
         Service.SlashCommandExecuted += SlashCommandResulted;
 
-        // Determine the user count;
+        // Determine the user count
         foreach (var guild in Client.Guilds)
         {
             totalUsers += guild.MemberCount;
