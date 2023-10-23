@@ -12,7 +12,7 @@ using Discord.Interactions;
 [Group("random", "All random (RNG) commands.")]
 public class RandomCommands : InteractionModuleBase<SocketInteractionContext>
 {
-    public Random random = new();
+    private readonly Random random = new();
 
     [EnabledInDm(true)]
     [SlashCommand("dice-roll", "Bob will roll a die with the side amount specified.")]
@@ -161,7 +161,6 @@ public class RandomCommands : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("coin-toss", "Bob will flip a coin")]
     public async Task CoinToss()
     {
-        var random = new Random();
         int randInt = random.Next(0, 2);
         string result;
         if (randInt == 1)

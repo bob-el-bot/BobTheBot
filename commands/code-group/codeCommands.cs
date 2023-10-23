@@ -55,7 +55,10 @@ public class CodeCommands : InteractionModuleBase<SocketInteractionContext>
             string lineNumbers = formattedLink;
 
             // Check if there are line number specifiers (there need to be)
-            if (!lineNumbers.Contains('L')) throw new Exception();
+            if (!lineNumbers.Contains('L'))
+            {
+                throw new Exception();
+            }
 
             // If it contains character specifiers get rid of them. example: (#L15C12-L18C17)
             if (lineNumbers.Contains('C'))

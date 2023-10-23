@@ -2,7 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
-public class Performance
+public static class Performance
 {
     public static async Task<double> GetCpuUsageForProcess()
     {

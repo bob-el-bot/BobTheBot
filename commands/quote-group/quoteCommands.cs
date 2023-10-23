@@ -1,11 +1,9 @@
 using System;
-using System.Linq;
-using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using Microsoft.VisualBasic;
 
 [EnabledInDm(false)]
 [Group("quote", "All quoting commands.")]
@@ -66,24 +64,26 @@ public class QuoteCommands : InteractionModuleBase<SocketInteractionContext>
                     };
 
                     // Footer
-                    string footerText = "";
+                    StringBuilder footerText = new();
                     if (tag1 != "" || tag2 != "" || tag3 != "")
                     {
-                        footerText += "Tag(s): ";
+                        footerText.Append("Tag(s): ");
                         string[] tags = { tag1, tag2, tag3 };
                         for (int index = 0; index < tags.Length; index++)
                         {
                             if (tags[index] != "")
                             {
-                                footerText += tags[index];
+                                footerText.Append(tags[index]);
                                 if (index < tags.Length - 1)
-                                    footerText += ", ";
+                                {
+                                    footerText.Append( ", ");
+                                }
                             }
                         }
-                        footerText += " | ";
+                        footerText.Append(" | ");
                     }
-                    footerText += $"Quoted by {Context.User.GlobalName}";
-                    embed.WithFooter(footer => footer.Text = footerText);
+                    footerText.Append($"Quoted by {Context.User.GlobalName}");
+                    embed.WithFooter(footer => footer.Text = footerText.ToString());
 
                     // Respond
                     await RespondAsync(text: $"🖊️ Quote made.", ephemeral: true);

@@ -50,11 +50,17 @@ public class MasterMindCommands : InteractionModuleBase<SocketInteractionContext
         {
             var game = MasterMindGeneral.currentGames.Find(game => game.id == Context.Channel.Id);
             if (game == null)
+            {
                 await RespondAsync(text: "❌ There is currently not a game of Master Mind in this channel. To make one use `/master-mind new-game`", ephemeral: true);
+            }
             else if (MasterMindGeneral.currentGames.Count > 0 && game.isStarted == false)
+            {
                 await RespondAsync(text: "❌ Press \"Begin Game!\" to start guessing.", ephemeral: true);
+            }
             else if (guess.Length != 4)
+            {
                 await RespondAsync(text: "❌ Your should have **exactly 4 digits** (No guesses were expended).", ephemeral: true);
+            }
             else
             {
                 // Set Values
