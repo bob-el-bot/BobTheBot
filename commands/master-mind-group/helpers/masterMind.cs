@@ -1,16 +1,15 @@
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using Discord.WebSocket;
+using System.Text;
 
 public class MasterMindGeneral
 {
     public static List<MasterMindGame> currentGames = new();
-   
+
     public static string GetCongrats()
     {
         Random random = new();
-        string[] congrats = { "*You* did it!",  "*You* solved it!", "Great job! *you* beat it!" };
+        string[] congrats = { "*You* did it!", "*You* solved it!", "Great job! *you* beat it!" };
         return congrats[random.Next(0, congrats.Length)];
     }
 
@@ -24,15 +23,19 @@ public class MasterMindGeneral
 
     public static string GetResult(string guess, string key)
     {
-        string result = "";
+        StringBuilder result = new();
         for (int i = 0; i < guess.Length; i++)
         {
             if (guess[i] == key[i])
-                result += "🟩";
+            {
+                result.Append("🟩");
+            }
             else
-                result += "🟥";
+            {
+                result.Append("🟥");
+            }
         }
 
-        return result;
+        return result.ToString();
     }
 }

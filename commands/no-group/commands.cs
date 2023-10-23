@@ -5,6 +5,8 @@ using System.Text.Json.Nodes;
 using Discord.WebSocket;
 using Discord;
 using System.Linq;
+using System.Diagnostics;
+using System.Text;
 
 public class Commands : InteractionModuleBase<SocketInteractionContext>
 {
@@ -28,15 +30,17 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("hug", "Hug your friends! (up to 5 people in a group hug!)")]
     public async Task Hug(SocketUser person1, SocketUser person2 = null, SocketUser person3 = null, SocketUser person4 = null, SocketUser person5 = null)
     {
-        string response = "";
-        response += Context.User.Mention + " *hugs* " + person1.Mention;
+        StringBuilder response = new();
+        response.Append(Context.User.Mention + " *hugs* " + person1.Mention);
 
         SocketUser[] people = { person2, person3, person4, person5 };
 
         for (int i = 0; i < people.Length; i++)
         {
             if (people[i] != null)
-                response += ", " + people[i].Mention;
+            {
+                response.Append(", " + people[i].Mention);
+            }
         }
 
         await RespondAsync(text: $"🤗🫂 {response}" + "!");
@@ -231,32 +235,21 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
     public async Task Fonts([Summary("text", "the text you want converted. NOTE: only the alphabet is converted.")] string text, FontConversion.FontTypes font)
     {
         if (text.Length > 2000) // 2000 is max characters in a message.
+        {
             await RespondAsync($"❌ The inputted text *cannot* be converted to a different font because it contains **{text.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **2000** characters.", ephemeral: true);
+        }
         else
         {
-            string finalText = "";
-
-            switch (font)
+            string finalText = font switch
             {
-                case FontConversion.FontTypes.fancy:
-                    finalText = FontConversion.Fancy(text);
-                    break;
-                case FontConversion.FontTypes.slashed:
-                    finalText = FontConversion.Slashed(text);
-                    break;
-                case FontConversion.FontTypes.outlined:
-                    finalText = FontConversion.Outlined(text);
-                    break;
-                case FontConversion.FontTypes.flipped:
-                    finalText = FontConversion.Flipped(text);
-                    break;
-                case FontConversion.FontTypes.boxed:
-                    finalText = FontConversion.Boxed(text);
-                    break;
-                case FontConversion.FontTypes.medieval:
-                    finalText = FontConversion.Medieval(text);
-                    break;
-            }
+                FontConversion.FontTypes.fancy => FontConversion.Fancy(text),
+                FontConversion.FontTypes.slashed => FontConversion.Slashed(text),
+                FontConversion.FontTypes.outlined => FontConversion.Outlined(text),
+                FontConversion.FontTypes.flipped => FontConversion.Flipped(text),
+                FontConversion.FontTypes.boxed => FontConversion.Boxed(text),
+                FontConversion.FontTypes.medieval => FontConversion.Medieval(text),
+                _ => text,
+            };
             await RespondAsync(finalText);
         }
     }
@@ -276,14 +269,22 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         for (int i = 0; i < longestIdLength; i++)
         {
             if (i < id1.Length)
+            {
                 id1MakeUp[int.Parse($"{id1[i]}")] += 1;
+            }
             else
+            {
                 id1MakeUp[10] += 1;
+            }
 
             if (i < id2.Length)
+            {
                 id2MakeUp[int.Parse($"{id2[i]}")] += 1;
+            }
             else
+            {
                 id2MakeUp[10] += 1;
+            }
         }
 
         // determine difference between digits
@@ -302,16 +303,17 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
         {
             nameDifference += 10;
             if (person1.Username[1] != person2.Username[1])
+            {
                 nameDifference += 20;
+            }
         }
         if (person1.Username[^1] != person2.Username[^1])
+        {
             nameDifference += 10;
+        }
 
         // calculate perecentage of similarity.
         float matchPercent = (idDifference / longestIdLength + nameLengthDifference / 30 + nameDifference / 40) / 3 * 100;
-        // if (matchPercent > 100)
-        //     matchPercent = 100;
-        // matchPercent = MathF.Ceiling(matchPercent);
 
         // Determine Heart Level
         string heartLevel = HeartLevels.CalculateHeartLevel(matchPercent);
@@ -348,12 +350,18 @@ public class Commands : InteractionModuleBase<SocketInteractionContext>
             case Encryption.CipherTypes.Morse:
                 finalText = Encryption.Morse(message);
                 break;
+            default:
+                break;
         }
 
         if (finalText.Length > 2000)
+        {
             await RespondAsync(text: $"❌ The message *cannot* be encrypted because the encryption contains **{finalText.Length}** characters.\n- Try encrypting fewer lines.\n- Try breaking it up.\n- Discord has a limit of **2000** characters.", ephemeral: true);
+        }
         else
+        {
             await RespondAsync($"{finalText}", ephemeral: true);
+        }
     }
 }
 

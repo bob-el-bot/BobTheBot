@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using ColorHelper;
@@ -67,15 +68,16 @@ public class RandomCommands : InteractionModuleBase<SocketInteractionContext>
         // Possible Answers
         string[] results = { "'no'", "'yes'", "'maybe'", "'ask again'", "'probably not'", "'affirmative'", "'it is certain'", "'very doubtful'", "'regretfully.. yes'", "'try again later...'" };
 
-        // Get Random Result
-        string result = results[random.Next(0, results.Length)];
-
         // Respond
-        string formattedText = $"🎱 **{result}** in response to {prompt}";
+        string formattedText = $"🎱 **{results[random.Next(0, results.Length)]}** in response to {prompt}";
         if (formattedText.Length > 2000)
-             await RespondAsync($"❌ The magic 8ball broke because your prompt had **{formattedText.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **2000** characters.", ephemeral: true);
+        {
+            await RespondAsync($"❌ The magic 8ball broke because your prompt had **{formattedText.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **2000** characters.", ephemeral: true);
+        }
         else
+        {
             await RespondAsync(text: formattedText);
+        }
     }
 
     [EnabledInDm(true)]
@@ -94,12 +96,14 @@ public class RandomCommands : InteractionModuleBase<SocketInteractionContext>
         foreach (string s in choices)
         {
             if (s.Length > 1024) // 1024 is arbitrary
+            {
                 choices.Remove(s);
+            }
         }
 
         if (choices.Count <= 0)
         {
-             await RespondAsync($"❌ Bob *cannot* decide because your choices contain to many characters.\n- Try having fewer characters.", ephemeral: true);
+            await RespondAsync($"❌ Bob *cannot* decide because your choices contain to many characters.\n- Try having fewer characters.", ephemeral: true);
         }
         else
         {
@@ -112,7 +116,7 @@ public class RandomCommands : InteractionModuleBase<SocketInteractionContext>
     [SlashCommand("color", "Bob will choose a random color.")]
     public async Task Color()
     {
-        var hex = String.Format("{0:X6}", random.Next(0x1000000));
+        var hex = string.Format("{0:X6}", random.Next(0x1000000));
         CMYK cmyk = ColorConverter.HexToCmyk(new HEX(hex));
         HSL hsl = ColorConverter.HexToHsl(new HEX(hex));
         HSV hsv = ColorConverter.HexToHsv(new HEX(hex));
@@ -139,7 +143,7 @@ public class RandomCommands : InteractionModuleBase<SocketInteractionContext>
         if (content != "[]") // no quotes match the prompt
         {
             // Parse Content
-            var formattedContent = content.Substring(1, content.Length - 2);
+            var formattedContent = content[1..^1];
             var jsonData = JsonNode.Parse(formattedContent).AsObject();
             var quote = jsonData["content"].ToString();
             var author = jsonData["author"].ToString();
@@ -161,9 +165,13 @@ public class RandomCommands : InteractionModuleBase<SocketInteractionContext>
         int randInt = random.Next(0, 2);
         string result;
         if (randInt == 1)
+        {
             result = "heads";
+        }
         else
+        {
             result = "tails";
+        }
         await RespondAsync(text: $"🪙 The coin landed **" + result + "**!");
     }
 
@@ -177,13 +185,15 @@ public class RandomCommands : InteractionModuleBase<SocketInteractionContext>
         var jsonData = JsonNode.Parse(content).AsObject();
         var fact = jsonData["text"].ToString();
 
-        string factFormatted = "";
+        StringBuilder factFormatted = new();
 
         for (int i = 0; i < fact.Length; i++)
         {
             if (fact[i] == '`')
-                factFormatted += "\\";
-            factFormatted += fact[i];
+            {
+                factFormatted.Append('\\');
+            }
+            factFormatted.Append(fact[i]);
         }
 
         await RespondAsync(text: $"🤓 {factFormatted}");

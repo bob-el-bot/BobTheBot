@@ -26,7 +26,7 @@ public class RockPaperScissors
         Random random = new();
         string botOption = options[random.Next(0, RPSOptions.Options.Count)];
 
-        string userOption = options[Int32.Parse(userChoice)];
+        string userOption = options[int.Parse(userChoice)];
         string resultMeaning;
         if (userOption == botOption)
         {
@@ -37,7 +37,9 @@ public class RockPaperScissors
         if ((userOption == "🪨" && botOption == "📃") || (userOption == "📃" && botOption == "✂️") || (userOption == "✂️" && botOption == "🪨"))
         {
             resultMeaning = "*I win!* Let's play again!";
-        }else {
+        }
+        else 
+        {
             resultMeaning = "*You beat me!* Let's play again!";
         }
 

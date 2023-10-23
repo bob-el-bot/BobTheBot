@@ -1,3 +1,4 @@
+using System.Text;
 using Discord.Interactions;
 
 public class FontConversion
@@ -69,24 +70,26 @@ public class FontConversion
 
     public static string TextToFont(string[] FONT, string[] font, string text)
     {
-        string finalText = "";
+        StringBuilder finalText = new();
 
         foreach (char letter in text)
         {
             if (alpha.Contains(letter))
             {
                 int letterIndex = alpha.IndexOf(letter);
-                finalText += font[letterIndex];
+                finalText.Append(font[letterIndex]);
             }
             else if (ALPHA.Contains(letter))
             {
                 int letterIndex = ALPHA.IndexOf(letter);
-                finalText += FONT[letterIndex];
+                finalText.Append(FONT[letterIndex]);
             }
             else
-                finalText += letter;
+            {
+                finalText.Append(letter);
+            }
         }
-        return finalText;
+        return finalText.ToString();
     }
 
 }

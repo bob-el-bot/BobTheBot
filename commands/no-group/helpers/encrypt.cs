@@ -1,3 +1,4 @@
+using System.Text;
 using Discord.Interactions;
 
 public class Encryption
@@ -24,23 +25,23 @@ public class Encryption
 
     public static string Atbash(string text)
     {
-        string finalText = "";
+        StringBuilder finalText = new();
 
         foreach (char letter in text)
         {
             if (alpha.IndexOf(letter) > -1)
             {
                 int finalVal = 25 - alpha.IndexOf(letter);
-                finalText += alpha[finalVal];
+                finalText.Append(alpha[finalVal]);
             }
             else if (ALPHA.IndexOf(letter) > -1)
             {
                 int finalVal = 25 - ALPHA.IndexOf(letter);
-                finalText += ALPHA[finalVal];
+                finalText.Append(ALPHA[finalVal]);
             }
             else
             {
-                finalText += letter;
+                finalText.Append(letter);
             }
         }
 
@@ -49,7 +50,7 @@ public class Encryption
 
     public static string Caesar(string text)
     {
-        string finalText = "";
+        StringBuilder finalText = new();
         int shift = 3;
 
         foreach (char letter in text)
@@ -57,26 +58,36 @@ public class Encryption
             if (alpha.IndexOf(letter) > -1)
             {
                 if (alpha.IndexOf(letter) + shift <= 25)
-                    finalText += alpha[alpha.IndexOf(letter) + shift];
+                {
+                    finalText.Append(alpha[alpha.IndexOf(letter) + shift]);
+                }
                 else
-                    finalText += alpha[alpha.IndexOf(letter) + shift - 26];
+                {
+                    finalText.Append(alpha[alpha.IndexOf(letter) + shift - 26]);
+                }
             }
             else if (ALPHA.IndexOf(letter) > -1)
             {
                 if (ALPHA.IndexOf(letter) + shift <= 25)
-                    finalText += ALPHA[ALPHA.IndexOf(letter) + shift];
+                {
+                    finalText.Append(ALPHA[ALPHA.IndexOf(letter) + shift]);
+                }
                 else
-                    finalText += ALPHA[ALPHA.IndexOf(letter) + shift - 26];
+                {
+                    finalText.Append(ALPHA[ALPHA.IndexOf(letter) + shift - 26]);
+                }
             }
             else
-                finalText += letter;
+            {
+                finalText.Append(letter);
+            }
         }
         return $"🔒 {finalText}";
     }
 
     public static string A1Z26(string text)
     {
-        string finalText = "";
+        StringBuilder finalText = new();
 
         int place = 0;
         foreach (char letter in text)
@@ -84,12 +95,12 @@ public class Encryption
             if (alpha.IndexOf(letter) > -1 || ALPHA.IndexOf(letter) > -1)
             {
                 int letterVal = (alpha.IndexOf(letter) > -1) ? alpha.IndexOf(letter) + 1 : ALPHA.IndexOf(letter) + 1;
-                finalText += letterVal.ToString();
+                finalText.Append(letterVal);
                 if (text.Length > place + 1)
                 {
                     if (alpha.IndexOf(text[place + 1]) > -1 || ALPHA.IndexOf(text[place + 1]) > -1)
                     {
-                        finalText += "-";
+                        finalText.Append('-');
                     }
                 }
                 place += 1;
@@ -97,7 +108,7 @@ public class Encryption
             else
             {
                 place += 1;
-                finalText += letter;
+                finalText.Append(letter);
             }
         }
 
@@ -107,7 +118,7 @@ public class Encryption
     public static string Morse(string text)
     {
         string lowerText = text.ToLower();
-        string finalText = "";
+        StringBuilder finalText = new();
 
         foreach (char character in lowerText)
         {
@@ -116,7 +127,9 @@ public class Encryption
                 for (int i = 0; i < morseAlpha.Length; i++)
                 {
                     if (character.ToString() == morseAlpha[i].Item1)
-                        finalText += " " + morseAlpha[i].Item2;
+                    {
+                        finalText.Append(" " + morseAlpha[i].Item2);
+                    }
                 }
             }
             else if (num.IndexOf(character) > -1) //numbers
@@ -124,7 +137,9 @@ public class Encryption
                 for (int i = 0; i < morseNum.Length; i++)
                 {
                     if (character == morseNum[i].Item1)
-                        finalText += " " + morseNum[i].Item2;
+                    {
+                        finalText.Append(" " + morseNum[i].Item2);
+                    }
                 }
             }
             else if (morseAcceptedSym.IndexOf(character) > -1) // symbols
@@ -132,16 +147,18 @@ public class Encryption
                 for (int i = 0; i < morseSym.Length; i++)
                 {
                     if (character == morseSym[i].Item1)
-                        finalText += " " + morseSym[i].Item2;
+                    {
+                        finalText.Append(" " + morseSym[i].Item2);
+                    }
                 }
             }
             else if (character == ' ') // spaces
             {
-                finalText += " / ";
+                finalText.Append(" / ");
             }
             else // other
             {
-                finalText += " " + character;
+                finalText.Append(" " + character);
             }
         }
 
