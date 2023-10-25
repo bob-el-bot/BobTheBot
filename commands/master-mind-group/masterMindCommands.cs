@@ -1,13 +1,14 @@
 using System.Threading.Tasks;
+using Commands.Helpers;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 
-public class MasterMindCommands : InteractionModuleBase<SocketInteractionContext>
+namespace Commands
 {
     [EnabledInDm(false)]
     [Group("master-mind", "All commands relevant to game Master Mind.")]
-    public class MasterMind : InteractionModuleBase<SocketInteractionContext>
+    public class MasterMindGroup : InteractionModuleBase<SocketInteractionContext>
     {
         [EnabledInDm(false)]
         [SlashCommand("new-game", "Start a game of Master Mind (rules will be sent upon use of this command).")]
@@ -102,66 +103,66 @@ public class MasterMindCommands : InteractionModuleBase<SocketInteractionContext
                 await RespondAsync(text: "🎯 Guess Made.", ephemeral: true);
             }
         }
-    }
 
-    [ComponentInteraction("begin")]
-    public async Task MasterMindBeginButtonHandler()
-    {
-        await DeferAsync();
-        // Get Game
-        var game = MasterMindGeneral.currentGames.Find(game => game.id == Context.Interaction.ChannelId);
-
-        // Set message
-        var component = (SocketMessageComponent)Context.Interaction;
-        game.message = component.Message;
-
-        // Set startUser
-        game.startUser = component.Message.Author.Username;
-
-        // Initialize Key
-        game.key = MasterMindGeneral.CreateKey();
-
-        // Initialize Embed  
-        var embed = new EmbedBuilder
+        [ComponentInteraction("begin", ignoreGroupNames: true)]
+        public async Task MasterMindBeginButtonHandler()
         {
-            Title = "🧠 Master Mind",
-            Color = Bot.theme,
-        };
-        embed.AddField(name: "Guesses Left:", value: $"`{game.guessesLeft}`", inline: true).AddField(name: "Last Guess:", value: "use `/master-mind guess`", inline: true).AddField(name: "Result:", value: "use `/master-mind guess`");
+            await DeferAsync();
+            // Get Game
+            var game = MasterMindGeneral.currentGames.Find(game => game.id == Context.Interaction.ChannelId);
 
-        // Forfeit Button
-        var button = new ButtonBuilder
+            // Set message
+            var component = (SocketMessageComponent)Context.Interaction;
+            game.message = component.Message;
+
+            // Set startUser
+            game.startUser = component.Message.Author.Username;
+
+            // Initialize Key
+            game.key = MasterMindGeneral.CreateKey();
+
+            // Initialize Embed  
+            var embed = new EmbedBuilder
+            {
+                Title = "🧠 Master Mind",
+                Color = Bot.theme,
+            };
+            embed.AddField(name: "Guesses Left:", value: $"`{game.guessesLeft}`", inline: true).AddField(name: "Last Guess:", value: "use `/master-mind guess`", inline: true).AddField(name: "Result:", value: "use `/master-mind guess`");
+
+            // Forfeit Button
+            var button = new ButtonBuilder
+            {
+                Label = "Forfeit",
+                Style = ButtonStyle.Danger,
+                CustomId = "quit"
+            };
+            var builder = new ComponentBuilder().WithButton(button);
+
+            // Begin Game
+            game.isStarted = true;
+
+            // Edit Message For Beginning of Game.
+            await component.Message.ModifyAsync(x => { x.Embed = embed.Build(); x.Components = builder.Build(); });
+        }
+
+        [ComponentInteraction("quit", ignoreGroupNames: true)]
+        public async Task MasterMindQuitButtonHandler()
         {
-            Label = "Forfeit",
-            Style = ButtonStyle.Danger,
-            CustomId = "quit"
-        };
-        var builder = new ComponentBuilder().WithButton(button);
+            await DeferAsync();
+            // Get Game
+            var game = MasterMindGeneral.currentGames.Find(game => game.id == Context.Interaction.Channel.Id);
 
-        // Begin Game
-        game.isStarted = true;
+            var embed = new EmbedBuilder
+            {
+                Title = "🧠 Master Mind",
+                Color = Bot.theme,
+                Description = "This was certainly difficult, try again with `/master-mind new-game`",
+            };
 
-        // Edit Message For Beginning of Game.
-        await component.Message.ModifyAsync(x => { x.Embed = embed.Build(); x.Components = builder.Build(); });
-    }
-
-    [ComponentInteraction("quit")]
-    public async Task MasterMindQuitButtonHandler()
-    {
-        await DeferAsync();
-        // Get Game
-        var game = MasterMindGeneral.currentGames.Find(game => game.id == Context.Interaction.Channel.Id);
-
-        var embed = new EmbedBuilder
-        {
-            Title = "🧠 Master Mind",
-            Color = Bot.theme,
-            Description = "This was certainly difficult, try again with `/master-mind new-game`",
-        };
-
-        embed.Title += " (forfeited)";
-        embed.AddField(name: "Answer:", value: $"`{game.key}`");
-        await game.message.ModifyAsync(x => { x.Embed = embed.Build(); x.Components = null; });
-        MasterMindGeneral.currentGames.Remove(game);
+            embed.Title += " (forfeited)";
+            embed.AddField(name: "Answer:", value: $"`{game.key}`");
+            await game.message.ModifyAsync(x => { x.Embed = embed.Build(); x.Components = null; });
+            MasterMindGeneral.currentGames.Remove(game);
+        }
     }
 }
