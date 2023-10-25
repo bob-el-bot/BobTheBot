@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Database.Types;
 using Discord;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;

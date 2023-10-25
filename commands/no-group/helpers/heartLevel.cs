@@ -1,11 +1,14 @@
-public class HeartLevel
+namespace Commands.Helpers
 {
-    public string heart = "";
-    public int min = 0;
-
-    public HeartLevel(string heart, int min)
+    public class HeartLevel
     {
-        this.heart = heart;
-        this.min = min;
+        public string heart = "";
+        public int min = 0;
+
+        public HeartLevel(string heart, int min)
+        {
+            this.heart = heart;
+            this.min = min;
+        }
     }
 }

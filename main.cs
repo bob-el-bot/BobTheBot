@@ -8,7 +8,11 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Linq;
 using Database;
+using Commands; // DO NOT REMOVE
 using System.Net.Http;
+using static Performance.Stats;
+using static ApiInteractions.Interface;
+using Database.Types;
 
 public static class Bot
 {
@@ -76,11 +80,11 @@ public static class Bot
         if (Token != Config.GetTestToken())
         {
             // Top GG
-            var topGGResult = await APIInterface.PostToAPI("https://top.gg/api/bots/705680059809398804/stats", Config.GetTopGGToken(), new StringContent("{\"server_count\":" + Client.Guilds.Count.ToString() + "}", System.Text.Encoding.UTF8, "application/json"));
+            var topGGResult = await PostToAPI("https://top.gg/api/bots/705680059809398804/stats", Config.GetTopGGToken(), new StringContent("{\"server_count\":" + 294.ToString() + "}", System.Text.Encoding.UTF8, "application/json"));
             Console.WriteLine($"TopGG POST status: {topGGResult}");
 
             // Discord Bots GG
-            var discordBotsResult = await APIInterface.PostToAPI("https://discord.bots.gg/api/v1/bots/705680059809398804/stats", Config.GetDiscordBotsToken(), new StringContent("{\"guildCount\":" + Client.Guilds.Count.ToString() + "}", System.Text.Encoding.UTF8, "application/json"));
+            var discordBotsResult = await PostToAPI("https://discord.bots.gg/api/v1/bots/705680059809398804/stats", Config.GetDiscordBotsToken(), new StringContent("{\"guildCount\":" + Client.Guilds.Count.ToString() + "}", System.Text.Encoding.UTF8, "application/json"));
             Console.WriteLine($"Discord Bots GG POST status: {discordBotsResult}");
         }
         else
@@ -88,9 +92,9 @@ public static class Bot
             Console.WriteLine("Third party stats NOT updated because test bot is in use.");
         }
 
-        var cpuUsage = await Performance.GetCpuUsageForProcess();
+        var cpuUsage = await GetCpuUsageForProcess();
         Console.WriteLine("CPU at Ready: " + cpuUsage.ToString() + "%");
-        var ramUsage = Performance.GetRamUsageForProcess();
+        var ramUsage = GetRamUsageForProcess();
         Console.WriteLine("RAM at Ready: " + ramUsage.ToString() + "%");
                                        
         string[] statuses = { "/help | 🎃👻🍂", "/help | Try /quote!", $"/help | {totalUsers:n0} users!", "/help | Fonts!", "/help | RNG!", "/help | Quotes!" };
@@ -219,11 +223,11 @@ public static class Bot
         }
         else
         {
-            var cpuUsage = await Performance.GetCpuUsageForProcess();
-            var ramUsage = Performance.GetRamUsageForProcess();
+            var cpuUsage = await GetCpuUsageForProcess();
+            var ramUsage = GetRamUsageForProcess();
             var Location = ctx.Interaction.GuildId == null ? "a DM" : Client.GetGuild(ulong.Parse(ctx.Interaction.GuildId.ToString())).ToString();
             var commandName = info.IsTopLevelCommand ? $"/{info.Name}" : $"/{info.Module.SlashGroupName} {info.Name}";
-            Console.WriteLine($"{DateTime.Now:dd/MM. H:mm:ss} | {Performance.FormatPerformance(cpuUsage, ramUsage)} | Location: {Location} | Command: {commandName}");
+            Console.WriteLine($"{DateTime.Now:dd/MM. H:mm:ss} | {FormatPerformance(cpuUsage, ramUsage)} | Location: {Location} | Command: {commandName}");
         }
     }
 
