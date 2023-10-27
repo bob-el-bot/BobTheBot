@@ -4,7 +4,7 @@
     <img src="https://skillicons.dev/icons?i=cs,net,raspberrypi,discord">
 <p>
 
-<p>A bot for 🎲 RNG, new 📜 fonts, 🔒 encryption, and ✨ more! Currently serving 11,000+ users!</p>
+<p>The bot for 🎲 RNG, 🖊️ quoting, 📜 fonts, 🔒 encryption, and ✨ more! Currently serving 20,000+ users in 300+ servers!</p>
 
 <a href="https://discord.com/oauth2/authorize?client_id=705680059809398804&permissions=1110719392886&scope=bot%20applications.commands">Invite</a>
 <span>|
