@@ -13,6 +13,7 @@ using System.Net.Http;
 using static Performance.Stats;
 using static ApiInteractions.Interface;
 using Database.Types;
+using SQLitePCL;
 
 public static class Bot
 {
@@ -70,7 +71,7 @@ public static class Bot
         // Determine the user count
         // Throwaway as to not block Gateway Tasks.
         _ = Task.Run(() =>
-        {   
+        {
             foreach (var guild in Client.Guilds)
             {
                 totalUsers += guild.MemberCount;
@@ -81,20 +82,24 @@ public static class Bot
         });
 
         // Update third party stats
-        if (Token != Config.GetTestToken())
+        // Throwaway as to not block Gateway Tasks.
+        _ = Task.Run(async () =>
         {
-            // Top GG
-            var topGGResult = await PostToAPI("https://top.gg/api/bots/705680059809398804/stats", Config.GetTopGGToken(), new StringContent("{\"server_count\":" + 294.ToString() + "}", System.Text.Encoding.UTF8, "application/json"));
-            Console.WriteLine($"TopGG POST status: {topGGResult}");
+            if (Token != Config.GetTestToken())
+            {
+                // Top GG
+                var topGGResult = await PostToAPI("https://top.gg/api/bots/705680059809398804/stats", Config.GetTopGGToken(), new StringContent("{\"server_count\":" + 294.ToString() + "}", System.Text.Encoding.UTF8, "application/json"));
+                Console.WriteLine($"TopGG POST status: {topGGResult}");
 
-            // Discord Bots GG
-            var discordBotsResult = await PostToAPI("https://discord.bots.gg/api/v1/bots/705680059809398804/stats", Config.GetDiscordBotsToken(), new StringContent("{\"guildCount\":" + Client.Guilds.Count.ToString() + "}", System.Text.Encoding.UTF8, "application/json"));
-            Console.WriteLine($"Discord Bots GG POST status: {discordBotsResult}");
-        }
-        else
-        {
-            Console.WriteLine("Third party stats NOT updated because test bot is in use.");
-        }
+                // Discord Bots GG
+                var discordBotsResult = await PostToAPI("https://discord.bots.gg/api/v1/bots/705680059809398804/stats", Config.GetDiscordBotsToken(), new StringContent("{\"guildCount\":" + Client.Guilds.Count.ToString() + "}", System.Text.Encoding.UTF8, "application/json"));
+                Console.WriteLine($"Discord Bots GG POST status: {discordBotsResult}");
+            }
+            else
+            {
+                Console.WriteLine("Third party stats NOT updated because test bot is in use.");
+            }
+        });
 
         var cpuUsage = await GetCpuUsageForProcess();
         Console.WriteLine("CPU at Ready: " + cpuUsage.ToString() + "%");
