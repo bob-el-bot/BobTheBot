@@ -33,7 +33,7 @@ public static class Bot
 
     public static async Task Main()
     {
-        if (Token is null) 
+        if (Token is null)
         {
             throw new Exception("Discord bot token not set properly.");
         }
@@ -68,13 +68,17 @@ public static class Bot
         Service.SlashCommandExecuted += SlashCommandResulted;
 
         // Determine the user count
-        foreach (var guild in Client.Guilds)
-        {
-            totalUsers += guild.MemberCount;
-        }
+        // Throwaway as to not block Gateway Tasks.
+        _ = Task.Run(() =>
+        {   
+            foreach (var guild in Client.Guilds)
+            {
+                totalUsers += guild.MemberCount;
+            }
 
-        totalUsers -= (Token == Config.GetTestToken()) ? 0 : 72000;
-        Console.WriteLine($"Total Users: {totalUsers}");
+            totalUsers -= (Token == Config.GetTestToken()) ? 0 : 72000;
+            Console.WriteLine($"Total Users: {totalUsers}");
+        });
 
         // Update third party stats
         if (Token != Config.GetTestToken())
@@ -96,7 +100,7 @@ public static class Bot
         Console.WriteLine("CPU at Ready: " + cpuUsage.ToString() + "%");
         var ramUsage = GetRamUsageForProcess();
         Console.WriteLine("RAM at Ready: " + ramUsage.ToString() + "%");
-                                       
+
         string[] statuses = { "/help | 🎃👻🍂", "/help | Try /quote!", $"/help | {totalUsers:n0} users!", "/help | Fonts!", "/help | RNG!", "/help | Quotes!" };
         int index = 0;
 
@@ -116,7 +120,8 @@ public static class Bot
     {
         // Download all of the users SEPARATELY from the Gateway Connection to keep WebSocket Connection Alive
         // (This is opposed to the standard: AlwaysDownloadUsers = true; flag) 
-        _ = Task.Run(async () => {
+        _ = Task.Run(async () =>
+        {
             await guild.DownloadUsersAsync();
         });
 
@@ -209,7 +214,7 @@ public static class Bot
                 case InteractionCommandError.Exception:
                     await ctx.Interaction.FollowupAsync($"❌ Something went wrong...\n- Try again later.\n- Join Bob's support server: https://discord.gg/HvGMRZD8jQ");
                     Console.WriteLine($"Error: {res.ErrorReason}");
-                    IMessageChannel logChannel = (IMessageChannel) Client.GetGuild(1058077635692994651).GetChannel(1160105468082004029);
+                    IMessageChannel logChannel = (IMessageChannel)Client.GetGuild(1058077635692994651).GetChannel(1160105468082004029);
                     var commandName = info.IsTopLevelCommand ? $"/{info.Name}" : $"/{info.Module.SlashGroupName} {info.Name}";
                     await logChannel.SendMessageAsync($"**Error:** ```cs\n{res.ErrorReason}```Guild: **{ctx.Guild}** | Command: **{commandName}**");
                     break;
