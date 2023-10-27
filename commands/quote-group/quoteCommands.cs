@@ -17,7 +17,7 @@ namespace Commands
         public async Task New([Summary("quote", "The text you want quoted. Quotation marks (\") will be added.")] string quote, [Summary("user", "The user who the quote belongs to.")] SocketUser user, [Summary("tag1", "A tag for sorting quotes later on.")] string tag1 = "", [Summary("tag2", "A tag for sorting quotes later on.")] string tag2 = "", [Summary("tag3", "A tag for sorting quotes later on.")] string tag3 = "")
         {
             await DeferAsync(ephemeral: true);
-            
+
             Server server = await Bot.DB.GetServer(Context.Guild.Id);
 
             if (server.QuoteChannelId == null)
@@ -75,30 +75,30 @@ namespace Commands
                             Color = new Color(2895667),
                             Description = description
                         };
-
-                        // Footer
-                        StringBuilder footerText = new();
-                        if (tag1 != "" || tag2 != "" || tag3 != "")
-                        {
-                            footerText.Append("Tag(s): ");
-                            string[] tags = { tag1, tag2, tag3 };
-                            for (int index = 0; index < tags.Length; index++)
-                            {
-                                if (tags[index] != "")
-                                {
-                                    footerText.Append(tags[index]);
-                                    if (index < tags.Length - 1)
-                                    {
-                                        footerText.Append(", ");
-                                    }
-                                }
-                            }
-                            footerText.Append(" | ");
-                        }
-                        footerText.Append($"Quoted by {Context.User.GlobalName}");
-                        embed.WithFooter(footer => footer.Text = footerText.ToString());
                     }
                 }
+
+                // Footer
+                StringBuilder footerText = new();
+                if (tag1 != "" || tag2 != "" || tag3 != "")
+                {
+                    footerText.Append("Tag(s): ");
+                    string[] tags = { tag1, tag2, tag3 };
+                    for (int index = 0; index < tags.Length; index++)
+                    {
+                        if (tags[index] != "")
+                        {
+                            footerText.Append(tags[index]);
+                            if (index < tags.Length - 1)
+                            {
+                                footerText.Append(", ");
+                            }
+                        }
+                    }
+                    footerText.Append(" | ");
+                }
+                footerText.Append($"Quoted by {Context.User.GlobalName}");
+                embed.WithFooter(footer => footer.Text = footerText.ToString());
 
                 // Respond
                 await FollowupAsync(text: $"🖊️ Quote made.", ephemeral: true);
