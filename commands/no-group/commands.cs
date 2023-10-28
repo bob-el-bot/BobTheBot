@@ -169,11 +169,11 @@ namespace Commands
         }
 
         [EnabledInDm(true)]
-        [SlashCommand("suggest", "Invites to Bob's Official Discord server where you can suggest ideas.")]
-        public async Task Suggest()
+        [SlashCommand("support", "Sends an invite to Bob's support Server.")]
+        public async Task Support()
         {
             // Respond
-            await RespondAsync(text: "🏰 Have an idea for a command? Share it on the official server for Bob The Bot.\nhttps://discord.gg/HvGMRZD8jQ");
+            await RespondAsync(text: "🏰 Having issues with Bob? [Join Here](https://discord.gg/HvGMRZD8jQ) for help.");
         }
 
         [EnabledInDm(false)]
