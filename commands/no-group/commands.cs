@@ -143,7 +143,7 @@ namespace Commands
             .AddField(name: "🎮 Games:", value: "- `/rock-paper-scissors` Play Bob in a game of rock paper scissors.\n\n- `/master-mind new-game` Play a game of Master Mind, the rules will shared upon usage.\n\n- `/master-mind guess` Make a guess in a game of Master Mind.")
             .AddField(name: "🖊️ Quoting:", value: "- `/quote new [quote] [user] [tag]*3` Formats and shares the quote in designated channel.\n- `/quote channel [channel]` Sets the quote channel for the server.")
             .AddField(name: "✨ Other:", value: "- `/code preview [link]` Preview specific lines of code from a file on GitHub. \n- `/fonts [text] [font]` Change your text to a different font.\n  - `[font]` choices: 𝖒𝖊𝖉𝖎𝖊𝖛𝖆𝖑, 𝓯𝓪𝓷𝓬𝔂, 𝕠𝕦𝕥𝕝𝕚𝕟𝕖𝕕, ɟןıddǝp, s̷l̷̷a̷s̷h̷e̷d̷, and 🄱🄾🅇🄴🄳.\n\n- `/encrypt [message] [cipher]` Change text into a cipher.\n    - `[cipher]` choices: Caesar, A1Z26, Atbash, Morse Code\n\n- `/confess [message] [user] [signoff]` Have Bob DM a user a message.\n\n- `/poll [prompt] [option]*4` Create a poll.\n  - `[option]*4` usage: You must provide 2-4 options. These are essentially the poll's choices.\n\n- `/ship [user]*2` See how good of a match 2 users are.\n\n- `/hug [user]*5` Show your friends some love with a hug.")
-            .AddField(name: "🗄️ Informational / Help:", value: "- `/new` See the latest updates to Bob.\n\n- `/quote-prompts` See all valid prompts for `/random quote`.\n\n- `/ping` Find the client's latency.\n\n- `/info` Learn about Bob.\n\n- `/suggest` Join Bob's official server, and share you ideas!");
+            .AddField(name: "🗄️ Informational / Help:", value: "- `/new` See the latest updates to Bob.\n\n- `/quote-prompts` See all valid prompts for `/random quote`.\n\n- `/ping` Find the client's latency.\n\n- `/info` Learn about Bob.\n\n- `/support` Sends an invite to Bob's support Server.");
 
             await Context.User.SendMessageAsync(embed: embed.Build());
             await RespondAsync(text: $"📪 Check your DMs.", ephemeral: true);
@@ -169,11 +169,11 @@ namespace Commands
         }
 
         [EnabledInDm(true)]
-        [SlashCommand("suggest", "Invites to Bob's Official Discord server where you can suggest ideas.")]
-        public async Task Suggest()
+        [SlashCommand("support", "Sends an invite to Bob's support Server.")]
+        public async Task Support()
         {
             // Respond
-            await RespondAsync(text: "🏰 Have an idea for a command? Share it on the official server for Bob The Bot.\nhttps://discord.gg/HvGMRZD8jQ");
+            await RespondAsync(text: "🏰 Having issues with Bob? [Join Here](https://discord.gg/HvGMRZD8jQ) for help.");
         }
 
         [EnabledInDm(false)]

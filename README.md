@@ -4,7 +4,7 @@
     <img src="https://skillicons.dev/icons?i=cs,net,raspberrypi,discord">
 <p>
 
-<p>A bot for 🎲 RNG, new 📜 fonts, 🔒 encryption, and ✨ more! Currently serving 11,000+ users!</p>
+<p>The bot for 🎲 RNG, 🖊️ quoting, 📜 fonts, 🔒 encryption, and ✨ more! Currently serving 20,000+ users in 300+ servers!</p>
 
 <a href="https://discord.com/oauth2/authorize?client_id=705680059809398804&permissions=1110719392886&scope=bot%20applications.commands">Invite</a>
 <span>|
@@ -94,7 +94,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/quote-prompts` See all valid prompts for `/random quote`.
 - `/ping` Find the client's latency.
 - `/info` Learn about Bob.
-- `/suggest` Join Bob's official server and share your ideas!
+- `/support` Sends an invite to Bob's support Server.
 
 # How is Bob Hosted?
 Bob runs on a Raspberry Pi 4 running Raspberry Pi OS Lite. This enables a lot of freedom in terms of feature sets because Bob no longer relies on [replit](replit.com). Replit was originally used, but after an outrageous price increase it was no longer viable.

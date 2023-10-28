@@ -27,7 +27,7 @@ namespace Commands
                 var embed = new EmbedBuilder
                 {
                     Title = "🧠 Master Mind",
-                    Color = Bot.theme,
+                    Color = new(16415395),
                 };
                 embed.AddField(name: "How to Play.", value: "The goal of the game is to guess the correct randomly generated code. **Each code is 4 digits** long where each digit is an integer from **1-9**. Use the command `/master-mind guess` to make your guess. Be warned you only have **8 tries**!");
 
@@ -74,12 +74,13 @@ namespace Commands
                 var embed = new EmbedBuilder
                 {
                     Title = "🧠 Master Mind",
-                    Color = Bot.theme,
+                    Color = new(16415395),
                 };
 
                 if (result == "🟩🟩🟩🟩") // it is solved
                 {
                     embed.Title += " (solved)";
+                    embed.Color = new(5763719);
                     embed.Description = MasterMindGeneral.GetCongrats();
                     embed.AddField(name: "Answer:", value: $"`{game.key}`", inline: true).AddField(name: "Guesses Left:", value: $"`{game.guessesLeft}`", inline: true);
                     await game.message.ModifyAsync(x => { x.Embed = embed.Build(); x.Components = null; });
@@ -88,6 +89,7 @@ namespace Commands
                 else if (game.guessesLeft <= 0) // lose game
                 {
                     embed.Title += " (lost)";
+                    embed.Color = new(15548997);
                     embed.Description = "You have lost, but don't be sad you can just start a new game with `/master-mind new-game`";
                     embed.AddField(name: "Answer:", value: $"`{game.key}`");
                     await game.message.ModifyAsync(x => { x.Embed = embed.Build(); x.Components = null; });
@@ -125,7 +127,7 @@ namespace Commands
             var embed = new EmbedBuilder
             {
                 Title = "🧠 Master Mind",
-                Color = Bot.theme,
+                Color = new(16415395),
             };
             embed.AddField(name: "Guesses Left:", value: $"`{game.guessesLeft}`", inline: true).AddField(name: "Last Guess:", value: "use `/master-mind guess`", inline: true).AddField(name: "Result:", value: "use `/master-mind guess`");
 
@@ -155,7 +157,7 @@ namespace Commands
             var embed = new EmbedBuilder
             {
                 Title = "🧠 Master Mind",
-                Color = Bot.theme,
+                Color = new(15548997),
                 Description = "This was certainly difficult, try again with `/master-mind new-game`",
             };
 
