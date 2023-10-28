@@ -14,6 +14,7 @@ using static Performance.Stats;
 using static ApiInteractions.Interface;
 using Database.Types;
 using SQLitePCL;
+using Microsoft.EntityFrameworkCore;
 
 public static class Bot
 {
@@ -38,6 +39,9 @@ public static class Bot
         {
             throw new Exception("Discord bot token not set properly.");
         }
+
+        // Ensure Database is up to date
+        await DB.Database.EnsureCreatedAsync();
 
         Client.Ready += Ready;
         Client.Log += Log;
