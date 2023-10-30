@@ -8,5 +8,7 @@ namespace Database.Types
         public ulong Id { get; set; }
 
         public ulong? QuoteChannelId { get; set; }
+
+        public bool Welcome { get; set; }
     }
 }
