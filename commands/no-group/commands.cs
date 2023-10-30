@@ -7,6 +7,7 @@ using Discord;
 using System.Text;
 using static ApiInteractions.Interface;
 using Commands.Helpers;
+using Database.Types;
 
 namespace Commands
 {
@@ -142,7 +143,7 @@ namespace Commands
             embed.AddField(name: "🎲 Randomly Generated (RNG):", value: "- `/random color` Get a color with Hex, CMYK, HSL, HSV and RGB codes.\n\n- `/random dice-roll [sides]` Roll a die with a specified # of sides.\n\n- `/random coin-toss` Flip a coin.\n\n- `/random quote [prompt]` Get a random quote.\n  - `[prompt]`choices: This is optional, use `/quote-prompts` to view all valid prompts.\n\n- `/random dad-joke` Get a random dad joke.\n\n- `/random fact` Get an outrageous fact.\n\n- `/random 8ball [prompt]` Get an 8 ball response to a prompt.\n\n- `/random dog` Get a random picture of a dog.\n\n- `/random date [earliestYear] [latestYear]` Get a random date between the inputed years.\n\n- `/random advice` Get a random piece of advice.\n\n- `/random choose [option]*5` Bob will pick from the options provided.")
             .AddField(name: "🎮 Games:", value: "- `/rock-paper-scissors` Play Bob in a game of rock paper scissors.\n\n- `/master-mind new-game` Play a game of Master Mind, the rules will shared upon usage.\n\n- `/master-mind guess` Make a guess in a game of Master Mind.")
             .AddField(name: "🖊️ Quoting:", value: "- `/quote new [quote] [user] [tag]*3` Formats and shares the quote in designated channel.\n- `/quote channel [channel]` Sets the quote channel for the server.")
-            .AddField(name: "✨ Other:", value: "- `/code preview [link]` Preview specific lines of code from a file on GitHub. \n- `/fonts [text] [font]` Change your text to a different font.\n  - `[font]` choices: 𝖒𝖊𝖉𝖎𝖊𝖛𝖆𝖑, 𝓯𝓪𝓷𝓬𝔂, 𝕠𝕦𝕥𝕝𝕚𝕟𝕖𝕕, ɟןıddǝp, s̷l̷̷a̷s̷h̷e̷d̷, and 🄱🄾🅇🄴🄳.\n\n- `/encrypt [message] [cipher]` Change text into a cipher.\n    - `[cipher]` choices: Caesar, A1Z26, Atbash, Morse Code\n\n- `/confess [message] [user] [signoff]` Have Bob DM a user a message.\n\n- `/poll [prompt] [option]*4` Create a poll.\n  - `[option]*4` usage: You must provide 2-4 options. These are essentially the poll's choices.\n\n- `/ship [user]*2` See how good of a match 2 users are.\n\n- `/hug [user]*5` Show your friends some love with a hug.")
+            .AddField(name: "✨ Other:", value: "- `/code preview [link]` Preview specific lines of code from a file on GitHub. \n- `/fonts [text] [font]` Change your text to a different font.\n  - `[font]` choices: 𝖒𝖊𝖉𝖎𝖊𝖛𝖆𝖑, 𝓯𝓪𝓷𝓬𝔂, 𝕠𝕦𝕥𝕝𝕚𝕟𝕖𝕕, ɟןıddǝp, s̷l̷̷a̷s̷h̷e̷d̷, and 🄱🄾🅇🄴🄳.\n\n- `/encrypt [message] [cipher]` Change text into a cipher.\n    - `[cipher]` choices: Caesar, A1Z26, Atbash, Morse Code\n\n- `/confess [message] [user] [signoff]` Have Bob DM a user a message.\n\n- `/poll [prompt] [option]*4` Create a poll.\n  - `[option]*4` usage: You must provide 2-4 options. These are essentially the poll's choices.\n\n- `/ship [user]*2` See how good of a match 2 users are.\n\n- `/hug [user]*5` Show your friends some love with a hug.\n\n- `/welcome [welcome]` Bob will send welcome messages to new server members.")
             .AddField(name: "🗄️ Informational / Help:", value: "- `/new` See the latest updates to Bob.\n\n- `/quote-prompts` See all valid prompts for `/random quote`.\n\n- `/ping` Find the client's latency.\n\n- `/info` Learn about Bob.\n\n- `/support` Sends an invite to Bob's support Server.");
 
             await Context.User.SendMessageAsync(embed: embed.Build());
@@ -174,6 +175,47 @@ namespace Commands
         {
             // Respond
             await RespondAsync(text: "🏰 Having issues with Bob? [Join Here](https://discord.gg/HvGMRZD8jQ) for help.");
+        }
+
+        [EnabledInDm(false)]
+        [SlashCommand("welcome", "Enable or disable Bob welcoming users to your server!")]
+        public async Task Welcome([Summary("welcome", "If checked, Bob will send welcome messages.")] bool welcome)
+        {
+            await DeferAsync(ephemeral: true);
+
+            // Check if the user has manage channels permissions
+            if (!Context.Guild.GetUser(Context.User.Id).GetPermissions(Context.Guild.SystemChannel).ManageChannel)
+            {
+                await RespondAsync(text: $"❌ You do not have permissions to manage <#{Context.Guild.SystemChannel.Id}> (The system channel where welcome messages are sent)\n- Try asking a user with the permission **Manage Channel**.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+            }
+            // Check if Bob has permission to send messages in given channel
+            else if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions(Context.Guild.SystemChannel).SendMessages || !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions(Context.Guild.SystemChannel).ViewChannel)
+            {
+                await RespondAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{Context.Guild.SystemChannel.Id}> (The system channel where welcome messages are sent)\n- Try giving Bob the following pemrissions: `View Channel`, `Send Messages`.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+            }
+            // Update server welcome information.
+            else
+            {
+                Server server = await Bot.DB.GetServer(Context.Guild.Id);
+                server.Welcome = welcome;
+                await Bot.DB.UpdateServer(server);
+
+                if (welcome)
+                {
+                    if (Context.Guild.SystemChannel == null)
+                    {
+                        await FollowupAsync(text: $"❌ Bob knows to welcome users now, but you **need** to set a *System Messages* channel in settings for this to take effect.", ephemeral: true);
+                    }
+                    else
+                    {
+                        await FollowupAsync(text: $"✅ Bob will now greet people in <#{Context.Guild.SystemChannel.Id}>", ephemeral: true);
+                    }
+                }
+                else
+                {
+                    await FollowupAsync(text: $"✅ Bob will not greet people anymore.", ephemeral: true);
+                }
+            }
         }
 
         [EnabledInDm(false)]

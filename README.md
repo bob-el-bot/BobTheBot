@@ -86,6 +86,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/poll [prompt] [option]*4` Create a poll.
 - `/ship [user]*2` See how good of a match 2 users are.
 - `/hug [user]*5` Show your friends some love with a hug.
+- `/welcome [welcome]` Bob will send welcome messages to new server members.
 - `/hi` Say hi to Bob.
 
 ### 🗄️ Informational / help commands:
