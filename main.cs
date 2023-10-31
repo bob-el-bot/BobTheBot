@@ -94,7 +94,7 @@ public static class Bot
             if (Token != Config.GetTestToken())
             {
                 // Top GG
-                var topGGResult = await PostToAPI("https://top.gg/api/bots/705680059809398804/stats", Config.GetTopGGToken(), new StringContent("{\"server_count\":" + 294.ToString() + "}", System.Text.Encoding.UTF8, "application/json"));
+                var topGGResult = await PostToAPI("https://top.gg/api/bots/705680059809398804/stats", Config.GetTopGGToken(), new StringContent("{\"server_count\":" + Client.Guilds.Count.ToString() + "}", System.Text.Encoding.UTF8, "application/json"));
                 Console.WriteLine($"TopGG POST status: {topGGResult}");
 
                 // Discord Bots GG

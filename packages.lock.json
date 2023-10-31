@@ -56,9 +56,9 @@
       },
       "simple-ciphers": {
         "type": "Direct",
-        "requested": "[1.0.0, )",
-        "resolved": "1.0.0",
-        "contentHash": "LG0i3e2kXNTD33GqM0+EiEVFoN4OLeWBrz/IVSV/KHOkh4+1721F5G/1TwQF2u/aVBUm5+so14hxOpQMj/rh1A=="
+        "requested": "[2.0.1, )",
+        "resolved": "2.0.1",
+        "contentHash": "VsngrrZyPD8e9K3u8BXUJGkjO7/hNfYyImflOWAfMPFjGFWq+7T+rQvurNnnVJzegRs03hu571N3A69wuWrMWQ=="
       },
       "Discord.Net.Commands": {
         "type": "Transitive",
