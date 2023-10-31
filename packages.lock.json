@@ -54,6 +54,12 @@
           "Microsoft.Bcl.Build": "1.0.14"
         }
       },
+      "simple-ciphers": {
+        "type": "Direct",
+        "requested": "[1.0.0, )",
+        "resolved": "1.0.0",
+        "contentHash": "LG0i3e2kXNTD33GqM0+EiEVFoN4OLeWBrz/IVSV/KHOkh4+1721F5G/1TwQF2u/aVBUm5+so14hxOpQMj/rh1A=="
+      },
       "Discord.Net.Commands": {
         "type": "Transitive",
         "resolved": "3.12.0",

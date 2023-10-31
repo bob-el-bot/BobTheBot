@@ -8,6 +8,8 @@ using System.Text;
 using static ApiInteractions.Interface;
 using Commands.Helpers;
 using Database.Types;
+using SimpleCiphers;
+using System.Reflection.Emit;
 
 namespace Commands
 {
@@ -374,22 +376,22 @@ namespace Commands
 
         [EnabledInDm(true)]
         [SlashCommand("encrypt", "Bob will encrypt your message with a cipher of your choice.")]
-        public async Task Encrypt([Summary("message", "the text you want to encrypt")] string message, Encryption.CipherTypes cipher)
+        public async Task Encrypt([Summary("message", "the text you want to encrypt")] string message, Ciphers.CipherTypes cipher)
         {
             string finalText = "";
 
             switch (cipher)
             {
-                case Encryption.CipherTypes.Atbash:
+                case Ciphers.CipherTypes.Atbash:
                     finalText = Encryption.Atbash(message);
                     break;
-                case Encryption.CipherTypes.Caesar:
-                    finalText = Encryption.Caesar(message);
+                case Ciphers.CipherTypes.Caesar:
+                    finalText = Encryption.Caesar(message, 3);
                     break;
-                case Encryption.CipherTypes.A1Z26:
+                case Ciphers.CipherTypes.A1Z26:
                     finalText = Encryption.A1Z26(message);
                     break;
-                case Encryption.CipherTypes.Morse:
+                case Ciphers.CipherTypes.Morse:
                     finalText = Encryption.Morse(message);
                     break;
                 default:
