@@ -46,7 +46,7 @@ public static class Bot
         await DB.Database.EnsureCreatedAsync();
         if (DB.Database.GetAppliedMigrations() != DB.Database.GetPendingMigrations())
         {
-            await  DB.Database.MigrateAsync();
+            await DB.Database.MigrateAsync();
         }
 
         Client.Ready += Ready;
@@ -58,19 +58,6 @@ public static class Bot
 
         await Client.LoginAsync(TokenType.Bot, Token);
         await Client.StartAsync();
-        
-        // Status
-        string[] statuses = { "/help | Try /quote!", $"/help | {totalUsers:n0} users!", "/help | Fonts!", "/help | RNG!", "/help | Quotes!" };
-        int index = 0;
-        
-        timer = new(async x =>
-        {
-            if (Client.ConnectionState == ConnectionState.Connected)
-            {
-                await Client.SetGameAsync(statuses[index], null, ActivityType.Playing);
-                index = index + 1 == statuses.Length ? 0 : index + 1;
-            }
-        }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(16));
 
         while (Console.ReadKey().Key != ConsoleKey.Q) { };
     }
@@ -120,6 +107,21 @@ public static class Bot
                 Console.WriteLine("Third party stats NOT updated because test bot is in use.");
             }
         });
+
+        // _ = Task.Run(() =>
+        // {
+        //     // Status
+        //     string[] statuses = { "/help | Try /quote!", $"/help | {totalUsers:n0} users!", "/help | Fonts!", "/help | RNG!", "/help | Quotes!" };
+        //     int index = 0;
+        //     timer = new(async x =>
+        //     {
+        //     if (Client.ConnectionState == ConnectionState.Connected)
+        //     {
+        //         await Client.SetCustomStatusAsync(statuses[index]);
+        //         index = index + 1 == statuses.Length ? 0 : index + 1;
+        //     }
+        //     }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(16));
+        // });
 
         var cpuUsage = await GetCpuUsageForProcess();
         Console.WriteLine("CPU at Ready: " + cpuUsage.ToString() + "%");
