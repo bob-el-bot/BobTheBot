@@ -33,6 +33,8 @@ public static class Bot
     // Purple (normal) Theme: 9261821 |  Orange (halloween) Theme: 16760153
     public static readonly Color theme = new(16760153);
 
+    private static Timer timer;
+
     public static async Task Main()
     {
         if (Token is null)
@@ -42,7 +44,10 @@ public static class Bot
 
         // Ensure Database is up to date
         await DB.Database.EnsureCreatedAsync();
-        await DB.Database.MigrateAsync();
+        if (DB.Database.GetAppliedMigrations() != DB.Database.GetPendingMigrations())
+        {
+            await  DB.Database.MigrateAsync();
+        }
 
         Client.Ready += Ready;
         Client.Log += Log;
@@ -53,12 +58,24 @@ public static class Bot
 
         await Client.LoginAsync(TokenType.Bot, Token);
         await Client.StartAsync();
+        
+        // Status
+        string[] statuses = { "/help | Try /quote!", $"/help | {totalUsers:n0} users!", "/help | Fonts!", "/help | RNG!", "/help | Quotes!" };
+        int index = 0;
+        
+        timer = new(async x =>
+        {
+            if (Client.ConnectionState == ConnectionState.Connected)
+            {
+                await Client.SetGameAsync(statuses[index], null, ActivityType.Playing);
+                index = index + 1 == statuses.Length ? 0 : index + 1;
+            }
+        }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(16));
 
         while (Console.ReadKey().Key != ConsoleKey.Q) { };
     }
 
     public static int totalUsers;
-    private static Timer timer;
 
     private static async Task Ready()
     {
@@ -74,10 +91,10 @@ public static class Bot
         Client.InteractionCreated += InteractionCreated;
         Service.SlashCommandExecuted += SlashCommandResulted;
 
-        // Determine the user count
-        // Throwaway as to not block Gateway Tasks.
-        _ = Task.Run(() =>
+        _ = Task.Run(async () =>
         {
+            // Determine the user count
+            // Throwaway as to not block Gateway Tasks.
             foreach (var guild in Client.Guilds)
             {
                 totalUsers += guild.MemberCount;
@@ -85,12 +102,9 @@ public static class Bot
 
             totalUsers -= (Token == Config.GetTestToken()) ? 0 : 72000;
             Console.WriteLine($"Total Users: {totalUsers}");
-        });
 
-        // Update third party stats
-        // Throwaway as to not block Gateway Tasks.
-        _ = Task.Run(async () =>
-        {
+            // Update third party stats
+            // Throwaway as to not block Gateway Tasks.
             if (Token != Config.GetTestToken())
             {
                 // Top GG
@@ -111,18 +125,6 @@ public static class Bot
         Console.WriteLine("CPU at Ready: " + cpuUsage.ToString() + "%");
         var ramUsage = GetRamUsageForProcess();
         Console.WriteLine("RAM at Ready: " + ramUsage.ToString() + "%");
-
-        string[] statuses = { "/help | 🎃👻🍂", "/help | Try /quote!", $"/help | {totalUsers:n0} users!", "/help | Fonts!", "/help | RNG!", "/help | Quotes!" };
-        int index = 0;
-
-        timer = new(async x =>
-        {
-            if (Client.ConnectionState == ConnectionState.Connected)
-            {
-                await Client.SetGameAsync(statuses[index], null, ActivityType.Playing);
-                index = index + 1 == statuses.Length ? 0 : index + 1;
-            }
-        }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(16));
 
         Client.Ready -= Ready;
     }
