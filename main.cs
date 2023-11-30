@@ -30,8 +30,8 @@ public static class Bot
 
     private static readonly string Token = Config.GetToken();
 
-    // Purple (normal) Theme: 9261821 |  Orange (halloween) Theme: 16760153
-    public static readonly Color theme = new(16760153);
+    // Purple (normal) Theme: 9261821 | Orange (halloween) Theme: 16760153
+    public static readonly Color theme = new(9261821);
 
     private static Timer timer;
 
@@ -42,11 +42,12 @@ public static class Bot
             throw new Exception("Discord bot token not set properly.");
         }
 
-        // Ensure Database is up to date
+        // Ensure Database exists and is up to date
         await DB.Database.EnsureCreatedAsync();
-        if (DB.Database.GetAppliedMigrations() != DB.Database.GetPendingMigrations())
+        var migrations = DB.Database.GetPendingMigrations();
+        if (migrations.Any())
         {
-            await DB.Database.MigrateAsync();
+            DB.Database.Migrate();
         }
 
         Client.Ready += Ready;
@@ -108,20 +109,20 @@ public static class Bot
             }
         });
 
-        // _ = Task.Run(() =>
-        // {
-        //     // Status
-        //     string[] statuses = { "/help | Try /quote!", $"/help | {totalUsers:n0} users!", "/help | Fonts!", "/help | RNG!", "/help | Quotes!" };
-        //     int index = 0;
-        //     timer = new(async x =>
-        //     {
-        //     if (Client.ConnectionState == ConnectionState.Connected)
-        //     {
-        //         await Client.SetCustomStatusAsync(statuses[index]);
-        //         index = index + 1 == statuses.Length ? 0 : index + 1;
-        //     }
-        //     }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(16));
-        // });
+        _ = Task.Run(() =>
+        {
+            // Status
+            string[] statuses = { "/help | Try /quote!", $"/help | {totalUsers:n0} users!", "/help | Fonts!", "/help | RNG!", "/help | Quotes!" };
+            int index = 0;
+            timer = new(async x =>
+            {
+                if (Client.ConnectionState == ConnectionState.Connected)
+                {
+                    await Client.SetCustomStatusAsync(statuses[index]);
+                    index = index + 1 == statuses.Length ? 0 : index + 1;
+                }
+            }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(16));
+        });
 
         var cpuUsage = await GetCpuUsageForProcess();
         Console.WriteLine("CPU at Ready: " + cpuUsage.ToString() + "%");

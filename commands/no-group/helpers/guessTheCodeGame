@@ -1,0 +1,10 @@
+using Discord.WebSocket;
+
+namespace Commands.Helpers {
+    public class GuessCodeGame
+    {
+        public int points = 0;
+        public SocketUser player;
+        public SocketUserMessage message;
+    }
+}
