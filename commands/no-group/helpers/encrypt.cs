@@ -1,7 +1,8 @@
 using System.Text;
 using Discord.Interactions;
 
-namespace Commands.Helpers {
+namespace Commands.Helpers
+{
     public class Ciphers
     {
         public enum CipherTypes

@@ -42,11 +42,12 @@ public static class Bot
             throw new Exception("Discord bot token not set properly.");
         }
 
-        // Ensure Database is up to date
+        // Ensure Database exists and is up to date
         await DB.Database.EnsureCreatedAsync();
-        if (DB.Database.GetAppliedMigrations() != DB.Database.GetPendingMigrations())
+        var migrations = DB.Database.GetPendingMigrations();
+        if (migrations.Any())
         {
-            await DB.Database.MigrateAsync();
+            DB.Database.Migrate();
         }
 
         Client.Ready += Ready;
