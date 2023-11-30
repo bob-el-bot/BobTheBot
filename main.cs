@@ -30,8 +30,8 @@ public static class Bot
 
     private static readonly string Token = Config.GetToken();
 
-    // Purple (normal) Theme: 9261821 |  Orange (halloween) Theme: 16760153
-    public static readonly Color theme = new(16760153);
+    // Purple (normal) Theme: 9261821 | Orange (halloween) Theme: 16760153
+    public static readonly Color theme = new(9261821);
 
     private static Timer timer;
 
