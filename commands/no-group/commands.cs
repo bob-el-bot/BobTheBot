@@ -10,6 +10,12 @@ using Commands.Helpers;
 using Database.Types;
 using SimpleCiphers;
 using System.Reflection.Emit;
+using System.Collections.Generic;
+using System.ComponentModel;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+using Database;
+using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace Commands
 {
@@ -27,6 +33,192 @@ namespace Commands
         public async Task Hi()
         {
             await RespondAsync(text: "👋 hi!");
+        }
+
+        [EnabledInDm(true)]
+        [SlashCommand("analyze-link", "Bob will check out a link, and see where it takes you.")]
+        public async Task AnalyzeLink([Summary("link", "The link in question.")] string link)
+        {
+            if (link.Contains('.') && link.Length < 7 || (link.Length >= 7 && link[..7] != "http://" && link.Length >= 8 && link[..8] != "https://"))
+            {
+                link = $"https://{link}";
+            }
+
+            if (!Uri.IsWellFormedUriString(link, UriKind.Absolute))
+            {
+                await RespondAsync(text: "❌ Your link is not valid. Here are some things to know:\n- Your link could look like this `http://bobthebot.net`, `https://bobthebot.net`, or `bobthebot.net`.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+            }
+            else
+            {
+                await DeferAsync();
+
+                List<Analyze.Link> trail = await Analyze.GetUrlTrail(link);
+                StringBuilder description = new();
+                description.AppendLine("**Clicking this URL will bring you to these places:**\n");
+
+                // Warnings
+                bool isRickRoll = false;
+                // concerning if above 3
+                bool highRedirectCount = trail.Count >= 3;
+                bool containsRedirects = trail.Count > 1;
+                bool containsSpecialRedirect = false;
+                bool failed = false;
+                StringBuilder warnings = new();
+                if (highRedirectCount)
+                {
+                    warnings.AppendLine("- There is a concerning amount of redirects (3 or more). ");
+                }
+
+                if (containsRedirects)
+                {
+                    warnings.AppendLine("- You will get redirected.");
+                }
+
+                // Format Description
+                int linkCount = 1;
+                foreach (Analyze.Link l in trail)
+                {
+                    if (l.isRickRoll && isRickRoll == false)
+                    {
+                        warnings.AppendLine("- You will get rick-rolled. ");
+                        isRickRoll = true;
+                    }
+
+                    if (l.specialCase != null && containsSpecialRedirect == false)
+                    {
+                        warnings.AppendLine("- Contains a hard-coded redirect. ");
+                        containsSpecialRedirect = true;
+                    }
+
+                    if (l.failed && failed == false)
+                    {
+                        warnings.AppendLine("- For an unknown reason, Bob could not open this page (it might not exist). ");
+                        failed = true;
+                    }
+
+                    if (!l.failed)
+                    {
+                        description.Append($"{(linkCount == trail.Count ? "📍" : "⬇️")} <{l.link}> **Status Code:** `{(int)l.statusCode} {l.statusCode}{(l.specialCase != null ? $" - {l.specialCase}" : "")}`\n**Is Rick Roll?** {(l.isRickRoll ? "true" : "false")} **Is Redirect?** {(l.isRedirect ? "true" : "false")}\n");
+                    }
+                    else
+                    {
+                        description.Append($"❌ <{l.link}> **Failed to visit link.**\n");
+                    }
+                    linkCount++;
+                }
+
+                var embed = new EmbedBuilder
+                {
+                    Title = $"🕵️ Analysis of {link}",
+                    Description = description.ToString(),
+                    Footer = new EmbedFooterBuilder
+                    {
+                        Text = "Bob can't gauruntee a link is safe."
+                    },
+                    Color = Bot.theme
+                };
+
+
+                string adviceEmoji = failed && !containsRedirects ? "⁉️" : (isRickRoll || highRedirectCount || failed ? "🚫" : (containsRedirects || containsSpecialRedirect ? "⚠️" : "✅"));
+                embed.AddField(name: $"{adviceEmoji} Warnings", value: $"{(warnings.Length == 0 ? "Bob hasn't found anything to worry about, however that does not mean it is safe for certain." : warnings.ToString())}\n✅ = Not Suspicious ⚠️ = Potentially Suspicious 🚫 = Suspicious ⁉️ = Unknown");
+
+                await FollowupAsync(embed: embed.Build());
+            }
+        }
+
+        [EnabledInDm(true)]
+        [MessageCommand("analyze-link")]
+        public async Task AnalyzeMessageLink(IMessage message)
+        {
+            string pattern = @"(https?://\S+)|(www\.\S+)";
+
+            // Create a Regex object with the pattern
+            Regex regex = new(pattern);
+
+            // Find all matches in the input string
+            MatchCollection matches = regex.Matches(message.Content);
+
+            if (matches.Count == 0)
+            {
+                await RespondAsync(text: "❌ Your link is not valid. Here are some things to know:\n- Your link could look like this `http://bobthebot.net`, or `https://bobthebot.net`.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+            }
+            else
+            {
+                await DeferAsync();
+
+                List<Analyze.Link> trail = await Analyze.GetUrlTrail(matches[0].Value);
+                StringBuilder description = new();
+                description.AppendLine("**Clicking this URL will bring you to these places:**\n");
+
+                // Warnings
+                bool isRickRoll = false;
+                // concerning if above 3
+                bool highRedirectCount = trail.Count >= 3;
+                bool containsRedirects = trail.Count > 1;
+                bool containsSpecialRedirect = false;
+                bool failed = false;
+                StringBuilder warnings = new();
+                if (highRedirectCount)
+                {
+                    warnings.AppendLine("- There is a concerning amount of redirects (3 or more). ");
+                }
+
+                if (containsRedirects)
+                {
+                    warnings.AppendLine("- You will get redirected.");
+                }
+
+                // Format Description
+                int linkCount = 1;
+                foreach (Analyze.Link l in trail)
+                {
+                    if (l.isRickRoll && isRickRoll == false)
+                    {
+                        warnings.AppendLine("- You will get rick-rolled. ");
+                        isRickRoll = true;
+                    }
+
+                    if (l.specialCase != null && containsSpecialRedirect == false)
+                    {
+                        warnings.AppendLine("- Contains a hard-coded redirect. ");
+                        containsSpecialRedirect = true;
+                    }
+
+                    if (l.failed && failed == false)
+                    {
+                        warnings.AppendLine("- For an unknown reason, Bob could not open this page (it might not exist). ");
+                        failed = true;
+                    }
+
+                    if (!l.failed)
+                    {
+                        description.Append($"{(linkCount == trail.Count ? "📍" : "⬇️")} <{l.link}> **Status Code:** `{(int)l.statusCode} {l.statusCode}{(l.specialCase != null ? $" - {l.specialCase}" : "")}`\n**Is Rick Roll?** {(l.isRickRoll ? "true" : "false")} **Is Redirect?** {(l.isRedirect ? "true" : "false")}\n");
+                    }
+                    else
+                    {
+                        description.Append($"❌ <{l.link}> **Failed to visit link.**\n");
+                    }
+                    linkCount++;
+                }
+
+                var embed = new EmbedBuilder
+                {
+                    Title = $"🕵️ Analysis of {matches[0].Value}",
+                    Description = description.ToString(),
+                    Footer = new EmbedFooterBuilder
+                    {
+                        Text = "Bob can't gauruntee a link is safe."
+                    },
+                    Color = Bot.theme
+                };
+
+
+                string adviceEmoji = failed && !containsRedirects ? "⁉️" : (isRickRoll || highRedirectCount || failed ? "🚫" : (containsRedirects || containsSpecialRedirect ? "⚠️" : "✅"));
+                embed.AddField(name: $"{adviceEmoji} Warnings", value: $"{(warnings.Length == 0 ? "Bob hasn't found anything to worry about, however that does mean not it is safe for certain." : warnings.ToString())}\n✅ = Not Suspicious ⚠️ = Potentially Suspicious 🚫 = Suspicious ⁉️ = Unknown");
+
+                await FollowupAsync(embed: embed.Build());
+
+            }
         }
 
         [EnabledInDm(true)]
