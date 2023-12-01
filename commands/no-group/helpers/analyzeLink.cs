@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Dynamic;
 using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
+using Discord;
 using HtmlAgilityPack;
 
 namespace Commands.Helpers
@@ -21,9 +23,82 @@ namespace Commands.Helpers
             public bool failed = false;
         }
 
-        public static async Task<List<Link>> GetUrlTrail(string link)
+        public static async Task<Embed> AnalyzeLink(string link)
         {
-            List<Link> trail = new List<Link>();
+            List<Link> trail = await GetUrlTrail(link);
+            StringBuilder description = new();
+            description.AppendLine("**Clicking this URL will bring you to these places:**\n");
+
+            // Warnings
+            StringBuilder warnings = new();
+            bool isRickRoll = false;
+            // concerning if above 3
+            bool highRedirectCount = trail.Count > 3;
+            if (highRedirectCount)
+            {
+                warnings.AppendLine("- There is a concerning amount of redirects (more than 3). ");
+            }
+            bool containsRedirects = trail.Count > 1;
+            if (containsRedirects)
+            {
+                warnings.AppendLine("- You will get redirected.");
+            }
+            bool containsSpecialRedirect = false;
+            bool failed = false;
+
+            // Format Description
+            int linkCount = 1;
+            foreach (Link l in trail)
+            {
+                if (l.isRickRoll && isRickRoll == false)
+                {
+                    warnings.AppendLine("- You will get rick-rolled. ");
+                    isRickRoll = true;
+                }
+
+                if (l.specialCase != null && containsSpecialRedirect == false)
+                {
+                    warnings.AppendLine("- Contains a hard-coded redirect. ");
+                    containsSpecialRedirect = true;
+                }
+
+                if (l.failed && failed == false)
+                {
+                    warnings.AppendLine("- For an unknown reason, Bob could not open this page (it might not exist). ");
+                    failed = true;
+                }
+
+                if (!l.failed)
+                {
+                    description.Append($"{(linkCount == trail.Count ? "📍" : "⬇️")} <{l.link}> **Status Code:** `{(int)l.statusCode} {l.statusCode}{(l.specialCase != null ? $" - {l.specialCase}" : "")}`\n**Is Rick Roll?** {(l.isRickRoll ? "true" : "false")} **Is Redirect?** {(l.isRedirect ? "true" : "false")}\n");
+                }
+                else
+                {
+                    description.Append($"❌ <{l.link}> **Failed to visit link.**\n");
+                }
+                linkCount++;
+            }
+
+            var embed = new EmbedBuilder
+            {
+                Title = $"🕵️ Analysis of {link}",
+                Description = description.ToString(),
+                Footer = new EmbedFooterBuilder
+                {
+                    Text = "Bob can't gauruntee a link is safe."
+                },
+                Color = Bot.theme
+            };
+
+            string adviceEmoji = failed && !containsRedirects ? "⁉️" : (isRickRoll || highRedirectCount || failed ? "🚫" : (containsRedirects || containsSpecialRedirect ? "⚠️" : "✅"));
+            embed.AddField(name: $"{adviceEmoji} Warnings", value: $"{(warnings.Length == 0 ? "Bob hasn't found anything to worry about, however that does mean not it is safe for certain." : warnings.ToString())}\n✅ = Not Suspicious ⚠️ = Potentially Suspicious 🚫 = Suspicious ⁉️ = Unknown");
+
+            return embed.Build(); 
+        }
+
+        private static async Task<List<Link>> GetUrlTrail(string link)
+        {
+            List<Link> trail = new();
 
             while (!string.IsNullOrWhiteSpace(link))
             {
@@ -59,7 +134,7 @@ namespace Commands.Helpers
                                 link = link,
                                 statusCode = req.StatusCode,
                                 specialCase = "Meta-Refresh Redirect",
-                                isRickRoll = link == "https://www.youtube.com/watch?v=dQw4w9WgXcQ" ? true : false,
+                                isRickRoll = link == "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
                                 isRedirect = true
                             };
                             trail.Add(newLink);
@@ -71,8 +146,8 @@ namespace Commands.Helpers
                             {
                                 link = link,
                                 statusCode = req.StatusCode,
-                                isRickRoll = link == "https://www.youtube.com/watch?v=dQw4w9WgXcQ" ? true : false,
-                                isRedirect = ((int)req.StatusCode >= 300 && (int)req.StatusCode <= 308) ? true : false
+                                isRickRoll = link == "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                                isRedirect = (int)req.StatusCode >= 300 && (int)req.StatusCode <= 308
                             };
                             trail.Add(newLink);
                             link = null;
@@ -84,8 +159,8 @@ namespace Commands.Helpers
                         {
                             link = link,
                             statusCode = req.StatusCode,
-                            isRickRoll = link == "https://www.youtube.com/watch?v=dQw4w9WgXcQ" ? true : false,
-                            isRedirect = ((int)req.StatusCode >= 300 && (int)req.StatusCode <= 308) ? true : false
+                            isRickRoll = link == "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                            isRedirect = (int)req.StatusCode >= 300 && (int)req.StatusCode <= 308
                         };
                         trail.Add(newLink);
 
