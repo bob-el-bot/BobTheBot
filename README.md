@@ -96,6 +96,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/new` See the latest updates to Bob.
 - `/quote-prompts` See all valid prompts for `/random quote`.
 - `/ping` Find the client's latency.
+- `/analyze-link` See where a link will take you, and check for rick rolls.
 - `/info` Learn about Bob.
 - `/support` Sends an invite to Bob's support Server.
 
