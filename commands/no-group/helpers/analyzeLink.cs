@@ -8,11 +8,14 @@ using System.Text;
 using System.Threading.Tasks;
 using Discord;
 using HtmlAgilityPack;
+using Microsoft.EntityFrameworkCore.Query;
 
 namespace Commands.Helpers
 {
     public class Analyze
     {
+        public static readonly int maximumRedirectCount = 4;
+
         public class Link
         {
             public string link;
@@ -62,19 +65,18 @@ namespace Commands.Helpers
                     containsSpecialRedirect = true;
                 }
 
-                if (l.failed && failed == false)
-                {
-                    warnings.AppendLine("- For an unknown reason, Bob could not open this page (it might not exist). ");
-                    failed = true;
-                }
-
                 if (!l.failed)
                 {
-                    description.Append($"{(linkCount == trail.Count ? "📍" : "⬇️")} <{l.link}> **Status Code:** `{(int)l.statusCode} {l.statusCode}{(l.specialCase != null ? $" - {l.specialCase}" : "")}`\n**Is Rick Roll?** {(l.isRickRoll ? "true" : "false")} **Is Redirect?** {(l.isRedirect ? "true" : "false")}\n");
+                    description.Append($"{(linkCount == trail.Count ? "📍" : "⬇️")} {l.link} **Status Code:** `{(int)l.statusCode} {l.statusCode}{(l.specialCase != null ? $" - {l.specialCase}" : "")}`\n**Is Rick Roll?** {(l.isRickRoll ? "true" : "false")} **Is Redirect?** {(l.isRedirect ? "true" : "false")}\n");
                 }
                 else
                 {
-                    description.Append($"❌ <{l.link}> **Failed to visit link.**\n");
+                    description.Append($"❌ {l.link} **Failed to visit link.**\n");
+                    if (failed == false)
+                    {
+                        warnings.AppendLine("- For an unknown reason, Bob could not open this page (it might not exist). ");
+                        failed = true;
+                    }
                 }
                 linkCount++;
             }
@@ -93,21 +95,21 @@ namespace Commands.Helpers
             string adviceEmoji = failed && !containsRedirects ? "⁉️" : (isRickRoll || highRedirectCount || failed ? "🚫" : (containsRedirects || containsSpecialRedirect ? "⚠️" : "✅"));
             embed.AddField(name: $"{adviceEmoji} Warnings", value: $"{(warnings.Length == 0 ? "Bob hasn't found anything to worry about, however that does mean not it is safe for certain." : warnings.ToString())}\n✅ = Not Suspicious ⚠️ = Potentially Suspicious 🚫 = Suspicious ⁉️ = Unknown");
 
-            return embed.Build(); 
+            return embed.Build();
         }
 
         private static async Task<List<Link>> GetUrlTrail(string link)
         {
             List<Link> trail = new();
 
-            while (!string.IsNullOrWhiteSpace(link))
+            int redirectCount = 0;
+            while (redirectCount <= maximumRedirectCount && !string.IsNullOrWhiteSpace(link))
             {
                 HttpClientHandler handler = new()
                 {
-                    AllowAutoRedirect = false
+                    AllowAutoRedirect = false,
                 };
                 HttpClient httpClient = new(handler);
-
                 HttpRequestMessage request = new(HttpMethod.Head, link);
 
                 request.Headers.UserAgent.Add(ApiInteractions.Interface.productValue);
@@ -131,7 +133,7 @@ namespace Commands.Helpers
                             string url = GetUrlFromContent(content);
                             Link newLink = new()
                             {
-                                link = link,
+                                link = $"<{link}>",
                                 statusCode = req.StatusCode,
                                 specialCase = "Meta-Refresh Redirect",
                                 isRickRoll = link == "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
@@ -139,12 +141,13 @@ namespace Commands.Helpers
                             };
                             trail.Add(newLink);
                             link = url;
+                            redirectCount++;
                         }
                         else
                         {
                             Link newLink = new()
                             {
-                                link = link,
+                                link = $"<{link}>",
                                 statusCode = req.StatusCode,
                                 isRickRoll = link == "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
                                 isRedirect = (int)req.StatusCode >= 300 && (int)req.StatusCode <= 308
@@ -157,7 +160,7 @@ namespace Commands.Helpers
                     {
                         Link newLink = new()
                         {
-                            link = link,
+                            link = $"<{link}>",
                             statusCode = req.StatusCode,
                             isRickRoll = link == "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
                             isRedirect = (int)req.StatusCode >= 300 && (int)req.StatusCode <= 308
@@ -167,6 +170,7 @@ namespace Commands.Helpers
                         if (req.Headers.Location != null)
                         {
                             link = req.Headers.Location.ToString();
+                            redirectCount++;
                         }
                         else
                         {
@@ -178,7 +182,7 @@ namespace Commands.Helpers
                 {
                     Link newLink = new()
                     {
-                        link = link,
+                        link = $"<{link}>",
                         failed = true
                     };
                     trail.Add(newLink);
@@ -195,6 +199,16 @@ namespace Commands.Helpers
                     return content[(urlIndex + 4)..].Trim('"', '\'');
                 }
                 return string.Empty;
+            }
+
+            if (redirectCount > maximumRedirectCount)
+            {
+                Link newLink = new()
+                {
+                    link = $"Unknown (Bob follows **up to {maximumRedirectCount}** redirects.)",
+                    failed = true
+                };
+                trail.Add(newLink);
             }
 
             return trail;
