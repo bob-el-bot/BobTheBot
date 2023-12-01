@@ -1,14 +1,17 @@
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using System.Text;
+using System;
 
 namespace ApiInteractions
 {
     public static class Interface
     {
-        private static readonly ProductInfoHeaderValue productValue = new("BobTheBot", "1.0");
-        private static readonly ProductInfoHeaderValue commentValue = new("(+https://github.com/Quantam-Studios/BobTheBot)");
+        public static readonly ProductInfoHeaderValue productValue = new("BobTheBot", "1.0");
+        public static readonly ProductInfoHeaderValue commentValue = new("(+https://github.com/Quantam-Studios/BobTheBot)");
 
         public enum AcceptTypes
         {
