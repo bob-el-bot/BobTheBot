@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
@@ -23,6 +24,7 @@ namespace Commands.Helpers
             public string specialCase;
             public bool isRickRoll;
             public bool isRedirect;
+            public bool containsCookies = false;
             public bool failed = false;
         }
 
@@ -46,6 +48,7 @@ namespace Commands.Helpers
             {
                 warnings.AppendLine("- You will get redirected.");
             }
+            bool containsCookies = false;
             bool containsSpecialRedirect = false;
             bool failed = false;
 
@@ -65,9 +68,15 @@ namespace Commands.Helpers
                     containsSpecialRedirect = true;
                 }
 
+                if (l.containsCookies && containsCookies == false)
+                {
+                    warnings.AppendLine("- Contains cookies (these can be malicious, or safe). ");
+                    containsCookies = true;
+                }
+
                 if (!l.failed)
                 {
-                    description.Append($"{(linkCount == trail.Count ? "📍" : "⬇️")} {l.link} **Status Code:** `{(int)l.statusCode} {l.statusCode}{(l.specialCase != null ? $" - {l.specialCase}" : "")}`\n**Is Rick Roll?** {(l.isRickRoll ? "true" : "false")} **Is Redirect?** {(l.isRedirect ? "true" : "false")}\n");
+                    description.Append($"{(linkCount == trail.Count ? "📍" : "⬇️")} {l.link} **Status Code:** `{(int)l.statusCode} {l.statusCode}{(l.specialCase != null ? $" - {l.specialCase}" : "")}`\n**Is Rick Roll?** {(l.isRickRoll ? "true" : "false")} **Is Redirect?** {(l.isRedirect ? "true" : "false")} **Has Cookies?** {(l.containsCookies ? "true" : "false")}\n");
                 }
                 else
                 {
@@ -92,7 +101,7 @@ namespace Commands.Helpers
                 Color = Bot.theme
             };
 
-            string adviceEmoji = failed && !containsRedirects ? "⁉️" : (isRickRoll || highRedirectCount || failed ? "🚫" : (containsRedirects || containsSpecialRedirect ? "⚠️" : "✅"));
+            string adviceEmoji = failed && !containsRedirects ? "⁉️" : (isRickRoll || highRedirectCount || failed ? "🚫" : (containsRedirects || containsSpecialRedirect || containsCookies ? "⚠️" : "✅"));
             embed.AddField(name: $"{adviceEmoji} Warnings", value: $"{(warnings.Length == 0 ? "Bob hasn't found anything to worry about, however that does mean not it is safe for certain." : warnings.ToString())}\n✅ = Not Suspicious ⚠️ = Potentially Suspicious 🚫 = Suspicious ⁉️ = Unknown");
 
             return embed.Build();
@@ -105,9 +114,11 @@ namespace Commands.Helpers
             int redirectCount = 0;
             while (redirectCount <= maximumRedirectCount && !string.IsNullOrWhiteSpace(link))
             {
+                CookieContainer cookies = new();
                 HttpClientHandler handler = new()
                 {
                     AllowAutoRedirect = false,
+                    CookieContainer = cookies
                 };
                 HttpClient httpClient = new(handler);
                 HttpRequestMessage request = new(HttpMethod.Head, link);
@@ -136,6 +147,7 @@ namespace Commands.Helpers
                                 link = $"<{link}>",
                                 statusCode = req.StatusCode,
                                 specialCase = "Meta-Refresh Redirect",
+                                containsCookies = cookies.GetCookies(new Uri(link)).Count != 0,
                                 isRickRoll = link == "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
                                 isRedirect = true
                             };
@@ -149,6 +161,7 @@ namespace Commands.Helpers
                             {
                                 link = $"<{link}>",
                                 statusCode = req.StatusCode,
+                                containsCookies = cookies.GetCookies(new Uri(link)).Count != 0,
                                 isRickRoll = link == "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
                                 isRedirect = (int)req.StatusCode >= 300 && (int)req.StatusCode <= 308
                             };
@@ -162,6 +175,7 @@ namespace Commands.Helpers
                         {
                             link = $"<{link}>",
                             statusCode = req.StatusCode,
+                            containsCookies = cookies.GetCookies(new Uri(link)).Count != 0,
                             isRickRoll = link == "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
                             isRedirect = (int)req.StatusCode >= 300 && (int)req.StatusCode <= 308
                         };
