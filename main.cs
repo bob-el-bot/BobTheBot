@@ -28,7 +28,7 @@ public static class Bot
 
     private static InteractionService Service;
 
-    private static readonly string Token = Config.GetToken();
+    private static readonly string Token = Config.GetTestToken();
 
     // Purple (normal) Theme: 9261821 | Orange (halloween) Theme: 16760153
     public static readonly Color theme = new(9261821);
@@ -45,10 +45,7 @@ public static class Bot
         // Ensure Database exists and is up to date
         await DB.Database.EnsureCreatedAsync();
         var migrations = DB.Database.GetPendingMigrations();
-        if (migrations.Any())
-        {
-            DB.Database.Migrate();
-        }
+
 
         Client.Ready += Ready;
         Client.Log += Log;

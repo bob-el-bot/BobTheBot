@@ -51,78 +51,7 @@ namespace Commands
             else
             {
                 await DeferAsync();
-
-                List<Analyze.Link> trail = await Analyze.GetUrlTrail(link);
-                StringBuilder description = new();
-                description.AppendLine("**Clicking this URL will bring you to these places:**\n");
-
-                // Warnings
-                bool isRickRoll = false;
-                // concerning if above 3
-                bool highRedirectCount = trail.Count >= 3;
-                bool containsRedirects = trail.Count > 1;
-                bool containsSpecialRedirect = false;
-                bool failed = false;
-                StringBuilder warnings = new();
-                if (highRedirectCount)
-                {
-                    warnings.AppendLine("- There is a concerning amount of redirects (3 or more). ");
-                }
-
-                if (containsRedirects)
-                {
-                    warnings.AppendLine("- You will get redirected.");
-                }
-
-                // Format Description
-                int linkCount = 1;
-                foreach (Analyze.Link l in trail)
-                {
-                    if (l.isRickRoll && isRickRoll == false)
-                    {
-                        warnings.AppendLine("- You will get rick-rolled. ");
-                        isRickRoll = true;
-                    }
-
-                    if (l.specialCase != null && containsSpecialRedirect == false)
-                    {
-                        warnings.AppendLine("- Contains a hard-coded redirect. ");
-                        containsSpecialRedirect = true;
-                    }
-
-                    if (l.failed && failed == false)
-                    {
-                        warnings.AppendLine("- For an unknown reason, Bob could not open this page (it might not exist). ");
-                        failed = true;
-                    }
-
-                    if (!l.failed)
-                    {
-                        description.Append($"{(linkCount == trail.Count ? "📍" : "⬇️")} <{l.link}> **Status Code:** `{(int)l.statusCode} {l.statusCode}{(l.specialCase != null ? $" - {l.specialCase}" : "")}`\n**Is Rick Roll?** {(l.isRickRoll ? "true" : "false")} **Is Redirect?** {(l.isRedirect ? "true" : "false")}\n");
-                    }
-                    else
-                    {
-                        description.Append($"❌ <{l.link}> **Failed to visit link.**\n");
-                    }
-                    linkCount++;
-                }
-
-                var embed = new EmbedBuilder
-                {
-                    Title = $"🕵️ Analysis of {link}",
-                    Description = description.ToString(),
-                    Footer = new EmbedFooterBuilder
-                    {
-                        Text = "Bob can't gauruntee a link is safe."
-                    },
-                    Color = Bot.theme
-                };
-
-
-                string adviceEmoji = failed && !containsRedirects ? "⁉️" : (isRickRoll || highRedirectCount || failed ? "🚫" : (containsRedirects || containsSpecialRedirect ? "⚠️" : "✅"));
-                embed.AddField(name: $"{adviceEmoji} Warnings", value: $"{(warnings.Length == 0 ? "Bob hasn't found anything to worry about, however that does not mean it is safe for certain." : warnings.ToString())}\n✅ = Not Suspicious ⚠️ = Potentially Suspicious 🚫 = Suspicious ⁉️ = Unknown");
-
-                await FollowupAsync(embed: embed.Build());
+                await FollowupAsync(embed: await Analyze.AnalyzeLink(link));
             }
         }
 
@@ -145,79 +74,7 @@ namespace Commands
             else
             {
                 await DeferAsync();
-
-                List<Analyze.Link> trail = await Analyze.GetUrlTrail(matches[0].Value);
-                StringBuilder description = new();
-                description.AppendLine("**Clicking this URL will bring you to these places:**\n");
-
-                // Warnings
-                bool isRickRoll = false;
-                // concerning if above 3
-                bool highRedirectCount = trail.Count >= 3;
-                bool containsRedirects = trail.Count > 1;
-                bool containsSpecialRedirect = false;
-                bool failed = false;
-                StringBuilder warnings = new();
-                if (highRedirectCount)
-                {
-                    warnings.AppendLine("- There is a concerning amount of redirects (3 or more). ");
-                }
-
-                if (containsRedirects)
-                {
-                    warnings.AppendLine("- You will get redirected.");
-                }
-
-                // Format Description
-                int linkCount = 1;
-                foreach (Analyze.Link l in trail)
-                {
-                    if (l.isRickRoll && isRickRoll == false)
-                    {
-                        warnings.AppendLine("- You will get rick-rolled. ");
-                        isRickRoll = true;
-                    }
-
-                    if (l.specialCase != null && containsSpecialRedirect == false)
-                    {
-                        warnings.AppendLine("- Contains a hard-coded redirect. ");
-                        containsSpecialRedirect = true;
-                    }
-
-                    if (l.failed && failed == false)
-                    {
-                        warnings.AppendLine("- For an unknown reason, Bob could not open this page (it might not exist). ");
-                        failed = true;
-                    }
-
-                    if (!l.failed)
-                    {
-                        description.Append($"{(linkCount == trail.Count ? "📍" : "⬇️")} <{l.link}> **Status Code:** `{(int)l.statusCode} {l.statusCode}{(l.specialCase != null ? $" - {l.specialCase}" : "")}`\n**Is Rick Roll?** {(l.isRickRoll ? "true" : "false")} **Is Redirect?** {(l.isRedirect ? "true" : "false")}\n");
-                    }
-                    else
-                    {
-                        description.Append($"❌ <{l.link}> **Failed to visit link.**\n");
-                    }
-                    linkCount++;
-                }
-
-                var embed = new EmbedBuilder
-                {
-                    Title = $"🕵️ Analysis of {matches[0].Value}",
-                    Description = description.ToString(),
-                    Footer = new EmbedFooterBuilder
-                    {
-                        Text = "Bob can't gauruntee a link is safe."
-                    },
-                    Color = Bot.theme
-                };
-
-
-                string adviceEmoji = failed && !containsRedirects ? "⁉️" : (isRickRoll || highRedirectCount || failed ? "🚫" : (containsRedirects || containsSpecialRedirect ? "⚠️" : "✅"));
-                embed.AddField(name: $"{adviceEmoji} Warnings", value: $"{(warnings.Length == 0 ? "Bob hasn't found anything to worry about, however that does mean not it is safe for certain." : warnings.ToString())}\n✅ = Not Suspicious ⚠️ = Potentially Suspicious 🚫 = Suspicious ⁉️ = Unknown");
-
-                await FollowupAsync(embed: embed.Build());
-
+                await FollowupAsync(embed: await Analyze.AnalyzeLink(message.Content));
             }
         }
 
@@ -338,7 +195,7 @@ namespace Commands
             .AddField(name: "🎮 Games:", value: "- `/rock-paper-scissors` Play Bob in a game of rock paper scissors.\n\n- `/master-mind new-game` Play a game of Master Mind, the rules will shared upon usage.\n\n- `/master-mind guess` Make a guess in a game of Master Mind.")
             .AddField(name: "🖊️ Quoting:", value: "- `/quote new [quote] [user] [tag]*3` Formats and shares the quote in designated channel.\n\n- `/quote channel [channel]` Sets the quote channel for the server.")
             .AddField(name: "✨ Other:", value: "- `/code preview [link]` Preview specific lines of code from a file on GitHub. \n\n- `/fonts [text] [font]` Change your text to a different font.\n  - `[font]` choices: 𝖒𝖊𝖉𝖎𝖊𝖛𝖆𝖑, 𝓯𝓪𝓷𝓬𝔂, 𝕠𝕦𝕥𝕝𝕚𝕟𝕖𝕕, ɟןıddǝp, s̷l̷̷a̷s̷h̷e̷d̷, and 🄱🄾🅇🄴🄳.\n\n- `/encrypt [message] [cipher]` Change text into a cipher.\n    - `[cipher]` choices: Caesar, A1Z26, Atbash, Morse Code\n\n- `/decrypt [message] [cipher]` Change encrypted text to plain text.\n    - `[cipher]` choices: Caesar, A1Z26, Atbash, Morse Code\n\n- `/confess [message] [user] [signoff]` Have Bob DM a user a message.\n\n- `/poll [prompt] [option]*4` Create a poll.\n  - `[option]*4` usage: You must provide 2-4 options. These are essentially the poll's choices.\n\n- `/ship [user]*2` See how good of a match 2 users are.\n\n- `/hug [user]*5` Show your friends some love with a hug.\n\n- `/welcome [welcome]` Bob will send welcome messages to new server members.")
-            .AddField(name: "🗄️ Informational / Help:", value: "- `/new` See the latest updates to Bob.\n\n- `/quote-prompts` See all valid prompts for `/random quote`.\n\n- `/ping` Find the client's latency.\n\n- `/info` Learn about Bob.\n\n- `/support` Sends an invite to Bob's support Server.");
+            .AddField(name: "🗄️ Informational / Help:", value: "- `/new` See the latest updates to Bob.\n\n- `/quote-prompts` See all valid prompts for `/random quote`.\n\n- `/ping` Find the client's latency.\n\n- `/analyze-link` See where a link will take you, and check for rick rolls.\n\n- `/info` Learn about Bob.\n\n- `/support` Sends an invite to Bob's support Server.");
 
             await Context.User.SendMessageAsync(embed: embed.Build());
             await RespondAsync(text: $"📪 Check your DMs.", ephemeral: true);
