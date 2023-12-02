@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Discord;
 using HtmlAgilityPack;
@@ -24,6 +25,7 @@ namespace Commands.Helpers
             public string specialCase;
             public bool isRickRoll;
             public bool isRedirect;
+            public bool isShortened = false;
             public bool containsCookies = false;
             public bool failed = false;
         }
@@ -37,17 +39,12 @@ namespace Commands.Helpers
             // Warnings
             StringBuilder warnings = new();
             bool isRickRoll = false;
-            // concerning if above 3
             bool highRedirectCount = trail.Count > 3;
             if (highRedirectCount)
             {
                 warnings.AppendLine("- There is a concerning amount of redirects (more than 3). ");
             }
-            bool containsRedirects = trail.Count > 1;
-            if (containsRedirects)
-            {
-                warnings.AppendLine("- You will get redirected.");
-            }
+
             bool containsCookies = false;
             bool containsSpecialRedirect = false;
             bool failed = false;
@@ -56,19 +53,19 @@ namespace Commands.Helpers
             int linkCount = 1;
             foreach (Link l in trail)
             {
-                if (l.isRickRoll && isRickRoll == false)
+                if (l.isRickRoll && !isRickRoll)
                 {
                     warnings.AppendLine("- You will get rick-rolled. ");
                     isRickRoll = true;
                 }
 
-                if (l.specialCase != null && containsSpecialRedirect == false)
+                if (l.specialCase != null && !containsSpecialRedirect)
                 {
                     warnings.AppendLine("- Contains a hard-coded redirect. ");
                     containsSpecialRedirect = true;
                 }
 
-                if (l.containsCookies && containsCookies == false)
+                if (l.containsCookies && !containsCookies)
                 {
                     warnings.AppendLine("- Contains cookies (these can be malicious, or safe). ");
                     containsCookies = true;
@@ -76,12 +73,12 @@ namespace Commands.Helpers
 
                 if (!l.failed)
                 {
-                    description.Append($"{(linkCount == trail.Count ? "📍" : "⬇️")} {l.link} **Status Code:** `{(int)l.statusCode} {l.statusCode}{(l.specialCase != null ? $" - {l.specialCase}" : "")}`\n**Is Rick Roll?** {(l.isRickRoll ? "true" : "false")} **Is Redirect?** {(l.isRedirect ? "true" : "false")} **Has Cookies?** {(l.containsCookies ? "true" : "false")}\n");
+                    description.AppendLine($"{(linkCount == trail.Count ? "📍" : "⬇️")} {l.link} **Status Code:** `{(int)l.statusCode} {l.statusCode}{(l.specialCase != null ? $" - {l.specialCase}" : "")}`\n**Is Redirect?** {(l.isRedirect ? "true" : "false")} **Has Cookies?** {(l.containsCookies ? "true" : "false")} **Is Short URL?** {(l.isShortened ? "true" : "false")} **Is Rick Roll?** {(l.isRickRoll ? "true" : "false")} ");
                 }
                 else
                 {
-                    description.Append($"❌ {l.link} **Failed to visit link.**\n");
-                    if (failed == false)
+                    description.AppendLine($"❌ {l.link} **Failed to visit link.**");
+                    if (!failed)
                     {
                         warnings.AppendLine("- For an unknown reason, Bob could not open this page (it might not exist). ");
                         failed = true;
@@ -96,12 +93,12 @@ namespace Commands.Helpers
                 Description = description.ToString(),
                 Footer = new EmbedFooterBuilder
                 {
-                    Text = "Bob can't gauruntee a link is safe."
+                    Text = "Bob can't guarantee a link is safe."
                 },
                 Color = Bot.theme
             };
 
-            string adviceEmoji = failed && !containsRedirects ? "⁉️" : (isRickRoll || highRedirectCount || failed ? "🚫" : (containsRedirects || containsSpecialRedirect || containsCookies ? "⚠️" : "✅"));
+            string adviceEmoji = failed ? "⁉️" : (isRickRoll || highRedirectCount || failed ? "🚫" : (containsSpecialRedirect || containsCookies ? "⚠️" : "✅"));
             embed.AddField(name: $"{adviceEmoji} Warnings", value: $"{(warnings.Length == 0 ? "Bob hasn't found anything to worry about, however that does mean not it is safe for certain." : warnings.ToString())}\n✅ = Not Suspicious ⚠️ = Potentially Suspicious 🚫 = Suspicious ⁉️ = Unknown");
 
             return embed.Build();
@@ -137,7 +134,9 @@ namespace Commands.Helpers
                         HtmlDocument doc = new();
                         doc.LoadHtml(code);
 
+                        string jsRedirect = GetJavaScriptRedirectLink(code);
                         HtmlNode metaTag = doc.DocumentNode.SelectSingleNode("//meta[@http-equiv='refresh']");
+
                         if (metaTag != null)
                         {
                             string content = metaTag.GetAttributeValue("content", "");
@@ -149,21 +148,40 @@ namespace Commands.Helpers
                                 specialCase = "Meta-Refresh Redirect",
                                 containsCookies = cookies.GetCookies(new Uri(link)).Count != 0,
                                 isRickRoll = link == "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-                                isRedirect = true
+                                isRedirect = true,
+                                isShortened = IsShortenedUrl(link, true)
                             };
                             trail.Add(newLink);
                             link = url;
                             redirectCount++;
                         }
+                        else if (jsRedirect != null)
+                        {
+                            Link newLink = new()
+                            {
+                                link = $"<{link}>",
+                                statusCode = req.StatusCode,
+                                specialCase = "JavaScript Redirect",
+                                containsCookies = cookies.GetCookies(new Uri(link)).Count != 0,
+                                isRickRoll = link == "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                                isRedirect = true,
+                                isShortened = IsShortenedUrl(link, true)
+                            };
+                            trail.Add(newLink);
+                            link = jsRedirect;
+                            redirectCount++;
+                        }
                         else
                         {
+                            bool isRedirect = (int)req.StatusCode >= 300 && (int)req.StatusCode <= 308;
                             Link newLink = new()
                             {
                                 link = $"<{link}>",
                                 statusCode = req.StatusCode,
                                 containsCookies = cookies.GetCookies(new Uri(link)).Count != 0,
                                 isRickRoll = link == "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-                                isRedirect = (int)req.StatusCode >= 300 && (int)req.StatusCode <= 308
+                                isRedirect = isRedirect,
+                                isShortened = IsShortenedUrl(link, isRedirect)
                             };
                             trail.Add(newLink);
                             link = null;
@@ -171,13 +189,15 @@ namespace Commands.Helpers
                     }
                     else
                     {
+                        bool isRedirect = (int)req.StatusCode >= 300 && (int)req.StatusCode <= 308;
                         Link newLink = new()
                         {
                             link = $"<{link}>",
                             statusCode = req.StatusCode,
                             containsCookies = cookies.GetCookies(new Uri(link)).Count != 0,
                             isRickRoll = link == "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-                            isRedirect = (int)req.StatusCode >= 300 && (int)req.StatusCode <= 308
+                            isRedirect = isRedirect,
+                            isShortened = IsShortenedUrl(link, isRedirect)
                         };
                         trail.Add(newLink);
 
@@ -204,17 +224,6 @@ namespace Commands.Helpers
                 }
             }
 
-            static string GetUrlFromContent(string content)
-            {
-                // Extracting the URL from the content attribute value
-                int urlIndex = content.IndexOf("url=", StringComparison.OrdinalIgnoreCase);
-                if (urlIndex != -1)
-                {
-                    return content[(urlIndex + 4)..].Trim('"', '\'');
-                }
-                return string.Empty;
-            }
-
             if (redirectCount > maximumRedirectCount)
             {
                 Link newLink = new()
@@ -226,6 +235,64 @@ namespace Commands.Helpers
             }
 
             return trail;
+        }
+
+        private static string GetJavaScriptRedirectLink(string htmlContent)
+        {
+            string scriptPattern = @"<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>";
+            var scriptMatches = Regex.Matches(htmlContent, scriptPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
+            foreach (Match scriptMatch in scriptMatches.Cast<Match>())
+            {
+                string scriptContent = scriptMatch.Value;
+
+                if (scriptContent.Contains("window.location.href"))
+                {
+                    string redirectLinkPattern = @"window\.location\.href\s*=\s*['""]([^'""]+)['""]";
+                    var redirectLinkMatch = Regex.Match(scriptContent, redirectLinkPattern);
+
+                    if (redirectLinkMatch.Success)
+                    {
+                        return redirectLinkMatch.Groups[1].Value;
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private static bool IsShortenedUrl(string url, bool isRedirect)
+        {
+            return ContainsShortenedDomain(url) && isRedirect;
+        }
+
+        private static bool ContainsShortenedDomain(string url)
+        {
+            // List of common URL shortener domains
+            string[] shortenerDomains = { "v.gd", "ow.ly", "bl.ink", "3.ly", "tiny.cc", "bit.ly", "tinyurl.com", "goo.gl", "shorturl.at", "t.ly", "youtu.be", "y2u.be", "t.co", "short.gy", "snip.ly", "Buff.ly", "redd.it", "rb.gy" };
+
+            if (Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
+            {
+                string domain = uri.Host.ToLower();
+
+                if (Array.Exists(shortenerDomains, d => domain.Contains(d)))
+                {
+                    string path = uri.AbsolutePath.Trim('/');
+                    return !string.IsNullOrEmpty(path);
+                }
+            }
+
+            return false;
+        }
+
+        private static string GetUrlFromContent(string content)
+        {
+            int urlIndex = content.IndexOf("url=", StringComparison.OrdinalIgnoreCase);
+            if (urlIndex != -1)
+            {
+                return content[(urlIndex + 4)..].Trim('"', '\'');
+            }
+            return string.Empty;
         }
     }
 }

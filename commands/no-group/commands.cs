@@ -56,7 +56,7 @@ namespace Commands
         }
 
         [EnabledInDm(true)]
-        [MessageCommand("analyze-link")]
+        [MessageCommand("Analyze Link")]
         public async Task AnalyzeMessageLink(IMessage message)
         {
             string pattern = @"(https?://\S+)|(www\.\S+)";
