@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Discord;
 using HtmlAgilityPack;
@@ -43,11 +44,7 @@ namespace Commands.Helpers
             {
                 warnings.AppendLine("- There is a concerning amount of redirects (more than 3). ");
             }
-            bool containsRedirects = trail.Count > 1;
-            if (containsRedirects)
-            {
-                warnings.AppendLine("- You will get redirected.");
-            }
+
             bool containsCookies = false;
             bool containsSpecialRedirect = false;
             bool failed = false;
@@ -101,7 +98,7 @@ namespace Commands.Helpers
                 Color = Bot.theme
             };
 
-            string adviceEmoji = failed && !containsRedirects ? "⁉️" : (isRickRoll || highRedirectCount || failed ? "🚫" : (containsRedirects || containsSpecialRedirect || containsCookies ? "⚠️" : "✅"));
+            string adviceEmoji = failed ? "⁉️" : (isRickRoll || highRedirectCount || failed ? "🚫" : (containsSpecialRedirect || containsCookies ? "⚠️" : "✅"));
             embed.AddField(name: $"{adviceEmoji} Warnings", value: $"{(warnings.Length == 0 ? "Bob hasn't found anything to worry about, however that does mean not it is safe for certain." : warnings.ToString())}\n✅ = Not Suspicious ⚠️ = Potentially Suspicious 🚫 = Suspicious ⁉️ = Unknown");
 
             return embed.Build();
@@ -137,7 +134,9 @@ namespace Commands.Helpers
                         HtmlDocument doc = new();
                         doc.LoadHtml(code);
 
+                        string jsRedirect = GetJavaScriptRedirectLink(code);
                         HtmlNode metaTag = doc.DocumentNode.SelectSingleNode("//meta[@http-equiv='refresh']");
+
                         if (metaTag != null)
                         {
                             string content = metaTag.GetAttributeValue("content", "");
@@ -154,6 +153,22 @@ namespace Commands.Helpers
                             };
                             trail.Add(newLink);
                             link = url;
+                            redirectCount++;
+                        }
+                        else if (jsRedirect != null)
+                        {
+                            Link newLink = new()
+                            {
+                                link = $"<{link}>",
+                                statusCode = req.StatusCode,
+                                specialCase = "JavaScript Redirect",
+                                containsCookies = cookies.GetCookies(new Uri(link)).Count != 0,
+                                isRickRoll = link == "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                                isRedirect = true,
+                                isShortened = IsShortenedUrl(link, true)
+                            };
+                            trail.Add(newLink);
+                            link = jsRedirect;
                             redirectCount++;
                         }
                         else
@@ -222,6 +237,30 @@ namespace Commands.Helpers
             return trail;
         }
 
+        private static string GetJavaScriptRedirectLink(string htmlContent)
+        {
+            string scriptPattern = @"<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>";
+            var scriptMatches = Regex.Matches(htmlContent, scriptPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+
+            foreach (Match scriptMatch in scriptMatches.Cast<Match>())
+            {
+                string scriptContent = scriptMatch.Value;
+
+                if (scriptContent.Contains("window.location.href"))
+                {
+                    string redirectLinkPattern = @"window\.location\.href\s*=\s*['""]([^'""]+)['""]";
+                    var redirectLinkMatch = Regex.Match(scriptContent, redirectLinkPattern);
+
+                    if (redirectLinkMatch.Success)
+                    {
+                        return redirectLinkMatch.Groups[1].Value;
+                    }
+                }
+            }
+
+            return null;
+        }
+
         private static bool IsShortenedUrl(string url, bool isRedirect)
         {
             return ContainsShortenedDomain(url) && isRedirect;
@@ -232,15 +271,12 @@ namespace Commands.Helpers
             // List of common URL shortener domains
             string[] shortenerDomains = { "v.gd", "ow.ly", "bl.ink", "3.ly", "tiny.cc", "bit.ly", "tinyurl.com", "goo.gl", "shorturl.at", "t.ly", "youtu.be", "y2u.be", "t.co", "short.gy", "snip.ly", "Buff.ly", "redd.it", "rb.gy" };
 
-            // Extract domain from the URL
             if (Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
             {
                 string domain = uri.Host.ToLower();
 
-                // Check if the domain is in the list of known shortener domains
                 if (Array.Exists(shortenerDomains, d => domain.Contains(d)))
                 {
-                    // Check if there is anything after the host name in the URL
                     string path = uri.AbsolutePath.Trim('/');
                     return !string.IsNullOrEmpty(path);
                 }
@@ -251,7 +287,6 @@ namespace Commands.Helpers
 
         private static string GetUrlFromContent(string content)
         {
-            // Extracting the URL from the content attribute value
             int urlIndex = content.IndexOf("url=", StringComparison.OrdinalIgnoreCase);
             if (urlIndex != -1)
             {
