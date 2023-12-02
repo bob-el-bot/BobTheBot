@@ -37,7 +37,6 @@ namespace Commands.Helpers
             // Warnings
             StringBuilder warnings = new();
             bool isRickRoll = false;
-            // concerning if above 3
             bool highRedirectCount = trail.Count > 3;
             if (highRedirectCount)
             {
@@ -56,19 +55,19 @@ namespace Commands.Helpers
             int linkCount = 1;
             foreach (Link l in trail)
             {
-                if (l.isRickRoll && isRickRoll == false)
+                if (l.isRickRoll && !isRickRoll)
                 {
                     warnings.AppendLine("- You will get rick-rolled. ");
                     isRickRoll = true;
                 }
 
-                if (l.specialCase != null && containsSpecialRedirect == false)
+                if (l.specialCase != null && !containsSpecialRedirect)
                 {
                     warnings.AppendLine("- Contains a hard-coded redirect. ");
                     containsSpecialRedirect = true;
                 }
 
-                if (l.containsCookies && containsCookies == false)
+                if (l.containsCookies && !containsCookies)
                 {
                     warnings.AppendLine("- Contains cookies (these can be malicious, or safe). ");
                     containsCookies = true;
@@ -76,12 +75,12 @@ namespace Commands.Helpers
 
                 if (!l.failed)
                 {
-                    description.Append($"{(linkCount == trail.Count ? "📍" : "⬇️")} {l.link} **Status Code:** `{(int)l.statusCode} {l.statusCode}{(l.specialCase != null ? $" - {l.specialCase}" : "")}`\n**Is Rick Roll?** {(l.isRickRoll ? "true" : "false")} **Is Redirect?** {(l.isRedirect ? "true" : "false")} **Has Cookies?** {(l.containsCookies ? "true" : "false")}\n");
+                    description.AppendLine($"{(linkCount == trail.Count ? "📍" : "⬇️")} {l.link} **Status Code:** `{(int)l.statusCode} {l.statusCode}{(l.specialCase != null ? $" - {l.specialCase}" : "")}`\n**Is Rick Roll?** {(l.isRickRoll ? "true" : "false")} **Is Redirect?** {(l.isRedirect ? "true" : "false")} **Has Cookies?** {(l.containsCookies ? "true" : "false")}");
                 }
                 else
                 {
-                    description.Append($"❌ {l.link} **Failed to visit link.**\n");
-                    if (failed == false)
+                    description.AppendLine($"❌ {l.link} **Failed to visit link.**");
+                    if (!failed)
                     {
                         warnings.AppendLine("- For an unknown reason, Bob could not open this page (it might not exist). ");
                         failed = true;
@@ -96,7 +95,7 @@ namespace Commands.Helpers
                 Description = description.ToString(),
                 Footer = new EmbedFooterBuilder
                 {
-                    Text = "Bob can't gauruntee a link is safe."
+                    Text = "Bob can't guarantee a link is safe."
                 },
                 Color = Bot.theme
             };
@@ -106,6 +105,7 @@ namespace Commands.Helpers
 
             return embed.Build();
         }
+
 
         private static async Task<List<Link>> GetUrlTrail(string link)
         {
@@ -204,17 +204,6 @@ namespace Commands.Helpers
                 }
             }
 
-            static string GetUrlFromContent(string content)
-            {
-                // Extracting the URL from the content attribute value
-                int urlIndex = content.IndexOf("url=", StringComparison.OrdinalIgnoreCase);
-                if (urlIndex != -1)
-                {
-                    return content[(urlIndex + 4)..].Trim('"', '\'');
-                }
-                return string.Empty;
-            }
-
             if (redirectCount > maximumRedirectCount)
             {
                 Link newLink = new()
@@ -226,6 +215,17 @@ namespace Commands.Helpers
             }
 
             return trail;
+        }
+
+        private static string GetUrlFromContent(string content)
+        {
+            // Extracting the URL from the content attribute value
+            int urlIndex = content.IndexOf("url=", StringComparison.OrdinalIgnoreCase);
+            if (urlIndex != -1)
+            {
+                return content[(urlIndex + 4)..].Trim('"', '\'');
+            }
+            return string.Empty;
         }
     }
 }
