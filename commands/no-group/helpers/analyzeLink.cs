@@ -24,6 +24,7 @@ namespace Commands.Helpers
             public string specialCase;
             public bool isRickRoll;
             public bool isRedirect;
+            public bool isShortened = false;
             public bool containsCookies = false;
             public bool failed = false;
         }
@@ -75,7 +76,7 @@ namespace Commands.Helpers
 
                 if (!l.failed)
                 {
-                    description.AppendLine($"{(linkCount == trail.Count ? "📍" : "⬇️")} {l.link} **Status Code:** `{(int)l.statusCode} {l.statusCode}{(l.specialCase != null ? $" - {l.specialCase}" : "")}`\n**Is Rick Roll?** {(l.isRickRoll ? "true" : "false")} **Is Redirect?** {(l.isRedirect ? "true" : "false")} **Has Cookies?** {(l.containsCookies ? "true" : "false")}");
+                    description.AppendLine($"{(linkCount == trail.Count ? "📍" : "⬇️")} {l.link} **Status Code:** `{(int)l.statusCode} {l.statusCode}{(l.specialCase != null ? $" - {l.specialCase}" : "")}`\n**Is Redirect?** {(l.isRedirect ? "true" : "false")} **Has Cookies?** {(l.containsCookies ? "true" : "false")} **Is Short URL?** {(l.isShortened ? "true" : "false")} **Is Rick Roll?** {(l.isRickRoll ? "true" : "false")} ");
                 }
                 else
                 {
@@ -105,7 +106,6 @@ namespace Commands.Helpers
 
             return embed.Build();
         }
-
 
         private static async Task<List<Link>> GetUrlTrail(string link)
         {
@@ -149,7 +149,8 @@ namespace Commands.Helpers
                                 specialCase = "Meta-Refresh Redirect",
                                 containsCookies = cookies.GetCookies(new Uri(link)).Count != 0,
                                 isRickRoll = link == "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-                                isRedirect = true
+                                isRedirect = true,
+                                isShortened = IsShortenedUrl(link, true)
                             };
                             trail.Add(newLink);
                             link = url;
@@ -157,13 +158,15 @@ namespace Commands.Helpers
                         }
                         else
                         {
+                            bool isRedirect = (int)req.StatusCode >= 300 && (int)req.StatusCode <= 308;
                             Link newLink = new()
                             {
                                 link = $"<{link}>",
                                 statusCode = req.StatusCode,
                                 containsCookies = cookies.GetCookies(new Uri(link)).Count != 0,
                                 isRickRoll = link == "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-                                isRedirect = (int)req.StatusCode >= 300 && (int)req.StatusCode <= 308
+                                isRedirect = isRedirect,
+                                isShortened = IsShortenedUrl(link, isRedirect)
                             };
                             trail.Add(newLink);
                             link = null;
@@ -171,13 +174,15 @@ namespace Commands.Helpers
                     }
                     else
                     {
+                        bool isRedirect = (int)req.StatusCode >= 300 && (int)req.StatusCode <= 308;
                         Link newLink = new()
                         {
                             link = $"<{link}>",
                             statusCode = req.StatusCode,
                             containsCookies = cookies.GetCookies(new Uri(link)).Count != 0,
                             isRickRoll = link == "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
-                            isRedirect = (int)req.StatusCode >= 300 && (int)req.StatusCode <= 308
+                            isRedirect = isRedirect,
+                            isShortened = IsShortenedUrl(link, isRedirect)
                         };
                         trail.Add(newLink);
 
@@ -215,6 +220,33 @@ namespace Commands.Helpers
             }
 
             return trail;
+        }
+
+        private static bool IsShortenedUrl(string url, bool isRedirect)
+        {
+            return ContainsShortenedDomain(url) && isRedirect;
+        }
+
+        private static bool ContainsShortenedDomain(string url)
+        {
+            // List of common URL shortener domains
+            string[] shortenerDomains = { "v.gd", "ow.ly", "bl.ink", "3.ly", "tiny.cc", "bit.ly", "tinyurl.com", "goo.gl", "shorturl.at", "t.ly", "youtu.be", "y2u.be", "t.co", "short.gy", "snip.ly", "Buff.ly", "redd.it", "rb.gy" };
+
+            // Extract domain from the URL
+            if (Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
+            {
+                string domain = uri.Host.ToLower();
+
+                // Check if the domain is in the list of known shortener domains
+                if (Array.Exists(shortenerDomains, d => domain.Contains(d)))
+                {
+                    // Check if there is anything after the host name in the URL
+                    string path = uri.AbsolutePath.Trim('/');
+                    return !string.IsNullOrEmpty(path);
+                }
+            }
+
+            return false;
         }
 
         private static string GetUrlFromContent(string content)
