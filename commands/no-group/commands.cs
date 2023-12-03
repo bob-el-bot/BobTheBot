@@ -164,7 +164,7 @@ namespace Commands
                 {
                     Title = title,
                     Color = finalColor,
-                    Description = description,
+                    Description = Announcement.FormatDescription(description),
                     Footer = new EmbedFooterBuilder
                     {
                         Text = $"Announced by {Context.User.GlobalName}."
