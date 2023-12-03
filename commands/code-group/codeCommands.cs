@@ -1,7 +1,9 @@
 using System;
 using System.Text.Json.Nodes;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Commands.Helpers;
+using Discord;
 using Discord.Interactions;
 using static ApiInteractions.Interface;
 
@@ -17,42 +19,32 @@ namespace Commands
         {
             try
             {
-                // Parse Link
-                string formattedLink;
-                if (link[..19] == "https://github.com/")
+                // Add HTTP if missing.
+                if (link.Contains('.') && link.Length < 7 || (link.Length >= 7 && link[..7] != "http://" && link.Length >= 8 && link[..8] != "https://"))
                 {
-                    formattedLink = link[19..];
+                    link = $"https://{link}";
                 }
-                else if (link[..11] == "github.com/")
+
+                // Parse Link using Uri class
+                Uri uri = new(link);
+
+                // Check if the host is github.com
+                if (uri.Host != "github.com")
                 {
-                    formattedLink = link[11..];
-                    link = "https://" + link;
+                    throw new InvalidOperationException("Invalid GitHub link format");
                 }
-                else
-                {
-                    throw new Exception();
-                }
-                //bob-el-bot/website/blob/main/index.html#L15-L18
-                string organization = formattedLink[..formattedLink.IndexOf("/")];
-                formattedLink = formattedLink[(formattedLink.IndexOf("/") + 1)..];
-                //website/blob/main/index.html#L15-L18
-                string repository = formattedLink[..formattedLink.IndexOf("/")];
-                formattedLink = formattedLink[(formattedLink.IndexOf("/") + 1)..];
-                //blob/main/index.html#L15-L18
-                formattedLink = formattedLink[(formattedLink.IndexOf("/") + 1)..];
-                //main/index.html#L15-L18
-                string branch = formattedLink[..formattedLink.IndexOf("/")];
-                formattedLink = formattedLink[(formattedLink.IndexOf("/") + 1)..];
-                //index.html#L15-L18
-                string file = formattedLink[..formattedLink.IndexOf("#")];
-                formattedLink = formattedLink[formattedLink.IndexOf("#")..];
-                //#L15-L18
-                string lineNumbers = formattedLink;
+
+                // Extracting relevant components
+                string organization = uri.Segments[1].Trim('/');
+                string repository = uri.Segments[2].Trim('/');
+                string branch = uri.Segments[4].Trim('/');
+                string file = Uri.UnescapeDataString(uri.Segments[5].Trim('/'));
+                string lineNumbers = uri.Fragment.TrimStart('L');
 
                 // Check if there are line number specifiers (there need to be)
                 if (!lineNumbers.Contains('L'))
                 {
-                    throw new Exception();
+                    throw new InvalidOperationException("Invalid GitHub link format | Missing line numbers.");
                 }
 
                 // If it contains character specifiers get rid of them. example: (#L15C12-L18C17)
@@ -91,11 +83,11 @@ namespace Commands
 
                 if (endLine == null || startLine == null)
                 {
-                    throw new Exception();
+                    throw new InvalidOperationException("Invalid GitHub link format | The value of statLine or endLine is null.");
                 }
                 else if (endLine < startLine)
                 {
-                    throw new Exception();
+                    throw new InvalidOperationException("Invalid GitHub link format | The value of endLine is less than the startLine.");
                 }
 
                 // Send Request
@@ -120,10 +112,127 @@ namespace Commands
                     await RespondAsync(text: preview);
                 }
             }
-            catch (Exception e)
+            catch
             {
                 await RespondAsync(text: "❌ Your link is not valid. Here are some things to know: \n- Your link needs to start with `https://github.com/` or `github.com/`.\n- Your link needs line specifications. Put `#L15` or `#L15-L18` at the end of the link to the file. (see below).\n- If you are sharing a single line it could look like this: `https://github.com/bob-el-bot/website/blob/main/index.html#L15`\n- If you are sharing multiple lines it could look like this: `https://github.com/bob-el-bot/website/blob/main/index.html#L15-L18`\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
-                Console.WriteLine(e);
+            }
+        }
+
+        [EnabledInDm(true)]
+        [MessageCommand("Preview Code")]
+        public async Task PreviewCodeMessage(IMessage message)
+        {
+            string link;
+
+            string pattern = @"(https?://\S+)|(www\.\S+)";
+
+            // Create a Regex object with the pattern
+            Regex regex = new(pattern);
+
+            // Find all matches in the input string
+            MatchCollection matches = regex.Matches(message.Content);
+
+            if (matches.Count == 0)
+            {
+                await RespondAsync(text: "❌ Your link is not valid. Here are some things to know: \n- Your link needs to start with `https://github.com/` or `github.com/`.\n- Your link needs line specifications. Put `#L15` or `#L15-L18` at the end of the link to the file. (see below).\n- If you are sharing a single line it could look like this: `https://github.com/bob-el-bot/website/blob/main/index.html#L15`\n- If you are sharing multiple lines it could look like this: `https://github.com/bob-el-bot/website/blob/main/index.html#L15-L18`\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+            }
+            else
+            {
+                link = matches[0].Value;
+
+                try
+                {
+                    // Parse Link using Uri class
+                    Uri uri = new(link);
+
+                    // Check if the host is github.com
+                    if (uri.Host != "github.com")
+                    {
+                        throw new InvalidOperationException("Invalid GitHub link format");
+                    }
+
+                    // Extracting relevant components
+                    string organization = uri.Segments[1].Trim('/');
+                    string repository = uri.Segments[2].Trim('/');
+                    string branch = uri.Segments[4].Trim('/');
+                    string file = Uri.UnescapeDataString(uri.Segments[5].Trim('/'));
+                    string lineNumbers = uri.Fragment.TrimStart('L');
+
+                    // Check if there are line number specifiers (there need to be)
+                    if (!lineNumbers.Contains('L'))
+                    {
+                        throw new InvalidOperationException("Invalid GitHub link format | Missing line numbers.");
+                    }
+
+                    // If it contains character specifiers get rid of them. example: (#L15C12-L18C17)
+                    if (lineNumbers.Contains('C'))
+                    {
+                        if (lineNumbers.Contains('-'))
+                        {
+                            if (lineNumbers[..lineNumbers.IndexOf('-')].Contains('C'))
+                            {
+                                lineNumbers = lineNumbers[..lineNumbers.IndexOf("C")] + lineNumbers[lineNumbers.IndexOf("-")..];
+                            }
+                            if (lineNumbers.Contains('C'))
+                            {
+                                lineNumbers = lineNumbers[..lineNumbers.IndexOf("C")];
+                            }
+                        }
+                        else
+                        {
+                            lineNumbers = lineNumbers[..lineNumbers.IndexOf("C")];
+                        }
+                    }
+
+                    lineNumbers = lineNumbers.Replace("L", "");
+                    short? startLine = null;
+                    short? endLine = null;
+                    if (lineNumbers.Contains('-'))
+                    {
+                        startLine = short.Parse(lineNumbers[1..lineNumbers.IndexOf("-")]);
+                        endLine = short.Parse(lineNumbers[(lineNumbers.IndexOf("-") + 1)..]);
+                    }
+                    else if (short.TryParse(lineNumbers[1..], out _))
+                    {
+                        startLine = short.Parse(lineNumbers[1..]);
+                        endLine = short.Parse(lineNumbers[1..]);
+                    }
+
+                    if (endLine == null || startLine == null)
+                    {
+                        throw new InvalidOperationException("Invalid GitHub link format | The value of statLine or endLine is null.");
+                    }
+                    else if (endLine < startLine)
+                    {
+                        throw new InvalidOperationException("Invalid GitHub link format | The value of endLine is less than the startLine.");
+                    }
+
+                    // Send Request
+                    string content = await GetFromAPI($"https://api.github.com/repos/{organization}/{repository}/contents/{file}?ref={branch}", AcceptTypes.application_json);
+
+                    // Parse Content
+                    var jsonData = JsonNode.Parse(content).AsObject();
+                    var fileData = Convert.FromBase64String(jsonData["content"].ToString());
+                    var fileContent = System.Text.Encoding.UTF8.GetString(fileData);
+                    string previewLines = CodeReader.GetLines(fileContent, (short)startLine, (short)endLine);
+
+                    // Format final response
+                    string preview = $"🔎 Showing **{lineNumbers}** of [{file}](<{link}>) on branch **{branch}** in **{repository}** repo.\n```{file[(file.IndexOf('.') + 1)..]}\n{previewLines}```";
+
+                    // Check if message is too long for Discord API.
+                    if (preview.Length > 2000)
+                    {
+                        await RespondAsync(text: $"❌ The preview of lines {lineNumbers} *cannot* be shown because it contains **{preview.Length}** characters.\n- Try previewing fewer lines.\n- Discord has a limit of **2000** characters.", ephemeral: true);
+                    }
+                    else
+                    {
+                        await RespondAsync(text: preview);
+                    }
+                }
+                catch
+                {
+                    await RespondAsync(text: "❌ Your link is not valid. Here are some things to know: \n- Your link needs to start with `https://github.com/` or `github.com/`.\n- Your link needs line specifications. Put `#L15` or `#L15-L18` at the end of the link to the file. (see below).\n- If you are sharing a single line it could look like this: `https://github.com/bob-el-bot/website/blob/main/index.html#L15`\n- If you are sharing multiple lines it could look like this: `https://github.com/bob-el-bot/website/blob/main/index.html#L15-L18`\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                }
             }
         }
     }

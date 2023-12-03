@@ -74,7 +74,7 @@ namespace Commands
             else
             {
                 await DeferAsync();
-                await FollowupAsync(embed: await Analyze.AnalyzeLink(message.Content));
+                await FollowupAsync(embed: await Analyze.AnalyzeLink(matches[0].Value));
             }
         }
 
