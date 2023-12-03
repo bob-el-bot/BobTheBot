@@ -8,6 +8,21 @@ namespace Commands.Helpers
 {
     public class Announcement
     {
+        public static string FormatDescription(string description)
+        {
+            string[] delimiters = { " - ", "### ", };
+            string pattern = string.Join("|", Array.ConvertAll(delimiters, Regex.Escape));
+            string[] lines = Regex.Split(description, "(?=" + pattern + ")");
+
+            StringBuilder output = new();
+            foreach (string line in lines)
+            {
+                output.AppendLine(line);
+            }
+
+            return output.ToString();
+        }
+
         public static string StringToHex(string input)
         {
             return WordToHex(input) ?? HexStringToHex(input);
@@ -49,8 +64,7 @@ namespace Commands.Helpers
                 match = Regex.Replace(input, color.Key, color.Value, RegexOptions.IgnoreCase) ?? null;
             }
 
-            string output;
-            colors.TryGetValue(match, out output); 
+            colors.TryGetValue(match, out string output);
             return output;
         }
     }
