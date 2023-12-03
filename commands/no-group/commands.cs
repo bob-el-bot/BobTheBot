@@ -11,6 +11,7 @@ using Database.Types;
 using SimpleCiphers;
 using System.Reflection.Emit;
 using System.Collections.Generic;
+using ColorHelper;
 using System.ComponentModel;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Database;
@@ -137,6 +138,42 @@ namespace Commands
         {
             // Respond
             await RespondAsync(text: $"Here are all valid prompts for `/random quote`:\nage, athletics, business, change, character, competition, conservative, courage, education, ethics, failure, faith, family, famous-quotes, film, freedom, future, generosity, genius, gratitude, happiness, health, history, honor, humor, humorous, inspirational, knowledge, leadership, life, love, mathematics, motivational, nature, oppurtunity, pain, perseverance, philosphy, politics, power-quotes, proverb, religion, sadness, science, self, sports, stupidity, success, technology, time, tolerance, truth, virtue, war, weakness, wellness, wisdom, work");
+        }
+
+        [EnabledInDm(true)]
+        [SlashCommand("announce", "Bob will create a fancy embed announcement in the channel the command is used in.")]
+        public async Task Announce([Summary("title", "The title of the announcement (the title of the embed).")] string title, [Summary("description", "The anouncement (the description of the embed).")] string description, [Summary("color", "A color name (purple), or valid hex code (#8D52FD).")] string color)
+        {
+            Color finalColor = Convert.ToUInt32(Announcement.StringToHex(color), 16);
+
+            if (finalColor == 0)
+            {
+                await RespondAsync(text: $"❌ `{color}` is an invalid color. Here is a list of valid colors:\n- red, pink, orange, yellow, blue, green, white, gray (grey), black. \n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+            }
+            else if (title.Length > 256) // 256 is max characters in an embed title.
+            {
+                await FollowupAsync($"❌ The announcement *cannot* be made because it contains **{title.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **256** characters in embed titles.", ephemeral: true);
+            }
+            else if (description.Length > 4096) // 4096 is max characters in an embed description.
+            {
+                await FollowupAsync($"❌ The announcement *cannot* be made because it contains **{description.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **4096** characters in embed descriptions.", ephemeral: true);
+            }
+            else
+            {
+                var embed = new EmbedBuilder
+                {
+                    Title = title,
+                    Color = finalColor,
+                    Description = description,
+                    Footer = new EmbedFooterBuilder
+                    {
+                        Text = $"Announced by {Context.User.GlobalName}."
+                    }
+                };
+
+                await RespondAsync(text: "✅ Your announcement has been made.", ephemeral: true);
+                await Context.Channel.SendMessageAsync(embed: embed.Build());
+            }
         }
 
         [EnabledInDm(true)]
