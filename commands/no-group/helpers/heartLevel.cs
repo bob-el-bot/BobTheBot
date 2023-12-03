@@ -3,7 +3,7 @@ namespace Commands.Helpers
     public class HeartLevel
     {
         public string heart = "";
-        public int min = 0;
+        public int min;
 
         public HeartLevel(string heart, int min)
         {

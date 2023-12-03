@@ -25,9 +25,9 @@ namespace Commands.Helpers
             public string specialCase;
             public bool isRickRoll;
             public bool isRedirect;
-            public bool isShortened = false;
-            public bool containsCookies = false;
-            public bool failed = false;
+            public bool isShortened;
+            public bool containsCookies;
+            public bool failed;
         }
 
         public static async Task<Embed> AnalyzeLink(string link)
