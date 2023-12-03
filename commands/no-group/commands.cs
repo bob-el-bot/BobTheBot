@@ -11,6 +11,7 @@ using Database.Types;
 using SimpleCiphers;
 using System.Reflection.Emit;
 using System.Collections.Generic;
+using ColorHelper;
 using System.ComponentModel;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Database;
@@ -140,6 +141,42 @@ namespace Commands
         }
 
         [EnabledInDm(true)]
+        [SlashCommand("announce", "Bob will create a fancy embed announcement in the channel the command is used in.")]
+        public async Task Announce([Summary("title", "The title of the announcement (the title of the embed).")] string title, [Summary("description", "The anouncement (the description of the embed).")] string description, [Summary("color", "A color name (purple), or valid hex code (#8D52FD).")] string color)
+        {
+            Color finalColor = Convert.ToUInt32(Announcement.StringToHex(color), 16);
+
+            if (finalColor == 0)
+            {
+                await RespondAsync(text: $"❌ `{color}` is an invalid color. Here is a list of valid colors:\n- red, pink, orange, yellow, blue, green, white, gray (grey), black. \n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+            }
+            else if (title.Length > 256) // 256 is max characters in an embed title.
+            {
+                await FollowupAsync($"❌ The announcement *cannot* be made because it contains **{title.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **256** characters in embed titles.", ephemeral: true);
+            }
+            else if (description.Length > 4096) // 4096 is max characters in an embed description.
+            {
+                await FollowupAsync($"❌ The announcement *cannot* be made because it contains **{description.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **4096** characters in embed descriptions.", ephemeral: true);
+            }
+            else
+            {
+                var embed = new EmbedBuilder
+                {
+                    Title = title,
+                    Color = finalColor,
+                    Description = description,
+                    Footer = new EmbedFooterBuilder
+                    {
+                        Text = $"Announced by {Context.User.GlobalName}."
+                    }
+                };
+
+                await RespondAsync(text: "✅ Your announcement has been made.", ephemeral: true);
+                await Context.Channel.SendMessageAsync(embed: embed.Build());
+            }
+        }
+
+        [EnabledInDm(true)]
         [SlashCommand("info", "Learn about Bob.")]
         public async Task Info()
         {
@@ -194,7 +231,7 @@ namespace Commands
             embed.AddField(name: "🎲 Randomly Generated (RNG):", value: "- `/random color` Get a color with Hex, CMYK, HSL, HSV and RGB codes.\n\n- `/random dice-roll [sides]` Roll a die with a specified # of sides.\n\n- `/random coin-toss` Flip a coin.\n\n- `/random quote [prompt]` Get a random quote.\n  - `[prompt]`choices: This is optional, use `/quote-prompts` to view all valid prompts.\n\n- `/random dad-joke` Get a random dad joke.\n\n- `/random fact` Get an outrageous fact.\n\n- `/random 8ball [prompt]` Get an 8 ball response to a prompt.\n\n- `/random dog` Get a random picture of a dog.\n\n- `/random date [earliestYear] [latestYear]` Get a random date between the inputed years.\n\n- `/random advice` Get a random piece of advice.\n\n- `/random choose [option]*5` Bob will pick from the options provided.")
             .AddField(name: "🎮 Games:", value: "- `/rock-paper-scissors` Play Bob in a game of rock paper scissors.\n\n- `/master-mind new-game` Play a game of Master Mind, the rules will shared upon usage.\n\n- `/master-mind guess` Make a guess in a game of Master Mind.")
             .AddField(name: "🖊️ Quoting:", value: "- `/quote new [quote] [user] [tag]*3` Formats and shares the quote in designated channel.\n\n- `/quote channel [channel]` Sets the quote channel for the server.")
-            .AddField(name: "✨ Other:", value: "- `/code preview [link]` Preview specific lines of code from a file on GitHub. \n\n- `/fonts [text] [font]` Change your text to a different font.\n  - `[font]` choices: 𝖒𝖊𝖉𝖎𝖊𝖛𝖆𝖑, 𝓯𝓪𝓷𝓬𝔂, 𝕠𝕦𝕥𝕝𝕚𝕟𝕖𝕕, ɟןıddǝp, s̷l̷̷a̷s̷h̷e̷d̷, and 🄱🄾🅇🄴🄳.\n\n- `/encrypt [message] [cipher]` Change text into a cipher.\n    - `[cipher]` choices: Caesar, A1Z26, Atbash, Morse Code\n\n- `/decrypt [message] [cipher]` Change encrypted text to plain text.\n    - `[cipher]` choices: Caesar, A1Z26, Atbash, Morse Code\n\n- `/confess [message] [user] [signoff]` Have Bob DM a user a message.\n\n- `/poll [prompt] [option]*4` Create a poll.\n  - `[option]*4` usage: You must provide 2-4 options. These are essentially the poll's choices.\n\n- `/ship [user]*2` See how good of a match 2 users are.\n\n- `/hug [user]*5` Show your friends some love with a hug.\n\n- `/welcome [welcome]` Bob will send welcome messages to new server members.")
+            .AddField(name: "✨ Other:", value: "- `/code preview [link]` Preview specific lines of code from a file on GitHub. \n\n- `/fonts [text] [font]` Change your text to a different font.\n  - `[font]` choices: 𝖒𝖊𝖉𝖎𝖊𝖛𝖆𝖑, 𝓯𝓪𝓷𝓬𝔂, 𝕠𝕦𝕥𝕝𝕚𝕟𝕖𝕕, ɟןıddǝp, s̷l̷̷a̷s̷h̷e̷d̷, and 🄱🄾🅇🄴🄳.\n\n- `/encrypt [message] [cipher]` Change text into a cipher.\n    - `[cipher]` choices: Caesar, A1Z26, Atbash, Morse Code\n\n- `/decrypt [message] [cipher]` Change encrypted text to plain text.\n    - `[cipher]` choices: Caesar, A1Z26, Atbash, Morse Code\n\n- `/confess [message] [user] [signoff]` Have Bob DM a user a message.\n\n- `/announce [title] [description] [color]` Have a fancy embed message sent.\n\n- `/poll [prompt] [option]*4` Create a poll.\n  - `[option]*4` usage: You must provide 2-4 options. These are essentially the poll's choices.\n\n- `/ship [user]*2` See how good of a match 2 users are.\n\n- `/hug [user]*5` Show your friends some love with a hug.\n\n- `/welcome [welcome]` Bob will send welcome messages to new server members.")
             .AddField(name: "🗄️ Informational / Help:", value: "- `/new` See the latest updates to Bob.\n\n- `/quote-prompts` See all valid prompts for `/random quote`.\n\n- `/ping` Find the client's latency.\n\n- `/analyze-link` See where a link will take you, and check for rick rolls.\n\n- `/info` Learn about Bob.\n\n- `/support` Sends an invite to Bob's support Server.");
 
             await Context.User.SendMessageAsync(embed: embed.Build());

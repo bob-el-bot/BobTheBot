@@ -85,6 +85,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/decrypt [message] [cipher]` Change encrypted text to plain text.
     - `[cipher]` choices: Caesar, A1Z26, Atbash, Morse Code
 - `/confess [message] [user] [signoff]` Have Bob DM a user a message.
+- `/announce [title] [description] [color]` Have a fancy embed message sent.
 - `/poll [prompt] [option]*4` Create a poll.
 - `/ship [user]*2` See how good of a match 2 users are.
 - `/hug [user]*5` Show your friends some love with a hug.
