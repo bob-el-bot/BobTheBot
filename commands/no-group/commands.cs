@@ -167,6 +167,7 @@ namespace Commands
                     Description = Announcement.FormatDescription(description),
                     Footer = new EmbedFooterBuilder
                     {
+                        IconUrl = Context.User.GetAvatarUrl(),
                         Text = $"Announced by {Context.User.GlobalName}."
                     }
                 };
