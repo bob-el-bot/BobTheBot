@@ -323,7 +323,7 @@ namespace Commands
             else
             {
                 // Setup base data
-                string footerText = Context.User.Username + " created this poll.";
+                string footerText = Context.User.GlobalName + " created this poll.";
                 string instructions = "React with the corresponding number to cast your vote.";
 
                 // Embed
@@ -331,11 +331,13 @@ namespace Commands
                 {
                     Title = "📊 " + prompt,
                     Description = instructions,
-                    Color = Bot.theme
+                    Color = Bot.theme,
+                    Footer = new EmbedFooterBuilder 
+                    {
+                        Text = footerText,
+                        IconUrl = Context.User.GetAvatarUrl()
+                    }
                 };
-
-                // Embed Setup
-                embed.WithFooter(footer => footer.Text = footerText);
 
                 string[] possibleOptions = { option1, option2, option3, option4 };
                 string[] optionLabels = { "1️⃣", "2️⃣", "3️⃣", "4️⃣" };
