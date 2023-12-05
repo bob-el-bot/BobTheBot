@@ -260,9 +260,10 @@ public static class Bot
                     await LogToDiscord((RestTextChannel)systemLogChannel, ctx, info, res.ErrorReason);
 
                     // Live Debugging
+                    // Server Logging
                     if (DebugGroup.LogGroup.serversToLog.ContainsKey(ctx.Guild.Id))
                     {
-                        DebugGroup.LogGroup.logChannels.TryGetValue(ctx.Guild.Id, out RestTextChannel logChannel);
+                        DebugGroup.LogGroup.serverLogChannels.TryGetValue(ctx.Guild.Id, out RestTextChannel logChannel);
                         await LogToDiscord(logChannel, ctx, info, res.ErrorReason);
                     }
                     break;
@@ -283,9 +284,10 @@ public static class Bot
             Console.WriteLine($"{DateTime.Now:dd/MM. H:mm:ss} | {FormatPerformance(cpuUsage, ramUsage)} | Location: {location} | Command: {commandName}");
 
             // Live Debugging
+            // Server Logging
             if (DebugGroup.LogGroup.serversToLog.ContainsKey(ctx.Guild.Id))
             {
-                DebugGroup.LogGroup.logChannels.TryGetValue(ctx.Guild.Id, out RestTextChannel logChannel);
+                DebugGroup.LogGroup.serverLogChannels.TryGetValue(ctx.Guild.Id, out RestTextChannel logChannel);
                 await LogToDiscord(logChannel, ctx, info);
             }
         }
