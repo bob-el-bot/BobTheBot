@@ -12,6 +12,7 @@ using Commands; // DO NOT REMOVE
 using System.Net.Http;
 using static Performance.Stats;
 using static ApiInteractions.Interface;
+using static Debug.Logger;
 using Database.Types;
 using SQLitePCL;
 using Microsoft.EntityFrameworkCore;
@@ -33,7 +34,7 @@ public static class Bot
 
     private static InteractionService Service;
 
-    private static readonly string Token = Config.GetToken();
+    private static readonly string Token = Config.GetTestToken();
 
     // Purple (normal) Theme: 9261821 | Orange (halloween) Theme: 16760153
     public static readonly Color theme = new(9261821);
@@ -253,17 +254,16 @@ public static class Bot
                 case InteractionCommandError.Exception:
                     await ctx.Interaction.FollowupAsync($"❌ Something went wrong...\n- Try again later.\n- Join Bob's support server: https://discord.gg/HvGMRZD8jQ");
                     Console.WriteLine($"Error: {res.ErrorReason}");
-                    var commandName = info.IsTopLevelCommand ? $"/{info.Name}" : $"/{info.Module.SlashGroupName} {info.Name}";
+
                     IMessageChannel systemLogChannel = (IMessageChannel)Client.GetGuild(supportServerId).GetChannel(systemLogChannelId);
 
-                    await systemLogChannel.SendMessageAsync($"**Error:** ```cs\n{res.ErrorReason}```Guild: **{ctx.Guild.Name}** | Command: **{commandName}**");
-                    await Commands.Helpers.Debug.Log((RestTextChannel)systemLogChannel, ctx, info, res.ErrorReason);
+                    await LogToDiscord((RestTextChannel)systemLogChannel, ctx, info, res.ErrorReason);
 
                     // Live Debugging
                     if (DebugGroup.LogGroup.serversToLog.ContainsKey(ctx.Guild.Id))
                     {
                         DebugGroup.LogGroup.logChannels.TryGetValue(ctx.Guild.Id, out RestTextChannel logChannel);
-                        await Commands.Helpers.Debug.Log(logChannel, ctx, info, res.ErrorReason);
+                        await LogToDiscord(logChannel, ctx, info, res.ErrorReason);
                     }
                     break;
                 case InteractionCommandError.Unsuccessful:
@@ -286,7 +286,7 @@ public static class Bot
             if (DebugGroup.LogGroup.serversToLog.ContainsKey(ctx.Guild.Id))
             {
                 DebugGroup.LogGroup.logChannels.TryGetValue(ctx.Guild.Id, out RestTextChannel logChannel);
-                await Commands.Helpers.Debug.Log(logChannel, ctx, info);
+                await LogToDiscord(logChannel, ctx, info);
             }
         }
     }

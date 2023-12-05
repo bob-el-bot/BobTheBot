@@ -6,11 +6,11 @@ using Discord.Interactions;
 using Discord.Rest;
 using Discord.WebSocket;
 
-namespace Commands.Helpers
+namespace Debug
 {
-    public static class Debug
+    public static class Logger
     {
-        public static async Task Log(RestTextChannel channel, IInteractionContext ctx, SlashCommandInfo info, string errorReason = null)
+        public static async Task LogToDiscord(RestTextChannel channel, IInteractionContext ctx, SlashCommandInfo info, string errorReason = null)
         {
             var location = ctx.Interaction.GuildId == null ? "a DM" : Bot.Client.GetGuild(ulong.Parse(ctx.Interaction.GuildId.ToString())).ToString();
             var commandName = info.IsTopLevelCommand ? $"/{info.Name}" : $"/{info.Module.SlashGroupName} {info.Name}";
