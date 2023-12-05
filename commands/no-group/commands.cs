@@ -167,6 +167,7 @@ namespace Commands
                     Description = Announcement.FormatDescription(description),
                     Footer = new EmbedFooterBuilder
                     {
+                        IconUrl = Context.User.GetAvatarUrl(),
                         Text = $"Announced by {Context.User.GlobalName}."
                     }
                 };
@@ -214,7 +215,7 @@ namespace Commands
                 Color = Bot.theme
             };
 
-            embed.AddField(name: "🗒️ Creators Notes", value: "- 🖊️ *The best* quote system is out now :partying_face: :tada: .\n- Bob has a place on the 🌐 web! [bobthebot.net](https://bobthebot.net)\n- Stay 📺 tuned for some awesome updates!", inline: false).AddField(name: "✨ Latest Update", value: commitMessage, inline: true).AddField(name: ":calendar_spiral: Date", value: $"<t:{commitDateID}:f>", inline: true).AddField(name: "🔮 See What's In the Works", value: "[Road Map](https://github.com/orgs/bob-el-bot/projects/4)");
+            embed.AddField(name: "🗒️ Creator's Notes", value: "- `/random color` now has image previews! A big deal for the :crystal_ball: future of Bob!\n- `/analyze-link` has been added and now you can :detective: track where a link will take you before even clicking it (up to 4 redirects). On top of that, you can learn if the site has cookies, is a shortened URL, or even if it's a Rick roll.\n- :mega: `/announce` has been added and can make you fancy embeds.\n- Stay 📺 tuned for some awesome updates!", inline: false).AddField(name: "✨ Latest Update", value: commitMessage, inline: true).AddField(name: ":calendar_spiral: Date", value: $"<t:{commitDateID}:f>", inline: true).AddField(name: "🔮 See What's In the Works", value: "[Road Map](https://github.com/orgs/bob-el-bot/projects/4)");
 
             await RespondAsync(embed: embed.Build());
         }
@@ -322,7 +323,7 @@ namespace Commands
             else
             {
                 // Setup base data
-                string footerText = Context.User.Username + " created this poll.";
+                string footerText = Context.User.GlobalName + " created this poll.";
                 string instructions = "React with the corresponding number to cast your vote.";
 
                 // Embed
@@ -330,11 +331,13 @@ namespace Commands
                 {
                     Title = "📊 " + prompt,
                     Description = instructions,
-                    Color = Bot.theme
+                    Color = Bot.theme,
+                    Footer = new EmbedFooterBuilder 
+                    {
+                        Text = footerText,
+                        IconUrl = Context.User.GetAvatarUrl()
+                    }
                 };
-
-                // Embed Setup
-                embed.WithFooter(footer => footer.Text = footerText);
 
                 string[] possibleOptions = { option1, option2, option3, option4 };
                 string[] optionLabels = { "1️⃣", "2️⃣", "3️⃣", "4️⃣" };

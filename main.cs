@@ -12,9 +12,15 @@ using Commands; // DO NOT REMOVE
 using System.Net.Http;
 using static Performance.Stats;
 using static ApiInteractions.Interface;
+using static Debug.Logger;
 using Database.Types;
 using SQLitePCL;
 using Microsoft.EntityFrameworkCore;
+using Discord.Rest;
+using System.Text;
+using Microsoft.VisualBasic;
+using System.Diagnostics;
+using Commands.Attributes;
 
 public static class Bot
 {
@@ -28,10 +34,14 @@ public static class Bot
 
     private static InteractionService Service;
 
-    private static readonly string Token = Config.GetToken();
+    private static readonly string Token = Config.GetTestToken();
 
     // Purple (normal) Theme: 9261821 | Orange (halloween) Theme: 16760153
     public static readonly Color theme = new(9261821);
+
+    public const ulong supportServerId = 1058077635692994651;
+    private static IGuild supportServer;
+    public const ulong systemLogChannelId = 1160105468082004029;
 
     private static Timer timer;
 
@@ -72,6 +82,10 @@ public static class Bot
 
         await Service.AddModulesAsync(Assembly.GetEntryAssembly(), null);
         await Service.RegisterCommandsGloballyAsync();
+
+        ModuleInfo[] debugCommands = Service.Modules.Where((x) => x.Preconditions.Any(x => x is RequireGuildAttribute)).ToArray();
+        supportServer = Client.GetGuild(supportServerId);
+        var result = await Service.AddModulesToGuildAsync(supportServer, true, debugCommands);
 
         Client.InteractionCreated += InteractionCreated;
         Service.SlashCommandExecuted += SlashCommandResulted;
@@ -174,7 +188,7 @@ public static class Bot
         {
             Title = "👋 " + greetings[random.Next(0, greetings.Length)],
             Description = instructions,
-            Color = new Color(9261821)
+            Color = new Color(theme)
         };
 
         try
@@ -222,8 +236,6 @@ public static class Bot
         }
     }
 
-    private static readonly ulong ownerID = Config.GetOwnerID();
-
     private static async Task SlashCommandResulted(SlashCommandInfo info, IInteractionContext ctx, IResult res)
     {
         if (!res.IsSuccess)
@@ -242,9 +254,18 @@ public static class Bot
                 case InteractionCommandError.Exception:
                     await ctx.Interaction.FollowupAsync($"❌ Something went wrong...\n- Try again later.\n- Join Bob's support server: https://discord.gg/HvGMRZD8jQ");
                     Console.WriteLine($"Error: {res.ErrorReason}");
-                    IMessageChannel logChannel = (IMessageChannel)Client.GetGuild(1058077635692994651).GetChannel(1160105468082004029);
-                    var commandName = info.IsTopLevelCommand ? $"/{info.Name}" : $"/{info.Module.SlashGroupName} {info.Name}";
-                    await logChannel.SendMessageAsync($"**Error:** ```cs\n{res.ErrorReason}```Guild: **{ctx.Guild}** | Command: **{commandName}**");
+
+                    IMessageChannel systemLogChannel = (IMessageChannel)Client.GetGuild(supportServerId).GetChannel(systemLogChannelId);
+
+                    await LogToDiscord((RestTextChannel)systemLogChannel, ctx, info, res.ErrorReason);
+
+                    // Live Debugging
+                    // Server Logging
+                    if (DebugGroup.LogGroup.serversToLog.ContainsKey(ctx.Guild.Id))
+                    {
+                        DebugGroup.LogGroup.serverLogChannels.TryGetValue(ctx.Guild.Id, out RestTextChannel logChannel);
+                        await LogToDiscord(logChannel, ctx, info, res.ErrorReason);
+                    }
                     break;
                 case InteractionCommandError.Unsuccessful:
                     await ctx.Interaction.FollowupAsync("❌ Command could not be executed");
@@ -258,9 +279,17 @@ public static class Bot
         {
             var cpuUsage = await GetCpuUsageForProcess();
             var ramUsage = GetRamUsageForProcess();
-            var Location = ctx.Interaction.GuildId == null ? "a DM" : Client.GetGuild(ulong.Parse(ctx.Interaction.GuildId.ToString())).ToString();
+            var location = ctx.Interaction.GuildId == null ? "a DM" : Client.GetGuild(ulong.Parse(ctx.Interaction.GuildId.ToString())).ToString();
             var commandName = info.IsTopLevelCommand ? $"/{info.Name}" : $"/{info.Module.SlashGroupName} {info.Name}";
-            Console.WriteLine($"{DateTime.Now:dd/MM. H:mm:ss} | {FormatPerformance(cpuUsage, ramUsage)} | Location: {Location} | Command: {commandName}");
+            Console.WriteLine($"{DateTime.Now:dd/MM. H:mm:ss} | {FormatPerformance(cpuUsage, ramUsage)} | Location: {location} | Command: {commandName}");
+
+            // Live Debugging
+            // Server Logging
+            if (DebugGroup.LogGroup.serversToLog.ContainsKey(ctx.Guild.Id))
+            {
+                DebugGroup.LogGroup.serverLogChannels.TryGetValue(ctx.Guild.Id, out RestTextChannel logChannel);
+                await LogToDiscord(logChannel, ctx, info);
+            }
         }
     }
 
