@@ -56,7 +56,6 @@ public static class Bot
         await DB.Database.EnsureCreatedAsync();
         var migrations = DB.Database.GetPendingMigrations();
 
-
         Client.Ready += Ready;
         Client.Log += Log;
         Client.GuildAvailable += GuildAvailable;

@@ -133,11 +133,11 @@ namespace Commands
             
             // Make Embed
             var embed = new Discord.EmbedBuilder { };
-            embed.AddField("Hex", "`" + hex + "`")
-            .AddField("RGB", $"`R: {rgb.R}, G: {rgb.G}, B: {rgb.B}`")
-            .AddField("CMYK", $"`C: {cmyk.C}, M: {cmyk.M}, Y: {cmyk.Y}, K: {cmyk.K}`")
-            .AddField("HSL", $"`H: {hsl.H}, S: {hsl.S}, L: {hsl.L}`")
-            .AddField("HSV", $"`H: {hsv.H}, S: {hsv.S}, V: {hsv.V}`")
+            embed.AddField("Hex", $"```#{hex}```")
+            .AddField("RGB", $"```R: {rgb.R}, G: {rgb.G}, B: {rgb.B}```")
+            .AddField("CMYK", $"```C: {cmyk.C}, M: {cmyk.M}, Y: {cmyk.Y}, K: {cmyk.K}```")
+            .AddField("HSL", $"```H: {hsl.H}, S: {hsl.S}, L: {hsl.L}```")
+            .AddField("HSV", $"```H: {hsv.H}, S: {hsv.S}, V: {hsv.V}```")
             .WithThumbnailUrl("attachment://image.png")
             .WithColor(displayColor);
 
