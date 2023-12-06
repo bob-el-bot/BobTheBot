@@ -40,7 +40,7 @@ public static class Bot
     public static readonly Color theme = new(9261821);
 
     public const ulong supportServerId = 1058077635692994651;
-    private static IGuild supportServer;
+
     public const ulong systemLogChannelId = 1160105468082004029;
 
     private static Timer timer;
@@ -67,7 +67,7 @@ public static class Bot
         await Client.LoginAsync(TokenType.Bot, Token);
         await Client.StartAsync();
 
-        while (Console.ReadKey().Key != ConsoleKey.Q) { };
+        while (Console.ReadKey().Key != ConsoleKey.Q) { }; // Keep program from closing.
     }
 
     public static int totalUsers;
@@ -84,8 +84,8 @@ public static class Bot
         await Service.RegisterCommandsGloballyAsync();
 
         ModuleInfo[] debugCommands = Service.Modules.Where((x) => x.Preconditions.Any(x => x is RequireGuildAttribute)).ToArray();
-        supportServer = Client.GetGuild(supportServerId);
-        var result = await Service.AddModulesToGuildAsync(supportServer, true, debugCommands);
+        IGuild supportServer = Client.GetGuild(supportServerId);
+        await Service.AddModulesToGuildAsync(supportServer, true, debugCommands);
 
         Client.InteractionCreated += InteractionCreated;
         Service.SlashCommandExecuted += SlashCommandResulted;
