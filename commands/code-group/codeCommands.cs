@@ -20,7 +20,7 @@ namespace Commands
             try
             {
                 // Add HTTP if missing.
-                if (link.Contains('.') && link.Length < 7 || (link.Length >= 7 && link[..7] != "http://" && link.Length >= 8 && link[..8] != "https://"))
+                if (link.Contains('.', StringComparison.Ordinal) && link.Length < 7 || (link.Length >= 7 && link[..7] != "http://" && link.Length >= 8 && link[..8] != "https://"))
                 {
                     link = $"https://{link}";
                 }
@@ -52,18 +52,18 @@ namespace Commands
                 {
                     if (lineNumbers.Contains('-'))
                     {
-                        if (lineNumbers[..lineNumbers.IndexOf('-')].Contains('C'))
+                        if (lineNumbers[..lineNumbers.IndexOf('-', StringComparison.Ordinal)].Contains('C', StringComparison.Ordinal))
                         {
-                            lineNumbers = lineNumbers[..lineNumbers.IndexOf("C")] + lineNumbers[lineNumbers.IndexOf("-")..];
+                            lineNumbers = lineNumbers[..lineNumbers.IndexOf("C", StringComparison.Ordinal)] + lineNumbers[lineNumbers.IndexOf("-", StringComparison.Ordinal)..];
                         }
-                        if (lineNumbers.Contains('C'))
+                        if (lineNumbers.Contains('C', StringComparison.Ordinal))
                         {
-                            lineNumbers = lineNumbers[..lineNumbers.IndexOf("C")];
+                            lineNumbers = lineNumbers[..lineNumbers.IndexOf("C", StringComparison.Ordinal)];
                         }
                     }
                     else
                     {
-                        lineNumbers = lineNumbers[..lineNumbers.IndexOf("C")];
+                        lineNumbers = lineNumbers[..lineNumbers.IndexOf("C", StringComparison.Ordinal)];
                     }
                 }
 
@@ -72,8 +72,8 @@ namespace Commands
                 short? endLine = null;
                 if (lineNumbers.Contains('-'))
                 {
-                    startLine = short.Parse(lineNumbers[1..lineNumbers.IndexOf("-")]);
-                    endLine = short.Parse(lineNumbers[(lineNumbers.IndexOf("-") + 1)..]);
+                    startLine = short.Parse(lineNumbers[1..lineNumbers.IndexOf("-", StringComparison.Ordinal)]);
+                    endLine = short.Parse(lineNumbers[(lineNumbers.IndexOf("-", StringComparison.Ordinal) + 1)..]);
                 }
                 else if (short.TryParse(lineNumbers[1..], out _))
                 {

@@ -16,8 +16,14 @@ namespace Commands.Attributes
 
         public override Task<PreconditionResult> CheckRequirementsAsync(IInteractionContext context, ICommandInfo commandInfo, IServiceProvider services)
         {
-            if (context.Guild.Id == GuildId) return Task.FromResult(PreconditionResult.FromSuccess());
-            else return Task.FromResult(PreconditionResult.FromError("❌ This command can't be used on this server."));
+            if (context.Guild.Id == GuildId)
+            {
+                return Task.FromResult(PreconditionResult.FromSuccess());
+            }
+            else
+            {
+                return Task.FromResult(PreconditionResult.FromError("❌ This command can't be used on this server."));
+            }
         }
     }
 }

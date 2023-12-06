@@ -122,10 +122,10 @@ namespace Commands
         {
             // Get Values
             var hex = string.Format("{0:X6}", random.Next(0x1000000));
-            CMYK cmyk = ColorHelper.ColorConverter.HexToCmyk(new HEX(hex));
-            HSL hsl = ColorHelper.ColorConverter.HexToHsl(new HEX(hex));
-            HSV hsv = ColorHelper.ColorConverter.HexToHsv(new HEX(hex));
-            RGB rgb = ColorHelper.ColorConverter.HexToRgb(new HEX(hex));
+            CMYK cmyk = ColorConverter.HexToCmyk(new HEX(hex));
+            HSL hsl = ColorConverter.HexToHsl(new HEX(hex));
+            HSV hsv = ColorConverter.HexToHsv(new HEX(hex));
+            RGB rgb = ColorConverter.HexToRgb(new HEX(hex));
             Discord.Color displayColor = new(Convert.ToUInt32(hex, 16));
 
             // Make Color Image
@@ -133,11 +133,11 @@ namespace Commands
             
             // Make Embed
             var embed = new Discord.EmbedBuilder { };
-            embed.AddField("Hex", "`" + hex + "`")
-            .AddField("RGB", $"`R: {rgb.R}, G: {rgb.G}, B: {rgb.B}`")
-            .AddField("CMYK", $"`C: {cmyk.C}, M: {cmyk.M}, Y: {cmyk.Y}, K: {cmyk.K}`")
-            .AddField("HSL", $"`H: {hsl.H}, S: {hsl.S}, L: {hsl.L}`")
-            .AddField("HSV", $"`H: {hsv.H}, S: {hsv.S}, V: {hsv.V}`")
+            embed.AddField("Hex", $"```#{hex}```")
+            .AddField("RGB", $"```R: {rgb.R}, G: {rgb.G}, B: {rgb.B}```")
+            .AddField("CMYK", $"```C: {cmyk.C}, M: {cmyk.M}, Y: {cmyk.Y}, K: {cmyk.K}```")
+            .AddField("HSL", $"```H: {hsl.H}, S: {hsl.S}, L: {hsl.L}```")
+            .AddField("HSV", $"```H: {hsv.H}, S: {hsv.S}, V: {hsv.V}```")
             .WithThumbnailUrl("attachment://image.png")
             .WithColor(displayColor);
 
