@@ -332,7 +332,7 @@ namespace Commands
                     Title = "📊 " + prompt,
                     Description = instructions,
                     Color = Bot.theme,
-                    Footer = new EmbedFooterBuilder 
+                    Footer = new EmbedFooterBuilder
                     {
                         Text = footerText,
                         IconUrl = Context.User.GetAvatarUrl()
@@ -371,9 +371,9 @@ namespace Commands
         [SlashCommand("fonts", "Bob will type your text in a font of your choice")]
         public async Task Fonts([Summary("text", "the text you want converted. NOTE: only the alphabet is converted.")] string text, FontConversion.FontTypes font)
         {
-            if (text.Length > 2000) // 2000 is max characters in a message.
+            if (text.Length + 6 > 2000) // 2000 is max characters in a message.
             {
-                await RespondAsync($"❌ The inputted text *cannot* be converted to a different font because it contains **{text.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **2000** characters.", ephemeral: true);
+                await RespondAsync($"❌ The inputted text *cannot* be converted to a different font because it contains **{text.Length + 6}** characters.\n- Try having fewer characters.\n- Discord has a limit of **2000** characters.", ephemeral: true);
             }
             else
             {
@@ -387,7 +387,7 @@ namespace Commands
                     FontConversion.FontTypes.medieval => FontConversion.Medieval(text),
                     _ => text,
                 };
-                await RespondAsync(finalText);
+                await RespondAsync($"```{finalText}```");
             }
         }
 
@@ -491,13 +491,19 @@ namespace Commands
                     break;
             }
 
-            if (finalText.Length > 2000)
+            if (finalText.Length + 6 > 4096)
             {
-                await RespondAsync(text: $"❌ The message *cannot* be encrypted because the encryption contains **{finalText.Length}** characters.\n- Try encrypting fewer lines.\n- Try breaking it up.\n- Discord has a limit of **2000** characters.", ephemeral: true);
+                await RespondAsync(text: $"❌ The message *cannot* be encrypted because the message contains **{finalText.Length + 6}** characters.\n- Try encrypting fewer characters.\n- Try breaking it up.\n- Discord has a limit of **4096** characters in embeds.", ephemeral: true);
             }
             else
             {
-                await RespondAsync($"🔒 {finalText}", ephemeral: true);
+                var embed = new EmbedBuilder
+                {
+                    Title = "🔒 Encrypt",
+                    Color = 2303786,
+                    Description = $"```{finalText}```",
+                };
+                await RespondAsync(embed: embed.Build(), ephemeral: true);
             }
         }
 
@@ -525,13 +531,19 @@ namespace Commands
                     break;
             }
 
-            if (finalText.Length > 2000)
+            if (finalText.Length + 6 > 4096)
             {
-                await RespondAsync(text: $"❌ The message *cannot* be encrypted because the encryption contains **{finalText.Length}** characters.\n- Try encrypting fewer lines.\n- Try breaking it up.\n- Discord has a limit of **2000** characters.", ephemeral: true);
+                await RespondAsync(text: $"❌ The message *cannot* be decrypted because the encryption contains **{finalText.Length + 6}** characters.\n- Try decrypting fewer characters.\n- Try breaking it up.\n- Discord has a limit of **4096** characters in embeds.", ephemeral: true);
             }
             else
             {
-                await RespondAsync($"🔓 {finalText}", ephemeral: true);
+                var embed = new EmbedBuilder
+                {
+                    Title = "🔓 Decrypt",
+                    Color = 2303786,
+                    Description = $"```{finalText}```",
+                };
+                await RespondAsync(embed: embed.Build(), ephemeral: true);
             }
         }
     }
