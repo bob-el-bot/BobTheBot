@@ -11,12 +11,11 @@ namespace Commands
     [EnabledInDm(false)]
     [DontAutoRegister]
     [RequireGuild(Bot.supportServerId)]
+    [RequireBotPermission(GuildPermission.Administrator)]
     [Group("debug", "All commands relevant to debugging.")]
     public class DebugGroup : InteractionModuleBase<SocketInteractionContext>
     {
         [EnabledInDm(false)]
-        [DontAutoRegister]
-        [RequireGuild(Bot.supportServerId)]
         [Group("log", "All debug commands for logging.")]
         public class LogGroup : InteractionModuleBase<SocketInteractionContext>
         {
