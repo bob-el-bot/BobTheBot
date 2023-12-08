@@ -280,7 +280,7 @@ namespace Commands
             };
 
             await Context.User.SendMessageAsync(embed: firstEmbed.Build());
-                        await Context.User.SendMessageAsync(embed: secondEmbed.Build());
+            await Context.User.SendMessageAsync(embed: secondEmbed.Build());
             await FollowupAsync(text: $"📪 Check your DMs.", ephemeral: true);
         }
 
