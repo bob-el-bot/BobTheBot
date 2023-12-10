@@ -17,6 +17,10 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using Database;
 using System.Text.RegularExpressions;
 using System.Linq;
+using Games;
+using Challenges;
+using System.Runtime.CompilerServices;
+using Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal;
 
 namespace Commands
 {
@@ -100,20 +104,126 @@ namespace Commands
         }
 
         [EnabledInDm(true)]
-        [SlashCommand("rock-paper-scissors", "Play a game of Rock Paper Scissors with Bob.")]
-        public async Task RPS()
+        [SlashCommand("rock-paper-scissors", "Play a game of Rock Paper Scissors.")]
+        public async Task RPS([Summary("opponent", "Leave empty to verse an AI.")] SocketUser opponent = null)
         {
-            SelectMenuBuilder RPSOptions = new SelectMenuBuilder().WithPlaceholder("Select an option").WithCustomId("RPSOptions").WithMaxValues(1).WithMinValues(1).AddOption("🪨 Rock", "0").AddOption("📃 Paper", "1").AddOption("✂️ Scissors", "2");
-            var builder = new ComponentBuilder().WithSelectMenu(RPSOptions);
-            await RespondAsync(text: "*Game On!* What do you choose?", components: builder.Build());
+            if (opponent == null || opponent.IsBot)
+            {
+                await DeferAsync();
+                RockPaperScissors game = new(Context.User, opponent ?? Bot.Client.CurrentUser);
+                await game.StartBotGame(Context.Interaction);
+            }
+            else
+            {
+                if (!Challenge.CanChallenge(Context.User.Id, opponent.Id))
+                {
+                    await RespondAsync(text: "❌ You can't challenge them.", ephemeral: true);
+                }
+                else
+                {
+                    await DeferAsync();
+                    await Challenge.SendMessage(Context.Interaction, new RockPaperScissors(Context.User, opponent));
+                }
+            }
         }
 
-        [ComponentInteraction("RPSOptions")]
-        public async Task RPSOptionsHandler()
+        [ComponentInteraction("rps:*:*")]
+        public async Task RPSButtonHandler(string rps, string Id)
         {
             SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
-            string result = RockPaperScissors.PlayRPS(string.Join("", component.Data.Values));
-            await component.UpdateAsync(x => { x.Content = result + component.User.Mention; x.Components = null; });
+
+            Challenge.RockPaperScissorsGames.TryGetValue(Convert.ToUInt64(Id), out RockPaperScissors game);
+
+            if (game == null)
+            {
+                await Context.Interaction.RespondAsync(text: $"❌ This game no longer exists\n- Use `/rock-paper-scissors` to start a new game.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+            }
+            else
+            {
+                int choice = Convert.ToInt16(rps);
+                bool isPlayer1 = Context.Interaction.User.Id == game.Player1.Id;
+                bool isPlayer2 = Context.Interaction.User.Id == game.Player2.Id;
+
+                if (!isPlayer1 && !isPlayer2)
+                {
+                    await Context.Interaction.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                }
+                else if ((isPlayer1 && game.player1Choice != -1) || (isPlayer2 && game.player2Choice != -1))
+                {
+                    await Context.Interaction.RespondAsync(text: $"❌ You **cannot** change your choice.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                }
+                else
+                {
+                    if (isPlayer1)
+                    {
+                        game.player1Choice = choice;
+                    }
+                    else if (isPlayer2)
+                    {
+                        game.player2Choice = choice;
+                    }
+
+                    if (game.player1Choice != -1 && game.player2Choice != -1)
+                    {
+                        await game.EndGame();
+                    }
+                    else
+                    {
+                        string[] options = { "🪨", "📃", "✂️" };
+                        await component.RespondAsync($"You picked {options[choice]}", ephemeral: true);
+                    }
+                }
+            }
+        }
+
+        [ComponentInteraction("acceptChallenge:*")]
+        public async Task AcceptChallengeButtonHandler(string Id)
+        {
+            Challenge.Games.TryGetValue(Convert.ToUInt64(Id), out Games.Game challenge);
+            if (challenge == null)
+            {
+                await Context.Interaction.RespondAsync(text: $"❌ This challenge no longer exists.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+            }
+            else
+            {
+                if (Context.Interaction.User.Id != challenge.Player2.Id)
+                {
+                    await Context.Interaction.RespondAsync(text: $"❌ **Only** {challenge.Player2.Mention} can **accept** this challenge.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                }
+                else
+                {
+                    await challenge.StartGame((SocketMessageComponent)Context.Interaction);
+                }
+            }
+        }
+
+        [ComponentInteraction("declineChallenge:*")]
+        public async Task DeclineChallengeButtonHandler(string Id)
+        {
+            SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
+            Challenge.Games.TryGetValue(Convert.ToUInt64(Id), out Games.Game challenge);
+
+            if (challenge == null)
+            {
+                await Context.Interaction.RespondAsync(text: $"❌ This challenge no longer exists.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+            }
+            else
+            {
+                if (Context.Interaction.User.Id != challenge.Player2.Id)
+                {
+                    await component.RespondAsync(text: $"❌ **Only** {challenge.Player2.Mention} can **decline** this challenge.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                }
+                else
+                {
+                    var embed = new EmbedBuilder
+                    {
+                        Color = Challenge.color,
+                        Description = $"### ⚔️ {challenge.Player1.Mention} Challenges {challenge.Player2.Mention} to {challenge.Title}.\n{challenge.Player2.Mention} declined."
+                    };
+
+                    await component.UpdateAsync(x => { x.Embed = embed.Build(); x.Content = null; x.Components = null; });
+                }
+            }
         }
 
         [EnabledInDm(true)]
