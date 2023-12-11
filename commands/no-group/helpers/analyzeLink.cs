@@ -1,16 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Discord;
 using HtmlAgilityPack;
-using Microsoft.EntityFrameworkCore.Query;
 
 namespace Commands.Helpers
 {
@@ -73,11 +70,11 @@ namespace Commands.Helpers
 
                 if (!l.failed)
                 {
-                    description.AppendLine($"{(linkCount == trail.Count ? "📍" : "⬇️")} {l.link} **Status Code:** `{(int)l.statusCode} {l.statusCode}{(l.specialCase != null ? $" - {l.specialCase}" : "")}`\n**Is Redirect?** {(l.isRedirect ? "true" : "false")} **Has Cookies?** {(l.containsCookies ? "true" : "false")} **Is Short URL?** {(l.isShortened ? "true" : "false")} **Is Rick Roll?** {(l.isRickRoll ? "true" : "false")} ");
+                    description.AppendLine($"{(linkCount == trail.Count ? "📍" : "⬇️")} <{l.link}> **Status Code:** `{(int)l.statusCode} {l.statusCode}{(l.specialCase != null ? $" - {l.specialCase}" : "")}`\n**Is Redirect?** {(l.isRedirect ? "true" : "false")} **Has Cookies?** {(l.containsCookies ? "true" : "false")} **Is Short URL?** {(l.isShortened ? "true" : "false")} **Is Rick Roll?** {(l.isRickRoll ? "true" : "false")} ");
                 }
                 else
                 {
-                    description.AppendLine($"❌ {l.link} **Failed to visit link.**");
+                    description.AppendLine($"❌ <{l.link}> **Failed to visit link.**");
                     if (!failed)
                     {
                         warnings.AppendLine("- For an unknown reason, Bob could not open this page (it might not exist). ");
@@ -89,7 +86,7 @@ namespace Commands.Helpers
 
             var embed = new EmbedBuilder
             {
-                Title = $"🕵️ Analysis of {link}",
+                Title = $"🕵️ Analysis of <{link}>",
                 Description = description.ToString(),
                 Footer = new EmbedFooterBuilder
                 {
@@ -143,7 +140,7 @@ namespace Commands.Helpers
                             string url = GetUrlFromContent(content);
                             Link newLink = new()
                             {
-                                link = $"<{link}>",
+                                link = $"{link}",
                                 statusCode = req.StatusCode,
                                 specialCase = "Meta-Refresh Redirect",
                                 containsCookies = cookies.GetCookies(new Uri(link)).Count != 0,
@@ -159,7 +156,7 @@ namespace Commands.Helpers
                         {
                             Link newLink = new()
                             {
-                                link = $"<{link}>",
+                                link = $"{link}",
                                 statusCode = req.StatusCode,
                                 specialCase = "JavaScript Redirect",
                                 containsCookies = cookies.GetCookies(new Uri(link)).Count != 0,
@@ -176,7 +173,7 @@ namespace Commands.Helpers
                             bool isRedirect = (int)req.StatusCode >= 300 && (int)req.StatusCode <= 308;
                             Link newLink = new()
                             {
-                                link = $"<{link}>",
+                                link = $"{link}",
                                 statusCode = req.StatusCode,
                                 containsCookies = cookies.GetCookies(new Uri(link)).Count != 0,
                                 isRickRoll = link == "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
@@ -192,7 +189,7 @@ namespace Commands.Helpers
                         bool isRedirect = (int)req.StatusCode >= 300 && (int)req.StatusCode <= 308;
                         Link newLink = new()
                         {
-                            link = $"<{link}>",
+                            link = $"{link}",
                             statusCode = req.StatusCode,
                             containsCookies = cookies.GetCookies(new Uri(link)).Count != 0,
                             isRickRoll = link == "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
@@ -216,7 +213,7 @@ namespace Commands.Helpers
                 {
                     Link newLink = new()
                     {
-                        link = $"<{link}>",
+                        link = $"{link}",
                         failed = true
                     };
                     trail.Add(newLink);
