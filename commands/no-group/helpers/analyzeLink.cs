@@ -266,7 +266,7 @@ namespace Commands.Helpers
         private static bool ContainsShortenedDomain(string url)
         {
             // List of common URL shortener domains
-            string[] shortenerDomains = { "v.gd", "ow.ly", "bl.ink", "3.ly", "tiny.cc", "bit.ly", "tinyurl.com", "goo.gl", "shorturl.at", "t.ly", "youtu.be", "y2u.be", "t.co", "short.gy", "snip.ly", "Buff.ly", "redd.it", "rb.gy", "msha.ke", "" };
+            string[] shortenerDomains = { "dis.gd", "v.gd", "ow.ly", "bl.ink", "3.ly", "tiny.cc", "bit.ly", "tinyurl.com", "goo.gl", "shorturl.at", "t.ly", "youtu.be", "y2u.be", "t.co", "short.gy", "snip.ly", "Buff.ly", "redd.it", "rb.gy", "msha.ke", "" };
 
             if (Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
             {
