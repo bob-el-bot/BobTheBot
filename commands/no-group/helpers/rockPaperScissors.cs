@@ -16,7 +16,7 @@ namespace Commands.Helpers
         public int player1Choice = -1;
         public int player2Choice = -1;
 
-        public RockPaperScissors(IUser player1, IUser player2) : base(GameType.rps, onePerChannel, player1, player2)
+        public RockPaperScissors(IUser player1, IUser player2) : base(GameType.RockPaperScissors, onePerChannel, player1, player2)
         {
 
         }
