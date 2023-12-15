@@ -106,11 +106,11 @@ public static class Bot
             if (Token != Config.GetTestToken())
             {
                 // Top GG
-                var topGGResult = await PostToAPI("https://top.gg/api/bots/705680059809398804/stats", Config.GetTopGGToken(), new StringContent("{\"server_count\":" + Client.Guilds.Count.ToString() + "}", System.Text.Encoding.UTF8, "application/json"));
+                var topGGResult = await PostToAPI("https://top.gg/api/bots/705680059809398804/stats", Config.GetTopGGToken(), new StringContent("{\"server_count\":" + Client.Guilds.Count.ToString() + "}", Encoding.UTF8, "application/json"));
                 Console.WriteLine($"TopGG POST status: {topGGResult}");
 
                 // Discord Bots GG
-                var discordBotsResult = await PostToAPI("https://discord.bots.gg/api/v1/bots/705680059809398804/stats", Config.GetDiscordBotsToken(), new StringContent("{\"guildCount\":" + Client.Guilds.Count.ToString() + "}", System.Text.Encoding.UTF8, "application/json"));
+                var discordBotsResult = await PostToAPI("https://discord.bots.gg/api/v1/bots/705680059809398804/stats", Config.GetDiscordBotsToken(), new StringContent("{\"guildCount\":" + Client.Guilds.Count.ToString() + "}", Encoding.UTF8, "application/json"));
                 Console.WriteLine($"Discord Bots GG POST status: {discordBotsResult}");
             }
             else
@@ -260,7 +260,7 @@ public static class Bot
 
                     // Live Debugging
                     // Server Logging
-                    if (DebugGroup.LogGroup.serversToLog.ContainsKey(ctx.Guild.Id))
+                    if (ctx.Interaction.GuildId != null && DebugGroup.LogGroup.serversToLog.ContainsKey(ctx.Guild.Id))
                     {
                         DebugGroup.LogGroup.serverLogChannels.TryGetValue(ctx.Guild.Id, out RestTextChannel logChannel);
                         await LogToDiscord(logChannel, ctx, info, res.ErrorReason);
@@ -284,7 +284,7 @@ public static class Bot
 
             // Live Debugging
             // Server Logging
-            if (DebugGroup.LogGroup.serversToLog.ContainsKey(ctx.Guild.Id))
+            if (ctx.Interaction.GuildId != null && DebugGroup.LogGroup.serversToLog.ContainsKey(ctx.Guild.Id))
             {
                 DebugGroup.LogGroup.serverLogChannels.TryGetValue(ctx.Guild.Id, out RestTextChannel logChannel);
                 await LogToDiscord(logChannel, ctx, info);

@@ -57,7 +57,7 @@ namespace Challenges
         {
             switch (game.Type)
             {
-                case GameType.rps:
+                case GameType.RockPaperScissors:
                     RockPaperScissors rps = (RockPaperScissors)game;
                     RockPaperScissorsGames.Add(game.Id, rps);
                     break;

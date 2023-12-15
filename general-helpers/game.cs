@@ -9,7 +9,9 @@ namespace Games
     public enum GameType
     {
         [ChoiceDisplay("Rock Paper Scissors")]
-        rps,
+        RockPaperScissors,
+        [ChoiceDisplay("Tic Tac Toe")]
+        TicTacToe,
     }
 
     public class Game
