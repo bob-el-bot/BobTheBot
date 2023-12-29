@@ -13,7 +13,7 @@ namespace Challenges
         public static readonly Color color = Color.LighterGrey;
         public static Dictionary<ulong, Games.Game> Games { get; } = new();
         public static Dictionary<ulong, RockPaperScissors> RockPaperScissorsGames { get; } = new();
-
+        
         public static bool CanChallenge(ulong player1Id, ulong player2Id)
         {
             if (player1Id == player2Id)

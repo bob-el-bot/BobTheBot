@@ -62,9 +62,9 @@
       },
       "simple-ciphers": {
         "type": "Direct",
-        "requested": "[2.0.3, )",
-        "resolved": "2.0.3",
-        "contentHash": "ADt8pOc4Sk0H0aErIqHEV/gVclGnGX3KBi32G4z4YugEHK8AsJ0USk2hgvHPRg02LKdSLc6QNvTnt0jxVS5o4Q=="
+        "requested": "[2.0.4, )",
+        "resolved": "2.0.4",
+        "contentHash": "fDAAqmQZ1SrTOwoI+aQyRPlFoOuw6HWrVSHNDTp1XmNFR0S3ddXII9wgkX1TUR1kBF4uapwqlfgBrD8k/m3heg=="
       },
       "SkiaSharp": {
         "type": "Direct",
