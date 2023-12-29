@@ -358,21 +358,29 @@ namespace Commands
 - `/master-mind guess` Make a guess in a game of Master Mind. [Docs](https://docs.bobthebot.net#master-mind-guess)
 **🖊️ Quoting:** [Quoting Docs](https://docs.bobthebot.net#quoting)
 - `/quote new [quote] [user] [tag]*3` Formats and shares the quote in designated channel. [Docs](https://docs.bobthebot.net#quote-new)
-- `/quote channel [channel]` Sets the quote channel for the server. [Docs](https://docs.bobthebot.net#quote-channel)"
+- `/quote channel [channel]` Sets the quote channel for the server. [Docs](https://docs.bobthebot.net#quote-channel)
+**🔒 Encryption commands:**
+- `/encrypt a1z26 [message]` Encrypts your message by swapping letters to their corresponding number.
+- `/encrypt atbash [message]` Encrypts your message by swapping letters to their opposite position.
+- `/encrypt caesar [message] [shift]` Encrypts your message by shifting the letters the specified amount.
+- `/encrypt morse [message]` Encrypts your message using Morse code.
+- `/encrypt vigenere [message] [key]` Encrypts your message using a specified key."
             };
 
             var secondEmbed = new EmbedBuilder
             {
                 Title = $"",
                 Color = Bot.theme,
-                Description = @"**✨ Other:** [Other Docs](https://docs.bobthebot.net#other)
+                Description = @"**🔓 Decryption commands:**
+- `/decrypt a1z26 [message]` Decrypts your message by swapping letters to their corresponding number.
+- `/decrypt atbash [message]` Decrypts your message by swapping letters to their opposite position.
+- `/decrypt caesar [message] [shift]` Decrypts your message by shifting the letters the specified amount.
+- `/decrypt morse [message]` Decrypts your message using Morse code.
+- `/decrypt vigenere [message] [key]` Decrypts your message using a specified key.
+**✨ Other:** [Other Docs](https://docs.bobthebot.net#other)
 - `/code preview [link]` Preview specific lines of code from a file on GitHub. [Docs](https://docs.bobthebot.net#code-preview)
 - `/fonts [text] [font]` Change your text to a different font. [Docs](https://docs.bobthebot.net#fonts)
   - `[font]` choices: 𝖒𝖊𝖉𝖎𝖊𝖛𝖆𝖑, 𝓯𝓪𝓷𝓬𝔂, 𝕠𝕦𝕥𝕝𝕚𝕟𝕖𝕕, ɟןıddǝp, s̷l̷̷a̷s̷h̷e̷d̷, and 🄱🄾🅇🄴🄳.
-- `/encrypt [message] [cipher]` Change text into a cipher. [Docs](https://docs.bobthebot.net#encrypt)
-    - `[cipher]` choices: Caesar, A1Z26, Atbash, Morse Code
-- `/decrypt [message] [cipher]` Change encrypted text to plain text. [Docs](https://docs.bobthebot.net#decrypt)
-    - `[cipher]` choices: Caesar, A1Z26, Atbash, Morse Code
 - `/confess [message] [user] [signoff]` Have Bob DM a user a message. [Docs](https://docs.bobthebot.net#confess)
 - `/announce [title] [description] [color]` Have a fancy embed message sent. [Docs](https://docs.bobthebot.net#announce)
 - `/poll [prompt] [option]*4` Create a poll. [Docs](https://docs.bobthebot.net#poll)

@@ -77,13 +77,9 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/quote channel [channel]` Sets the quote channel for the server.
 
 ### ✨ Miscellaneous commands: 
-- `/code preview [link]` Preview specific lines of code from a file on GitHub. 
+- `/code preview [link]` Preview specific lines of code from a file on GitHub.
 - `/fonts [text] [font]` Change your text to a different font.
     - `[font]` choices: 𝖒𝖊𝖉𝖎𝖊𝖛𝖆𝖑, 𝓯𝓪𝓷𝓬𝔂, 𝕠𝕦𝕥𝕝𝕚𝕟𝕖𝕕, s̷l̷̷a̷s̷h̷e̷d̷, ɟןıddǝp, and 🄱🄾🅇🄴🄳.
-- `/encrypt [message] [cipher]` Change text into a cipher.
-    - `[cipher]` choices: Caesar, A1Z26, Atbash, Morse Code
-- `/decrypt [message] [cipher]` Change encrypted text to plain text.
-    - `[cipher]` choices: Caesar, A1Z26, Atbash, Morse Code
 - `/confess [message] [user] [signoff]` Have Bob DM a user a message.
 - `/announce [title] [description] [color]` Have a fancy embed message sent.
 - `/poll [prompt] [option]*4` Create a poll.
@@ -91,6 +87,20 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/hug [user]*5` Show your friends some love with a hug.
 - `/welcome [welcome]` Bob will send welcome messages to new server members.
 - `/hi` Say hi to Bob.
+
+### 🔒 Encryption commands:
+- `/encrypt a1z26 [message]` Encrypts your message by swapping letters to their corresponding number.
+- `/encrypt atbash [message]` Encrypts your message by swapping letters to their opposite position.
+- `/encrypt caesar [message] [shift]` Encrypts your message by shifting the letters the specified amount.
+- `/encrypt morse [message]` Encrypts your message using Morse code.
+- `/encrypt vigenere [message] [key]` Encrypts your message using a specified key.
+
+### 🔓 Decryption commands:
+- `/decrypt a1z26 [message]` Decrypts your message by swapping letters to their corresponding number.
+- `/decrypt atbash [message]` Decrypts your message by swapping letters to their opposite position.
+- `/decrypt caesar [message] [shift]` Decrypts your message by shifting the letters the specified amount.
+- `/decrypt morse [message]` Decrypts your message using Morse code.
+- `/decrypt vigenere [message] [key]` Decrypts your message using a specified key.
 
 ### 🗄️ Informational / help commands:
 - `/help` Get DMed information for *all* commands.
