@@ -35,7 +35,7 @@ namespace Database
             }
             else
             {
-                return await Server.FindAsync(keyValues: id);
+                return server;
             }
         }
 
