@@ -221,7 +221,10 @@ namespace Commands
                         Description = $"### ⚔️ {challenge.Player1.Mention} Challenges {challenge.Player2.Mention} to {challenge.Title}.\n{challenge.Player2.Mention} declined."
                     };
 
-                    await component.UpdateAsync(x => { x.Embed = embed.Build(); x.Content = null; x.Components = null; });
+                    var components = new ComponentBuilder().WithButton(label: "⚔️ Accept", customId: $"acceptedChallenge", style: ButtonStyle.Success, disabled: true)
+                    .WithButton(label: "🛡️ Decline", customId: $"declinedChallenge", style: ButtonStyle.Danger, disabled: true);
+
+                    await component.UpdateAsync(x => { x.Embed = embed.Build(); x.Content = null; x.Components = components.Build(); });
                 }
             }
         }
