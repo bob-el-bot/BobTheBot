@@ -31,7 +31,6 @@ namespace Commands.Helpers
             BotPlay();
 
             // Add to Games List
-            Challenge.Games.Add(Id, this);
             Challenge.AddToSpecificGameList(this);
 
             // Format Message
@@ -61,15 +60,14 @@ namespace Commands.Helpers
 
             await Message.ModifyAsync(x => { x.Embed = CreateEmbed($"{GetFinalTitle()}\n{options[player1Choice]} **VS** {options[player2Choice]}").Build(); x.Components = null; });
             
-            Challenge.RockPaperScissorsGames.Remove(Id);
-            Challenge.Games.Remove(Id);
+            Challenge.RemoveFromSpecificGameList(this);
         }
 
         private static EmbedBuilder CreateEmbed(string description)
         {
             return new EmbedBuilder
             {
-                Color = Challenge.color,
+                Color = Challenge.DefaultColor,
                 Description = description
             };
         }

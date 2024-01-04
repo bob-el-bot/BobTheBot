@@ -21,6 +21,8 @@ using Games;
 using Challenges;
 using System.Runtime.CompilerServices;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal;
+using Microsoft.EntityFrameworkCore.Storage;
+using System.ComponentModel.Design.Serialization;
 
 namespace Commands
 {
@@ -104,6 +106,84 @@ namespace Commands
         }
 
         [EnabledInDm(true)]
+        [SlashCommand("tic-tac-toe", "Play a game of Tic Tac Toe.")]
+        public async Task TicTacToe([Summary("opponent", "Leave empty to verse an AI.")] SocketUser opponent = null)
+        {
+            if (opponent == null || opponent.IsBot)
+            {
+                await DeferAsync();
+                TicTacToe game = new(Context.User, opponent ?? Bot.Client.CurrentUser);
+                await game.StartBotGame(Context.Interaction);
+            }
+            else
+            {
+                if (!Challenge.CanChallenge(Context.User.Id, opponent.Id))
+                {
+                    await RespondAsync(text: "❌ You can't challenge them.", ephemeral: true);
+                }
+                else
+                {
+                    await DeferAsync();
+                    await Challenge.SendMessage(Context.Interaction, new TicTacToe(Context.User, opponent));
+                }
+            }
+        }
+
+        [ComponentInteraction("ttt:*:*")]
+        public async Task TTTButtonHandler(string coordinate, string Id)
+        {
+            SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
+
+            Challenge.TicTacToeGames.TryGetValue(Convert.ToUInt64(Id), out TicTacToe game);
+
+            if (game == null)
+            {
+                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use `/tic-tac-toe` to start a new game.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+            }
+            else
+            {
+                bool isPlayer1 = component.User.Id == game.Player1.Id;
+                bool isPlayer2 = component.User.Id == game.Player2.Id;
+
+                if (!isPlayer1 && !isPlayer2)
+                {
+                    await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                }
+                else if (game.isPlayer1Turn && !isPlayer1 || !game.isPlayer1Turn && isPlayer1)
+                {
+                    await component.RespondAsync(text: $"❌ It is **not** your turn.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                }
+                else
+                {
+                    await DeferAsync();
+
+                    // Prepare Position
+                    string[] coords = coordinate.Split('-');
+                    int[] position = { Convert.ToInt16(coords[0]), Convert.ToInt16(coords[1]) };
+
+                    // Check if the chosen move is valid and within bounds
+                    if (position[0] >= 0 && position[0] < 3 && position[1] >= 0 && position[1] < 3 && game.grid[position[0], position[1]] == 0)
+                    {
+                        game.grid[position[0], position[1]] = game.isPlayer1Turn ? 1 : 2;
+                        if (game.Player2.IsBot)
+                        {
+                            await game.EndBotTurn(component);
+                        }
+                        else
+                        {
+                            await game.EndTurn(component);
+                        }
+                    }
+                    else
+                    {
+                        // Handle the case where the chosen move is not valid or out of bounds
+                        await component.RespondAsync(text: $"❌ Invalid move.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    }
+                }
+            }
+        }
+
+        [EnabledInDm(true)]
         [SlashCommand("rock-paper-scissors", "Play a game of Rock Paper Scissors.")]
         public async Task RPS([Summary("opponent", "Leave empty to verse an AI.")] SocketUser opponent = null)
         {
@@ -136,21 +216,21 @@ namespace Commands
 
             if (game == null)
             {
-                await Context.Interaction.RespondAsync(text: $"❌ This game no longer exists\n- Use `/rock-paper-scissors` to start a new game.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use `/rock-paper-scissors` to start a new game.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
             else
             {
                 int choice = Convert.ToInt16(rps);
-                bool isPlayer1 = Context.Interaction.User.Id == game.Player1.Id;
-                bool isPlayer2 = Context.Interaction.User.Id == game.Player2.Id;
+                bool isPlayer1 = component.User.Id == game.Player1.Id;
+                bool isPlayer2 = component.User.Id == game.Player2.Id;
 
                 if (!isPlayer1 && !isPlayer2)
                 {
-                    await Context.Interaction.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
                 }
                 else if ((isPlayer1 && game.player1Choice != -1) || (isPlayer2 && game.player2Choice != -1))
                 {
-                    await Context.Interaction.RespondAsync(text: $"❌ You **cannot** change your choice.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    await component.RespondAsync(text: $"❌ You **cannot** change your choice.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
                 }
                 else
                 {
@@ -217,7 +297,7 @@ namespace Commands
                 {
                     var embed = new EmbedBuilder
                     {
-                        Color = Challenge.color,
+                        Color = Challenge.DefaultColor,
                         Description = $"### ⚔️ {challenge.Player1.Mention} Challenges {challenge.Player2.Mention} to {challenge.Title}.\n{challenge.Player2.Mention} declined."
                     };
 

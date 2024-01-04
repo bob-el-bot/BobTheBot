@@ -10,10 +10,13 @@ namespace Challenges
 {
     public static class Challenge
     {
-        public static readonly Color color = Color.LighterGrey;
+        public static readonly Color DefaultColor = Color.LighterGrey;
+        public static readonly Color Player1Color = Color.Blue;
+        public static readonly Color Player2Color = Color.Red;
         public static Dictionary<ulong, Games.Game> Games { get; } = new();
         public static Dictionary<ulong, RockPaperScissors> RockPaperScissorsGames { get; } = new();
-        
+        public static Dictionary<ulong, TicTacToe> TicTacToeGames { get; } = new();
+
         public static bool CanChallenge(ulong player1Id, ulong player2Id)
         {
             if (player1Id == player2Id)
@@ -33,7 +36,6 @@ namespace Challenges
             game.Id = msg.Id;
 
             // Add to Games List
-            Games.Add(game.Id, game);
             AddToSpecificGameList(game);
 
             // Format Message
@@ -41,8 +43,7 @@ namespace Challenges
 
             var embed = new EmbedBuilder
             {
-                //Color = game.Player1Turn ? new Color(3447003) : new Color(15548997),
-                Color = color,
+                Color = DefaultColor,
                 Description = $"### ⚔️ {game.Player1.Mention} Challenges {game.Player2.Mention} to {game.Title}.\nAccept or decline <t:{dateTime}:R>."
             };
 
@@ -61,9 +62,32 @@ namespace Challenges
                     RockPaperScissors rps = (RockPaperScissors)game;
                     RockPaperScissorsGames.Add(game.Id, rps);
                     break;
+                case GameType.TicTacToe:
+                    TicTacToe ttt = (TicTacToe)game;
+                    TicTacToeGames.Add(game.Id, ttt);
+                    break;
                 default:
                     break;
             }
+
+            Games.Add(game.Id, game);
+        }
+
+        public static void RemoveFromSpecificGameList(Games.Game game)
+        {
+            switch (game.Type)
+            {
+                case GameType.RockPaperScissors:
+                    RockPaperScissorsGames.Remove(game.Id);
+                    break;
+                case GameType.TicTacToe:
+                    RockPaperScissorsGames.Remove(game.Id);
+                    break;
+                default:
+                    break;
+            }
+
+            Games.Remove(game.Id);
         }
     }
 }
