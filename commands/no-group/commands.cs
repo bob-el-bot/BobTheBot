@@ -162,7 +162,7 @@ namespace Commands
                     int[] position = { Convert.ToInt16(coords[0]), Convert.ToInt16(coords[1]) };
 
                     // Check if the chosen move is valid and within bounds
-                    if (position[0] >= 0 && position[0] < 3 && position[1] >= 0 && position[1] < 3 && game.grid[position[0], position[1]] == 0)
+                    if (game.grid[position[0], position[1]] == 0)
                     {
                         game.grid[position[0], position[1]] = game.isPlayer1Turn ? 1 : 2;
                         if (game.Player2.IsBot)
