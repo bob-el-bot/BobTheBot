@@ -41,7 +41,6 @@ namespace Games
         // Expiration Stuff
         public DateTime ExpirationTime { get; private set; }
         private readonly Timer expirationTimer;
-        private readonly TimeSpan expirationDuration;
         private readonly object lockObject = new();
         public event Action<Game> Expired;
 
@@ -49,20 +48,19 @@ namespace Games
         {
             Type = type;
             OnePerChannel = onePerChannel;
-            expirationDuration = expirationTime;
             ExpirationTime = DateTime.Now.Add(expirationTime);
             expirationTimer = new Timer(OnExpiration, null, expirationTime, Timeout.InfiniteTimeSpan);
             Player1 = player1;
             Player2 = player2;
         }
 
-        public void UpdateExpirationTime()
+        public void UpdateExpirationTime(TimeSpan expirationTime)
         {
             lock (lockObject)
             {
                 var remainingTime = ExpirationTime - DateTime.Now;
 
-                ExpirationTime = DateTime.Now.Add(expirationDuration);
+                ExpirationTime = DateTime.Now.Add(expirationTime);
 
                 expirationTimer.Change(remainingTime, Timeout.InfiniteTimeSpan);
             }

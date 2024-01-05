@@ -16,7 +16,7 @@ namespace Commands.Helpers
         public bool isPlayer1Turn;
         public int turns = 0;
 
-        public TicTacToe(IUser player1, IUser player2) : base(GameType.TicTacToe, onePerChannel, TimeSpan.FromMinutes(1), player1, player2)
+        public TicTacToe(IUser player1, IUser player2) : base(GameType.TicTacToe, onePerChannel, TimeSpan.FromMinutes(5), player1, player2)
         {
 
         }
@@ -52,7 +52,7 @@ namespace Commands.Helpers
             isPlayer1Turn = TTTMethods.DetermineFirstTurn();
 
             // Reset Expiration Time.
-            UpdateExpirationTime();
+            UpdateExpirationTime(TimeSpan.FromMinutes(1));
             var dateTime = new DateTimeOffset(ExpirationTime).ToUnixTimeSeconds();
 
             await interaction.UpdateAsync(x => { x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(isPlayer1Turn ? Player1.Mention : Player2.Mention)} turn ( Forfeit <t:{dateTime}:R>).").Build(); x.Components = TTTMethods.GetButtons(grid, turns, Id).Build(); });
@@ -123,7 +123,7 @@ namespace Commands.Helpers
             turns++;
 
             // Reset Expiration Time.
-            UpdateExpirationTime();
+            UpdateExpirationTime(TimeSpan.FromMinutes(1));
             var dateTime = new DateTimeOffset(ExpirationTime).ToUnixTimeSeconds();
 
             Action<MessageProperties> properties;

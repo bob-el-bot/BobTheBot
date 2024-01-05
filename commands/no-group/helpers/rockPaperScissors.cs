@@ -16,7 +16,7 @@ namespace Commands.Helpers
         public int player1Choice = -1;
         public int player2Choice = -1;
 
-        public RockPaperScissors(IUser player1, IUser player2) : base(GameType.RockPaperScissors, onePerChannel, TimeSpan.FromMinutes(1), player1, player2)
+        public RockPaperScissors(IUser player1, IUser player2) : base(GameType.RockPaperScissors, onePerChannel, TimeSpan.FromMinutes(5), player1, player2)
         {
 
         }
@@ -47,7 +47,7 @@ namespace Commands.Helpers
             State = GameState.Active;
 
             // Reset Expiration Time.
-            UpdateExpirationTime();
+            UpdateExpirationTime(TimeSpan.FromMinutes(1));
             var dateTime = new DateTimeOffset(ExpirationTime).ToUnixTimeSeconds();
 
             // Format Message
