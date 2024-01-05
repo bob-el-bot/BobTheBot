@@ -35,6 +35,7 @@ namespace Challenges
             // Prepare Game
             game.Message = msg;
             game.Id = msg.Id;
+            game.State = GameState.Challenge;
 
             // Expiration Timer.
             var dateTime = new DateTimeOffset(game.ExpirationTime).ToUnixTimeSeconds();
@@ -84,7 +85,7 @@ namespace Challenges
                     RockPaperScissorsGames.Remove(game.Id);
                     break;
                 case GameType.TicTacToe:
-                    RockPaperScissorsGames.Remove(game.Id);
+                    TicTacToeGames.Remove(game.Id);
                     break;
                 default:
                     break;

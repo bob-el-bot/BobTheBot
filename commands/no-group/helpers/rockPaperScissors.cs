@@ -66,17 +66,13 @@ namespace Commands.Helpers
             await Message.ModifyAsync(x => { x.Embed = CreateEmbed(GetFinalTitle(true)).Build(); x.Components = null; });
         }
 
-        public override async Task EndGame()
+        public async Task FinishGame(SocketMessageComponent interaction)
         {
-            // Set State
-            State = GameState.Ended;
-
             string[] options = { "🪨", "📃", "✂️" };
 
-            await Message.ModifyAsync(x => { x.Embed = CreateEmbed($"{GetFinalTitle()}\n{options[player1Choice]} **VS** {options[player2Choice]}").Build(); x.Components = null; });
+            await interaction.UpdateAsync(x => { x.Embed = CreateEmbed($"{GetFinalTitle()}\n{options[player1Choice]} **VS** {options[player2Choice]}").Build(); x.Components = null; });
 
-            Challenge.RemoveFromSpecificGameList(this);
-            Dispose();
+            _ = EndGame();
         }
 
         private static EmbedBuilder CreateEmbed(string description)

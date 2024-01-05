@@ -66,17 +66,6 @@ namespace Commands.Helpers
             await Message.ModifyAsync(x => { x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, GetFinalTitle(isPlayer1Turn ? 2 : 1, true)).Build(); x.Components = TTTMethods.GetButtons(grid, turns, Id, true).Build(); });
         }
 
-        public override Task EndGame()
-        {
-            // Set State
-            State = GameState.Ended;
-
-            Challenge.RemoveFromSpecificGameList(this);
-            Dispose();
-
-            return Task.CompletedTask;
-        }
-
         public async Task EndBotTurn(SocketMessageComponent component = null)
         {
             turns++;
@@ -94,7 +83,7 @@ namespace Commands.Helpers
                 };
 
                 // End Game
-                await EndGame();
+                _ = EndGame();
             }
             else // not over
             {
@@ -150,7 +139,7 @@ namespace Commands.Helpers
                 };
 
                 // End Game
-                await EndGame();
+                _ = EndGame();
             }
             else // not over
             {

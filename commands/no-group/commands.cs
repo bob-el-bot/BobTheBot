@@ -245,7 +245,7 @@ namespace Commands
 
                     if (game.player1Choice != -1 && game.player2Choice != -1)
                     {
-                        await game.EndGame();
+                        await game.FinishGame(component);
                     }
                     else
                     {

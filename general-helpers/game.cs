@@ -5,6 +5,7 @@ using Discord.Interactions;
 using Discord.Rest;
 using Discord.WebSocket;
 using System.Threading;
+using Challenges;
 
 namespace Games
 {
@@ -89,16 +90,24 @@ namespace Games
 
         public virtual Task StartGame(SocketMessageComponent interaction)
         {
+            State = GameState.Active;
             return Task.CompletedTask;
         }
 
         public virtual Task EndGameOnTime()
         {
+            State = GameState.Ended;
             return Task.CompletedTask;
         }
 
-        public virtual Task EndGame()
+        public Task EndGame()
         {
+            // Set State
+            State = GameState.Ended;
+
+            Challenge.RemoveFromSpecificGameList(this);
+            Dispose();
+
             return Task.CompletedTask;
         }
     }
