@@ -295,6 +295,10 @@ namespace Commands
                 }
                 else
                 {
+                    // End Game
+                    await challenge.EndGame();
+
+                    // Format Message
                     var embed = new EmbedBuilder
                     {
                         Color = Challenge.DefaultColor,
@@ -436,7 +440,8 @@ namespace Commands
 - `/random date [earliestYear] [latestYear]` Get a random date between the inputted years. [Docs](https://docs.bobthebot.net#random-date)
 - `/random advice` Get a random piece of advice. [Docs](https://docs.bobthebot.net#random-advice)
 **🎮 Games:** [Games Docs](https://docs.bobthebot.net#games)
-- `/rock-paper-scissors` Play Bob in a game of rock paper scissors. [Docs](https://docs.bobthebot.net#rock-paper-scissors)
+- `/tic-tac-toe [opponent]` Play Bob or a user in a game of Tic Tac Toe. [Docs](https://docs.bobthebot.net#tic-tac-toe)
+- `/rock-paper-scissors [opponent]` Play Bob or a user in a game of Rock Paper Scissors. [Docs](https://docs.bobthebot.net#rock-paper-scissors)
 - `/master-mind new-game` Play a game of Master Mind, the rules will shared upon usage. [Docs](https://docs.bobthebot.net#master-mind-new)
 - `/master-mind guess` Make a guess in a game of Master Mind. [Docs](https://docs.bobthebot.net#master-mind-guess)
 **🖊️ Quoting:** [Quoting Docs](https://docs.bobthebot.net#quoting)

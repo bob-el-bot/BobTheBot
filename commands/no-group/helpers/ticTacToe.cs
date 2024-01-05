@@ -16,7 +16,7 @@ namespace Commands.Helpers
         public bool isPlayer1Turn;
         public int turns = 0;
 
-        public TicTacToe(IUser player1, IUser player2) : base(GameType.TicTacToe, onePerChannel, player1, player2)
+        public TicTacToe(IUser player1, IUser player2) : base(GameType.TicTacToe, onePerChannel, TimeSpan.FromMinutes(1), player1, player2)
         {
 
         }
@@ -51,14 +51,17 @@ namespace Commands.Helpers
             // Pick Turn
             isPlayer1Turn = TTTMethods.DetermineFirstTurn();
 
-            var dateTime = DateTimeOffset.UtcNow.AddMinutes(15).ToUnixTimeSeconds();
+            // Reset Expiration Time.
+            UpdateExpirationTime();
+            var dateTime = new DateTimeOffset(ExpirationTime).ToUnixTimeSeconds();
 
-            await interaction.UpdateAsync(x => { x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(isPlayer1Turn ? Player1.Mention : Player2.Mention)} turn.\nAnswer <t:{dateTime}:R>.").Build(); x.Components = TTTMethods.GetButtons(grid, turns, Id).Build(); });
+            await interaction.UpdateAsync(x => { x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(isPlayer1Turn ? Player1.Mention : Player2.Mention)} turn ( Forfeit <t:{dateTime}:R>.").Build(); x.Components = TTTMethods.GetButtons(grid, turns, Id).Build(); });
         }
 
         public override Task EndGame()
         {
             Challenge.RemoveFromSpecificGameList(this);
+            Dispose();
             return Task.CompletedTask;
         }
 
@@ -78,7 +81,7 @@ namespace Commands.Helpers
                     x.Components = TTTMethods.GetButtons(grid, turns, Id).Build();
                 };
 
-                // Remove Game
+                // End Game
                 await EndGame();
             }
             else // not over
@@ -118,6 +121,10 @@ namespace Commands.Helpers
         {
             turns++;
 
+            // Reset Expiration Time.
+            UpdateExpirationTime();
+            var dateTime = new DateTimeOffset(ExpirationTime).ToUnixTimeSeconds();
+
             Action<MessageProperties> properties;
 
             // Check if there is a winner or the game is over
@@ -130,7 +137,7 @@ namespace Commands.Helpers
                     x.Components = TTTMethods.GetButtons(grid, turns, Id).Build();
                 };
 
-                // Remove Game
+                // End Game
                 await EndGame();
             }
             else // not over
@@ -146,7 +153,7 @@ namespace Commands.Helpers
 
                 properties = (x) =>
                 {
-                    x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(isPlayer1Turn ? Player1.Mention : Player2.Mention)} turn.").Build();
+                    x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(isPlayer1Turn ? Player1.Mention : Player2.Mention)} turn (Forfeit <t:{dateTime}:R>).").Build();
                     x.Components = TTTMethods.GetButtons(grid, turns, Id).Build();
                 };
             }

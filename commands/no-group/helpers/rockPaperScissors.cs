@@ -16,7 +16,7 @@ namespace Commands.Helpers
         public int player1Choice = -1;
         public int player2Choice = -1;
 
-        public RockPaperScissors(IUser player1, IUser player2) : base(GameType.RockPaperScissors, onePerChannel, player1, player2)
+        public RockPaperScissors(IUser player1, IUser player2) : base(GameType.RockPaperScissors, onePerChannel, TimeSpan.FromMinutes(1), player1, player2)
         {
 
         }
@@ -45,7 +45,9 @@ namespace Commands.Helpers
 
         public override async Task StartGame(SocketMessageComponent interaction)
         {
-            var dateTime = DateTimeOffset.UtcNow.AddMinutes(15).ToUnixTimeSeconds();
+            // Reset Expiration Time.
+            UpdateExpirationTime();
+            var dateTime = new DateTimeOffset(ExpirationTime).ToUnixTimeSeconds();
 
             var components = new ComponentBuilder().WithButton(label: "🪨 Rock", customId: $"rps:0:{Id}", style: ButtonStyle.Secondary)
             .WithButton(label: "📃 Paper", customId: $"rps:1:{Id}", style: ButtonStyle.Secondary)
@@ -61,6 +63,7 @@ namespace Commands.Helpers
             await Message.ModifyAsync(x => { x.Embed = CreateEmbed($"{GetFinalTitle()}\n{options[player1Choice]} **VS** {options[player2Choice]}").Build(); x.Components = null; });
             
             Challenge.RemoveFromSpecificGameList(this);
+            Dispose();
         }
 
         private static EmbedBuilder CreateEmbed(string description)

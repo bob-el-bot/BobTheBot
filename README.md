@@ -68,7 +68,8 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/random choose [option]*5` Bob will pick from the options provided.
 
 ### 🎮 Game commands:
-- `/rock-paper-scissors` Play Bob in a game of rock paper scissors.
+- `/tic-tac-toe [opponent]` Play Bob or a user in a game of Tic Tac Toe. 
+- `/rock-paper-scissors [opponent]` Play Bob or a user in a game of Rock Paper Scissors.
 - `/master-mind new-game` Play a game of Master Mind, the rules will shared upon usage.
 - `/master-mind guess` Make a guess in a game of Master Mind.
 
