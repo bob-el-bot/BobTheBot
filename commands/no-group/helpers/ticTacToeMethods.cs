@@ -21,7 +21,7 @@ namespace Commands.Helpers
             }
         }
 
-        public static ComponentBuilder GetButtons(int[,] grid, int turns, ulong Id)
+        public static ComponentBuilder GetButtons(int[,] grid, int turns, ulong Id, bool forfeited = false)
         {
             // Prepare Buttons
             var buttons = new ComponentBuilder();
@@ -38,7 +38,7 @@ namespace Commands.Helpers
                     }
                     else
                     {
-                        buttons.WithButton(label: $"{label}", customId: $"ttt:{x}-{y}:{Id}", style: ButtonStyle.Secondary, row: y, disabled: GetWinner(grid, turns) > 0 || turns == 9);
+                        buttons.WithButton(label: $"{label}", customId: $"ttt:{x}-{y}:{Id}", style: ButtonStyle.Secondary, row: y, disabled: GetWinner(grid, turns) > 0 || turns == 9 || forfeited);
                     }
                 }
             }

@@ -34,34 +34,47 @@ namespace Commands.Helpers
             Challenge.AddToSpecificGameList(this);
 
             // Format Message
-            var dateTime = DateTimeOffset.UtcNow.AddMinutes(15).ToUnixTimeSeconds();
-
             var components = new ComponentBuilder().WithButton(label: "🪨 Rock", customId: $"rps:0:{Id}", style: ButtonStyle.Secondary)
             .WithButton(label: "📃 Paper", customId: $"rps:1:{Id}", style: ButtonStyle.Secondary)
             .WithButton(label: "✂️ Scissors", customId: $"rps:2:{Id}", style: ButtonStyle.Secondary);
 
-            await Message.ModifyAsync(x => { x.Content = null; x.Embed = CreateEmbed($"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\nAnswer <t:{dateTime}:R>.").Build(); x.Components = components.Build(); });
+            await Message.ModifyAsync(x => { x.Content = null; x.Embed = CreateEmbed($"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.").Build(); x.Components = components.Build(); });
         }
 
         public override async Task StartGame(SocketMessageComponent interaction)
         {
+            // Set State
+            State = GameState.Active;
+
             // Reset Expiration Time.
             UpdateExpirationTime();
             var dateTime = new DateTimeOffset(ExpirationTime).ToUnixTimeSeconds();
 
+            // Format Message
             var components = new ComponentBuilder().WithButton(label: "🪨 Rock", customId: $"rps:0:{Id}", style: ButtonStyle.Secondary)
             .WithButton(label: "📃 Paper", customId: $"rps:1:{Id}", style: ButtonStyle.Secondary)
             .WithButton(label: "✂️ Scissors", customId: $"rps:2:{Id}", style: ButtonStyle.Secondary);
 
-            await interaction.UpdateAsync(x => { x.Embed = CreateEmbed($"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\nAnswer <t:{dateTime}:R>.").Build(); x.Components = components.Build(); });
+            await interaction.UpdateAsync(x => { x.Embed = CreateEmbed($"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\nChoose <t:{dateTime}:R>.").Build(); x.Components = components.Build(); });
+        }
+
+        public override async Task EndGameOnTime()
+        {
+            // Set State
+            State = GameState.Ended;
+
+            await Message.ModifyAsync(x => { x.Embed = CreateEmbed(GetFinalTitle(true)).Build(); x.Components = null; });
         }
 
         public override async Task EndGame()
         {
+            // Set State
+            State = GameState.Ended;
+
             string[] options = { "🪨", "📃", "✂️" };
 
             await Message.ModifyAsync(x => { x.Embed = CreateEmbed($"{GetFinalTitle()}\n{options[player1Choice]} **VS** {options[player2Choice]}").Build(); x.Components = null; });
-            
+
             Challenge.RemoveFromSpecificGameList(this);
             Dispose();
         }
@@ -75,14 +88,14 @@ namespace Commands.Helpers
             };
         }
 
-        private string GetFinalTitle()
+        private string GetFinalTitle(bool forfeited = false)
         {
             // All ways for player1 to lose
             if ((player1Choice == 0 && player2Choice == 1) || (player1Choice == 1 && player2Choice == 2) || (player1Choice == 2 && player2Choice == 0))
             {
                 return $"### ⚔️ {Player1.Mention} Was Defeated By {Player2.Mention} in {Title}.";
             }
-            else if (player1Choice == player2Choice)
+            else if (player1Choice == player2Choice || forfeited)
             {
                 return $"### ⚔️ {Player1.Mention} Drew {Player2.Mention} in {Title}.";
             }

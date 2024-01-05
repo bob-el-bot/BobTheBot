@@ -18,9 +18,18 @@ namespace Games
         Trivia,
     }
 
+    public enum GameState
+    {
+        Challenge,
+        SettingRules,
+        Active,
+        Ended,
+    }
+
     public class Game
     {
         public virtual string Title { get; }
+        public virtual GameState State { get; set; }
         public virtual GameType Type { get; }
         public virtual ulong Id { get; set; }
         public virtual bool OnePerChannel { get; }
@@ -79,6 +88,11 @@ namespace Games
         }
 
         public virtual Task StartGame(SocketMessageComponent interaction)
+        {
+            return Task.CompletedTask;
+        }
+
+        public virtual Task EndGameOnTime()
         {
             return Task.CompletedTask;
         }

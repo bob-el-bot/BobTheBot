@@ -35,10 +35,7 @@ namespace Commands.Helpers
             // Add to Games List
             Challenge.AddToSpecificGameList(this);
 
-            // Format Message
-            var dateTime = DateTimeOffset.UtcNow.AddMinutes(15).ToUnixTimeSeconds();
-
-            await Message.ModifyAsync(x => { x.Content = null; x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(isPlayer1Turn ? Player1.Mention : Player2.Mention)} turn.\nAnswer <t:{dateTime}:R>.").Build(); x.Components = TTTMethods.GetButtons(grid, turns, Id).Build(); });
+            await Message.ModifyAsync(x => { x.Content = null; x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(isPlayer1Turn ? Player1.Mention : Player2.Mention)} turn.").Build(); x.Components = TTTMethods.GetButtons(grid, turns, Id).Build(); });
 
             if (!isPlayer1Turn)
             {
@@ -48,6 +45,9 @@ namespace Commands.Helpers
 
         public override async Task StartGame(SocketMessageComponent interaction)
         {
+            // Set State
+            State = GameState.Active;
+
             // Pick Turn
             isPlayer1Turn = TTTMethods.DetermineFirstTurn();
 
@@ -55,13 +55,25 @@ namespace Commands.Helpers
             UpdateExpirationTime();
             var dateTime = new DateTimeOffset(ExpirationTime).ToUnixTimeSeconds();
 
-            await interaction.UpdateAsync(x => { x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(isPlayer1Turn ? Player1.Mention : Player2.Mention)} turn ( Forfeit <t:{dateTime}:R>.").Build(); x.Components = TTTMethods.GetButtons(grid, turns, Id).Build(); });
+            await interaction.UpdateAsync(x => { x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(isPlayer1Turn ? Player1.Mention : Player2.Mention)} turn ( Forfeit <t:{dateTime}:R>).").Build(); x.Components = TTTMethods.GetButtons(grid, turns, Id).Build(); });
+        }
+
+        public override async Task EndGameOnTime()
+        {
+            // Set State
+            State = GameState.Ended;
+
+            await Message.ModifyAsync(x => { x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, GetFinalTitle(isPlayer1Turn ? 2 : 1, true)).Build(); x.Components = TTTMethods.GetButtons(grid, turns, Id, true).Build(); });
         }
 
         public override Task EndGame()
         {
+            // Set State
+            State = GameState.Ended;
+
             Challenge.RemoveFromSpecificGameList(this);
             Dispose();
+
             return Task.CompletedTask;
         }
 
@@ -161,14 +173,14 @@ namespace Commands.Helpers
             await component.ModifyOriginalResponseAsync(properties);
         }
 
-        private string GetFinalTitle(int winner)
+        private string GetFinalTitle(int winner, bool forfeited = false)
         {
             // All ways for player1 to lose
-            if (winner == 2)
+            if (winner == 2 || (forfeited && isPlayer1Turn))
             {
                 return $"### ⚔️ {Player1.Mention} Was Defeated By {Player2.Mention} in {Title}.";
             }
-            else if (winner == 0 && turns == 9) // draw
+            else if (winner == 0 && turns == 9 || (forfeited && turns == 0)) // draw
             {
                 return $"### ⚔️ {Player1.Mention} Drew {Player2.Mention} in {Title}.";
             }

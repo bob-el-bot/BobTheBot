@@ -53,7 +53,7 @@ namespace Challenges
             .WithButton(label: "🛡️ Decline", customId: $"declineChallenge:{game.Id}", style: ButtonStyle.Danger);
 
             // Start Challenge
-            game.Expired += ExpireChallenge;
+            game.Expired += ExpireGame;
             await game.Message.ModifyAsync(x => { x.Content = null; x.Embed = embed.Build(); x.Components = components.Build(); });
         }
 
@@ -93,13 +93,34 @@ namespace Challenges
             Games.Remove(game.Id);
         }
 
-        private static async void ExpireChallenge(Games.Game game)
+        public static async void ExpireGame(Games.Game game)
         {
-            // Remove the game from the active games dictionary
-            RemoveFromSpecificGameList(game);
+            switch (game.State)
+            {
+                case GameState.Challenge:
+                    // Format Message
+                    var embed = new EmbedBuilder
+                    {
+                        Color = DefaultColor,
+                        Description = $"### ⚔️ {game.Player1.Mention} Challenges {game.Player2.Mention} to {game.Title}.\n{game.Player2.Mention} did not respond."
+                    };
 
-            // Update message
-            await game.Message.DeleteAsync();
+                    var components = new ComponentBuilder().WithButton(label: "⚔️ Accept", customId: $"acceptedChallenge", style: ButtonStyle.Success, disabled: true)
+                    .WithButton(label: "🛡️ Decline", customId: $"declinedChallenge", style: ButtonStyle.Danger, disabled: true);
+
+                    await game.Message.ModifyAsync(x => { x.Embed = embed.Build(); x.Content = null; x.Components = components.Build(); });
+                    break;
+                case GameState.SettingRules:
+                    break;
+                case GameState.Active:
+                    await game.EndGameOnTime();
+                    break;
+                case GameState.Ended:
+                    break;
+            }
+
+            RemoveFromSpecificGameList(game);
+            game.Dispose();
         }
     }
 }
