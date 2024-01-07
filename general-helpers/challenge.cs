@@ -34,7 +34,7 @@ namespace Challenges
 
             // Prepare Game
             game.Message = msg;
-            game.Id = msg.Id;
+            game.Id = game.OnePerChannel ? interaction.Channel.Id : msg.Id;
             game.State = GameState.Challenge;
 
             // Expiration Timer.
