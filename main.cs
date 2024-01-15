@@ -40,8 +40,8 @@ public static class Bot
     public static readonly Color theme = new(9261821);
 
     public const ulong supportServerId = 1058077635692994651;
-
     public const ulong systemLogChannelId = 1160105468082004029;
+    public const ulong devLogChannelId = 1196575302143459388;
 
     private static Timer timer;
 
@@ -277,9 +277,9 @@ public static class Bot
                     await ctx.Interaction.FollowupAsync($"❌ Something went wrong...\n- Try again later.\n- Join Bob's support server: https://discord.gg/HvGMRZD8jQ");
                     Console.WriteLine($"Error: {res.ErrorReason}");
 
-                    SocketTextChannel systemLogChannel = (SocketTextChannel)Client.GetGuild(supportServerId).GetChannel(systemLogChannelId);
+                    SocketTextChannel logChannel = (SocketTextChannel)Client.GetGuild(supportServerId).GetChannel(Token != Config.GetTestToken() ? systemLogChannelId : devLogChannelId);
 
-                    await LogToDiscord(systemLogChannel, ctx, info, res.ErrorReason);
+                    await LogToDiscord(logChannel, ctx, info, res.ErrorReason);
 
                     // // Live Debugging
                     // // Server Logging
