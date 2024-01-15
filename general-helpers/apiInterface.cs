@@ -24,7 +24,7 @@ namespace ApiInteractions
 
         /// <summary>
         /// Sends a GET request to the specified URL.
-        /// <returns>Returns an HttpRepsonseMessage as a string.</returns>
+        /// <returns>Returns an HttpResponseMessage as a string.</returns>
         /// <remarks>Do not use this method for authenticated requests.</remarks>
         /// </summary>
         public static async Task<string> GetFromAPI(string link, AcceptTypes accept)
@@ -45,7 +45,7 @@ namespace ApiInteractions
 
         /// <summary>
         /// Sends a POST request to the specified URL.
-        /// <returns>Returns an HttpRepsonseCode.</returns>
+        /// <returns>Returns an HttpResponseCode.</returns>
         /// <remarks>Only use this method for authenticated requests.</remarks>
         /// </summary>
         public static async Task<HttpStatusCode> PostToAPI(string link, string token, StringContent content)
