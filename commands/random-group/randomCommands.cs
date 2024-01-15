@@ -93,9 +93,9 @@ namespace Commands
             option1,
             option2
         };
-            TestAdd(option3, choices);
-            TestAdd(option4, choices);
-            TestAdd(option5, choices);
+            AddChoice(option3, choices);
+            AddChoice(option4, choices);
+            AddChoice(option5, choices);
 
             foreach (string s in choices)
             {
