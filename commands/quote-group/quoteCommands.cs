@@ -41,7 +41,7 @@ namespace Commands
                 // Date
                 var dateTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
-                // Fomrat Quote
+                // Format Quote
                 string formattedQuote = quote;
                 if (quote[0] != '"' && quote[^1] != '"')
                 {
@@ -55,7 +55,6 @@ namespace Commands
                     embed = new EmbedBuilder
                     {
                         Title = $"{formattedQuote}",
-                        Color = new Color(2895667),
                         Description = $"-{user.Mention}, <t:{dateTime}:R>"
                     };
                 }
@@ -72,11 +71,13 @@ namespace Commands
                         embed = new EmbedBuilder
                         {
                             Title = "",
-                            Color = new Color(2895667),
                             Description = description
                         };
                     }
                 }
+
+                embed.Color = new Color(2895667);
+                embed.WithAuthor(new EmbedAuthorBuilder().WithName(user.GlobalName).WithIconUrl(user.GetAvatarUrl()));
 
                 // Footer
                 StringBuilder footerText = new();
@@ -144,14 +145,11 @@ namespace Commands
             }
             else
             {
-                // Date
-                var dateTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-
-                // Fomrat Quote
+                // Format Quote
                 string formattedQuote = quote;
                 if (quote[0] != '"' && quote[^1] != '"')
                 {
-                    formattedQuote = "\"" + quote + "\"";
+                    formattedQuote = $"\"{quote}\"";
                 }
 
                 // Create embed
@@ -161,8 +159,7 @@ namespace Commands
                     embed = new EmbedBuilder
                     {
                         Title = $"{formattedQuote}",
-                        Color = new Color(2895667),
-                        Description = $"-{user.Mention}, <t:{dateTime}:R>"
+                        Description = $"-{user.Mention}, <t:{message.Timestamp.ToUnixTimeSeconds()}:R>"
                     };
                 }
                 else  // use description for quote to fit up to 4096 characters
@@ -170,8 +167,7 @@ namespace Commands
                     embed = new EmbedBuilder
                     {
                         Title = "",
-                        Color = new Color(2895667),
-                        Description = $"**{formattedQuote}**\n-{user.Mention}, <t:{dateTime}:R>"
+                        Description = $"**{formattedQuote}**\n-{user.Mention}, <t:{message.Timestamp.ToUnixTimeSeconds()}:R>"
                     };
                 }
 
@@ -181,6 +177,12 @@ namespace Commands
                 }
                 else
                 {
+                    embed.Color = new Color(2895667);
+                    embed.WithAuthor(new EmbedAuthorBuilder().WithName(user.GlobalName).WithIconUrl(user.GetAvatarUrl()));
+
+                    // Orignal Message Field
+                    embed.AddField(name: "Original Message", value: $"{message.GetJumpUrl()}");
+
                     // Footer
                     string footerText = $"Quoted by {Context.User.GlobalName}";
                     embed.WithFooter(footer => footer.Text = footerText);
@@ -203,7 +205,7 @@ namespace Commands
             // Check permissions
             if (!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageChannels)
             {
-                await RespondAsync(text: "❌ Ask an admin or mod to configure this for you.\n- Permission(s) needed: **Manage Channels**\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await RespondAsync(text: "❌ Ask an admin or mod to configure this for you.\n- Permission(s) needed: `Manage Channels`\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
             // Check if the channel is a text channel
             if (channel.GetChannelType() != ChannelType.Text)

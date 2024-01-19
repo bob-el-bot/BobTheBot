@@ -1,8 +1,11 @@
+using System;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Interactions;
 using Discord.Rest;
 using Discord.WebSocket;
+using System.Threading;
+using Challenges;
 
 namespace Games
 {
@@ -12,25 +15,70 @@ namespace Games
         RockPaperScissors,
         [ChoiceDisplay("Tic Tac Toe")]
         TicTacToe,
+        [ChoiceDisplay("Trivia")]
+        Trivia,
+    }
+
+    public enum GameState
+    {
+        Challenge,
+        SettingRules,
+        Active,
+        Ended,
     }
 
     public class Game
     {
         public virtual string Title { get; }
+        public virtual GameState State { get; set; }
         public virtual GameType Type { get; }
         public virtual ulong Id { get; set; }
         public virtual bool OnePerChannel { get; }
-        public virtual bool IsStarted { get; set; }
         public virtual IUser Player1 { get; }
         public virtual IUser Player2 { get; }
         public virtual RestUserMessage Message { get; set; }
 
-        public Game(GameType type, bool onePerChannel, IUser player1, IUser player2)
+        // Expiration Stuff
+        public DateTime ExpirationTime { get; private set; }
+        private readonly Timer expirationTimer;
+        private readonly object lockObject = new();
+        public event Action<Game> Expired;
+
+        public Game(GameType type, bool onePerChannel, TimeSpan expirationTime, IUser player1, IUser player2)
         {
             Type = type;
             OnePerChannel = onePerChannel;
+            ExpirationTime = DateTime.Now.Add(expirationTime);
+            expirationTimer = new Timer(OnExpiration, null, expirationTime, Timeout.InfiniteTimeSpan);
             Player1 = player1;
             Player2 = player2;
+        }
+
+        public void UpdateExpirationTime(TimeSpan expirationTime)
+        {
+            lock (lockObject)
+            {
+                var remainingTime = ExpirationTime - DateTime.Now;
+
+                ExpirationTime = DateTime.Now.Add(expirationTime);
+
+                expirationTimer.Change(remainingTime, Timeout.InfiniteTimeSpan);
+            }
+        }
+
+        private void OnExpiration(object state)
+        {
+            // The game has expired
+            Expired?.Invoke(this);
+        }
+
+        public void Dispose()
+        {
+            lock (lockObject)
+            {
+                expirationTimer.Dispose();
+                Expired = null;  // Detach event handlers
+            }
         }
 
         public virtual Task StartBotGame(SocketInteraction interaction)
@@ -40,11 +88,24 @@ namespace Games
 
         public virtual Task StartGame(SocketMessageComponent interaction)
         {
+            State = GameState.Active;
             return Task.CompletedTask;
         }
 
-        public virtual Task EndGame()
+        public virtual Task EndGameOnTime()
         {
+            State = GameState.Ended;
+            return Task.CompletedTask;
+        }
+
+        public Task EndGame()
+        {
+            // Set State
+            State = GameState.Ended;
+
+            Challenge.RemoveFromSpecificGameList(this);
+            Dispose();
+
             return Task.CompletedTask;
         }
     }

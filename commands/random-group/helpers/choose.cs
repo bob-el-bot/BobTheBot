@@ -5,7 +5,7 @@ namespace Commands.Helpers
 {
     public static class Choose
     {
-        public static List<string> TestAdd(string option, List<string> choices)
+        public static List<string> AddChoice(string option, List<string> choices)
         {
             if (option != "")
             {

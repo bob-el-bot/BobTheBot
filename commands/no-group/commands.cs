@@ -21,6 +21,8 @@ using Games;
 using Challenges;
 using System.Runtime.CompilerServices;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal;
+using Microsoft.EntityFrameworkCore.Storage;
+using System.ComponentModel.Design.Serialization;
 
 namespace Commands
 {
@@ -104,6 +106,84 @@ namespace Commands
         }
 
         [EnabledInDm(true)]
+        [SlashCommand("tic-tac-toe", "Play a game of Tic Tac Toe.")]
+        public async Task TicTacToe([Summary("opponent", "Leave empty to verse an AI.")] SocketUser opponent = null)
+        {
+            if (opponent == null || opponent.IsBot)
+            {
+                await DeferAsync();
+                TicTacToe game = new(Context.User, opponent ?? Bot.Client.CurrentUser);
+                await game.StartBotGame(Context.Interaction);
+            }
+            else
+            {
+                if (!Challenge.CanChallenge(Context.User.Id, opponent.Id))
+                {
+                    await RespondAsync(text: "❌ You can't challenge them.", ephemeral: true);
+                }
+                else
+                {
+                    await DeferAsync();
+                    await Challenge.SendMessage(Context.Interaction, new TicTacToe(Context.User, opponent));
+                }
+            }
+        }
+
+        [ComponentInteraction("ttt:*:*")]
+        public async Task TTTButtonHandler(string coordinate, string Id)
+        {
+            SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
+
+            Challenge.TicTacToeGames.TryGetValue(Convert.ToUInt64(Id), out TicTacToe game);
+
+            if (game == null)
+            {
+                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use `/tic-tac-toe` to start a new game.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+            }
+            else
+            {
+                bool isPlayer1 = component.User.Id == game.Player1.Id;
+                bool isPlayer2 = component.User.Id == game.Player2.Id;
+
+                if (!isPlayer1 && !isPlayer2)
+                {
+                    await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                }
+                else if (game.isPlayer1Turn && !isPlayer1 || !game.isPlayer1Turn && isPlayer1)
+                {
+                    await component.RespondAsync(text: $"❌ It is **not** your turn.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                }
+                else
+                {
+                    await DeferAsync();
+
+                    // Prepare Position
+                    string[] coords = coordinate.Split('-');
+                    int[] position = { Convert.ToInt16(coords[0]), Convert.ToInt16(coords[1]) };
+
+                    // Check if the chosen move is valid and within bounds
+                    if (game.grid[position[0], position[1]] == 0)
+                    {
+                        game.grid[position[0], position[1]] = game.isPlayer1Turn ? 1 : 2;
+                        if (game.Player2.IsBot)
+                        {
+                            await game.EndBotTurn(component);
+                        }
+                        else
+                        {
+                            await game.EndTurn(component);
+                        }
+                    }
+                    else
+                    {
+                        // Handle the case where the chosen move is not valid or out of bounds
+                        await component.RespondAsync(text: $"❌ Invalid move.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    }
+                }
+            }
+        }
+
+        [EnabledInDm(true)]
         [SlashCommand("rock-paper-scissors", "Play a game of Rock Paper Scissors.")]
         public async Task RPS([Summary("opponent", "Leave empty to verse an AI.")] SocketUser opponent = null)
         {
@@ -136,21 +216,21 @@ namespace Commands
 
             if (game == null)
             {
-                await Context.Interaction.RespondAsync(text: $"❌ This game no longer exists\n- Use `/rock-paper-scissors` to start a new game.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use `/rock-paper-scissors` to start a new game.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
             else
             {
                 int choice = Convert.ToInt16(rps);
-                bool isPlayer1 = Context.Interaction.User.Id == game.Player1.Id;
-                bool isPlayer2 = Context.Interaction.User.Id == game.Player2.Id;
+                bool isPlayer1 = component.User.Id == game.Player1.Id;
+                bool isPlayer2 = component.User.Id == game.Player2.Id;
 
                 if (!isPlayer1 && !isPlayer2)
                 {
-                    await Context.Interaction.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
                 }
                 else if ((isPlayer1 && game.player1Choice != -1) || (isPlayer2 && game.player2Choice != -1))
                 {
-                    await Context.Interaction.RespondAsync(text: $"❌ You **cannot** change your choice.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    await component.RespondAsync(text: $"❌ You **cannot** change your choice.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
                 }
                 else
                 {
@@ -165,7 +245,7 @@ namespace Commands
 
                     if (game.player1Choice != -1 && game.player2Choice != -1)
                     {
-                        await game.EndGame();
+                        await game.FinishGame(component);
                     }
                     else
                     {
@@ -215,13 +295,20 @@ namespace Commands
                 }
                 else
                 {
+                    // Format Message
                     var embed = new EmbedBuilder
                     {
-                        Color = Challenge.color,
+                        Color = Challenge.DefaultColor,
                         Description = $"### ⚔️ {challenge.Player1.Mention} Challenges {challenge.Player2.Mention} to {challenge.Title}.\n{challenge.Player2.Mention} declined."
                     };
 
-                    await component.UpdateAsync(x => { x.Embed = embed.Build(); x.Content = null; x.Components = null; });
+                    var components = new ComponentBuilder().WithButton(label: "⚔️ Accept", customId: $"acceptedChallenge", style: ButtonStyle.Success, disabled: true)
+                    .WithButton(label: "🛡️ Decline", customId: $"declinedChallenge", style: ButtonStyle.Danger, disabled: true);
+
+                    await component.UpdateAsync(x => { x.Embed = embed.Build(); x.Content = null; x.Components = components.Build(); });
+                
+                    Challenge.RemoveFromSpecificGameList(challenge);
+                    challenge.Dispose();
                 }
             }
         }
@@ -262,11 +349,11 @@ namespace Commands
             }
             else if (title.Length > 256) // 256 is max characters in an embed title.
             {
-                await FollowupAsync($"❌ The announcement *cannot* be made because it contains **{title.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **256** characters in embed titles.", ephemeral: true);
+                await RespondAsync($"❌ The announcement *cannot* be made because it contains **{title.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **256** characters in embed titles.", ephemeral: true);
             }
             else if (description.Length > 4096) // 4096 is max characters in an embed description.
             {
-                await FollowupAsync($"❌ The announcement *cannot* be made because it contains **{description.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **4096** characters in embed descriptions.", ephemeral: true);
+                await RespondAsync($"❌ The announcement *cannot* be made because it contains **{description.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **4096** characters in embed descriptions.", ephemeral: true);
             }
             else
             {
@@ -353,26 +440,35 @@ namespace Commands
 - `/random date [earliestYear] [latestYear]` Get a random date between the inputted years. [Docs](https://docs.bobthebot.net#random-date)
 - `/random advice` Get a random piece of advice. [Docs](https://docs.bobthebot.net#random-advice)
 **🎮 Games:** [Games Docs](https://docs.bobthebot.net#games)
-- `/rock-paper-scissors` Play Bob in a game of rock paper scissors. [Docs](https://docs.bobthebot.net#rock-paper-scissors)
+- `/tic-tac-toe [opponent]` Play Bob or a user in a game of Tic Tac Toe. [Docs](https://docs.bobthebot.net#tic-tac-toe)
+- `/rock-paper-scissors [opponent]` Play Bob or a user in a game of Rock Paper Scissors. [Docs](https://docs.bobthebot.net#rock-paper-scissors)
 - `/master-mind new-game` Play a game of Master Mind, the rules will shared upon usage. [Docs](https://docs.bobthebot.net#master-mind-new)
 - `/master-mind guess` Make a guess in a game of Master Mind. [Docs](https://docs.bobthebot.net#master-mind-guess)
 **🖊️ Quoting:** [Quoting Docs](https://docs.bobthebot.net#quoting)
 - `/quote new [quote] [user] [tag]*3` Formats and shares the quote in designated channel. [Docs](https://docs.bobthebot.net#quote-new)
-- `/quote channel [channel]` Sets the quote channel for the server. [Docs](https://docs.bobthebot.net#quote-channel)"
+- `/quote channel [channel]` Sets the quote channel for the server. [Docs](https://docs.bobthebot.net#quote-channel)
+**🔒 Encryption commands:**
+- `/encrypt a1z26 [message]` Encrypts your message by swapping letters to their corresponding number.
+- `/encrypt atbash [message]` Encrypts your message by swapping letters to their opposite position.
+- `/encrypt caesar [message] [shift]` Encrypts your message by shifting the letters the specified amount.
+- `/encrypt morse [message]` Encrypts your message using Morse code.
+- `/encrypt vigenere [message] [key]` Encrypts your message using a specified key."
             };
 
             var secondEmbed = new EmbedBuilder
             {
                 Title = $"",
                 Color = Bot.theme,
-                Description = @"**✨ Other:** [Other Docs](https://docs.bobthebot.net#other)
+                Description = @"**🔓 Decryption commands:**
+- `/decrypt a1z26 [message]` Decrypts your message by swapping letters to their corresponding number.
+- `/decrypt atbash [message]` Decrypts your message by swapping letters to their opposite position.
+- `/decrypt caesar [message] [shift]` Decrypts your message by shifting the letters the specified amount.
+- `/decrypt morse [message]` Decrypts your message using Morse code.
+- `/decrypt vigenere [message] [key]` Decrypts your message using a specified key.
+**✨ Other:** [Other Docs](https://docs.bobthebot.net#other)
 - `/code preview [link]` Preview specific lines of code from a file on GitHub. [Docs](https://docs.bobthebot.net#code-preview)
 - `/fonts [text] [font]` Change your text to a different font. [Docs](https://docs.bobthebot.net#fonts)
   - `[font]` choices: 𝖒𝖊𝖉𝖎𝖊𝖛𝖆𝖑, 𝓯𝓪𝓷𝓬𝔂, 𝕠𝕦𝕥𝕝𝕚𝕟𝕖𝕕, ɟןıddǝp, s̷l̷̷a̷s̷h̷e̷d̷, and 🄱🄾🅇🄴🄳.
-- `/encrypt [message] [cipher]` Change text into a cipher. [Docs](https://docs.bobthebot.net#encrypt)
-    - `[cipher]` choices: Caesar, A1Z26, Atbash, Morse Code
-- `/decrypt [message] [cipher]` Change encrypted text to plain text. [Docs](https://docs.bobthebot.net#decrypt)
-    - `[cipher]` choices: Caesar, A1Z26, Atbash, Morse Code
 - `/confess [message] [user] [signoff]` Have Bob DM a user a message. [Docs](https://docs.bobthebot.net#confess)
 - `/announce [title] [description] [color]` Have a fancy embed message sent. [Docs](https://docs.bobthebot.net#announce)
 - `/poll [prompt] [option]*4` Create a poll. [Docs](https://docs.bobthebot.net#poll)
@@ -620,86 +716,6 @@ namespace Commands
             embed.AddField(name: $"Match of:", value: $"`{matchPercent}%`", inline: true).AddField(name: "Heart Level", value: heartLevel, inline: true);
 
             await RespondAsync(embed: embed.Build());
-        }
-
-        [EnabledInDm(true)]
-        [SlashCommand("encrypt", "Bob will encrypt your message with a cipher of your choice.")]
-        public async Task Encrypt([Summary("message", "the text you want to encrypt")] string message, Ciphers.CipherTypes cipher)
-        {
-            string finalText = "";
-
-            switch (cipher)
-            {
-                case Ciphers.CipherTypes.Atbash:
-                    finalText = Encryption.Atbash(message);
-                    break;
-                case Ciphers.CipherTypes.Caesar:
-                    finalText = Encryption.Caesar(message, 3);
-                    break;
-                case Ciphers.CipherTypes.A1Z26:
-                    finalText = Encryption.A1Z26(message);
-                    break;
-                case Ciphers.CipherTypes.Morse:
-                    finalText = Encryption.Morse(message);
-                    break;
-                default:
-                    break;
-            }
-
-            if (finalText.Length + 6 > 4096)
-            {
-                await RespondAsync(text: $"❌ The message *cannot* be encrypted because the message contains **{finalText.Length + 6}** characters.\n- Try encrypting fewer characters.\n- Try breaking it up.\n- Discord has a limit of **4096** characters in embeds.", ephemeral: true);
-            }
-            else
-            {
-                var embed = new EmbedBuilder
-                {
-                    Title = "🔒 Encrypt",
-                    Color = 2303786,
-                    Description = $"```{finalText}```",
-                };
-                await RespondAsync(embed: embed.Build(), ephemeral: true);
-            }
-        }
-
-        [EnabledInDm(true)]
-        [SlashCommand("decrypt", "Bob will decrypt your message from a cipher of your choice.")]
-        public async Task Decrypt([Summary("message", "the text you want to encrypt")] string message, Ciphers.CipherTypes cipher)
-        {
-            string finalText = "";
-
-            switch (cipher)
-            {
-                case Ciphers.CipherTypes.Atbash:
-                    finalText = Decryption.Atbash(message);
-                    break;
-                case Ciphers.CipherTypes.Caesar:
-                    finalText = Decryption.Caesar(message, 3);
-                    break;
-                case Ciphers.CipherTypes.A1Z26:
-                    finalText = Decryption.A1Z26(message);
-                    break;
-                case Ciphers.CipherTypes.Morse:
-                    finalText = Decryption.Morse(message);
-                    break;
-                default:
-                    break;
-            }
-
-            if (finalText.Length + 6 > 4096)
-            {
-                await RespondAsync(text: $"❌ The message *cannot* be decrypted because the encryption contains **{finalText.Length + 6}** characters.\n- Try decrypting fewer characters.\n- Try breaking it up.\n- Discord has a limit of **4096** characters in embeds.", ephemeral: true);
-            }
-            else
-            {
-                var embed = new EmbedBuilder
-                {
-                    Title = "🔓 Decrypt",
-                    Color = 2303786,
-                    Description = $"```{finalText}```",
-                };
-                await RespondAsync(embed: embed.Build(), ephemeral: true);
-            }
         }
     }
 }

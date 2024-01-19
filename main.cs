@@ -34,14 +34,14 @@ public static class Bot
 
     private static InteractionService Service;
 
-    private static readonly string Token = Config.GetToken();
+    private static readonly string Token = Config.GetTestToken();
 
     // Purple (normal) Theme: 9261821 | Orange (halloween) Theme: 16760153
     public static readonly Color theme = new(9261821);
 
     public const ulong supportServerId = 1058077635692994651;
-
     public const ulong systemLogChannelId = 1160105468082004029;
+    public const ulong devLogChannelId = 1196575302143459388;
 
     private static Timer timer;
 
@@ -62,11 +62,14 @@ public static class Bot
         Client.JoinedGuild += JoinedGuild;
         Client.LeftGuild += LeftGuild;
         Client.UserJoined += UserJoined;
+        Client.EntitlementCreated += EntitlementCreated;
+        Client.EntitlementDeleted += EntitlementDeleted;
+        Client.EntitlementUpdated += EntitlementUpdated;
 
         await Client.LoginAsync(TokenType.Bot, Token);
         await Client.StartAsync();
 
-        while (Console.ReadKey().Key != ConsoleKey.Q);
+        while (Console.ReadKey().Key != ConsoleKey.Q) ;
     }
 
     public static int totalUsers;
@@ -119,20 +122,20 @@ public static class Bot
             }
         });
 
-        // _ = Task.Run(() =>
-        // {
-        //     // Status
-        //     string[] statuses = { "/help | Try /quote!", $"/help | {totalUsers:n0} users!", "/help | Fonts!", "/help | RNG!", "/help | Quotes!" };
-        //     int index = 0;
-        //     timer = new(async x =>
-        //     {
-        //     if (Client.ConnectionState == ConnectionState.Connected)
-        //     {
-        //         await Client.SetCustomStatusAsync(statuses[index]);
-        //         index = index + 1 == statuses.Length ? 0 : index + 1;
-        //     }
-        //     }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(16));
-        // });
+        _ = Task.Run(() =>
+        {
+            // Status
+            string[] statuses = { "/help | Games!", "/help | Fonts!", "/help | RNG!", "/help | Quotes!", "/help | Confessions!" };
+            int index = 0;
+            timer = new(async x =>
+            {
+            if (Client.ConnectionState == ConnectionState.Connected)
+            {
+                await Client.SetCustomStatusAsync(statuses[index]);
+                index = index + 1 == statuses.Length ? 0 : index + 1;
+            }
+            }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(16));
+        });
 
         var cpuUsage = await GetCpuUsageForProcess();
         Console.WriteLine("CPU at Ready: " + cpuUsage.ToString() + "%");
@@ -219,6 +222,26 @@ public static class Bot
         return Task.CompletedTask;
     }
 
+    private static async Task EntitlementCreated(SocketEntitlement ent)
+    {
+        IUser entUser = await ent.User.Value.GetOrDownloadAsync();     
+        User user = await DB.GetUser(entUser.Id);
+
+        user.premium = true;
+
+        await DB.UpdateUser(user);
+    }
+
+    private static Task EntitlementUpdated(Cacheable<SocketEntitlement, ulong> before, SocketEntitlement after)
+    {
+        return Task.CompletedTask;
+    }
+
+    private static Task EntitlementDeleted(Cacheable<SocketEntitlement, ulong> ent)
+    {
+        return Task.CompletedTask;
+    }
+
     private static async Task InteractionCreated(SocketInteraction interaction)
     {
         try
@@ -254,17 +277,17 @@ public static class Bot
                     await ctx.Interaction.FollowupAsync($"❌ Something went wrong...\n- Try again later.\n- Join Bob's support server: https://discord.gg/HvGMRZD8jQ");
                     Console.WriteLine($"Error: {res.ErrorReason}");
 
-                    IMessageChannel systemLogChannel = (IMessageChannel)Client.GetGuild(supportServerId).GetChannel(systemLogChannelId);
+                    SocketTextChannel logChannel = (SocketTextChannel)Client.GetGuild(supportServerId).GetChannel(Token != Config.GetTestToken() ? systemLogChannelId : devLogChannelId);
 
-                    await LogToDiscord((RestTextChannel)systemLogChannel, ctx, info, res.ErrorReason);
+                    await LogToDiscord(logChannel, ctx, info, res.ErrorReason);
 
-                    // Live Debugging
-                    // Server Logging
-                    if (ctx.Interaction.GuildId != null && DebugGroup.LogGroup.serversToLog.ContainsKey(ctx.Guild.Id))
-                    {
-                        DebugGroup.LogGroup.serverLogChannels.TryGetValue(ctx.Guild.Id, out RestTextChannel logChannel);
-                        await LogToDiscord(logChannel, ctx, info, res.ErrorReason);
-                    }
+                    // // Live Debugging
+                    // // Server Logging
+                    // if (ctx.Interaction.GuildId != null && DebugGroup.LogGroup.serversToLog.ContainsKey(ctx.Guild.Id))
+                    // {
+                    //     DebugGroup.LogGroup.serverLogChannels.TryGetValue(ctx.Guild.Id, out RestTextChannel logChannel);
+                    //     await LogToDiscord(logChannel, ctx, info, res.ErrorReason);
+                    // }
                     break;
                 case InteractionCommandError.Unsuccessful:
                     await ctx.Interaction.FollowupAsync("❌ Command could not be executed");
@@ -282,13 +305,13 @@ public static class Bot
             var commandName = info.IsTopLevelCommand ? $"/{info.Name}" : $"/{info.Module.SlashGroupName} {info.Name}";
             Console.WriteLine($"{DateTime.Now:dd/MM. H:mm:ss} | {FormatPerformance(cpuUsage, ramUsage)} | Location: {location} | Command: {commandName}");
 
-            // Live Debugging
-            // Server Logging
-            if (ctx.Interaction.GuildId != null && DebugGroup.LogGroup.serversToLog.ContainsKey(ctx.Guild.Id))
-            {
-                DebugGroup.LogGroup.serverLogChannels.TryGetValue(ctx.Guild.Id, out RestTextChannel logChannel);
-                await LogToDiscord(logChannel, ctx, info);
-            }
+            // // Live Debugging
+            // // Server Logging
+            // if (ctx.Interaction.GuildId != null && DebugGroup.LogGroup.serversToLog.ContainsKey(ctx.Guild.Id))
+            // {
+            //     DebugGroup.LogGroup.serverLogChannels.TryGetValue(ctx.Guild.Id, out RestTextChannel logChannel);
+            //     await LogToDiscord(logChannel, ctx, info);
+            // }
         }
     }
 
