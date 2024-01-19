@@ -122,20 +122,20 @@ public static class Bot
             }
         });
 
-        _ = Task.Run(() =>
-        {
-            // Status
-            string[] statuses = { "/help | Games!", "/help | Fonts!", "/help | RNG!", "/help | Quotes!", "/help | Confessions!" };
-            int index = 0;
-            timer = new(async x =>
-            {
-            if (Client.ConnectionState == ConnectionState.Connected)
-            {
-                await Client.SetCustomStatusAsync(statuses[index]);
-                index = index + 1 == statuses.Length ? 0 : index + 1;
-            }
-            }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(16));
-        });
+        // _ = Task.Run(() =>
+        // {
+        //     // Status
+        //     string[] statuses = { "/help | Games!", "/help | Fonts!", "/help | RNG!", "/help | Quotes!", "/help | Confessions!" };
+        //     int index = 0;
+        //     timer = new(async x =>
+        //     {
+        //     if (Client.ConnectionState == ConnectionState.Connected)
+        //     {
+        //         await Client.SetCustomStatusAsync(statuses[index]);
+        //         index = index + 1 == statuses.Length ? 0 : index + 1;
+        //     }
+        //     }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(16));
+        // });
 
         var cpuUsage = await GetCpuUsageForProcess();
         Console.WriteLine("CPU at Ready: " + cpuUsage.ToString() + "%");
