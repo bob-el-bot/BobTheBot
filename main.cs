@@ -62,9 +62,9 @@ public static class Bot
         Client.JoinedGuild += JoinedGuild;
         Client.LeftGuild += LeftGuild;
         Client.UserJoined += UserJoined;
-        Client.EntitlementCreated += EntitlementCreated;
-        Client.EntitlementDeleted += EntitlementDeleted;
-        Client.EntitlementUpdated += EntitlementUpdated;
+        // Client.EntitlementCreated += EntitlementCreated;
+        // Client.EntitlementDeleted += EntitlementDeleted;
+        // Client.EntitlementUpdated += EntitlementUpdated;
 
         await Client.LoginAsync(TokenType.Bot, Token);
         await Client.StartAsync();
@@ -222,25 +222,25 @@ public static class Bot
         return Task.CompletedTask;
     }
 
-    private static async Task EntitlementCreated(SocketEntitlement ent)
-    {
-        IUser entUser = await ent.User.Value.GetOrDownloadAsync();     
-        User user = await DB.GetUser(entUser.Id);
+    // private static async Task EntitlementCreated(SocketEntitlement ent)
+    // {
+    //     IUser entUser = await ent.User.Value.GetOrDownloadAsync();     
+    //     User user = await DB.GetUser(entUser.Id);
 
-        user.premium = true;
+    //     user.premium = true;
 
-        await DB.UpdateUser(user);
-    }
+    //     await DB.UpdateUser(user);
+    // }
 
-    private static Task EntitlementUpdated(Cacheable<SocketEntitlement, ulong> before, SocketEntitlement after)
-    {
-        return Task.CompletedTask;
-    }
+    // private static Task EntitlementUpdated(Cacheable<SocketEntitlement, ulong> before, SocketEntitlement after)
+    // {
+    //     return Task.CompletedTask;
+    // }
 
-    private static Task EntitlementDeleted(Cacheable<SocketEntitlement, ulong> ent)
-    {
-        return Task.CompletedTask;
-    }
+    // private static Task EntitlementDeleted(Cacheable<SocketEntitlement, ulong> ent)
+    // {
+    //     return Task.CompletedTask;
+    // }
 
     private static async Task InteractionCreated(SocketInteraction interaction)
     {
