@@ -13,9 +13,11 @@ namespace Challenges
         public static readonly Color DefaultColor = Color.LighterGrey;
         public static readonly Color Player1Color = Color.Blue;
         public static readonly Color Player2Color = Color.Red;
+        public static readonly Color BothPlayersColor = Color.Purple;
         public static Dictionary<ulong, Games.Game> Games { get; } = new();
         public static Dictionary<ulong, RockPaperScissors> RockPaperScissorsGames { get; } = new();
         public static Dictionary<ulong, TicTacToe> TicTacToeGames { get; } = new();
+        public static Dictionary<ulong, Trivia> TriviaGames { get; } = new();
 
         public static bool CanChallenge(ulong player1Id, ulong player2Id)
         {
@@ -63,12 +65,13 @@ namespace Challenges
             switch (game.Type)
             {
                 case GameType.RockPaperScissors:
-                    RockPaperScissors rps = (RockPaperScissors)game;
-                    RockPaperScissorsGames.Add(game.Id, rps);
+                    RockPaperScissorsGames.Add(game.Id, (RockPaperScissors)game);
                     break;
                 case GameType.TicTacToe:
-                    TicTacToe ttt = (TicTacToe)game;
-                    TicTacToeGames.Add(game.Id, ttt);
+                    TicTacToeGames.Add(game.Id, (TicTacToe)game);
+                    break;
+                case GameType.Trivia:
+                    TriviaGames.Add(game.Id, (Trivia)game);
                     break;
                 default:
                     break;
@@ -86,6 +89,9 @@ namespace Challenges
                     break;
                 case GameType.TicTacToe:
                     TicTacToeGames.Remove(game.Id);
+                    break;
+                case GameType.Trivia:
+                    TriviaGames.Remove(game.Id);
                     break;
                 default:
                     break;

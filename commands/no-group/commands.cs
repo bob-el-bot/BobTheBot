@@ -306,7 +306,7 @@ namespace Commands
                     .WithButton(label: "🛡️ Decline", customId: $"declinedChallenge", style: ButtonStyle.Danger, disabled: true);
 
                     await component.UpdateAsync(x => { x.Embed = embed.Build(); x.Content = null; x.Components = components.Build(); });
-                
+
                     Challenge.RemoveFromSpecificGameList(challenge);
                     challenge.Dispose();
                 }
