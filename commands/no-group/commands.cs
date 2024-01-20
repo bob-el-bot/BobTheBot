@@ -447,24 +447,24 @@ namespace Commands
 **🖊️ Quoting:** [Quoting Docs](https://docs.bobthebot.net#quoting)
 - `/quote new [quote] [user] [tag]*3` Formats and shares the quote in designated channel. [Docs](https://docs.bobthebot.net#quote-new)
 - `/quote channel [channel]` Sets the quote channel for the server. [Docs](https://docs.bobthebot.net#quote-channel)
-**🔒 Encryption commands:**
-- `/encrypt a1z26 [message]` Encrypts your message by swapping letters to their corresponding number.
-- `/encrypt atbash [message]` Encrypts your message by swapping letters to their opposite position.
-- `/encrypt caesar [message] [shift]` Encrypts your message by shifting the letters the specified amount.
-- `/encrypt morse [message]` Encrypts your message using Morse code.
-- `/encrypt vigenere [message] [key]` Encrypts your message using a specified key."
+**🔒 Encryption commands:** [Encryption Docs](https://docs.bobthebot.net#encrypt)
+- `/encrypt a1z26 [message]` Encrypts your message by swapping letters to their corresponding number. [Docs](https://docs.bobthebot.net#encrypt-a1z26)
+- `/encrypt atbash [message]` Encrypts your message by swapping letters to their opposite position. [Docs](https://docs.bobthebot.net#encrypt-atbash)
+- `/encrypt caesar [message] [shift]` Encrypts your message by shifting the letters the specified amount. [Docs](https://docs.bobthebot.net#encrypt-caesar)
+- `/encrypt morse [message]` Encrypts your message using Morse code. [Docs](https://docs.bobthebot.net#encrypt-morse)
+- `/encrypt vigenere [message] [key]` Encrypts your message using a specified key. [Docs](https://docs.bobthebot.net#encrypt-vigenere)"
             };
 
             var secondEmbed = new EmbedBuilder
             {
                 Title = $"",
                 Color = Bot.theme,
-                Description = @"**🔓 Decryption commands:**
-- `/decrypt a1z26 [message]` Decrypts your message by swapping letters to their corresponding number.
-- `/decrypt atbash [message]` Decrypts your message by swapping letters to their opposite position.
-- `/decrypt caesar [message] [shift]` Decrypts your message by shifting the letters the specified amount.
-- `/decrypt morse [message]` Decrypts your message using Morse code.
-- `/decrypt vigenere [message] [key]` Decrypts your message using a specified key.
+                Description = @"**🔓 Decryption commands:** [Decryption Docs](https://docs.bobthebot.net#decrypt)
+- `/decrypt a1z26 [message]` Decrypts your message by swapping letters to their corresponding number [Docs](https://docs.bobthebot.net#decrypt-a1z26).
+- `/decrypt atbash [message]` Decrypts your message by swapping letters to their opposite position [Docs](https://docs.bobthebot.net#decrypt-atbash).
+- `/decrypt caesar [message] [shift]` Decrypts your message by shifting the letters the specified amount [Docs](https://docs.bobthebot.net#decrypt-caesar).
+- `/decrypt morse [message]` Decrypts your message using Morse code [Docs](https://docs.bobthebot.net#decrypt-morse).
+- `/decrypt vigenere [message] [key]` Decrypts your message using a specified key [Docs](https://docs.bobthebot.net#decrypt-vigenere).
 **✨ Other:** [Other Docs](https://docs.bobthebot.net#other)
 - `/code preview [link]` Preview specific lines of code from a file on GitHub. [Docs](https://docs.bobthebot.net#code-preview)
 - `/fonts [text] [font]` Change your text to a different font. [Docs](https://docs.bobthebot.net#fonts)
