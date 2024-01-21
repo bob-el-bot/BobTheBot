@@ -184,6 +184,71 @@ namespace Commands
         }
 
         [EnabledInDm(true)]
+        [SlashCommand("trivia", "Play a game of trivia.")]
+        public async Task Trivia([Summary("opponent", "Leave empty to play alone.")] SocketUser opponent = null)
+        {
+            if (opponent == null || opponent.IsBot)
+            {
+                await DeferAsync();
+                Trivia game = new(Context.User, opponent ?? Bot.Client.CurrentUser);
+                await game.StartBotGame(Context.Interaction);
+            }
+            else
+            {
+                if (!Challenge.CanChallenge(Context.User.Id, opponent.Id))
+                {
+                    await RespondAsync(text: "❌ You can't challenge them.", ephemeral: true);
+                }
+                else
+                {
+                    await DeferAsync();
+                    await Challenge.SendMessage(Context.Interaction, new Trivia(Context.User, opponent));
+                }
+            }
+        }
+
+        [ComponentInteraction("trivia:*:*")]
+        public async Task TriviaButtonHandler(string answer, string Id)
+        {
+            SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
+
+            Challenge.TriviaGames.TryGetValue(Convert.ToUInt64(Id), out Trivia game);
+
+            if (game == null)
+            {
+                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use `/trivia` to start a new game.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+            }
+            else
+            {
+                bool isPlayer1 = component.User.Id == game.Player1.Id;
+                bool isPlayer2 = component.User.Id == game.Player2.Id;
+
+                if (!isPlayer1 && !isPlayer2)
+                {
+                    await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                }
+                else if (game.player1Answer != null && isPlayer1 || game.player2Answer != null && isPlayer2)
+                {
+                    await component.RespondAsync(text: $"❌ You have already answered.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                }
+                else
+                {
+                    await DeferAsync();
+
+                    // Answer
+                    if (game.Player2.IsBot)
+                    {
+                        await game.AloneAnswer(answer, component);
+                    }
+                    else
+                    {
+                        await game.Answer(isPlayer1, answer, component);
+                    }
+                }
+            }
+        }
+
+        [EnabledInDm(true)]
         [SlashCommand("rock-paper-scissors", "Play a game of Rock Paper Scissors.")]
         public async Task RPS([Summary("opponent", "Leave empty to verse an AI.")] SocketUser opponent = null)
         {
