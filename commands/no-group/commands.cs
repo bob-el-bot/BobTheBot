@@ -184,6 +184,71 @@ namespace Commands
         }
 
         [EnabledInDm(true)]
+        [SlashCommand("trivia", "Play a game of trivia.")]
+        public async Task Trivia([Summary("opponent", "Leave empty to play alone.")] SocketUser opponent = null)
+        {
+            if (opponent == null || opponent.IsBot)
+            {
+                await DeferAsync();
+                Trivia game = new(Context.User, opponent ?? Bot.Client.CurrentUser);
+                await game.StartBotGame(Context.Interaction);
+            }
+            else
+            {
+                if (!Challenge.CanChallenge(Context.User.Id, opponent.Id))
+                {
+                    await RespondAsync(text: "❌ You can't challenge them.", ephemeral: true);
+                }
+                else
+                {
+                    await DeferAsync();
+                    await Challenge.SendMessage(Context.Interaction, new Trivia(Context.User, opponent));
+                }
+            }
+        }
+
+        [ComponentInteraction("trivia:*:*")]
+        public async Task TriviaButtonHandler(string answer, string Id)
+        {
+            SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
+
+            Challenge.TriviaGames.TryGetValue(Convert.ToUInt64(Id), out Trivia game);
+
+            if (game == null)
+            {
+                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use `/trivia` to start a new game.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+            }
+            else
+            {
+                bool isPlayer1 = component.User.Id == game.Player1.Id;
+                bool isPlayer2 = component.User.Id == game.Player2.Id;
+
+                if (!isPlayer1 && !isPlayer2)
+                {
+                    await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                }
+                else if (game.player1Answer != null && isPlayer1 || game.player2Answer != null && isPlayer2)
+                {
+                    await component.RespondAsync(text: $"❌ You have already answered.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                }
+                else
+                {
+                    await DeferAsync();
+
+                    // Answer
+                    if (game.Player2.IsBot)
+                    {
+                        await game.AloneAnswer(answer, component);
+                    }
+                    else
+                    {
+                        await game.Answer(isPlayer1, answer, component);
+                    }
+                }
+            }
+        }
+
+        [EnabledInDm(true)]
         [SlashCommand("rock-paper-scissors", "Play a game of Rock Paper Scissors.")]
         public async Task RPS([Summary("opponent", "Leave empty to verse an AI.")] SocketUser opponent = null)
         {
@@ -412,7 +477,7 @@ namespace Commands
                 Color = Bot.theme
             };
 
-            embed.AddField(name: "🗒️ Creator's Notes", value: "- `/random color` now has image previews! A big deal for the :crystal_ball: future of Bob!\n- `/analyze-link` has been added and now you can :detective: track where a link will take you before even clicking it (up to 4 redirects). On top of that, you can learn if the site has cookies, is a shortened URL, or even if it's a Rick roll.\n- :mega: `/announce` has been added and can make you fancy embeds.\n- Stay 📺 tuned for some awesome updates!", inline: false).AddField(name: "✨ Latest Update", value: commitMessage, inline: true).AddField(name: ":calendar_spiral: Date", value: $"<t:{commitDateID}:f>", inline: true).AddField(name: "🔮 See What's In the Works", value: "[Road Map](https://github.com/orgs/bob-el-bot/projects/4)");
+            embed.AddField(name: "🗒️ Creator's Notes", value: "- `/encrypt` and `/decrypt` have now been made into Groups to support special functionality for specific ciphers. Additionally, the Vigenere cipher has been added!\n- `/tic-tac-toe` has been added with bot, and multiplayer options.\n- `/trivia` has been added with bot and multiplayer options.\n- `/quote new` has been buffed. It now has a \"Jump To\" feature.\n- Stay 📺 tuned for some awesome updates!", inline: false).AddField(name: "✨ Latest Update", value: commitMessage, inline: true).AddField(name: ":calendar_spiral: Date", value: $"<t:{commitDateID}:f>", inline: true).AddField(name: "🔮 See What's In the Works", value: "[Road Map](https://github.com/orgs/bob-el-bot/projects/4)");
 
             await RespondAsync(embed: embed.Build());
         }
@@ -440,6 +505,7 @@ namespace Commands
 - `/random date [earliestYear] [latestYear]` Get a random date between the inputted years. [Docs](https://docs.bobthebot.net#random-date)
 - `/random advice` Get a random piece of advice. [Docs](https://docs.bobthebot.net#random-advice)
 **🎮 Games:** [Games Docs](https://docs.bobthebot.net#games)
+- `trivia [opponent]` Play a game of trivia with or without someone.
 - `/tic-tac-toe [opponent]` Play Bob or a user in a game of Tic Tac Toe. [Docs](https://docs.bobthebot.net#tic-tac-toe)
 - `/rock-paper-scissors [opponent]` Play Bob or a user in a game of Rock Paper Scissors. [Docs](https://docs.bobthebot.net#rock-paper-scissors)
 - `/master-mind new-game` Play a game of Master Mind, the rules will shared upon usage. [Docs](https://docs.bobthebot.net#master-mind-new)
@@ -447,24 +513,24 @@ namespace Commands
 **🖊️ Quoting:** [Quoting Docs](https://docs.bobthebot.net#quoting)
 - `/quote new [quote] [user] [tag]*3` Formats and shares the quote in designated channel. [Docs](https://docs.bobthebot.net#quote-new)
 - `/quote channel [channel]` Sets the quote channel for the server. [Docs](https://docs.bobthebot.net#quote-channel)
-**🔒 Encryption commands:**
-- `/encrypt a1z26 [message]` Encrypts your message by swapping letters to their corresponding number.
-- `/encrypt atbash [message]` Encrypts your message by swapping letters to their opposite position.
-- `/encrypt caesar [message] [shift]` Encrypts your message by shifting the letters the specified amount.
-- `/encrypt morse [message]` Encrypts your message using Morse code.
-- `/encrypt vigenere [message] [key]` Encrypts your message using a specified key."
+**🔒 Encryption commands:** [Encryption Docs](https://docs.bobthebot.net#encrypt)
+- `/encrypt a1z26 [message]` Encrypts your message by swapping letters to their corresponding number. [Docs](https://docs.bobthebot.net#encrypt-a1z26)
+- `/encrypt atbash [message]` Encrypts your message by swapping letters to their opposite position. [Docs](https://docs.bobthebot.net#encrypt-atbash)
+- `/encrypt caesar [message] [shift]` Encrypts your message by shifting the letters the specified amount. [Docs](https://docs.bobthebot.net#encrypt-caesar)
+- `/encrypt morse [message]` Encrypts your message using Morse code. [Docs](https://docs.bobthebot.net#encrypt-morse)
+- `/encrypt vigenere [message] [key]` Encrypts your message using a specified key. [Docs](https://docs.bobthebot.net#encrypt-vigenere)"
             };
 
             var secondEmbed = new EmbedBuilder
             {
                 Title = $"",
                 Color = Bot.theme,
-                Description = @"**🔓 Decryption commands:**
-- `/decrypt a1z26 [message]` Decrypts your message by swapping letters to their corresponding number.
-- `/decrypt atbash [message]` Decrypts your message by swapping letters to their opposite position.
-- `/decrypt caesar [message] [shift]` Decrypts your message by shifting the letters the specified amount.
-- `/decrypt morse [message]` Decrypts your message using Morse code.
-- `/decrypt vigenere [message] [key]` Decrypts your message using a specified key.
+                Description = @"**🔓 Decryption commands:** [Decryption Docs](https://docs.bobthebot.net#decrypt)
+- `/decrypt a1z26 [message]` Decrypts your message by swapping letters to their corresponding number [Docs](https://docs.bobthebot.net#decrypt-a1z26).
+- `/decrypt atbash [message]` Decrypts your message by swapping letters to their opposite position [Docs](https://docs.bobthebot.net#decrypt-atbash).
+- `/decrypt caesar [message] [shift]` Decrypts your message by shifting the letters the specified amount [Docs](https://docs.bobthebot.net#decrypt-caesar).
+- `/decrypt morse [message]` Decrypts your message using Morse code [Docs](https://docs.bobthebot.net#decrypt-morse).
+- `/decrypt vigenere [message] [key]` Decrypts your message using a specified key [Docs](https://docs.bobthebot.net#decrypt-vigenere).
 **✨ Other:** [Other Docs](https://docs.bobthebot.net#other)
 - `/code preview [link]` Preview specific lines of code from a file on GitHub. [Docs](https://docs.bobthebot.net#code-preview)
 - `/fonts [text] [font]` Change your text to a different font. [Docs](https://docs.bobthebot.net#fonts)

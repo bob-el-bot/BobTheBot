@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Interactions;
 using Discord.Rest;
+using static Performance.Stats;
 using Discord.WebSocket;
 
 namespace Debug
@@ -28,7 +29,10 @@ namespace Debug
                 }
             }
 
-            await channel.SendMessageAsync($"`{DateTime.Now:dd/MM. H:mm:ss} | Location: {location} | User: {user.GlobalName}, {user.Id}`\n```{commandUsage}```{(errorReason == null ? "" : $"Error: ```cs\n{errorReason}```")}Command type: **{commandType}** | Method name in code: **{methodName}**");
+            var cpuUsage = await GetCpuUsageForProcess();
+            var ramUsage = GetRamUsageForProcess();
+
+            await channel.SendMessageAsync($"`{DateTime.Now:dd/MM. H:mm:ss} | {FormatPerformance(cpuUsage, ramUsage)} | Location: {location} | User: {user.GlobalName}, {user.Id}`\n```{commandUsage}```{(errorReason == null ? "" : $"Error: ```cs\n{errorReason}```")}Command type: **{commandType}** | Method name in code: **{methodName}**");
         }
     }
 }

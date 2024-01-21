@@ -29,7 +29,7 @@ namespace Commands.Helpers
         // API management
         public const int MaxQuestionCount = 50;
         public const int SecondsPerRequest = 6;
-        private static DateTime lastRequestTime = DateTime.MinValue;
+        private static DateTime lastRequestTime;
         private static readonly object lockObject = new();
 
         public const int TotalQuestions = 4;
@@ -42,19 +42,22 @@ namespace Commands.Helpers
         {
             TimeSpan elapsed;
 
-            lock (lockObject)
+            if (lastRequestTime == null)
             {
-                elapsed = DateTime.Now - lastRequestTime;
-
-                // If less than 6 seconds have passed, release the lock and wait for the remaining time
-                if (elapsed.TotalSeconds < SecondsPerRequest)
+                lock (lockObject)
                 {
-                    Monitor.Exit(lockObject);
-                    int remainingMilliseconds = (int)((SecondsPerRequest - elapsed.TotalSeconds) * 1000);
+                    elapsed = DateTime.Now - lastRequestTime;
 
-                    Task.Delay(remainingMilliseconds).Wait();
+                    // If less than 6 seconds have passed, release the lock and wait for the remaining time
+                    if (elapsed.TotalSeconds < SecondsPerRequest)
+                    {
+                        Monitor.Exit(lockObject);
+                        int remainingMilliseconds = (int)((SecondsPerRequest - elapsed.TotalSeconds) * 1000);
 
-                    Monitor.Enter(lockObject);
+                        Task.Delay(remainingMilliseconds).Wait();
+
+                        Monitor.Enter(lockObject);
+                    }
                 }
             }
 
@@ -80,10 +83,10 @@ namespace Commands.Helpers
 
                 var incorrectAnswers = result["incorrect_answers"].AsArray().Select(e => Encoding.UTF8.GetString(Convert.FromBase64String(e.ToString()))).ToArray();
 
-                int answerLocation = random.Next(0, 5);
+                int answerLocation = random.Next(0, 4);
                 int incorrectAnswersIndex = 0;
                 string[] letters = { "a", "b", "c", "d" };
-                for (int i = 0; i < incorrectAnswers.Length + 1; i++)
+                for (int i = 0; i < letters.Length; i++)
                 {
                     if (i == answerLocation)
                     {
@@ -130,12 +133,18 @@ namespace Commands.Helpers
             return finalText.ToString();
         }
 
-        public static EmbedBuilder CreateQuestionEmbed(string title, Question question, int questionCount, long expiration = 0)
+        public static EmbedBuilder CreateQuestionEmbed(Trivia game, string title, long expiration = 0)
         {
             StringBuilder description = new();
             description.AppendLine(title);
-            description.AppendLine($"Question: {questionCount + 1}/{TotalQuestions + 1}");
-            description.Append(FormatQuestionText(question));
+            
+            if (game.questions > 0)
+            {
+                description.AppendLine($"**{game.Player1.GlobalName}**: {game.player1Chart} {(!game.Player2.IsBot ? $"**{game.Player2.GlobalName}**: {game.player2Chart}" : "")}");
+            }
+
+            description.AppendLine($"Question: {game.questions + 1}/{TotalQuestions + 1}\n");
+            description.AppendLine(FormatQuestionText(game.question));
 
             if (expiration != 0)
             {
@@ -148,27 +157,63 @@ namespace Commands.Helpers
                 Description = description.ToString()
             };
 
-            embed.AddField(name: "Category", value: question.category, inline: true).AddField(name: "Difficulty", value: question.difficulty, inline: true);
+            embed.AddField(name: "Category", value: game.question.category, inline: true).AddField(name: "Difficulty", value: game.question.difficulty, inline: true);
+
+            embed.Footer = GetFooter();
 
             return embed;
         }
 
-        public static EmbedBuilder CreateFinalEmbed(string title, int player1Points, int player2Points, bool singlePlayer = false)
+        public static EmbedBuilder CreateFinalEmbed(Trivia game, bool forfeited = false)
         {
             var embed = new EmbedBuilder
             {
                 Color = Challenge.BothPlayersColor,
-                Description = title
+                Description = GetFinalTitle(game, forfeited)
             };
 
-            embed.AddField(name: "Player 1", value: $"{player1Points}/{TotalQuestions + 1}", inline: true);
+            embed.AddField(name: game.Player1.GlobalName, value: game.player1Chart, inline: true);
 
-            if (!singlePlayer)
+            if (!game.Player2.IsBot)
             {
-                embed.AddField(name: "Player 2", value: $"{player2Points}/{TotalQuestions + 1}", inline: true);
+                embed.AddField(name: game.Player2.GlobalName, value: game.player2Chart, inline: true);
             }
 
             return embed;
+        }
+
+        private static string GetFinalTitle(Trivia game, bool forfeited = false)
+        {
+            if (game.Player2.IsBot)
+            {
+                return $"### ⚔️ {game.Player1.Mention}'s Completed Game of {game.Title}.";
+            }
+            else
+            {
+                // All ways for player1 to lose
+                if (game.player1Points < game.player2Points || (forfeited && game.player1Answer == null && game.player1Points < game.player2Points))
+                {
+                    return $"### ⚔️ {game.Player1.Mention} Was Defeated By {game.Player2.Mention} in {game.Title}.";
+                }
+                else if ((forfeited && game.player1Points + game.player2Points == 0) || game.player1Points == game.player2Points) // draw
+                {
+                    return $"### ⚔️ {game.Player1.Mention} Drew {game.Player2.Mention} in {game.Title}.";
+                }
+                else // else player1 won
+                {
+                    return $"### ⚔️ {game.Player1.Mention} Defeated {game.Player2.Mention} in {game.Title}.";
+                }
+            }
+        }
+
+        public static EmbedFooterBuilder GetFooter()
+        {
+            var footer = new EmbedFooterBuilder
+            {
+                Text = "Powered by Open Trivia Database (unaffiliated)."
+            };
+
+            return footer;
         }
 
         public static ComponentBuilder GetButtons(ulong Id, bool disable = false)

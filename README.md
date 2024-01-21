@@ -42,7 +42,7 @@ Making memories is important and with `/quote new` you can do just that! Bob wil
 Use `/fonts`, to transform your text into something that is *guaranteed* to grab users' attention., or use `/encrypt` to secure your message.
 
 ### 🎮 Play games!
-With multiple games to choose from like `/rock-paper-scissors`, `/master-mind`, and *only more* on the way, Bob is ready to keep provide your server with the entertainment it *needs* to thrive.
+With multiple games to choose from like `/rock-paper-scissors`, `/tic-tac-toe`, `/trivia`, `/master-mind`, and *only more* on the way, Bob is ready to keep provide your server with the entertainment it *needs* to thrive.
 
 ### 🎲 All the RNG!
 Bob has a ***plethora*** of random commands to either fuel your Dungeons and Dragons experience like `/random dice-roll`, or simply cure your boredom with `/random 8ball`, `/random dad-joke`, `/random fact`, and many more!
@@ -68,6 +68,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/random choose [option]*5` Bob will pick from the options provided.
 
 ### 🎮 Game commands:
+- `trivia [opponent]` Play a game of trivia with or without someone.
 - `/tic-tac-toe [opponent]` Play Bob or a user in a game of Tic Tac Toe. 
 - `/rock-paper-scissors [opponent]` Play Bob or a user in a game of Rock Paper Scissors.
 - `/master-mind new-game` Play a game of Master Mind, the rules will shared upon usage.
