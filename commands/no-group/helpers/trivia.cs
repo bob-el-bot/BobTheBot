@@ -160,7 +160,7 @@ namespace Commands.Helpers
         private async Task FinishGame(SocketMessageComponent component)
         {
             _ = EndGame();
-            
+
             await component.ModifyOriginalResponseAsync(x => { x.Embed = TriviaMethods.CreateFinalEmbed(this).Build(); x.Components = TriviaMethods.GetButtons(Id, true).Build(); });
         }
 

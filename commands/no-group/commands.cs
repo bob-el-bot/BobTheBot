@@ -505,6 +505,7 @@ namespace Commands
 - `/random date [earliestYear] [latestYear]` Get a random date between the inputted years. [Docs](https://docs.bobthebot.net#random-date)
 - `/random advice` Get a random piece of advice. [Docs](https://docs.bobthebot.net#random-advice)
 **🎮 Games:** [Games Docs](https://docs.bobthebot.net#games)
+- `trivia [opponent]` Play a game of trivia with or without someone.
 - `/tic-tac-toe [opponent]` Play Bob or a user in a game of Tic Tac Toe. [Docs](https://docs.bobthebot.net#tic-tac-toe)
 - `/rock-paper-scissors [opponent]` Play Bob or a user in a game of Rock Paper Scissors. [Docs](https://docs.bobthebot.net#rock-paper-scissors)
 - `/master-mind new-game` Play a game of Master Mind, the rules will shared upon usage. [Docs](https://docs.bobthebot.net#master-mind-new)

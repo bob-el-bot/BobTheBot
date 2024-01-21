@@ -137,7 +137,13 @@ namespace Commands.Helpers
         {
             StringBuilder description = new();
             description.AppendLine(title);
-            description.AppendLine($"Question: {game.questions + 1}/{TotalQuestions + 1}");
+            
+            if (game.questions > 0)
+            {
+                description.AppendLine($"**{game.Player1.GlobalName}**: {game.player1Chart} {(!game.Player2.IsBot ? $"**{game.Player2.GlobalName}**: {game.player2Chart}" : "")}");
+            }
+
+            description.AppendLine($"Question: {game.questions + 1}/{TotalQuestions + 1}\n");
             description.AppendLine(FormatQuestionText(game.question));
 
             if (expiration != 0)
@@ -151,18 +157,10 @@ namespace Commands.Helpers
                 Description = description.ToString()
             };
 
-            if (game.player1Chart != null)
-            {
-                embed.AddField(name: game.Player1.GlobalName, value: game.player1Chart);
-            }
-
-            if (!game.Player2.IsBot && game.player2Chart != null)
-            {
-                embed.AddField(name: game.Player2.GlobalName, value: game.player2Chart);
-            }
-
-
             embed.AddField(name: "Category", value: game.question.category, inline: true).AddField(name: "Difficulty", value: game.question.difficulty, inline: true);
+
+            embed.Footer = GetFooter();
+
             return embed;
         }
 
@@ -206,6 +204,16 @@ namespace Commands.Helpers
                     return $"### ⚔️ {game.Player1.Mention} Defeated {game.Player2.Mention} in {game.Title}.";
                 }
             }
+        }
+
+        public static EmbedFooterBuilder GetFooter()
+        {
+            var footer = new EmbedFooterBuilder
+            {
+                Text = "Powered by Open Trivia Database (unaffiliated)."
+            };
+
+            return footer;
         }
 
         public static ComponentBuilder GetButtons(ulong Id, bool disable = false)
