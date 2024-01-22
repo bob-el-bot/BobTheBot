@@ -29,7 +29,7 @@ namespace Commands.Helpers
         // API management
         public const int MaxQuestionCount = 50;
         public const int SecondsPerRequest = 6;
-        private static DateTime lastRequestTime;
+        private static DateTime lastRequestTime = DateTime.MinValue;
         private static readonly object lockObject = new();
 
         public const int TotalQuestions = 4;
@@ -42,22 +42,19 @@ namespace Commands.Helpers
         {
             TimeSpan elapsed;
 
-            if (lastRequestTime == null)
+            lock (lockObject)
             {
-                lock (lockObject)
+                elapsed = DateTime.Now - lastRequestTime;
+
+                // If less than 6 seconds have passed, release the lock and wait for the remaining time
+                if (elapsed.TotalSeconds < SecondsPerRequest)
                 {
-                    elapsed = DateTime.Now - lastRequestTime;
+                    Monitor.Exit(lockObject);
+                    int remainingMilliseconds = (int)((SecondsPerRequest - elapsed.TotalSeconds) * 1000);
 
-                    // If less than 6 seconds have passed, release the lock and wait for the remaining time
-                    if (elapsed.TotalSeconds < SecondsPerRequest)
-                    {
-                        Monitor.Exit(lockObject);
-                        int remainingMilliseconds = (int)((SecondsPerRequest - elapsed.TotalSeconds) * 1000);
+                    Task.Delay(remainingMilliseconds).Wait();
 
-                        Task.Delay(remainingMilliseconds).Wait();
-
-                        Monitor.Enter(lockObject);
-                    }
+                    Monitor.Enter(lockObject);
                 }
             }
 
@@ -137,7 +134,7 @@ namespace Commands.Helpers
         {
             StringBuilder description = new();
             description.AppendLine(title);
-            
+
             if (game.questions > 0)
             {
                 description.AppendLine($"**{game.Player1.GlobalName}**: {game.player1Chart} {(!game.Player2.IsBot ? $"**{game.Player2.GlobalName}**: {game.player2Chart}" : "")}");
