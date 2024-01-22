@@ -14,7 +14,7 @@ namespace Commands.Helpers
 
         public int[,] grid = new int[3, 3];
         public bool isPlayer1Turn;
-        public int turns = 0;
+        public int turns;
 
         public TicTacToe(IUser player1, IUser player2) : base(GameType.TicTacToe, onePerChannel, TimeSpan.FromMinutes(5), player1, player2)
         {

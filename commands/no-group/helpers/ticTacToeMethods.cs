@@ -169,8 +169,15 @@ namespace Commands.Helpers
         private static int MinimaxScore(int[,] grid, int turns, int depth, int player)
         {
             int winner = GetWinner(grid, turns);
-            if (winner == 1) return -1;
-            if (winner == 2) return 1;
+            if (winner == 1)
+            {
+                return -1;
+            }
+
+            if (winner == 2)
+            {
+                return 1;
+            }
 
             if (player == 1)
             {

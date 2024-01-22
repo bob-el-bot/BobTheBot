@@ -19,7 +19,7 @@ namespace Commands.Helpers
         public int player2Points;
         public string player2Answer;
         public string player2Chart;
-        public int questions = 0;
+        public int questions;
         public Question question;
 
         public Trivia(IUser player1, IUser player2) : base(GameType.Trivia, onePerChannel, TimeSpan.FromMinutes(5), player1, player2)
