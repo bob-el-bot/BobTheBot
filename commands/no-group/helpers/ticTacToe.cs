@@ -55,7 +55,7 @@ namespace Commands.Helpers
             UpdateExpirationTime(TimeSpan.FromMinutes(1));
             var dateTime = new DateTimeOffset(ExpirationTime).ToUnixTimeSeconds();
 
-            await interaction.UpdateAsync(x => { x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(isPlayer1Turn ? Player1.Mention : Player2.Mention)} turn ( Forfeit <t:{dateTime}:R>).").Build(); x.Components = TTTMethods.GetButtons(grid, turns, Id).Build(); });
+            await interaction.UpdateAsync(x => { x.Content = null; x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(isPlayer1Turn ? Player1.Mention : Player2.Mention)} turn ( Forfeit <t:{dateTime}:R>).").Build(); x.Components = TTTMethods.GetButtons(grid, turns, Id).Build(); });
         }
 
         public override async Task EndGameOnTime()

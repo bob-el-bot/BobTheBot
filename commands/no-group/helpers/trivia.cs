@@ -57,7 +57,7 @@ namespace Commands.Helpers
             UpdateExpirationTime(TimeSpan.FromMinutes(0.5));
             var dateTime = new DateTimeOffset(ExpirationTime).ToUnixTimeSeconds();
 
-            await interaction.UpdateAsync(x => { x.Embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.", dateTime).Build(); x.Components = TriviaMethods.GetButtons(Id).Build(); });
+            await interaction.UpdateAsync(x => { x.Content = null; x.Embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.", dateTime).Build(); x.Components = TriviaMethods.GetButtons(Id).Build(); });
         }
 
         public async Task Answer(bool isPlayer1, string answer, SocketMessageComponent component)
@@ -139,9 +139,7 @@ namespace Commands.Helpers
             var dateTime = new DateTimeOffset(ExpirationTime).ToUnixTimeSeconds();
 
             EmbedBuilder embed;
-            
             embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.", dateTime);
-
 
             await component.ModifyOriginalResponseAsync(x => { x.Embed = embed.Build(); x.Components = TriviaMethods.GetButtons(Id).Build(); });
         }

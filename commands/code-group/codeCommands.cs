@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Commands.Helpers;
 using Discord;
 using Discord.Interactions;
+using Microsoft.VisualBasic;
 using static ApiInteractions.Interface;
 
 namespace Commands
