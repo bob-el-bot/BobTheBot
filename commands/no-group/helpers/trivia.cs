@@ -102,6 +102,10 @@ namespace Commands.Helpers
                     await NextQuestion(component);
                 }
             }
+            else
+            {
+                await UpdateQuestion(component);
+            }
         }
 
         public async Task AloneAnswer(string answer, SocketMessageComponent component)
@@ -126,6 +130,20 @@ namespace Commands.Helpers
             {
                 await NextQuestion(component);
             }
+        }
+
+        private async Task UpdateQuestion(SocketMessageComponent component)
+        {
+            // Reset Expiration Time.
+            UpdateExpirationTime(TimeSpan.FromMinutes(0.5));
+            var dateTime = new DateTimeOffset(ExpirationTime).ToUnixTimeSeconds();
+
+            EmbedBuilder embed;
+            
+            embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.", dateTime);
+
+
+            await component.ModifyOriginalResponseAsync(x => { x.Embed = embed.Build(); x.Components = TriviaMethods.GetButtons(Id).Build(); });
         }
 
         private async Task NextQuestion(SocketMessageComponent component)
