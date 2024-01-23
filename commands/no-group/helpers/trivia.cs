@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Challenges;
@@ -19,8 +21,7 @@ namespace Commands.Helpers
         public int player2Points;
         public string player2Answer;
         public string player2Chart;
-        public int questions;
-        public Question question;
+        public List<Question> questions = new();
 
         public Trivia(IUser player1, IUser player2) : base(GameType.Trivia, onePerChannel, TimeSpan.FromMinutes(5), player1, player2)
         {
@@ -39,7 +40,7 @@ namespace Commands.Helpers
             Challenge.AddToSpecificGameList(this);
 
             // Get a question
-            question = await TriviaMethods.GetQuestion();
+            questions.Add(await TriviaMethods.GetQuestion());
 
             await Message.ModifyAsync(x => { x.Content = null; x.Embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention}'s Game of {Title}.").Build(); x.Components = TriviaMethods.GetButtons(Id).Build(); });
         }
@@ -47,7 +48,7 @@ namespace Commands.Helpers
         public override async Task StartGame(SocketMessageComponent interaction)
         {
             // Get a question
-            question = await TriviaMethods.GetQuestion();
+            questions.Add(await TriviaMethods.GetQuestion());
 
             // Set State
             State = GameState.Active;
@@ -65,7 +66,7 @@ namespace Commands.Helpers
             if (isPlayer1)
             {
                 player1Answer = answer;
-                if (question.correctAnswer == player1Answer)
+                if (questions.Last().correctAnswer == player1Answer)
                 {
                     player1Points++;
                     player1Chart += "🟩";
@@ -78,7 +79,7 @@ namespace Commands.Helpers
             else
             {
                 player2Answer = answer;
-                if (question.correctAnswer == player2Answer)
+                if (questions.Last().correctAnswer == player2Answer)
                 {
                     player2Points++;
                     player2Chart += "🟩";
@@ -92,7 +93,7 @@ namespace Commands.Helpers
             // Both players have answered
             if (player1Answer != null && player2Answer != null)
             {
-                if (questions == TriviaMethods.TotalQuestions)
+                if (questions.Count == TriviaMethods.TotalQuestions)
                 {
                     await FinishGame(component);
                 }
@@ -107,7 +108,7 @@ namespace Commands.Helpers
         {
             // Set Answer and Update Score.
             player1Answer = answer;
-            if (question.correctAnswer == player1Answer)
+            if (questions.Last().correctAnswer == player1Answer)
             {
                 player1Points++;
                 player1Chart += "🟩";
@@ -117,7 +118,7 @@ namespace Commands.Helpers
                 player1Chart += "🟥";
             }
 
-            if (questions == TriviaMethods.TotalQuestions)
+            if (questions.Count == TriviaMethods.TotalQuestions)
             {
                 await FinishGame(component);
             }
@@ -134,10 +135,7 @@ namespace Commands.Helpers
             player2Answer = null;
 
             // Get a question
-            question = await TriviaMethods.GetQuestion();
-
-            // update question total
-            questions++;
+            questions.Add(await TriviaMethods.GetQuestion());
 
             // Reset Expiration Time.
             UpdateExpirationTime(TimeSpan.FromMinutes(0.5));
