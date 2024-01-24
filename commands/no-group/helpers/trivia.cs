@@ -35,9 +35,15 @@ namespace Commands.Helpers
             // Prepare Game
             Message = msg;
             Id = msg.Id;
+            State = GameState.Active;
 
             // Add to Games List
             Challenge.AddToSpecificGameList(this);
+
+            // Reset Expiration Time.
+            UpdateExpirationTime(TimeSpan.FromMinutes(5));
+
+            Expired += Challenge.ExpireGame;
 
             // Get a question
             questions.Add(await TriviaMethods.GetQuestion());
@@ -55,9 +61,8 @@ namespace Commands.Helpers
 
             // Reset Expiration Time.
             UpdateExpirationTime(TimeSpan.FromMinutes(0.5));
-            var dateTime = new DateTimeOffset(ExpirationTime).ToUnixTimeSeconds();
 
-            await interaction.UpdateAsync(x => { x.Content = null; x.Embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.", dateTime).Build(); x.Components = TriviaMethods.GetButtons(Id).Build(); });
+            await interaction.UpdateAsync(x => { x.Content = null; x.Embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.").Build(); x.Components = TriviaMethods.GetButtons(Id).Build(); });
         }
 
         public async Task Answer(bool isPlayer1, string answer, SocketMessageComponent component)
@@ -136,10 +141,9 @@ namespace Commands.Helpers
         {
             // Reset Expiration Time.
             UpdateExpirationTime(TimeSpan.FromMinutes(0.5));
-            var dateTime = new DateTimeOffset(ExpirationTime).ToUnixTimeSeconds();
 
             EmbedBuilder embed;
-            embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.", dateTime);
+            embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.");
 
             await component.ModifyOriginalResponseAsync(x => { x.Embed = embed.Build(); x.Components = TriviaMethods.GetButtons(Id).Build(); });
         }
@@ -153,10 +157,6 @@ namespace Commands.Helpers
             // Get a question
             questions.Add(await TriviaMethods.GetQuestion());
 
-            // Reset Expiration Time.
-            UpdateExpirationTime(TimeSpan.FromMinutes(0.5));
-            var dateTime = new DateTimeOffset(ExpirationTime).ToUnixTimeSeconds();
-
             EmbedBuilder embed;
 
             if (Player2.IsBot)
@@ -165,7 +165,10 @@ namespace Commands.Helpers
             }
             else
             {
-                embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.", dateTime);
+                // Reset Expiration Time.
+                UpdateExpirationTime(TimeSpan.FromMinutes(0.5));
+
+                embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.");
             }
 
             await component.ModifyOriginalResponseAsync(x => { x.Embed = embed.Build(); x.Components = TriviaMethods.GetButtons(Id).Build(); });
@@ -175,7 +178,14 @@ namespace Commands.Helpers
         {
             _ = EndGame();
 
-            await component.ModifyOriginalResponseAsync(x => { x.Embed = TriviaMethods.CreateFinalEmbed(this).Build(); x.Components = TriviaMethods.GetButtons(Id, true).Build(); });
+            try
+            {
+                await component.ModifyOriginalResponseAsync(x => { x.Embed = TriviaMethods.CreateFinalEmbed(this).Build(); x.Components = TriviaMethods.GetButtons(Id, true).Build(); });
+            }
+            catch (Exception)
+            {
+                // Do nothing Because the game will already be deleted.
+            }
         }
 
         public override async Task EndGameOnTime()
@@ -183,7 +193,14 @@ namespace Commands.Helpers
             // Set State
             State = GameState.Ended;
 
-            await Message.ModifyAsync(x => { x.Embed = TriviaMethods.CreateFinalEmbed(this, true).Build(); x.Components = TriviaMethods.GetButtons(Id, true).Build(); });
+            try
+            {
+                await Message.ModifyAsync(x => { x.Embed = TriviaMethods.CreateFinalEmbed(this, true).Build(); x.Components = TriviaMethods.GetButtons(Id, true).Build(); });
+            }
+            catch (Exception)
+            {
+                // Do nothing Because the game will already be deleted.
+            }
         }
     }
 }

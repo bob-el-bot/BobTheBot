@@ -105,17 +105,24 @@ namespace Challenges
             switch (game.State)
             {
                 case GameState.Challenge:
-                    // Format Message
-                    var embed = new EmbedBuilder
+                    try
                     {
-                        Color = DefaultColor,
-                        Description = $"### ⚔️ {game.Player1.Mention} Challenges {game.Player2.Mention} to {game.Title}.\n{game.Player2.Mention} did not respond."
-                    };
+                        // Format Message
+                        var embed = new EmbedBuilder
+                        {
+                            Color = DefaultColor,
+                            Description = $"### ⚔️ {game.Player1.Mention} Challenges {game.Player2.Mention} to {game.Title}.\n{game.Player2.Mention} did not respond."
+                        };
 
-                    var components = new ComponentBuilder().WithButton(label: "⚔️ Accept", customId: $"acceptedChallenge", style: ButtonStyle.Success, disabled: true)
-                    .WithButton(label: "🛡️ Decline", customId: $"declinedChallenge", style: ButtonStyle.Danger, disabled: true);
+                        var components = new ComponentBuilder().WithButton(label: "⚔️ Accept", customId: $"acceptedChallenge", style: ButtonStyle.Success, disabled: true)
+                        .WithButton(label: "🛡️ Decline", customId: $"declinedChallenge", style: ButtonStyle.Danger, disabled: true);
 
-                    await game.Message.ModifyAsync(x => { x.Embed = embed.Build(); x.Content = null; x.Components = components.Build(); });
+                        await game.Message.ModifyAsync(x => { x.Embed = embed.Build(); x.Content = null; x.Components = components.Build(); });
+                    }
+                    catch (Exception)
+                    {
+                        // Do nothing Because the challenge will already be deleted.
+                    }
                     break;
                 case GameState.SettingRules:
                     break;
