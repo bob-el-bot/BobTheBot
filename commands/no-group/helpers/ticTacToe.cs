@@ -72,7 +72,7 @@ namespace Commands.Helpers
 
             try
             {
-                await Message.ModifyAsync(x => { x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, GetFinalTitle(isPlayer1Turn ? 2 : 1, true)).Build(); x.Components = TTTMethods.GetButtons(grid, turns, Id, true).Build(); });
+                await Message.ModifyAsync(x => { x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, GetFinalTitle(TTTMethods.GetWinner(grid, turns), true)).Build(); x.Components = TTTMethods.GetButtons(grid, turns, Id, true).Build(); });
             }
             catch (Exception)
             {
@@ -135,17 +135,24 @@ namespace Commands.Helpers
 
         private async Task FinishGame(SocketMessageComponent interaction, Action<MessageProperties> properties)
         {
-            // End Game
-            _ = EndGame();
-
             try
             {
-                await Message.ModifyAsync(x => { x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, GetFinalTitle(isPlayer1Turn ? 2 : 1, true)).Build(); x.Components = TTTMethods.GetButtons(grid, turns, Id, true).Build(); });
+                if (interaction != null)
+                {
+                    await interaction.ModifyOriginalResponseAsync(properties);
+                }
+                else
+                {
+                    await Message.ModifyAsync(properties);
+                }
             }
             catch (Exception)
             {
                 // Do nothing Because the game will already be deleted.
             }
+
+            // End Game
+            _ = EndGame();
         }
 
         public async Task EndTurn(SocketMessageComponent component)
