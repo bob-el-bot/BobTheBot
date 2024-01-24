@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Reflection.Metadata;
 using System.Text;
 using System.Text.Json;
@@ -29,10 +30,10 @@ namespace Commands.Helpers
         // API management
         public const int MaxQuestionCount = 50;
         public const int SecondsPerRequest = 6;
-        private static DateTime lastRequestTime;
+        private static DateTime lastRequestTime = DateTime.MinValue;
         private static readonly object lockObject = new();
 
-        public const int TotalQuestions = 4;
+        public const int TotalQuestions = 5;
 
         private static readonly Random random = new();
 
@@ -42,22 +43,19 @@ namespace Commands.Helpers
         {
             TimeSpan elapsed;
 
-            if (lastRequestTime == null)
+            lock (lockObject)
             {
-                lock (lockObject)
+                elapsed = DateTime.Now - lastRequestTime;
+
+                // If less than 6 seconds have passed, release the lock and wait for the remaining time
+                if (elapsed.TotalSeconds < SecondsPerRequest)
                 {
-                    elapsed = DateTime.Now - lastRequestTime;
+                    Monitor.Exit(lockObject);
+                    int remainingMilliseconds = (int)((SecondsPerRequest - elapsed.TotalSeconds) * 1000);
 
-                    // If less than 6 seconds have passed, release the lock and wait for the remaining time
-                    if (elapsed.TotalSeconds < SecondsPerRequest)
-                    {
-                        Monitor.Exit(lockObject);
-                        int remainingMilliseconds = (int)((SecondsPerRequest - elapsed.TotalSeconds) * 1000);
+                    Task.Delay(remainingMilliseconds).Wait();
 
-                        Task.Delay(remainingMilliseconds).Wait();
-
-                        Monitor.Enter(lockObject);
-                    }
+                    Monitor.Enter(lockObject);
                 }
             }
 
@@ -137,14 +135,14 @@ namespace Commands.Helpers
         {
             StringBuilder description = new();
             description.AppendLine(title);
-            
-            if (game.questions > 0)
+
+            if (game.questions.Count > 1)
             {
                 description.AppendLine($"**{game.Player1.GlobalName}**: {game.player1Chart} {(!game.Player2.IsBot ? $"**{game.Player2.GlobalName}**: {game.player2Chart}" : "")}");
             }
 
-            description.AppendLine($"Question: {game.questions + 1}/{TotalQuestions + 1}\n");
-            description.AppendLine(FormatQuestionText(game.question));
+            description.AppendLine($"Question: {game.questions.Count}/{TotalQuestions}\n");
+            description.AppendLine(FormatQuestionText(game.questions.Last()));
 
             if (expiration != 0)
             {
@@ -157,7 +155,7 @@ namespace Commands.Helpers
                 Description = description.ToString()
             };
 
-            embed.AddField(name: "Category", value: game.question.category, inline: true).AddField(name: "Difficulty", value: game.question.difficulty, inline: true);
+            embed.AddField(name: "Category", value: game.questions.Last().category, inline: true).AddField(name: "Difficulty", value: game.questions.Last().difficulty, inline: true);
 
             embed.Footer = GetFooter();
 
@@ -172,11 +170,19 @@ namespace Commands.Helpers
                 Description = GetFinalTitle(game, forfeited)
             };
 
+            // Show Player Charts
             embed.AddField(name: game.Player1.GlobalName, value: game.player1Chart, inline: true);
 
             if (!game.Player2.IsBot)
             {
                 embed.AddField(name: game.Player2.GlobalName, value: game.player2Chart, inline: true);
+            }
+
+            // Show Questions with Correct Answers
+            string letters = "abcd";
+            foreach (Question q in game.questions)
+            {
+                embed.AddField(name: q.question, value: $"{q.answers[letters.IndexOf(q.correctAnswer)]}");
             }
 
             return embed;

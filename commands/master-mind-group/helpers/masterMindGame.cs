@@ -5,7 +5,7 @@ namespace Commands.Helpers {
     {
         public string key;
         public ulong id;
-        public bool isStarted = false;
+        public bool isStarted;
         public int guessesLeft = 8;
         public string startUser;
         public SocketUserMessage message;
