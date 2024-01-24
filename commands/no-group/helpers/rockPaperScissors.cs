@@ -28,17 +28,24 @@ namespace Commands.Helpers
             // Prepare Game
             Message = msg;
             Id = msg.Id;
+            State = GameState.Active;
             BotPlay();
 
             // Add to Games List
             Challenge.AddToSpecificGameList(this);
+
+            // Reset Expiration Time.
+            UpdateExpirationTime(TimeSpan.FromMinutes(1));
+            var dateTime = new DateTimeOffset(ExpirationTime).ToUnixTimeSeconds();
+
+            Expired += Challenge.ExpireGame;
 
             // Format Message
             var components = new ComponentBuilder().WithButton(label: "🪨 Rock", customId: $"rps:0:{Id}", style: ButtonStyle.Secondary)
             .WithButton(label: "📃 Paper", customId: $"rps:1:{Id}", style: ButtonStyle.Secondary)
             .WithButton(label: "✂️ Scissors", customId: $"rps:2:{Id}", style: ButtonStyle.Secondary);
 
-            await Message.ModifyAsync(x => { x.Content = null; x.Embed = CreateEmbed($"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.").Build(); x.Components = components.Build(); });
+            await Message.ModifyAsync(x => { x.Content = null; x.Embed = CreateEmbed($"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\nChoose <t:{dateTime}:R>.").Build(); x.Components = components.Build(); });
         }
 
         public override async Task StartGame(SocketMessageComponent interaction)
@@ -63,14 +70,27 @@ namespace Commands.Helpers
             // Set State
             State = GameState.Ended;
 
-            await Message.ModifyAsync(x => { x.Embed = CreateEmbed(GetFinalTitle(true)).Build(); x.Components = null; });
+            try
+            {
+                await Message.ModifyAsync(x => { x.Embed = CreateEmbed(GetFinalTitle(true)).Build(); x.Components = null; });
+            }
+            catch (Exception)
+            {
+                // Do nothing Because the game will already be deleted.
+            }
         }
 
         public async Task FinishGame(SocketMessageComponent interaction)
         {
-            string[] options = { "🪨", "📃", "✂️" };
-
-            await interaction.UpdateAsync(x => { x.Embed = CreateEmbed($"{GetFinalTitle()}\n{options[player1Choice]} **VS** {options[player2Choice]}").Build(); x.Components = null; });
+            try
+            {
+                string[] options = { "🪨", "📃", "✂️" };
+                await interaction.UpdateAsync(x => { x.Embed = CreateEmbed($"{GetFinalTitle()}\n{options[player1Choice]} **VS** {options[player2Choice]}").Build(); x.Components = null; });
+            }
+            catch (Exception)
+            {
+                // Do nothing Because the game will already be deleted.
+            }
 
             _ = EndGame();
         }

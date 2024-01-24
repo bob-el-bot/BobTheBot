@@ -131,7 +131,7 @@ namespace Commands.Helpers
             return finalText.ToString();
         }
 
-        public static EmbedBuilder CreateQuestionEmbed(Trivia game, string title, long expiration = 0)
+        public static EmbedBuilder CreateQuestionEmbed(Trivia game, string title)
         {
             StringBuilder description = new();
             description.AppendLine(title);
@@ -144,9 +144,15 @@ namespace Commands.Helpers
             description.AppendLine($"Question: {game.questions.Count}/{TotalQuestions}\n");
             description.AppendLine(FormatQuestionText(game.questions.Last()));
 
-            if (expiration != 0)
+            long expiration = new DateTimeOffset(game.ExpirationTime).ToUnixTimeSeconds();
+
+            if (!game.Player2.IsBot)
             {
                 description.AppendLine($"(Forfeit <t:{expiration}:R>).");
+            }
+            else
+            {
+                description.AppendLine($"(Ends <t:{expiration}:R>).");
             }
 
             var embed = new EmbedBuilder
@@ -171,18 +177,18 @@ namespace Commands.Helpers
             };
 
             // Show Player Charts
-            embed.AddField(name: game.Player1.GlobalName, value: game.player1Chart, inline: true);
+            embed.AddField(name: game.Player1.GlobalName, value: game.player1Chart ?? "🟥", inline: true);
 
             if (!game.Player2.IsBot)
             {
-                embed.AddField(name: game.Player2.GlobalName, value: game.player2Chart, inline: true);
+                embed.AddField(name: game.Player2.GlobalName, value: game.player2Chart ?? "🟥", inline: true);
             }
 
             // Show Questions with Correct Answers
             string letters = "abcd";
             foreach (Question q in game.questions)
             {
-                embed.AddField(name: q.question, value: $"{q.answers[letters.IndexOf(q.correctAnswer)]}");
+                embed.AddField(name: q.question, value: q.answers[letters.IndexOf(q.correctAnswer)]);
             }
 
             return embed;

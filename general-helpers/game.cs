@@ -6,6 +6,7 @@ using Discord.Rest;
 using Discord.WebSocket;
 using System.Threading;
 using Challenges;
+using Debug;
 
 namespace Games
 {
@@ -40,8 +41,8 @@ namespace Games
 
         // Expiration Stuff
         public DateTime ExpirationTime { get; private set; }
-        private readonly Timer expirationTimer;
         private readonly object lockObject = new();
+        private CancellationTokenSource expirationCancellationTokenSource;
         public event Action<Game> Expired;
 
         public Game(GameType type, bool onePerChannel, TimeSpan expirationTime, IUser player1, IUser player2)
@@ -49,36 +50,61 @@ namespace Games
             Type = type;
             OnePerChannel = onePerChannel;
             ExpirationTime = DateTime.Now.Add(expirationTime);
-            expirationTimer = new Timer(OnExpiration, null, expirationTime, Timeout.InfiniteTimeSpan);
+            expirationCancellationTokenSource = new CancellationTokenSource();
+            StartExpirationTimer(expirationTime);
             Player1 = player1;
             Player2 = player2;
-        }
-
-        public void UpdateExpirationTime(TimeSpan expirationTime)
-        {
-            lock (lockObject)
-            {
-                var remainingTime = ExpirationTime - DateTime.Now;
-
-                ExpirationTime = DateTime.Now.Add(expirationTime);
-
-                expirationTimer.Change(remainingTime, Timeout.InfiniteTimeSpan);
-            }
-        }
-
-        private void OnExpiration(object state)
-        {
-            // The game has expired
-            Expired?.Invoke(this);
         }
 
         public void Dispose()
         {
             lock (lockObject)
             {
-                expirationTimer.Dispose();
                 Expired = null;  // Detach event handlers
             }
+        }
+
+        public void UpdateExpirationTime(TimeSpan expirationTime)
+        {
+            lock (lockObject)
+            {
+                // Update the expiration time
+                ExpirationTime = DateTime.Now.Add(expirationTime);
+
+                // Cancel the existing cancellation token source
+                expirationCancellationTokenSource.Cancel();
+
+                // Create a new cancellation token source
+                expirationCancellationTokenSource = new CancellationTokenSource();
+
+                // Start the expiration timer with the updated delay
+                StartExpirationTimer(expirationTime);
+            }
+        }
+
+        private async Task DelayUntilExpiration(TimeSpan expirationDelay)
+        {
+            try
+            {
+                // Wait until the specified delay or until cancellation
+                await Task.Delay(expirationDelay, expirationCancellationTokenSource.Token);
+
+                // If not canceled, invoke the Expired event
+                if (!expirationCancellationTokenSource.Token.IsCancellationRequested)
+                {
+                    Expired?.Invoke(this);
+                }
+            }
+            catch (TaskCanceledException)
+            {
+                // If this happens it simply means UpdateExpirationTimer() was called.
+            }
+        }
+
+        private void StartExpirationTimer(TimeSpan expirationTime)
+        {
+            // Start a new task for the expiration timer
+            Task.Run(() => DelayUntilExpiration(expirationTime));
         }
 
         public virtual Task StartBotGame(SocketInteraction interaction)
