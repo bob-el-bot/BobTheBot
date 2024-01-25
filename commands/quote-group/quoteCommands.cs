@@ -1,6 +1,7 @@
 using System;
 using System.Text;
 using System.Threading.Tasks;
+using Database;
 using Database.Types;
 using Discord;
 using Discord.Interactions;
@@ -18,7 +19,11 @@ namespace Commands
         {
             await DeferAsync(ephemeral: true);
 
-            Server server = await Bot.DB.GetServer(Context.Guild.Id);
+            Server server;
+            using (var context = new BobEntities())
+            {
+                server = await context.GetServer(Context.Guild.Id);
+            }
 
             if (server.QuoteChannelId == null)
             {
@@ -121,15 +126,19 @@ namespace Commands
             string quote = message.Content;
             SocketUser user = (SocketUser)message.Author;
 
-            Server server = await Bot.DB.GetServer(Context.Guild.Id);
+            Server server;
+            using (var context = new BobEntities())
+            {
+                server = await context.GetServer(Context.Guild.Id);
+            }
 
             if (server.QuoteChannelId == null)
             {
-                await FollowupAsync(text: "❌ Use `/quote channel` first (a quote channel is not set in this server).\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await FollowupAsync(text: "❌ Use `/quote channel` first (a quote channel is not set in this server).\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
             else if (Context.Guild.GetChannel((ulong)server.QuoteChannelId) == null)
             {
-                await FollowupAsync(text: "❌ The currently set quote channel no longer exists.\n- Use `/quote channel` to set a new channel.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await FollowupAsync(text: "❌ The currently set quote channel no longer exists.\n- Use `/quote channel` to set a new channel.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
             else if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions(Context.Guild.GetChannel((ulong)server.QuoteChannelId)).SendMessages || !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions(Context.Guild.GetChannel((ulong)server.QuoteChannelId)).ViewChannel)
             {
@@ -137,7 +146,7 @@ namespace Commands
             }
             else if (quote == null || quote == "")
             {
-                await FollowupAsync(text: "❌ The message you tried quoting is invalid. \n- Embeds can't be quoted. \n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await FollowupAsync(text: "❌ The message you tried quoting is invalid. \n- Embeds can't be quoted. \n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
             else if (quote.Length > 4096) // 4096 is max characters in an embed description.
             {
@@ -205,26 +214,31 @@ namespace Commands
             // Check permissions
             if (!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageChannels)
             {
-                await RespondAsync(text: "❌ Ask an admin or mod to configure this for you.\n- Permission(s) needed: `Manage Channels`\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await RespondAsync(text: "❌ Ask an admin or mod to configure this for you.\n- Permission(s) needed: `Manage Channels`\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
             // Check if the channel is a text channel
             if (channel.GetChannelType() != ChannelType.Text)
             {
-                await RespondAsync(text: $"❌ The channel <#{channel.Id}> is not a text channel\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await RespondAsync(text: $"❌ The channel <#{channel.Id}> is not a text channel\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
             // Check if Bob has permission to send messages in given channel
             else if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)channel).SendMessages || !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)channel).ViewChannel)
             {
-                await RespondAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{channel.Id}>\n- Try giving Bob the following pemrissions: `View Channel`, `Send Messages`.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await RespondAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{channel.Id}>\n- Try giving Bob the following pemrissions: `View Channel`, `Send Messages`.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
             else
             {
                 await DeferAsync(ephemeral: true);
-                Server server = await Bot.DB.GetServer(Context.Guild.Id);
 
-                // Set the channel for this server
-                server.QuoteChannelId = channel.Id;
-                await Bot.DB.UpdateServer(server);
+                using (var context = new BobEntities())
+                {
+                    Server server = await context.GetServer(Context.Guild.Id);
+
+                    // Set the channel for this server
+                    server.QuoteChannelId = channel.Id;
+                    await context.UpdateServer(server);
+                }
+
                 await FollowupAsync(text: $"✅ <#{channel.Id}> is now the quote channel for the server.", ephemeral: true);
             }
         }
