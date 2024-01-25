@@ -30,8 +30,6 @@ public static class Bot
         AlwaysDownloadUsers = true,
     });
 
-    public static readonly BobEntities DB = new();
-
     private static InteractionService Service;
 
     private static readonly string Token = Config.GetToken();
@@ -51,10 +49,6 @@ public static class Bot
         {
             throw new Exception("Discord bot token not set properly.");
         }
-
-        // Ensure Database exists and is up to date
-        await DB.Database.EnsureCreatedAsync();
-        var migrations = DB.Database.GetPendingMigrations();
 
         Client.Ready += Ready;
         Client.Log += Log;
@@ -159,7 +153,12 @@ public static class Bot
 
     private static async Task UserJoined(SocketGuildUser user)
     {
-        Server server = await DB.GetServer(user.Guild.Id);
+        Server server;
+        using (var context = new BobEntities())
+        {
+            server = await context.GetServer(user.Guild.Id);
+        }
+
         if (server.Welcome == true)
         {
             if (user.Guild.SystemChannel != null && user.Guild.GetUser(Client.CurrentUser.Id).GetPermissions(user.Guild.SystemChannel).SendMessages && user.Guild.GetUser(Client.CurrentUser.Id).GetPermissions(user.Guild.SystemChannel).ViewChannel)
@@ -178,7 +177,10 @@ public static class Bot
         totalUsers += guild.MemberCount;
 
         // Add server to DB
-        await DB.AddServer(new Server { Id = guild.Id });
+        using (var context = new BobEntities())
+        {
+            await context.AddServer(new Server { Id = guild.Id });
+        }
 
         // Welcome Message
         Random random = new();

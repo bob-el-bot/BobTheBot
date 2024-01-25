@@ -1,6 +1,7 @@
 using System;
 using System.Text;
 using System.Threading.Tasks;
+using Database;
 using Database.Types;
 using Discord;
 using Discord.Interactions;
@@ -18,7 +19,11 @@ namespace Commands
         {
             await DeferAsync(ephemeral: true);
 
-            Server server = await Bot.DB.GetServer(Context.Guild.Id);
+            Server server;
+            using (var context = new BobEntities())
+            {
+                server = await context.GetServer(Context.Guild.Id);
+            }
 
             if (server.QuoteChannelId == null)
             {
@@ -121,7 +126,11 @@ namespace Commands
             string quote = message.Content;
             SocketUser user = (SocketUser)message.Author;
 
-            Server server = await Bot.DB.GetServer(Context.Guild.Id);
+            Server server;
+            using (var context = new BobEntities())
+            {
+                server = await context.GetServer(Context.Guild.Id);
+            }
 
             if (server.QuoteChannelId == null)
             {
@@ -220,11 +229,16 @@ namespace Commands
             else
             {
                 await DeferAsync(ephemeral: true);
-                Server server = await Bot.DB.GetServer(Context.Guild.Id);
 
-                // Set the channel for this server
-                server.QuoteChannelId = channel.Id;
-                await Bot.DB.UpdateServer(server);
+                using (var context = new BobEntities())
+                {
+                    Server server = await context.GetServer(Context.Guild.Id);
+
+                    // Set the channel for this server
+                    server.QuoteChannelId = channel.Id;
+                    await context.UpdateServer(server);
+                }
+
                 await FollowupAsync(text: $"✅ <#{channel.Id}> is now the quote channel for the server.", ephemeral: true);
             }
         }

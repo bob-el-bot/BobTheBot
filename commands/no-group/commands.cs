@@ -606,9 +606,13 @@ namespace Commands
             // Update server welcome information.
             else
             {
-                Server server = await Bot.DB.GetServer(Context.Guild.Id);
-                server.Welcome = welcome;
-                await Bot.DB.UpdateServer(server);
+                Server server;
+                using (var context = new BobEntities())
+                {
+                    server = await context.GetServer(Context.Guild.Id);
+                    server.Welcome = welcome;
+                    await context.UpdateServer(server);
+                }
 
                 if (welcome)
                 {
