@@ -274,7 +274,7 @@ public static class Bot
                     await ctx.Interaction.FollowupAsync("❌ Invalid number or arguments");
                     break;
                 case InteractionCommandError.Exception:
-                    await ctx.Interaction.FollowupAsync($"❌ Something went wrong...\n- Try again later.\n- Join Bob's support server: https://discord.gg/HvGMRZD8jQ");
+                    await ctx.Interaction.FollowupAsync($"❌ Something went wrong...\n- Try again later.\n- Join Bob's support server, let us know here: https://discord.gg/HvGMRZD8jQ");
                     Console.WriteLine($"Error: {res.ErrorReason}");
 
                     SocketTextChannel logChannel = (SocketTextChannel)Client.GetGuild(supportServerId).GetChannel(Token != Config.GetTestToken() ? systemLogChannelId : devLogChannelId);
