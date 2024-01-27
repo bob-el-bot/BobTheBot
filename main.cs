@@ -54,7 +54,6 @@ public static class Bot
         Client.Log += Log;
         Client.GuildAvailable += GuildAvailable;
         Client.JoinedGuild += JoinedGuild;
-        Client.LeftGuild += LeftGuild;
         Client.UserJoined += UserJoined;
         // Client.EntitlementCreated += EntitlementCreated;
         // Client.EntitlementDeleted += EntitlementDeleted;
@@ -214,14 +213,6 @@ public static class Bot
         {
             Console.WriteLine(e);
         }
-    }
-
-    private static Task LeftGuild(SocketGuild guild)
-    {
-        // Update user count
-        totalUsers -= guild.MemberCount;
-
-        return Task.CompletedTask;
     }
 
     // private static async Task EntitlementCreated(SocketEntitlement ent)
