@@ -51,7 +51,7 @@ namespace Database
         /// <summary>
         /// AddServer() creates a new server entry in the database. 
         /// </summary>
-        public async Task AddServer(Server server)
+        private async Task AddServer(Server server)
         {
             await Server.AddAsync(server);
             await SaveChangesAsync();

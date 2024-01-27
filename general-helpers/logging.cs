@@ -11,7 +11,7 @@ namespace Debug
 {
     public static class Logger
     {
-        public static async Task LogToDiscord(SocketTextChannel channel, IInteractionContext ctx, SlashCommandInfo info, string errorReason = null)
+        public static async Task LogErrorToDiscord(SocketTextChannel channel, IInteractionContext ctx, SlashCommandInfo info, string errorReason = null)
         {
             var location = ctx.Interaction.GuildId == null ? "a DM" : Bot.Client.GetGuild(ulong.Parse(ctx.Interaction.GuildId.ToString())).ToString();
             var commandName = info.IsTopLevelCommand ? $"/{info.Name}" : $"/{info.Module.SlashGroupName} {info.Name}";
