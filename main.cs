@@ -54,7 +54,6 @@ public static class Bot
         Client.Log += Log;
         Client.GuildAvailable += GuildAvailable;
         Client.JoinedGuild += JoinedGuild;
-        Client.LeftGuild += LeftGuild;
         Client.UserJoined += UserJoined;
         // Client.EntitlementCreated += EntitlementCreated;
         // Client.EntitlementDeleted += EntitlementDeleted;
@@ -176,10 +175,10 @@ public static class Bot
         // Update user count
         totalUsers += guild.MemberCount;
 
-        // Add server to DB
+        // Add server to DB (if needed)
         using (var context = new BobEntities())
         {
-            await context.AddServer(new Server { Id = guild.Id });
+            await context.GetServer(guild.Id);
         }
 
         // Welcome Message
@@ -214,14 +213,6 @@ public static class Bot
         {
             Console.WriteLine(e);
         }
-    }
-
-    private static Task LeftGuild(SocketGuild guild)
-    {
-        // Update user count
-        totalUsers -= guild.MemberCount;
-
-        return Task.CompletedTask;
     }
 
     // private static async Task EntitlementCreated(SocketEntitlement ent)
@@ -276,12 +267,13 @@ public static class Bot
                     await ctx.Interaction.FollowupAsync("❌ Invalid number or arguments");
                     break;
                 case InteractionCommandError.Exception:
-                    await ctx.Interaction.FollowupAsync($"❌ Something went wrong...\n- Try again later.\n- Join Bob's support server, let us know here: https://discord.gg/HvGMRZD8jQ");
+                    await ctx.Interaction.FollowupAsync($"❌ Something went wrong...\n- Ensure Bob has the **View Channel** and **Send Messages** permissions.\n- Try again later.\n- Join Bob's support server, let us know here: https://discord.gg/HvGMRZD8jQ");
                     Console.WriteLine($"Error: {res.ErrorReason}");
 
                     SocketTextChannel logChannel = (SocketTextChannel)Client.GetGuild(supportServerId).GetChannel(Token != Config.GetTestToken() ? systemLogChannelId : devLogChannelId);
 
                     await LogToDiscord(logChannel, ctx, info, res.ErrorReason);
+                    await LogErrorToDiscord(logChannel, ctx, info, res.ErrorReason);
 
                     // // Live Debugging
                     // // Server Logging
