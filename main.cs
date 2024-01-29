@@ -272,7 +272,6 @@ public static class Bot
 
                     SocketTextChannel logChannel = (SocketTextChannel)Client.GetGuild(supportServerId).GetChannel(Token != Config.GetTestToken() ? systemLogChannelId : devLogChannelId);
 
-                    await LogToDiscord(logChannel, ctx, info, res.ErrorReason);
                     await LogErrorToDiscord(logChannel, ctx, info, res.ErrorReason);
 
                     // // Live Debugging
