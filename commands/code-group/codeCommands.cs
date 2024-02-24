@@ -39,7 +39,7 @@ namespace Commands
                 string organization = uri.Segments[1].Trim('/');
                 string repository = uri.Segments[2].Trim('/');
                 string branch = uri.Segments[4].Trim('/');
-                string file = Uri.UnescapeDataString(uri.Segments[5].Trim('/'));
+                string file = string.Join("/", uri.Segments[5..]).Replace("//", "/");
                 string lineNumbers = uri.Fragment.TrimStart('L');
 
                 // Check if there are line number specifiers (there need to be)
@@ -149,14 +149,14 @@ namespace Commands
                     // Check if the host is github.com
                     if (uri.Host != "github.com")
                     {
-                        throw new InvalidOperationException("Invalid GitHub link format");
+                        throw new InvalidOperationException("Invalid GitHub link format | Host other than GitHub");
                     }
 
                     // Extracting relevant components
                     string organization = uri.Segments[1].Trim('/');
                     string repository = uri.Segments[2].Trim('/');
                     string branch = uri.Segments[4].Trim('/');
-                    string file = Uri.UnescapeDataString(uri.Segments[5].Trim('/'));
+                    string file = Uri.UnescapeDataString(string.Join("/", uri.Segments[5..]).Replace("//", "/"));
                     string lineNumbers = uri.Fragment.TrimStart('L');
 
                     // Check if there are line number specifiers (there need to be)
