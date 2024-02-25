@@ -34,5 +34,17 @@ namespace Debug
 
             await channel.SendMessageAsync($"`{DateTime.Now:dd/MM. H:mm:ss} | {FormatPerformance(cpuUsage, ramUsage)} | Location: {location} | User: {user.GlobalName}, {user.Id}`\n```{commandUsage}```{(errorReason == null ? "" : $"Error: ```cs\n{errorReason}```")}Command type: **{commandType}** | Method name in code: **{methodName}**");
         }
+
+        public static async Task LogFeedbackToDiscord(SocketTextChannel channel, string guildName, string userCount, string[] reasons)
+        {
+            StringBuilder formattedReasons = new();
+
+            foreach (var reason in reasons)
+            {
+                formattedReasons.Append($"{reason}, ");
+            }
+
+            await channel.SendMessageAsync($"`Location: {guildName} | Users: {userCount} (can be VERY off)`\n**Reason(s):** {formattedReasons}");
+        }
     }
 }

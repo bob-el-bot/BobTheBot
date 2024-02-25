@@ -54,6 +54,7 @@ public static class Bot
         Client.Log += Log;
         Client.GuildAvailable += GuildAvailable;
         Client.JoinedGuild += JoinedGuild;
+        Client.LeftGuild += Feedback.Prompt.LeftGuild;
         Client.UserJoined += UserJoined;
         // Client.EntitlementCreated += EntitlementCreated;
         // Client.EntitlementDeleted += EntitlementDeleted;
