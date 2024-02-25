@@ -177,10 +177,6 @@ public static class Bot
         totalUsers += guild.MemberCount;
 
         // Add server to DB (if needed)
-        Random random = new();
-            Title = "👋 " + greetings[random.Next(0, greetings.Length)],
-        };
-            }
         using var context = new BobEntities();
         await context.GetServer(guild.Id);
     }
