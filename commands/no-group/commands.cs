@@ -337,6 +337,8 @@ namespace Commands
                 }
                 else
                 {
+                    await DeferAsync();
+
                     await challenge.StartGame((SocketMessageComponent)Context.Interaction);
                 }
             }
@@ -360,6 +362,8 @@ namespace Commands
                 }
                 else
                 {
+                    await DeferAsync();
+
                     // Format Message
                     var embed = new EmbedBuilder
                     {
@@ -370,7 +374,7 @@ namespace Commands
                     var components = new ComponentBuilder().WithButton(label: "⚔️ Accept", customId: $"acceptedChallenge", style: ButtonStyle.Success, disabled: true)
                     .WithButton(label: "🛡️ Decline", customId: $"declinedChallenge", style: ButtonStyle.Danger, disabled: true);
 
-                    await component.UpdateAsync(x => { x.Embed = embed.Build(); x.Content = null; x.Components = components.Build(); });
+                    await component.ModifyOriginalResponseAsync(x => { x.Embed = embed.Build(); x.Content = null; x.Components = components.Build(); });
 
                     Challenge.RemoveFromSpecificGameList(challenge);
                     challenge.Dispose();
