@@ -62,7 +62,7 @@ namespace Commands.Helpers
             // Reset Expiration Time.
             UpdateExpirationTime(TimeSpan.FromMinutes(0.5));
 
-            await interaction.UpdateAsync(x => { x.Content = null; x.Embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.").Build(); x.Components = TriviaMethods.GetButtons(Id).Build(); });
+            await interaction.ModifyOriginalResponseAsync(x => { x.Content = null; x.Embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.").Build(); x.Components = TriviaMethods.GetButtons(Id).Build(); });
         }
 
         public async Task Answer(bool isPlayer1, string answer, SocketMessageComponent component)

@@ -7,7 +7,7 @@ using Discord.WebSocket;
 namespace Commands
 {
     [EnabledInDm(false)]
-    [Group("master-mind", "All commands relevant to game Master Mind.")]
+    [Group("master-mind", "All commands relevant to the game Master Mind.")]
     public class MasterMindGroup : InteractionModuleBase<SocketInteractionContext>
     {
         [EnabledInDm(false)]
