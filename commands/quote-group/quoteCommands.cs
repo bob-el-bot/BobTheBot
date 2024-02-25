@@ -53,32 +53,30 @@ namespace Commands
                     formattedQuote = "\"" + quote + "\"";
                 }
 
+                // Check if the quote contains any mentions or links
+                bool containsMentionsOrLinks = quote.Contains("<@") || quote.Contains("<#") || quote.Contains("http");
+
                 // Create embed
                 EmbedBuilder embed = new();
-                if (formattedQuote.Length <= 256) // 256 characters is the maximum size of an embed title
+
+                if (formattedQuote.Length <= 256 && !containsMentionsOrLinks)
                 {
+                    // If the quote is short enough and does not contain mentions or links, use title
                     embed = new EmbedBuilder
                     {
                         Title = $"{formattedQuote}",
                         Description = $"-{user.Mention}, <t:{dateTime}:R>"
                     };
                 }
-                else  // use description for quote to fit up to 4096 characters
+                else
                 {
+                    // Use description for quote to fit up to 4096 characters or contains mentions/links
                     string description = $"**{formattedQuote}**\n-{user.Mention}, <t:{dateTime}:R>";
-
-                    if (description.Length > 4096)
+                    embed = new EmbedBuilder
                     {
-                        await FollowupAsync($"❌ The quote *cannot* be made because it contains **{description.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **4096** characters in embed descriptions.", ephemeral: true);
-                    }
-                    else
-                    {
-                        embed = new EmbedBuilder
-                        {
-                            Title = "",
-                            Description = description
-                        };
-                    }
+                        Title = "",
+                        Description = description
+                    };
                 }
 
                 embed.Color = new Color(2895667);
@@ -161,22 +159,29 @@ namespace Commands
                     formattedQuote = $"\"{quote}\"";
                 }
 
+                // Check if the quote contains any mentions or links
+                bool containsMentionsOrLinks = quote.Contains("<@") || quote.Contains("<#") || quote.Contains("http");
+
                 // Create embed
-                EmbedBuilder embed;
-                if (formattedQuote.Length <= 256) // 256 characters is the maximum size of an embed title
+                EmbedBuilder embed = new();
+
+                if (formattedQuote.Length <= 256 && !containsMentionsOrLinks)
                 {
+                    // If the quote is short enough and does not contain mentions or links, use title
                     embed = new EmbedBuilder
                     {
                         Title = $"{formattedQuote}",
                         Description = $"-{user.Mention}, <t:{message.Timestamp.ToUnixTimeSeconds()}:R>"
                     };
                 }
-                else  // use description for quote to fit up to 4096 characters
+                else
                 {
+                    // Use description for quote to fit up to 4096 characters or contains mentions/links
+                    string description = $"**{formattedQuote}**\n-{user.Mention}, <t:{message.Timestamp.ToUnixTimeSeconds()}:R>";
                     embed = new EmbedBuilder
                     {
                         Title = "",
-                        Description = $"**{formattedQuote}**\n-{user.Mention}, <t:{message.Timestamp.ToUnixTimeSeconds()}:R>"
+                        Description = description
                     };
                 }
 
