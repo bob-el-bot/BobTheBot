@@ -1,5 +1,3 @@
-using System;
-using System.Text;
 using System.Threading.Tasks;
 using Debug;
 using Discord;
@@ -40,9 +38,11 @@ namespace Feedback
         [ComponentInteraction("leftGuild:*:*")]
         public async Task LeftGuildOptionsHandler(string guildName, string userCount)
         {   
+            await DeferAsync();
+
             SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
-            
-            await component.RespondAsync(text: "💜 Thanks for the feedback!", ephemeral: true);
+
+            await component.ModifyOriginalResponseAsync(x => { x.Content = "💜 Thanks for the feedback!"; x.Components = null; });
 
             SocketTextChannel logChannel = (SocketTextChannel)Bot.Client.GetGuild(Bot.supportServerId).GetChannel(Bot.systemLogChannelId);
             await Logger.LogFeedbackToDiscord(logChannel, guildName, userCount, (string[])component.Data.Values);

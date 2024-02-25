@@ -177,43 +177,12 @@ public static class Bot
         totalUsers += guild.MemberCount;
 
         // Add server to DB (if needed)
-        using (var context = new BobEntities())
-        {
-            await context.GetServer(guild.Id);
-        }
-
-        // Welcome Message
         Random random = new();
-        string[] greetings = { "G'day, I am Bob!", "Hello there, I'm Bob!", "Thanks for the invite, my name is Bob!" };
-
-        string instructions = "I can do a lot of things now, but I also receive updates often. If you want to see my newest features use `/new`. If you want to learn about all of my commands use `/help` to get sent a list via DM. With that, I look forward to serving you all 🥳!";
-
-        var embed = new EmbedBuilder
-        {
             Title = "👋 " + greetings[random.Next(0, greetings.Length)],
-            Description = instructions,
-            Color = new Color(theme)
         };
-
-        try
-        {
-            var TextChannels = guild.Channels.OfType<SocketTextChannel>().ToArray();
-            SocketTextChannel DefaultChannel = TextChannels.Where(c => guild.CurrentUser.GetPermissions(c).SendMessages && guild.CurrentUser.GetPermissions(c).ViewChannel && (c.Name == "chat" || c.Name == "talk" || c.Name == "general")).First();
-
-            if (DefaultChannel == null)
-            {
-                DefaultChannel = TextChannels
-                        .Where(c => guild.CurrentUser.GetPermissions(c).SendMessages && guild.CurrentUser.GetPermissions(c).ViewChannel)
-                        .OrderBy(c => c.Position)
-                        .First();
             }
-
-            await DefaultChannel.SendMessageAsync(embed: embed.Build());
-        }
-        catch (Exception e)
-        {
-            Console.WriteLine(e);
-        }
+        using var context = new BobEntities();
+        await context.GetServer(guild.Id);
     }
 
     // private static async Task EntitlementCreated(SocketEntitlement ent)
