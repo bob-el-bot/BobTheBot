@@ -17,7 +17,7 @@ namespace Feedback
             var selectMenu = new SelectMenuBuilder
             {
                 MinValues = 1,
-                CustomId = $"leftGuild:{guild.Name}:{guild.Users.Count}",
+                CustomId = $"leftGuild:{guild.Name}",
                 Placeholder = "Select why...",
             };
 
@@ -26,6 +26,7 @@ namespace Feedback
             selectMenu.AddOption("Missing feature(s)", "3 Missing features");
             selectMenu.AddOption("Invited on accident / wrong server", "4 Invited on accident / wrong server");
             selectMenu.AddOption("Bot was not responding", "5 Bot was not responding");
+            selectMenu.AddOption("Other", "6 Other");
 
             selectMenu.MaxValues = selectMenu.Options.Count;
 
@@ -35,8 +36,8 @@ namespace Feedback
             await owner.SendMessageAsync(text: "### 😢 Sorry to see you go...\nMind telling us why?", components: components.Build());
         }
 
-        [ComponentInteraction("leftGuild:*:*")]
-        public async Task LeftGuildOptionsHandler(string guildName, string userCount)
+        [ComponentInteraction("leftGuild:*")]
+        public async Task LeftGuildOptionsHandler(string guildName)
         {   
             await DeferAsync();
 
@@ -45,7 +46,7 @@ namespace Feedback
             await component.ModifyOriginalResponseAsync(x => { x.Content = "💜 Thanks for the feedback!"; x.Components = null; });
 
             SocketTextChannel logChannel = (SocketTextChannel)Bot.Client.GetGuild(Bot.supportServerId).GetChannel(Bot.systemLogChannelId);
-            await Logger.LogFeedbackToDiscord(logChannel, guildName, userCount, (string[])component.Data.Values);
+            await Logger.LogFeedbackToDiscord(logChannel, guildName, (string[])component.Data.Values);
         }
     }
 }
