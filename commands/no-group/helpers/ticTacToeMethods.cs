@@ -26,19 +26,17 @@ namespace Commands.Helpers
             // Prepare Buttons
             var buttons = new ComponentBuilder();
 
-            int label = 0;
             for (int y = 0; y <= 2; y++)
             {
                 for (int x = 0; x <= 2; x++)
                 {
-                    label++;
                     if (grid[x, y] > 0)
                     {
                         buttons.WithButton(label: $"{(grid[x, y] == 1 ? "O" : "X")}", customId: $"ttt:{x}-{y}:{Id}", style: grid[x, y] == 1 ? ButtonStyle.Primary : ButtonStyle.Danger, row: y, disabled: true);
                     }
                     else
                     {
-                        buttons.WithButton(label: $"{label}", customId: $"ttt:{x}-{y}:{Id}", style: ButtonStyle.Secondary, row: y, disabled: GetWinner(grid, turns) > 0 || turns == 9 || forfeited);
+                        buttons.WithButton(label: "\U0000200E", customId: $"ttt:{x}-{y}:{Id}", style: ButtonStyle.Secondary, row: y, disabled: GetWinner(grid, turns) > 0 || turns == 9 || forfeited);
                     }
                 }
             }
