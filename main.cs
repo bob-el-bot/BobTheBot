@@ -234,11 +234,13 @@ public static class Bot
                     break;
                 case InteractionCommandError.Exception:
                     await ctx.Interaction.FollowupAsync($"❌ Something went wrong...\n- Ensure Bob has the **View Channel** and **Send Messages** permissions.\n- Try again later.\n- Join Bob's support server, let us know here: https://discord.gg/HvGMRZD8jQ");
-                    Console.WriteLine($"Error: {res.ErrorReason}");
+                    
+                    var executionResult = (ExecuteResult)res;
+                    Console.WriteLine($"Error: {executionResult.Exception}");
 
                     SocketTextChannel logChannel = (SocketTextChannel)Client.GetGuild(supportServerId).GetChannel(Token != Config.GetTestToken() ? systemLogChannelId : devLogChannelId);
 
-                    await LogErrorToDiscord(logChannel, ctx, info, res.ErrorReason);
+                    await LogErrorToDiscord(logChannel, ctx, info, $"{executionResult.ErrorReason}\n{executionResult.Exception}");
 
                     // // Live Debugging
                     // // Server Logging
