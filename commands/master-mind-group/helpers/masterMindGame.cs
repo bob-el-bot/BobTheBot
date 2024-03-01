@@ -1,3 +1,4 @@
+using Discord;
 using Discord.WebSocket;
 
 namespace Commands.Helpers {
@@ -7,7 +8,7 @@ namespace Commands.Helpers {
         public ulong id;
         public bool isStarted;
         public int guessesLeft = 8;
-        public string startUser;
+        public IUser startUser;
         public SocketUserMessage message;
     }
 }

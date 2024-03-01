@@ -23,6 +23,7 @@ namespace Commands
                 MasterMindGame game = new();
                 MasterMindGeneral.currentGames.Add(game);
                 game.id = Context.Channel.Id;
+                game.startUser = Context.User;
 
                 var embed = new EmbedBuilder
                 {
@@ -117,9 +118,6 @@ namespace Commands
             var component = (SocketMessageComponent)Context.Interaction;
             game.message = component.Message;
 
-            // Set startUser
-            game.startUser = component.Message.Author.Username;
-
             // Initialize Key
             game.key = MasterMindGeneral.CreateKey();
 
@@ -151,20 +149,28 @@ namespace Commands
         public async Task MasterMindQuitButtonHandler()
         {
             await DeferAsync();
+
             // Get Game
             var game = MasterMindGeneral.currentGames.Find(game => game.id == Context.Interaction.Channel.Id);
 
-            var embed = new EmbedBuilder
+            if (game.startUser.Id == Context.Interaction.User.Id)
             {
-                Title = "🧠 Master Mind",
-                Color = new(15548997),
-                Description = "This was certainly difficult, try again with `/master-mind new-game`",
-            };
+                var embed = new EmbedBuilder
+                {
+                    Title = "🧠 Master Mind",
+                    Color = new(15548997),
+                    Description = "This was certainly difficult, try again with `/master-mind new-game`",
+                };
 
-            embed.Title += " (forfeited)";
-            embed.AddField(name: "Answer:", value: $"`{game.key}`");
-            await game.message.ModifyAsync(x => { x.Embed = embed.Build(); x.Components = null; });
-            MasterMindGeneral.currentGames.Remove(game);
+                embed.Title += " (forfeited)";
+                embed.AddField(name: "Answer:", value: $"`{game.key}`");
+                await game.message.ModifyAsync(x => { x.Embed = embed.Build(); x.Components = null; });
+                MasterMindGeneral.currentGames.Remove(game);
+            }
+            else
+            {
+                await FollowupAsync(text: $"❌ **Only** {game.startUser.Mention} can forfeit this game of Master Mind.\n- Only the user who started the game of Master Mind can forfeit.", ephemeral: true);
+            }
         }
     }
 }
