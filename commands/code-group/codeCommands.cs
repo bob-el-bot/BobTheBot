@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Commands.Helpers;
 using Discord;
 using Discord.Interactions;
-using Microsoft.VisualBasic;
 using static ApiInteractions.Interface;
 
 namespace Commands
@@ -21,7 +20,7 @@ namespace Commands
             try
             {
                 // Add HTTP if missing.
-                if (link.Contains('.', StringComparison.Ordinal) && link.Length < 7 || (link.Length >= 7 && link[..7] != "http://" && link.Length >= 8 && link[..8] != "https://"))
+                if ((link.Contains('.', StringComparison.Ordinal) && link.Length < 7) || (link.Length >= 7 && link[..7] != "http://" && link.Length >= 8 && link[..8] != "https://"))
                 {
                     link = $"https://{link}";
                 }
@@ -40,68 +39,22 @@ namespace Commands
                 string repository = uri.Segments[2].Trim('/');
                 string branch = uri.Segments[4].Trim('/');
                 string file = string.Join("/", uri.Segments[5..]).Replace("//", "/");
-                string lineNumbers = uri.Fragment.TrimStart('L');
 
-                // Check if there are line number specifiers (there need to be)
-                if (!lineNumbers.Contains('L'))
-                {
-                    throw new InvalidOperationException("Invalid GitHub link format | Missing line numbers.");
-                }
-
-                // If it contains character specifiers get rid of them. example: (#L15C12-L18C17)
-                if (lineNumbers.Contains('C'))
-                {
-                    if (lineNumbers.Contains('-'))
-                    {
-                        if (lineNumbers[..lineNumbers.IndexOf('-', StringComparison.Ordinal)].Contains('C', StringComparison.Ordinal))
-                        {
-                            lineNumbers = lineNumbers[..lineNumbers.IndexOf("C", StringComparison.Ordinal)] + lineNumbers[lineNumbers.IndexOf("-", StringComparison.Ordinal)..];
-                        }
-                        if (lineNumbers.Contains('C', StringComparison.Ordinal))
-                        {
-                            lineNumbers = lineNumbers[..lineNumbers.IndexOf("C", StringComparison.Ordinal)];
-                        }
-                    }
-                    else
-                    {
-                        lineNumbers = lineNumbers[..lineNumbers.IndexOf("C", StringComparison.Ordinal)];
-                    }
-                }
-
-                lineNumbers = lineNumbers.Replace("L", "");
-                short? startLine = null;
-                short? endLine = null;
-                if (lineNumbers.Contains('-'))
-                {
-                    startLine = short.Parse(lineNumbers[1..lineNumbers.IndexOf("-", StringComparison.Ordinal)]);
-                    endLine = short.Parse(lineNumbers[(lineNumbers.IndexOf("-", StringComparison.Ordinal) + 1)..]);
-                }
-                else if (short.TryParse(lineNumbers[1..], out _))
-                {
-                    startLine = short.Parse(lineNumbers[1..]);
-                    endLine = short.Parse(lineNumbers[1..]);
-                }
-
-                if (endLine == null || startLine == null)
-                {
-                    throw new InvalidOperationException("Invalid GitHub link format | The value of statLine or endLine is null.");
-                }
-                else if (endLine < startLine)
-                {
-                    throw new InvalidOperationException("Invalid GitHub link format | The value of endLine is less than the startLine.");
-                }
+                // If these values are null then show as many lines as possible from the beginning.
+                (ushort?, ushort?) lineNumbers = CodeReader.GetLineNumbers(uri.Fragment);
 
                 // Send Request
                 string content = await GetFromAPI($"https://api.github.com/repos/{organization}/{repository}/contents/{file}?ref={branch}", AcceptTypes.application_json);
 
                 // Parse Content
-                var jsonData = JsonNode.Parse(content).AsObject();
-                var fileData = Convert.FromBase64String(jsonData["content"].ToString());
-                var fileContent = System.Text.Encoding.UTF8.GetString(fileData);
-                string previewLines = CodeReader.GetLines(fileContent, (short)startLine, (short)endLine);
+                JsonObject jsonData = JsonNode.Parse(content).AsObject();
+                byte[] fileData = Convert.FromBase64String(jsonData["content"].ToString());
+                string fileContent = System.Text.Encoding.UTF8.GetString(fileData);
+                string previewLines = CodeReader.GetPreview(fileContent, ref lineNumbers.Item1, ref lineNumbers.Item2);
 
                 // Format final response
-                string preview = $"🔎 Showing **{lineNumbers}** of [{file}](<{link}>) on branch **{branch}** in **{repository}** repo.\n```{file[(file.IndexOf('.') + 1)..]}\n{previewLines}```";
+                string formattedLineNumbers = $"**#{lineNumbers.Item1}-{lineNumbers.Item2}**";
+                string preview = $"🔎 Showing {formattedLineNumbers} of [{repository}/{branch}/{file}](<{link}>)\n```{file[(file.IndexOf('.') + 1)..]}\n{previewLines}```";
 
                 // Check if message is too long for Discord API.
                 if (preview.Length > 2000)
@@ -157,68 +110,22 @@ namespace Commands
                     string repository = uri.Segments[2].Trim('/');
                     string branch = uri.Segments[4].Trim('/');
                     string file = Uri.UnescapeDataString(string.Join("/", uri.Segments[5..]).Replace("//", "/"));
-                    string lineNumbers = uri.Fragment.TrimStart('L');
 
-                    // Check if there are line number specifiers (there need to be)
-                    if (!lineNumbers.Contains('L'))
-                    {
-                        throw new InvalidOperationException("Invalid GitHub link format | Missing line numbers.");
-                    }
-
-                    // If it contains character specifiers get rid of them. example: (#L15C12-L18C17)
-                    if (lineNumbers.Contains('C'))
-                    {
-                        if (lineNumbers.Contains('-'))
-                        {
-                            if (lineNumbers[..lineNumbers.IndexOf('-')].Contains('C'))
-                            {
-                                lineNumbers = lineNumbers[..lineNumbers.IndexOf("C")] + lineNumbers[lineNumbers.IndexOf("-")..];
-                            }
-                            if (lineNumbers.Contains('C'))
-                            {
-                                lineNumbers = lineNumbers[..lineNumbers.IndexOf("C")];
-                            }
-                        }
-                        else
-                        {
-                            lineNumbers = lineNumbers[..lineNumbers.IndexOf("C")];
-                        }
-                    }
-
-                    lineNumbers = lineNumbers.Replace("L", "");
-                    short? startLine = null;
-                    short? endLine = null;
-                    if (lineNumbers.Contains('-'))
-                    {
-                        startLine = short.Parse(lineNumbers[1..lineNumbers.IndexOf("-")]);
-                        endLine = short.Parse(lineNumbers[(lineNumbers.IndexOf("-") + 1)..]);
-                    }
-                    else if (short.TryParse(lineNumbers[1..], out _))
-                    {
-                        startLine = short.Parse(lineNumbers[1..]);
-                        endLine = short.Parse(lineNumbers[1..]);
-                    }
-
-                    if (endLine == null || startLine == null)
-                    {
-                        throw new InvalidOperationException("Invalid GitHub link format | The value of statLine or endLine is null.");
-                    }
-                    else if (endLine < startLine)
-                    {
-                        throw new InvalidOperationException("Invalid GitHub link format | The value of endLine is less than the startLine.");
-                    }
+                    // If these values are null then show as many lines as possible from the beginning.
+                    (ushort?, ushort?) lineNumbers = CodeReader.GetLineNumbers(uri.Fragment);
 
                     // Send Request
                     string content = await GetFromAPI($"https://api.github.com/repos/{organization}/{repository}/contents/{file}?ref={branch}", AcceptTypes.application_json);
 
                     // Parse Content
-                    var jsonData = JsonNode.Parse(content).AsObject();
-                    var fileData = Convert.FromBase64String(jsonData["content"].ToString());
-                    var fileContent = System.Text.Encoding.UTF8.GetString(fileData);
-                    string previewLines = CodeReader.GetLines(fileContent, (short)startLine, (short)endLine);
+                    JsonObject jsonData = JsonNode.Parse(content).AsObject();
+                    byte[] fileData = Convert.FromBase64String(jsonData["content"].ToString());
+                    string fileContent = System.Text.Encoding.UTF8.GetString(fileData);
+                    string previewLines = CodeReader.GetPreview(fileContent, ref lineNumbers.Item1, ref lineNumbers.Item2);
 
                     // Format final response
-                    string preview = $"🔎 Showing **{lineNumbers}** of [{file}](<{link}>) on branch **{branch}** in **{repository}** repo.\n```{file[(file.IndexOf('.') + 1)..]}\n{previewLines}```";
+                    string formattedLineNumbers = $"**#{lineNumbers.Item1}-{lineNumbers.Item2}**";
+                    string preview = $"🔎 Showing {formattedLineNumbers} of [{repository}/{branch}/{file}](<{link}>)\n```{file[(file.IndexOf('.') + 1)..]}\n{previewLines}```";
 
                     // Check if message is too long for Discord API.
                     if (preview.Length > 2000)
