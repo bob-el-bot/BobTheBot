@@ -14,7 +14,7 @@ namespace Commands
         [SlashCommand("new-game", "Start a game of Master Mind (rules will be sent upon use of this command).")]
         public async Task NewGame()
         {
-            if (MasterMindGeneral.currentGames != null && MasterMindGeneral.currentGames.Find(game => game.id == Context.Channel.Id) != null)
+            if (MasterMindGeneral.currentGames != null && MasterMindGeneral.currentGames.Find(game => game.Id == Context.Channel.Id) != null)
             {
                 await RespondAsync(text: "❌ Only one game of Master Mind can be played per channel at a time.", ephemeral: true);
             }
@@ -22,8 +22,8 @@ namespace Commands
             {
                 MasterMindGame game = new();
                 MasterMindGeneral.currentGames.Add(game);
-                game.id = Context.Channel.Id;
-                game.startUser = Context.User;
+                game.Id = Context.Channel.Id;
+                game.StartUser = Context.User;
 
                 var embed = new EmbedBuilder
                 {
@@ -50,12 +50,12 @@ namespace Commands
         [SlashCommand("guess", "make a guess in an existing game of Master Mind")]
         public async Task Guess([Summary("guess", "Type a 4 digit guess as to what the answer is.")] string guess)
         {
-            var game = MasterMindGeneral.currentGames.Find(game => game.id == Context.Channel.Id);
+            var game = MasterMindGeneral.currentGames.Find(game => game.Id == Context.Channel.Id);
             if (game == null)
             {
                 await RespondAsync(text: "❌ There is currently not a game of Master Mind in this channel. To make one use `/master-mind new-game`", ephemeral: true);
             }
-            else if (MasterMindGeneral.currentGames.Count > 0 && game.isStarted == false)
+            else if (MasterMindGeneral.currentGames.Count > 0 && game.IsStarted == false)
             {
                 await RespondAsync(text: "❌ Press \"Begin Game!\" to start guessing.", ephemeral: true);
             }
@@ -66,10 +66,10 @@ namespace Commands
             else
             {
                 // Set Values
-                game.guessesLeft -= 1;
+                game.GuessesLeft -= 1;
 
                 // Get Result
-                string result = MasterMindGeneral.GetResult(guess, game.key);
+                string result = MasterMindGeneral.GetResult(guess, game.Key);
 
                 // Ready Embed
                 var embed = new EmbedBuilder
@@ -83,23 +83,23 @@ namespace Commands
                     embed.Title += " (solved)";
                     embed.Color = new(5763719);
                     embed.Description = MasterMindGeneral.GetCongrats();
-                    embed.AddField(name: "Answer:", value: $"`{game.key}`", inline: true).AddField(name: "Guesses Left:", value: $"`{game.guessesLeft}`", inline: true);
-                    await game.message.ModifyAsync(x => { x.Embed = embed.Build(); x.Components = null; });
+                    embed.AddField(name: "Answer:", value: $"`{game.Key}`", inline: true).AddField(name: "Guesses Left:", value: $"`{game.GuessesLeft}`", inline: true);
+                    await game.Message.ModifyAsync(x => { x.Embed = embed.Build(); x.Components = null; });
                     MasterMindGeneral.currentGames.Remove(game);
                 }
-                else if (game.guessesLeft <= 0) // lose game
+                else if (game.GuessesLeft <= 0) // lose game
                 {
                     embed.Title += " (lost)";
                     embed.Color = new(15548997);
                     embed.Description = "You have lost, but don't be sad you can just start a new game with `/master-mind new-game`";
-                    embed.AddField(name: "Answer:", value: $"`{game.key}`");
-                    await game.message.ModifyAsync(x => { x.Embed = embed.Build(); x.Components = null; });
+                    embed.AddField(name: "Answer:", value: $"`{game.Key}`");
+                    await game.Message.ModifyAsync(x => { x.Embed = embed.Build(); x.Components = null; });
                     MasterMindGeneral.currentGames.Remove(game);
                 }
                 else
                 {
-                    embed.AddField(name: "Guesses Left:", value: $"`{game.guessesLeft}`", inline: true).AddField(name: "Last Guess:", value: $"`{guess}`", inline: true).AddField(name: "Result:", value: $"{result}");
-                    await game.message.ModifyAsync(x => { x.Embed = embed.Build(); });
+                    embed.AddField(name: "Guesses Left:", value: $"`{game.GuessesLeft}`", inline: true).AddField(name: "Last Guess:", value: $"`{guess}`", inline: true).AddField(name: "Result:", value: $"{result}");
+                    await game.Message.ModifyAsync(x => { x.Embed = embed.Build(); });
                 }
 
                 // Respond
@@ -112,14 +112,14 @@ namespace Commands
         {
             await DeferAsync();
             // Get Game
-            var game = MasterMindGeneral.currentGames.Find(game => game.id == Context.Interaction.ChannelId);
+            var game = MasterMindGeneral.currentGames.Find(game => game.Id == Context.Interaction.ChannelId);
 
             // Set message
             var component = (SocketMessageComponent)Context.Interaction;
-            game.message = component.Message;
+            game.Message = component.Message;
 
             // Initialize Key
-            game.key = MasterMindGeneral.CreateKey();
+            game.Key = MasterMindGeneral.CreateKey();
 
             // Initialize Embed  
             var embed = new EmbedBuilder
@@ -127,7 +127,7 @@ namespace Commands
                 Title = "🧠 Master Mind",
                 Color = new(16415395),
             };
-            embed.AddField(name: "Guesses Left:", value: $"`{game.guessesLeft}`", inline: true).AddField(name: "Last Guess:", value: "use `/master-mind guess`", inline: true).AddField(name: "Result:", value: "use `/master-mind guess`");
+            embed.AddField(name: "Guesses Left:", value: $"`{game.GuessesLeft}`", inline: true).AddField(name: "Last Guess:", value: "use `/master-mind guess`", inline: true).AddField(name: "Result:", value: "use `/master-mind guess`");
 
             // Forfeit Button
             var button = new ButtonBuilder
@@ -139,7 +139,7 @@ namespace Commands
             var builder = new ComponentBuilder().WithButton(button);
 
             // Begin Game
-            game.isStarted = true;
+            game.IsStarted = true;
 
             // Edit Message For Beginning of Game.
             await component.Message.ModifyAsync(x => { x.Embed = embed.Build(); x.Components = builder.Build(); });
@@ -151,9 +151,9 @@ namespace Commands
             await DeferAsync();
 
             // Get Game
-            var game = MasterMindGeneral.currentGames.Find(game => game.id == Context.Interaction.Channel.Id);
+            var game = MasterMindGeneral.currentGames.Find(game => game.Id == Context.Interaction.Channel.Id);
 
-            if (game.startUser.Id == Context.Interaction.User.Id)
+            if (game.StartUser.Id == Context.Interaction.User.Id)
             {
                 var embed = new EmbedBuilder
                 {
@@ -163,13 +163,13 @@ namespace Commands
                 };
 
                 embed.Title += " (forfeited)";
-                embed.AddField(name: "Answer:", value: $"`{game.key}`");
-                await game.message.ModifyAsync(x => { x.Embed = embed.Build(); x.Components = null; });
+                embed.AddField(name: "Answer:", value: $"`{game.Key}`");
+                await game.Message.ModifyAsync(x => { x.Embed = embed.Build(); x.Components = null; });
                 MasterMindGeneral.currentGames.Remove(game);
             }
             else
             {
-                await FollowupAsync(text: $"❌ **Only** {game.startUser.Mention} can forfeit this game of Master Mind.\n- Only the user who started the game of Master Mind can forfeit.", ephemeral: true);
+                await FollowupAsync(text: $"❌ **Only** {game.StartUser.Mention} can forfeit this game of Master Mind.\n- Only the user who started the game of Master Mind can forfeit.", ephemeral: true);
             }
         }
     }

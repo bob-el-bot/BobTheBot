@@ -4,11 +4,11 @@ using Discord.WebSocket;
 namespace Commands.Helpers {
     public class MasterMindGame
     {
-        public string key;
-        public ulong id;
-        public bool isStarted;
-        public int guessesLeft = 8;
-        public IUser startUser;
-        public SocketUserMessage message;
+        public string Key { get; set; }
+        public ulong Id { get; set; }
+        public bool IsStarted { get; set; }
+        public int GuessesLeft = 8;
+        public IUser StartUser { get; set; }
+        public SocketUserMessage Message { get; set; }
     }
 }
