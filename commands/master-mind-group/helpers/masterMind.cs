@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Commands.Helpers
 {
-    public class MasterMindGeneral
+    public static class MasterMindGeneral
     {
         public static List<MasterMindGame> currentGames = new();
 

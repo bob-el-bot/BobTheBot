@@ -8,9 +8,9 @@ namespace Commands.Helpers {
             string heartLevel = "";
             foreach (HeartLevel level in heartLevels)
             {
-                if (matchPercent >= level.min)
+                if (matchPercent >= level.Min)
                 {
-                    heartLevel = level.heart;
+                    heartLevel = level.Heart;
                 }
                 else
                 {

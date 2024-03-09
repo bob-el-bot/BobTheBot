@@ -4,7 +4,7 @@ using Discord.WebSocket;
 
 namespace Commands.Helpers
 {
-    public class Encrypt
+    public static class Encrypt
     {
         public static async Task SendEncryptMessage(SocketInteraction interaction, string finalText)
         {
