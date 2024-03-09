@@ -10,5 +10,6 @@ namespace Database.Types
         public ulong? QuoteChannelId { get; set; }
 
         public bool Welcome { get; set; }
+        public string CustomWelcomeMessage { get; set; }
     }
 }

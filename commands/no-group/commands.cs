@@ -588,55 +588,6 @@ namespace Commands
         }
 
         [EnabledInDm(false)]
-        [SlashCommand("welcome", "Enable or disable Bob welcoming users to your server!")]
-        public async Task Welcome([Summary("welcome", "If checked, Bob will send welcome messages.")] bool welcome)
-        {
-            await DeferAsync(ephemeral: true);
-
-            if (Context.Guild.SystemChannel == null)
-            {
-                await FollowupAsync(text: $"❌ You **need** to set a *System Messages* channel in settings in order for Bob to greet people.", ephemeral: true);
-            }
-            // Check if the user has manage channels permissions
-            else if (!Context.Guild.GetUser(Context.User.Id).GetPermissions(Context.Guild.SystemChannel).ManageChannel)
-            {
-                await FollowupAsync(text: $"❌ You do not have permissions to manage <#{Context.Guild.SystemChannel.Id}> (The system channel where welcome messages are sent)\n- Try asking a user with the permission **Manage Channel**.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
-            }
-            // Check if Bob has permission to send messages in given channel
-            else if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions(Context.Guild.SystemChannel).SendMessages || !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions(Context.Guild.SystemChannel).ViewChannel)
-            {
-                await FollowupAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{Context.Guild.SystemChannel.Id}> (The system channel where welcome messages are sent)\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
-            }
-            // Update server welcome information.
-            else
-            {
-                Server server;
-                using (var context = new BobEntities())
-                {
-                    server = await context.GetServer(Context.Guild.Id);
-                    server.Welcome = welcome;
-                    await context.UpdateServer(server);
-                }
-
-                if (welcome)
-                {
-                    if (Context.Guild.SystemChannel == null)
-                    {
-                        await FollowupAsync(text: $"❌ Bob knows to welcome users now, but you **need** to set a *System Messages* channel in settings for this to take effect.", ephemeral: true);
-                    }
-                    else
-                    {
-                        await FollowupAsync(text: $"✅ Bob will now greet people in <#{Context.Guild.SystemChannel.Id}>", ephemeral: true);
-                    }
-                }
-                else
-                {
-                    await FollowupAsync(text: $"✅ Bob will not greet people anymore.", ephemeral: true);
-                }
-            }
-        }
-
-        [EnabledInDm(false)]
         [SlashCommand("poll", "Bob will create a poll.")]
         public async Task Poll([Summary("prompt", "The question you are asking.")] string prompt, [Summary("option1", "an answer / response to your question")] string option1, [Summary("option2", "an answer / response to your question")] string option2, [Summary("option3", "an answer / response to your question")] string option3 = "", [Summary("option4", "an answer / response to your question")] string option4 = "")
         {

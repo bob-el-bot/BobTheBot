@@ -21,6 +21,7 @@ using System.Text;
 using Microsoft.VisualBasic;
 using System.Diagnostics;
 using Commands.Attributes;
+using Commands.Helpers;
 
 public static class Bot
 {
@@ -163,10 +164,15 @@ public static class Bot
         {
             if (user.Guild.SystemChannel != null && user.Guild.GetUser(Client.CurrentUser.Id).GetPermissions(user.Guild.SystemChannel).SendMessages && user.Guild.GetUser(Client.CurrentUser.Id).GetPermissions(user.Guild.SystemChannel).ViewChannel)
             {
-                // Get random greeting
-                Random random = new();
-                string[] greetings = { $"Welcome {user.Mention}!", $"Who invited this guy? Just kidding, welcome {user.Mention}!", $"Happy to have you here {user.Mention}!", $"Looking good {user.Mention}!", $"{user.Mention} is here, everybody play cool.", $"{user.Mention} has entered the building.", $"Never fear, {user.Mention} is here.", $"A wild {user.Mention} appeared.", $"Everybody get loud because {user.Mention} is here!", $"{user.Mention} has graced us with their presence.", $"{user.Mention} is not the droid we're looking for. Also... they are here!", $"Stand down, it's just {user.Mention}.", $"Make way for {user.Mention}!", $"{user.Mention} is here, in the flesh!", $"Open the gate for {user.Mention}!", $"Prepare yourselves, {user.Mention} has joined.", $"Look what the cat dragged in, {user.Mention} is here.", $"Speak of the devil, {user.Mention} joined.", $"Better late than never, {user.Mention} joined.", $"{user.Mention} has revealed themselves from the shadows." };
-                await user.Guild.SystemChannel.SendMessageAsync(text: greetings[random.Next(0, greetings.Length)]);
+                if (server.CustomWelcomeMessage != null && server.CustomWelcomeMessage != "")
+                {
+                    await user.Guild.SystemChannel.SendMessageAsync(text: Welcome.FormatCustomMessage(server.CustomWelcomeMessage, user.Mention));
+                }
+                else
+                {
+                    // Get random greeting
+                    await user.Guild.SystemChannel.SendMessageAsync(text: Welcome.GetRandomMessage(user.Mention));
+                }
             }
         }
     }
