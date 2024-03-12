@@ -1,6 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Challenges;
+using Discord.Rest;
 
 namespace PremiumInterface
 {
@@ -13,7 +16,7 @@ namespace PremiumInterface
         /// </summary>
         /// <param name="premiumExpiration">The expiration date and time of the premium subscription.</param>
         /// <returns>True if the premium subscription is still valid; otherwise, false.</returns>
-        public static bool HasValidPremium(DateTimeOffset premiumExpiration)
+        public static bool IsValidPremium(DateTimeOffset premiumExpiration)
         {
             if (premiumExpiration.CompareTo(DateTimeOffset.Now) <= 0)
             {
@@ -23,6 +26,16 @@ namespace PremiumInterface
             {
                 return true;
             }
+        }
+
+        /// <summary>
+        /// Determines whether a user is entitled to premium access based on their entitlements.
+        /// </summary>
+        /// <param name="entitlements">The collection of entitlements for the user.</param>
+        /// <returns>True if the user is entitled to premium access, otherwise false.</returns>
+        public static bool IsPremium(IReadOnlyCollection<RestEntitlement> entitlements)
+        {
+            return entitlements.Count > 0 && entitlements.FirstOrDefault(x => x.SkuId == 1169107771673812992) is not null;
         }
     }
 }

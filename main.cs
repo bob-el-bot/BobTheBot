@@ -57,9 +57,9 @@ public static class Bot
         Client.JoinedGuild += JoinedGuild;
         Client.LeftGuild += Feedback.Prompt.LeftGuild;
         Client.UserJoined += UserJoined;
-        // Client.EntitlementCreated += EntitlementCreated;
-        // Client.EntitlementDeleted += EntitlementDeleted;
-        // Client.EntitlementUpdated += EntitlementUpdated;
+        Client.EntitlementCreated += EntitlementCreated;
+        Client.EntitlementDeleted += EntitlementDeleted;
+        Client.EntitlementUpdated += EntitlementUpdated;
 
         await Client.LoginAsync(TokenType.Bot, Token);
         await Client.StartAsync();
@@ -187,25 +187,30 @@ public static class Bot
         await context.GetServer(guild.Id);
     }
 
-    // private static async Task EntitlementCreated(SocketEntitlement ent)
-    // {
-    //     IUser entUser = await ent.User.Value.GetOrDownloadAsync();     
-    //     User user = await DB.GetUser(entUser.Id);
+    private static async Task EntitlementCreated(SocketEntitlement ent)
+    {
+        using var context = new BobEntities();
+        IUser entUser = await ent.User.Value.GetOrDownloadAsync();
+        User user = await context.GetUser(entUser.Id);
 
-    //     user.premium = true;
+        user.PremiumExpiration = (DateTimeOffset)ent.EndsAt;
+        await context.UpdateUser(user);
+    }
 
-    //     await DB.UpdateUser(user);
-    // }
+    private static async Task EntitlementUpdated(Cacheable<SocketEntitlement, ulong> before, SocketEntitlement after)
+    {
+        using var context = new BobEntities();
+        IUser entUser = await before.Value.User.Value.GetOrDownloadAsync();
+        User user = await context.GetUser(entUser.Id);
 
-    // private static Task EntitlementUpdated(Cacheable<SocketEntitlement, ulong> before, SocketEntitlement after)
-    // {
-    //     return Task.CompletedTask;
-    // }
+        user.PremiumExpiration = (DateTimeOffset)after.EndsAt;
+        await context.UpdateUser(user);
+    }
 
-    // private static Task EntitlementDeleted(Cacheable<SocketEntitlement, ulong> ent)
-    // {
-    //     return Task.CompletedTask;
-    // }
+    private static Task EntitlementDeleted(Cacheable<SocketEntitlement, ulong> ent)
+    {
+        return Task.CompletedTask;
+    }
 
     private static async Task InteractionCreated(SocketInteraction interaction)
     {
@@ -240,7 +245,7 @@ public static class Bot
                     break;
                 case InteractionCommandError.Exception:
                     await ctx.Interaction.FollowupAsync($"❌ Something went wrong...\n- Ensure Bob has the **View Channel** and **Send Messages** permissions.\n- Try again later.\n- Join Bob's support server, let us know here: https://discord.gg/HvGMRZD8jQ");
-                    
+
                     var executionResult = (ExecuteResult)res;
                     Console.WriteLine($"Error: {executionResult.Exception}");
 
