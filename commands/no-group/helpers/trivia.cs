@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Challenges;
+using Database;
+using Database.Types;
 using Discord;
 using Discord.WebSocket;
 using Games;
@@ -53,6 +55,9 @@ namespace Commands.Helpers
 
         public override async Task StartGame(SocketMessageComponent interaction)
         {
+            // Update User Info
+            Challenge.IncrementUserChallenges(Player2.Id);
+
             // Get a question
             questions.Add(await TriviaMethods.GetQuestion());
 
@@ -178,6 +183,36 @@ namespace Commands.Helpers
         {
             _ = EndGame();
 
+            // If not a bot match update stats.
+            if (!Player2.IsBot)
+            {
+                Challenge.DecrementUserChallenges(Player1.Id);
+                Challenge.DecrementUserChallenges(Player2.Id);
+
+                float winner = TriviaMethods.GetWinner(this);
+
+                // Update User Info
+                using var context = new BobEntities();
+                var userIds = new[] { Player1.Id, Player2.Id };
+                var users = await context.GetUsers(userIds);
+
+                foreach (var user in users)
+                {
+                    user.TotalTriviaGames++;
+
+                    if ((user.Id == Player1.Id && winner == 1.0f) || (user.Id == Player2.Id && winner == 2.0f))
+                    {
+                        user.TriviaWins++;
+                    }
+                    else if (winner == 0.5f)
+                    {
+                        user.TriviaWins += 0.5f;
+                    }
+                }
+
+                await context.UpdateUsers(users);
+            }
+
             try
             {
                 await component.ModifyOriginalResponseAsync(x => { x.Embed = TriviaMethods.CreateFinalEmbed(this).Build(); x.Components = TriviaMethods.GetButtons(Id, true).Build(); });
@@ -192,6 +227,36 @@ namespace Commands.Helpers
         {
             // Set State
             State = GameState.Ended;
+
+            // If not a bot match update stats.
+            if (!Player2.IsBot)
+            {
+                Challenge.DecrementUserChallenges(Player1.Id);
+                Challenge.DecrementUserChallenges(Player2.Id);
+
+                float winner = TriviaMethods.GetWinner(this);
+
+                // Update User Info
+                using var context = new BobEntities();
+                var userIds = new[] { Player1.Id, Player2.Id };
+                var users = await context.GetUsers(userIds);
+
+                foreach (var user in users)
+                {
+                    user.TotalTriviaGames++;
+
+                    if ((user.Id == Player1.Id && winner == 1.0f) || (user.Id == Player2.Id && winner == 2.0f))
+                    {
+                        user.TriviaWins++;
+                    }
+                    else if (winner == 0.5f)
+                    {
+                        user.TriviaWins += 0.5f;
+                    }
+                }
+
+                await context.UpdateUsers(users);
+            }
 
             try
             {

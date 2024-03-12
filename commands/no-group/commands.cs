@@ -23,6 +23,9 @@ using System.Runtime.CompilerServices;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using System.ComponentModel.Design.Serialization;
+using System.Security.Cryptography;
+using PremiumInterface;
+using System.Reactive;
 
 namespace Commands
 {
@@ -117,9 +120,10 @@ namespace Commands
             }
             else
             {
-                if (!Challenge.CanChallenge(Context.User.Id, opponent.Id))
+                (bool, string) canChallenge = await Challenge.CanChallengeAsync(Context.User.Id, opponent.Id);
+                if (!canChallenge.Item1)
                 {
-                    await RespondAsync(text: "❌ You can't challenge them.", ephemeral: true);
+                    await RespondAsync(text: canChallenge.Item2, ephemeral: true);
                 }
                 else
                 {
@@ -195,9 +199,10 @@ namespace Commands
             }
             else
             {
-                if (!Challenge.CanChallenge(Context.User.Id, opponent.Id))
+                (bool, string) canChallenge = await Challenge.CanChallengeAsync(Context.User.Id, opponent.Id);
+                if (!canChallenge.Item1)
                 {
-                    await RespondAsync(text: "❌ You can't challenge them.", ephemeral: true);
+                    await RespondAsync(text: canChallenge.Item2, ephemeral: true);
                 }
                 else
                 {
@@ -260,9 +265,10 @@ namespace Commands
             }
             else
             {
-                if (!Challenge.CanChallenge(Context.User.Id, opponent.Id))
+                (bool, string) canChallenge = await Challenge.CanChallengeAsync(Context.User.Id, opponent.Id);
+                if (!canChallenge.Item1)
                 {
-                    await RespondAsync(text: "❌ You can't challenge them.", ephemeral: true);
+                    await RespondAsync(text: canChallenge.Item2, ephemeral: true);
                 }
                 else
                 {
@@ -363,6 +369,9 @@ namespace Commands
                 else
                 {
                     await DeferAsync();
+
+                    // Update User Info
+                    Challenge.DecrementUserChallenges(challenge.Player1.Id);
 
                     // Format Message
                     var embed = new EmbedBuilder
