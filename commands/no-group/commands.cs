@@ -529,6 +529,8 @@ namespace Commands
 **🖊️ Quoting:** [Quoting Docs](https://docs.bobthebot.net#quoting)
 - `/quote new [quote] [user] [tag]*3` Formats and shares the quote in designated channel. [Docs](https://docs.bobthebot.net#quote-new)
 - `/quote channel [channel]` Sets the quote channel for the server. [Docs](https://docs.bobthebot.net#quote-channel)
+- `/quote set-max-length [length]` Sets the maximum length of quotes for the server.
+- `/quote set-min-length [length]` Sets the minimum length of quotes for the server.
 **🔒 Encryption commands:** [Encryption Docs](https://docs.bobthebot.net#encrypt)
 - `/encrypt a1z26 [message]` Encrypts your message by swapping letters to their corresponding number. [Docs](https://docs.bobthebot.net#encrypt-a1z26)
 - `/encrypt atbash [message]` Encrypts your message by swapping letters to their opposite position. [Docs](https://docs.bobthebot.net#encrypt-atbash)

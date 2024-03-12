@@ -77,6 +77,8 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 ### 🖊️ Quoting commands:
 - `/quote new [quote] [user] [tag]*3` Formats and shares the quote in designated channel.
 - `/quote channel [channel]` Sets the quote channel for the server.
+- `/quote set-max-length [length]` Sets the maximum length of quotes for the server.
+- `/quote set-min-length [length]` Sets the minimum length of quotes for the server.
 
 ### ✨ Miscellaneous commands: 
 - `/code preview [link]` Preview specific lines of code from a file on GitHub.
