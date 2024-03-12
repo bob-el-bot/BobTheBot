@@ -40,9 +40,9 @@ namespace Commands
             {
                 await FollowupAsync(text: $"❌ Bob is either missing permissions to view *or* send messages in the channel <#{server.QuoteChannelId}>.\n- Try giving Bob the following pemrissions: `View Channel`, `Send Messages`.\n- Use `/quote channel` to set a new channel.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
-            else if (quote.Length > 4096) // 4096 is max characters in an embed description.
+            else if (quote.Length > (server.MaxQuoteLength ?? 4096) || quote.Length < server.MinQuoteLength) // 4096 is max characters in an embed description.
             {
-                await FollowupAsync($"❌ The quote *cannot* be made because it contains **{quote.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **4096** characters in embed descriptions.", ephemeral: true);
+                await FollowupAsync($"❌ The quote *cannot* be made because it contains **{quote.Length}** characters.\n- this server's maximum quote length is **{server.MaxQuoteLength}**.\n- this server's minimum quote length is **{server.MinQuoteLength}**.\n- Discord has a limit of **4096** characters in embed descriptions.", ephemeral: true);
             }
             else if ((tag1 != "" || tag2 != "" || tag3 != "") && Premium.IsValidPremium(usingUser.PremiumExpiration) == false) // contains tags and does not have premium
             {
@@ -153,9 +153,9 @@ namespace Commands
             {
                 await FollowupAsync(text: "❌ The message you tried quoting is invalid. \n- Embeds can't be quoted. \n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
-            else if (quote.Length > 4096) // 4096 is max characters in an embed description.
+            else if (quote.Length > (server.MaxQuoteLength ?? 4096) || quote.Length < server.MinQuoteLength) // 4096 is max characters in an embed description.
             {
-                await FollowupAsync($"❌ The quote *cannot* be made because it contains **{quote.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **4096** characters in embed descriptions.", ephemeral: true);
+                await FollowupAsync($"❌ The quote *cannot* be made because it contains **{quote.Length}** characters.\n- This server's maximum quote length is **{server.MaxQuoteLength}**.\n- This server's minimum quote length is **{server.MinQuoteLength}**.\n- Discord has a limit of **4096** characters in embed descriptions.", ephemeral: true);
             }
             else
             {
@@ -252,6 +252,104 @@ namespace Commands
                 }
 
                 await FollowupAsync(text: $"✅ <#{channel.Id}> is now the quote channel for the server.", ephemeral: true);
+            }
+        }
+
+        [EnabledInDm(false)]
+        [SlashCommand("set-max-length", "Set a maximum character length for quotes.")]
+        public async Task SetMaxQuoteLength([Summary("length", "The number of characters you would like, at most, to be in a quote (Discord has a limit 4096).")] int length)
+        {
+            await DeferAsync(ephemeral: true);
+
+            User user;
+            Server server;
+            using var context = new BobEntities();
+            user = await context.GetUser(Context.User.Id);
+            server = await context.GetServer(Context.Guild.Id);
+
+            // Check if the user has manage channels permissions.
+            if (!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageChannels)
+            {
+                await FollowupAsync(text: $"❌ Ask an admin or mod to configure this for you.\n- Permission(s) needed: `Manage Channels`\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+            }
+            // Check if the user has premium.
+            else if (Premium.IsValidPremium(user.PremiumExpiration) == false)
+            {
+                await FollowupAsync(text: $"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}", ephemeral: true);
+            }
+            // Check if the message is within Discord's length requirements.
+            else if (length > 4096)
+            {
+                await FollowupAsync(text: $"❌ The length **{length}** exceeds Discord's **4096** character limit in embeds.\n- Try making your max length smaller.", ephemeral: true);
+            }
+            else if (length < 1)
+            {
+                await FollowupAsync(text: $"❌ The length **{length}** is too small\n- Try making your max length bigger than 0.", ephemeral: true);
+            }
+            else if (length < server.MinQuoteLength)
+            {
+                await FollowupAsync(text: $"❌ You cannot make your maximum quote length smaller than your minimum quote length.\n- Try making your max length bigger than **{server.MinQuoteLength}** (your minimum length value).", ephemeral: true);
+            }
+            // Update server welcome information.
+            else
+            {
+                // Only write to DB if needed.
+                if (server.MaxQuoteLength != length)
+                {
+                    server.MaxQuoteLength = (uint)length;
+                    await context.UpdateServer(server);
+                }
+
+                await FollowupAsync(text: $"✅ Your server now has a maximum quote length of **{length}**.");
+            }
+        }
+
+        [EnabledInDm(false)]
+        [SlashCommand("set-min-length", "Set a minimum character length for quotes.")]
+        public async Task SetMinQuoteLength([Summary("length", "The number of characters you would like, at least, to be in a quote.")] int length)
+        {
+            await DeferAsync(ephemeral: true);
+
+            User user;
+            Server server;
+            using var context = new BobEntities();
+            user = await context.GetUser(Context.User.Id);
+            server = await context.GetServer(Context.Guild.Id);
+
+            // Check if the user has manage channels permissions.
+            if (!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageChannels)
+            {
+                await FollowupAsync(text: $"❌ Ask an admin or mod to configure this for you.\n- Permission(s) needed: `Manage Channels`\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+            }
+            // Check if the user has premium.
+            else if (Premium.IsValidPremium(user.PremiumExpiration) == false)
+            {
+                await FollowupAsync(text: $"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}", ephemeral: true);
+            }
+            // Check if the message is within Discord's length requirements.
+            else if (length > 4096)
+            {
+                await FollowupAsync(text: $"❌ The length **{length}** exceeds Discord's **4096** character limit in embeds.\n- Try making your minimum length smaller.", ephemeral: true);
+            }
+            else if (length < 1)
+            {
+                await FollowupAsync(text: $"❌ The length **{length}** is too small.\n- Try making your minimum length bigger than 0.", ephemeral: true);
+            }
+            else if (length > server.MaxQuoteLength)
+            {
+                await FollowupAsync(text: $"❌ You cannot make your minimum quote length bigger than your maximum quote length.\n- Try making your minimum length smaller than **{server.MaxQuoteLength}** (your maximum length value).", ephemeral: true);
+            }
+            // Update server welcome information.
+            else
+            {
+                // Only write to DB if needed.
+                if (server.MinQuoteLength != length)
+                {
+                    server.MinQuoteLength = (uint)length;
+                    await context.UpdateServer(server);
+                }
+
+                await FollowupAsync(text: $"✅ Your server now has a minimum quote length of **{length}**.");
             }
         }
     }
