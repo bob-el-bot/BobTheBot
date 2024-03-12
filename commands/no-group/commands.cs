@@ -592,6 +592,42 @@ namespace Commands
         }
 
         [EnabledInDm(true)]
+        [SlashCommand("premium", "Update your premium status or buy it!")]
+        public async Task PremiumStatus()
+        {
+            await DeferAsync();
+            User user;
+            using var context = new BobEntities();
+            user = await context.GetUser(Context.User.Id);
+
+            // If user has premium ensure DB is updated.
+            bool isPremium = Premium.IsPremium(Context.Interaction.Entitlements);
+            if (isPremium || Premium.IsValidPremium(user.PremiumExpiration))
+            {
+
+                if (isPremium != false)
+                {
+                    // Get Expiration Date
+                    var expirationDate = (DateTimeOffset)Context.Interaction.Entitlements.FirstOrDefault(x => x.SkuId == 1169107771673812992).EndsAt;
+
+                    // Only write to DB if needed.
+                    if (user.PremiumExpiration == expirationDate)
+                    {
+                        user.PremiumExpiration = expirationDate;
+                        await context.UpdateUser(user);
+                    }
+                }
+
+                // Respond
+                await FollowupAsync(text: "✨ Your premium status has been updated!\n**💜 Thanks so much** for your support and have fun with your new features!");
+            }
+            else
+            {
+                await RespondWithPremiumRequiredAsync();
+            }
+        }
+
+        [EnabledInDm(true)]
         [SlashCommand("support", "Sends an invite to Bob's support Server.")]
         public async Task Support()
         {
