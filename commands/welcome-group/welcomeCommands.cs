@@ -80,7 +80,7 @@ namespace Commands
             // Check if the user has premium.
             else if (Premium.IsValidPremium(user.PremiumExpiration) == false)
             {
-                await FollowupAsync(text: "✨ This is a *premium* feature.\n- If you have premium (💜 **thanks so much!**) simply use `/premium` to unlock all of the features.", ephemeral: true);
+                await FollowupAsync(text: $"✨ This is a *premium* feature.\n-{Premium.HasPremiumMessage}", ephemeral: true);
             }
             // Check if the message is within Discord's length requirements.
             else if (message.Length + (34 * message.Count(c => c == '@')) > 2000)

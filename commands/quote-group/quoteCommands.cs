@@ -6,6 +6,7 @@ using Database.Types;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using PremiumInterface;
 
 namespace Commands
 {
@@ -15,13 +16,15 @@ namespace Commands
     {
         [EnabledInDm(false)]
         [SlashCommand("new", "Create a quote.")]
-        public async Task New([Summary("quote", "The text you want quoted. Quotation marks (\") will be added.")] string quote, [Summary("user", "The user who the quote belongs to.")] SocketUser user, [Summary("tag1", "A tag for sorting quotes later on.")] string tag1 = "", [Summary("tag2", "A tag for sorting quotes later on.")] string tag2 = "", [Summary("tag3", "A tag for sorting quotes later on.")] string tag3 = "")
+        public async Task New([Summary("quote", "The text you want quoted. Quotation marks (\") will be added.")] string quote, [Summary("user", "The user who the quote belongs to.")] SocketUser user, [Summary("tag1", "A tag for sorting quotes later on (needs premium).")] string tag1 = "", [Summary("tag2", "A tag for sorting quotes later on (needs premium).")] string tag2 = "", [Summary("tag3", "A tag for sorting quotes later on (needs premium).")] string tag3 = "")
         {
             await DeferAsync(ephemeral: true);
 
             Server server;
+            User usingUser;
             using (var context = new BobEntities())
             {
+                usingUser = await context.GetUser(Context.User.Id);
                 server = await context.GetServer(Context.Guild.Id);
             }
 
@@ -40,6 +43,10 @@ namespace Commands
             else if (quote.Length > 4096) // 4096 is max characters in an embed description.
             {
                 await FollowupAsync($"❌ The quote *cannot* be made because it contains **{quote.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **4096** characters in embed descriptions.", ephemeral: true);
+            }
+            else if ((tag1 != "" || tag2 != "" || tag3 != "") && Premium.IsValidPremium(usingUser.PremiumExpiration) == false) // contains tags and does not have premium
+            {
+                await FollowupAsync($"❌ You cannot add tags.\n- Get ✨ premium to use **tags**.\n- {Premium.HasPremiumMessage}");
             }
             else
             {
