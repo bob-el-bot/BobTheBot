@@ -545,8 +545,11 @@ namespace Commands
   - `[option]*4` usage: You must provide 2-4 options. These are essentially the poll's choices.
 - `/ship [user]*2` See how good of a match 2 users are. [Docs](https://docs.bobthebot.net#ship)
 - `/hug [user]*5` Show your friends some love with a hug. [Docs](https://docs.bobthebot.net#hug)
-- `/welcome [welcome]` Bob will send welcome messages to new server members. [Docs](https://docs.bobthebot.net#welcome)
+- `/welcome toggle [welcome]` Bob will send welcome messages to new server members. [Docs](https://docs.bobthebot.net#welcome)
+- `/welcome set-message [message]` Set a custom message to welcome new users with.
+- `/welcome remove-message` Bob will stop using the custom message to welcome users.
 **🗄️ Informational / Help:** [Info Docs](https://docs.bobthebot.net#info)
+- `/premium` Ensures Bob knows you have premium! If not you will be given a button to get it!
 - `/new` See the latest updates to Bob. [Docs](https://docs.bobthebot.net#new)
 - `/quote-prompts` See all valid prompts for `/random quote`. [Docs](https://docs.bobthebot.net#quote-prompts)
 - `/ping` Find the client's latency. [Docs](https://docs.bobthebot.net#ping)
