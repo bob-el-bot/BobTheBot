@@ -77,23 +77,28 @@ namespace Commands
             {
                 await FollowupAsync(text: $"❌ You do not have permissions to manage <#{Context.Guild.SystemChannel.Id}> (The system channel where welcome messages are sent)\n- Try asking a user with the permission **Manage Channel**.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
+            // Check if the user has premium.
+            else if (Premium.IsValidPremium(user.PremiumExpiration) == false)
+            {
+                await FollowupAsync(text: "✨ This is a *premium* feature.\n- If you have premium (💜 **thanks so much!**) simply use `/premium` to unlock all of the features.", ephemeral: true);
+            }
             // Check if the message is within Discord's length requirements.
             else if (message.Length + (34 * message.Count(c => c == '@')) > 2000)
             {
                 await FollowupAsync(text: $"❌ The message length either exceeds Discord's **2000** character limit or could when mentions are inserted.\n- Try shortening your message.\n- Every mention is assumed to be a length of **32** characters plus **3** formatting characters.", ephemeral: true);
-            }
-            // Check if the user has premium.
-            else if (Premium.HasValidPremium(user.PremiumExpiration) == false)
-            {
-                await RespondWithPremiumRequiredAsync();
             }
             // Update server welcome information.
             else
             {
                 Server server;
                 server = await context.GetServer(Context.Guild.Id);
-                server.CustomWelcomeMessage = message;
-                await context.UpdateServer(server);
+
+                // Only write to DB if needed.
+                if (server.CustomWelcomeMessage != message)
+                {
+                    server.CustomWelcomeMessage = message;
+                    await context.UpdateServer(server);
+                }
 
                 if (server.Welcome)
                 {
