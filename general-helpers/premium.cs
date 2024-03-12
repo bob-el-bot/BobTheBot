@@ -9,7 +9,11 @@ namespace PremiumInterface
 {
     public static class Premium
     {
+        // Limits
         public static readonly int ChallengeLimit = 1;
+       
+        // Premium Message
+        public static readonly string HasPremiumMessage = "If you already have premium (💜 **thanks so much!**) simply use `/premium` to unlock all of the features.";
 
         /// <summary>
         /// Checks if the premium subscription is still valid based on the expiration date.

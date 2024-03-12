@@ -41,7 +41,7 @@ namespace Challenges
             // If a user is already in a challenge and is not premium they cannot challenge.
             if (player1Challenges >= Premium.ChallengeLimit && Premium.IsValidPremium(user.PremiumExpiration) == false)
             {
-                return (false, "❌ You are already in a challenge.\n- Get ✨ premium to play **unlimited** multiplayer games.\n- If you have premium (💜 **thanks so much!**) simply use `/premium` to unlock all of the features.");
+                return (false, $"❌ You are already in a challenge.\n- Get ✨ premium to play **unlimited** multiplayer games.\n- {Premium.HasPremiumMessage}");
             }
 
             return (true, "Loading...");
