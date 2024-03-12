@@ -345,6 +345,9 @@ namespace Commands
                 {
                     await DeferAsync();
 
+                    // Update User Info
+                    Challenge.IncrementUserChallenges(challenge.Player2.Id);
+
                     await challenge.StartGame((SocketMessageComponent)Context.Interaction);
                 }
             }

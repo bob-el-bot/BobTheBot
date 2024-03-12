@@ -55,9 +55,6 @@ namespace Commands.Helpers
 
         public override async Task StartGame(SocketMessageComponent interaction)
         {
-            // Update User Info
-            Challenge.IncrementUserChallenges(Player2.Id);
-
             // Get a question
             questions.Add(await TriviaMethods.GetQuestion());
 

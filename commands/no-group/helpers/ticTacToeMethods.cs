@@ -7,7 +7,6 @@ namespace Commands.Helpers
 {
     public static class TTTMethods
     {
-
         public static bool DetermineFirstTurn()
         {
             Random random = new();
@@ -36,7 +35,7 @@ namespace Commands.Helpers
                     }
                     else
                     {
-                        buttons.WithButton(label: "\U0000200E", customId: $"ttt:{x}-{y}:{Id}", style: ButtonStyle.Secondary, row: y, disabled: GetWinner(grid, turns) > 0 || turns == 9 || forfeited);
+                        buttons.WithButton(label: "\U0000200E", customId: $"ttt:{x}-{y}:{Id}", style: ButtonStyle.Secondary, row: y, disabled: GetWinnerOutcome(grid, turns) > 0 || turns == 9 || forfeited);
                     }
                 }
             }
@@ -53,7 +52,26 @@ namespace Commands.Helpers
             };
         }
 
-        public static int GetWinner(int[,] grid, int turns)
+        public static float GetWinner(int[,] grid, int turns, bool isPlayer1Turn, bool forfeited = false)
+        {
+            int winner = GetWinnerOutcome(grid, turns);
+
+            // All ways for player1 to lose
+            if (winner == 2 || (forfeited && isPlayer1Turn))
+            {
+                return 2.0f;
+            }
+            else if (winner == 0 && turns == 9 || (forfeited && turns == 0)) // draw
+            {
+                return 0.5f;
+            }
+            else // else player1 won
+            {
+                return 1.0f;
+            }
+        }
+
+        public static int GetWinnerOutcome(int[,] grid, int turns)
         {
             if (turns == -1 || turns >= 3)
             {
@@ -116,7 +134,7 @@ namespace Commands.Helpers
                         grid[i, j] = player;
 
                         // Check if the move results in a win
-                        if (GetWinner(grid, turns) == player)
+                        if (GetWinnerOutcome(grid, turns) == player)
                         {
                             grid[i, j] = 0; // Reset the move
                             return new int[] { i, j };
@@ -166,7 +184,7 @@ namespace Commands.Helpers
 
         private static int MinimaxScore(int[,] grid, int turns, int depth, int player)
         {
-            int winner = GetWinner(grid, turns);
+            int winner = GetWinnerOutcome(grid, turns);
             if (winner == 1)
             {
                 return -1;
