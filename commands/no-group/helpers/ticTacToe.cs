@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Challenges;
+using Database;
 using Discord;
 using Discord.WebSocket;
 using Games;
@@ -72,7 +73,36 @@ namespace Commands.Helpers
 
             try
             {
-                await Message.ModifyAsync(x => { x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, GetFinalTitle(TTTMethods.GetWinner(grid, turns), true)).Build(); x.Components = TTTMethods.GetButtons(grid, turns, Id, true).Build(); });
+                // If not a bot match update stats.
+                if (!Player2.IsBot)
+                {
+                    Challenge.DecrementUserChallenges(Player1.Id);
+                    Challenge.DecrementUserChallenges(Player2.Id);
+
+                    float winner = TTTMethods.GetWinner(grid, turns, isPlayer1Turn, true);
+
+                    // Update User Info
+                    using var context = new BobEntities();
+                    var userIds = new[] { Player1.Id, Player2.Id };
+                    var users = await context.GetUsers(userIds);
+
+                    foreach (var user in users)
+                    {
+                        user.TotalTicTacToeGames++;
+
+                        if ((user.Id == Player1.Id && winner == 1.0f) || (user.Id == Player2.Id && winner == 2.0f))
+                        {
+                            user.TicTacToeWins++;
+                        }
+                        else if (winner == 0.5f)
+                        {
+                            user.TicTacToeWins += 0.5f;
+                        }
+                    }
+
+                    await context.UpdateUsers(users);
+                }
+                await Message.ModifyAsync(x => { x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, GetFinalTitle(true)).Build(); x.Components = TTTMethods.GetButtons(grid, turns, Id, true).Build(); });
             }
             catch (Exception)
             {
@@ -87,12 +117,12 @@ namespace Commands.Helpers
             Action<MessageProperties> properties;
 
             // Check if there is a winner or the game is over
-            int winner = TTTMethods.GetWinner(grid, turns);
+            int winner = TTTMethods.GetWinnerOutcome(grid, turns);
             if (winner > 0 || turns >= 9)
             {
                 properties = (x) =>
                 {
-                    x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, GetFinalTitle(winner)).Build();
+                    x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, GetFinalTitle()).Build();
                     x.Components = TTTMethods.GetButtons(grid, turns, Id).Build();
                 };
 
@@ -145,6 +175,36 @@ namespace Commands.Helpers
                 {
                     await Message.ModifyAsync(properties);
                 }
+
+                // If not a bot match update stats.
+                if (!Player2.IsBot)
+                {
+                    Challenge.DecrementUserChallenges(Player1.Id);
+                    Challenge.DecrementUserChallenges(Player2.Id);
+
+                    float winner = TTTMethods.GetWinner(grid, turns, isPlayer1Turn);
+
+                    // Update User Info
+                    using var context = new BobEntities();
+                    var userIds = new[] { Player1.Id, Player2.Id };
+                    var users = await context.GetUsers(userIds);
+
+                    foreach (var user in users)
+                    {
+                        user.TotalTicTacToeGames++;
+
+                        if ((user.Id == Player1.Id && winner == 1.0f) || (user.Id == Player2.Id && winner == 2.0f))
+                        {
+                            user.TicTacToeWins++;
+                        }
+                        else if (winner == 0.5f)
+                        {
+                            user.TicTacToeWins += 0.5f;
+                        }
+                    }
+
+                    await context.UpdateUsers(users);
+                }
             }
             catch (Exception)
             {
@@ -166,12 +226,12 @@ namespace Commands.Helpers
             Action<MessageProperties> properties;
 
             // Check if there is a winner or the game is over
-            int winner = TTTMethods.GetWinner(grid, turns);
+            int winner = TTTMethods.GetWinnerOutcome(grid, turns);
             if (winner > 0 || turns >= 9)
             {
                 properties = (x) =>
                 {
-                    x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, GetFinalTitle(winner)).Build();
+                    x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, GetFinalTitle()).Build();
                     x.Components = TTTMethods.GetButtons(grid, turns, Id).Build();
                 };
 
@@ -198,14 +258,16 @@ namespace Commands.Helpers
             }
         }
 
-        private string GetFinalTitle(int winner, bool forfeited = false)
+        private string GetFinalTitle(bool forfeited = false)
         {
+            float winner = TTTMethods.GetWinner(grid, turns, isPlayer1Turn, forfeited);
+
             // All ways for player1 to lose
-            if (winner == 2 || (forfeited && isPlayer1Turn))
+            if (winner == 2.0f)
             {
                 return $"### ⚔️ {Player1.Mention} Was Defeated By {Player2.Mention} in {Title}.";
             }
-            else if (winner == 0 && turns == 9 || (forfeited && turns == 0)) // draw
+            else if (winner == 0.5f && turns == 9 || (forfeited && turns == 0)) // draw
             {
                 return $"### ⚔️ {Player1.Mention} Drew {Player2.Mention} in {Title}.";
             }

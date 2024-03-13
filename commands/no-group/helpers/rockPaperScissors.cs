@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Challenges;
+using Database;
 using Discord;
 using Discord.WebSocket;
 using Games;
@@ -72,6 +73,36 @@ namespace Commands.Helpers
 
             try
             {
+                // If not a bot match update stats.
+                if (!Player2.IsBot)
+                {
+                    Challenge.DecrementUserChallenges(Player1.Id);
+                    Challenge.DecrementUserChallenges(Player2.Id);
+
+                    float winner = GetWinner(true);
+
+                    // Update User Info
+                    using var context = new BobEntities();
+                    var userIds = new[] { Player1.Id, Player2.Id };
+                    var users = await context.GetUsers(userIds);
+
+                    foreach (var user in users)
+                    {
+                        user.TotalRockPaperScissorsGames++;
+
+                        if ((user.Id == Player1.Id && winner == 1.0f) || (user.Id == Player2.Id && winner == 2.0f))
+                        {
+                            user.RockPaperScissorsWins++;
+                        }
+                        else if (winner == 0.5f)
+                        {
+                            user.RockPaperScissorsWins += 0.5f;
+                        }
+                    }
+
+                    await context.UpdateUsers(users);
+                }
+
                 await Message.ModifyAsync(x => { x.Embed = CreateEmbed(GetFinalTitle(true)).Build(); x.Components = null; });
             }
             catch (Exception)
@@ -84,6 +115,36 @@ namespace Commands.Helpers
         {
             try
             {
+                // If not a bot match update stats.
+                if (!Player2.IsBot)
+                {
+                    Challenge.DecrementUserChallenges(Player1.Id);
+                    Challenge.DecrementUserChallenges(Player2.Id);
+
+                    float winner = GetWinner();
+
+                    // Update User Info
+                    using var context = new BobEntities();
+                    var userIds = new[] { Player1.Id, Player2.Id };
+                    var users = await context.GetUsers(userIds);
+
+                    foreach (var user in users)
+                    {
+                        user.TotalRockPaperScissorsGames++;
+
+                        if ((user.Id == Player1.Id && winner == 1.0f) || (user.Id == Player2.Id && winner == 2.0f))
+                        {
+                            user.RockPaperScissorsWins++;
+                        }
+                        else if (winner == 0.5f)
+                        {
+                            user.RockPaperScissorsWins += 0.5f;
+                        }
+                    }
+
+                    await context.UpdateUsers(users);
+                }
+
                 string[] options = { "🪨", "📃", "✂️" };
                 await interaction.UpdateAsync(x => { x.Embed = CreateEmbed($"{GetFinalTitle()}\n{options[player1Choice]} **VS** {options[player2Choice]}").Build(); x.Components = null; });
             }
@@ -104,14 +165,33 @@ namespace Commands.Helpers
             };
         }
 
-        private string GetFinalTitle(bool forfeited = false)
+        private float GetWinner(bool forfeited = false)
         {
             // All ways for player1 to lose
             if ((player1Choice == 0 && player2Choice == 1) || (player1Choice == 1 && player2Choice == 2) || (player1Choice == 2 && player2Choice == 0))
             {
-                return $"### ⚔️ {Player1.Mention} Was Defeated By {Player2.Mention} in {Title}.";
+                return 2.0f;
             }
             else if (player1Choice == player2Choice || forfeited)
+            {
+                return 0.5f;
+            }
+            else // else player1 won
+            {
+                return 1.0f;
+            }
+        }
+
+        private string GetFinalTitle(bool forfeited = false)
+        {
+            float winner = GetWinner(forfeited);
+
+            // All ways for player1 to lose
+            if (winner == 2.0f)
+            {
+                return $"### ⚔️ {Player1.Mention} Was Defeated By {Player2.Mention} in {Title}.";
+            }
+            else if (winner == 0.5f) // draw
             {
                 return $"### ⚔️ {Player1.Mention} Drew {Player2.Mention} in {Title}.";
             }

@@ -2,9 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Commands.Helpers;
+using Database;
+using Database.Types;
 using Discord;
 using Discord.WebSocket;
 using Games;
+using PremiumInterface;
 
 namespace Challenges
 {
@@ -14,25 +17,43 @@ namespace Challenges
         public static readonly Color Player1Color = Color.Blue;
         public static readonly Color Player2Color = Color.Red;
         public static readonly Color BothPlayersColor = Color.Purple;
+
+        // Caches
         public static Dictionary<ulong, Games.Game> Games { get; } = new();
         public static Dictionary<ulong, RockPaperScissors> RockPaperScissorsGames { get; } = new();
         public static Dictionary<ulong, TicTacToe> TicTacToeGames { get; } = new();
         public static Dictionary<ulong, Trivia> TriviaGames { get; } = new();
+        public static Dictionary<ulong, uint?> UserChallenges { get; } = new();
+        // public static Dictionary<ulong, Connect4> Connect4Games { get; } = new();
 
-        public static bool CanChallenge(ulong player1Id, ulong player2Id)
+        public static async Task<(bool, string)> CanChallengeAsync(ulong player1Id, ulong player2Id)
         {
+            using var context = new BobEntities();
+            User user = await context.GetUser(player1Id);
+
             if (player1Id == player2Id)
             {
-                return false;
+                return (false, "❌ You cannot play yourself...");
             }
 
-            return true;
+            uint player1Challenges = GetUserChallenges(player1Id);
+
+            // If a user is already in a challenge and is not premium they cannot challenge.
+            if (player1Challenges >= Premium.ChallengeLimit && Premium.IsValidPremium(user.PremiumExpiration) == false)
+            {
+                return (false, $"❌ You are already in a challenge.\n- Get ✨ premium to play **unlimited** multiplayer games.\n- {Premium.HasPremiumMessage}");
+            }
+
+            return (true, "Loading...");
         }
 
         public static async Task SendMessage(SocketInteraction interaction, Games.Game game)
         {
             // Loading Message
             var msg = await interaction.FollowupAsync(text: "⚔️ *Creating Challenge...*");
+
+            // Update User Info
+            IncrementUserChallenges(game.Player1.Id);
 
             // Prepare Game
             game.Message = msg;
@@ -73,6 +94,9 @@ namespace Challenges
                 case GameType.Trivia:
                     TriviaGames.Add(game.Id, (Trivia)game);
                     break;
+                // case GameType.Connect4:
+                //     Connect4Games.Add(game.Id, (Connect4)game);
+                //     break;
                 default:
                     break;
             }
@@ -93,6 +117,9 @@ namespace Challenges
                 case GameType.Trivia:
                     TriviaGames.Remove(game.Id);
                     break;
+                // case GameType.Connect4:
+                //     Connect4Games.Remove(game.Id);
+                //     break;
                 default:
                     break;
             }
@@ -118,6 +145,9 @@ namespace Challenges
                         .WithButton(label: "🛡️ Decline", customId: $"declinedChallenge", style: ButtonStyle.Danger, disabled: true);
 
                         await game.Message.ModifyAsync(x => { x.Embed = embed.Build(); x.Content = null; x.Components = components.Build(); });
+
+                        // Update User Info
+                        DecrementUserChallenges(game.Player1.Id);
                     }
                     catch (Exception)
                     {
@@ -135,6 +165,65 @@ namespace Challenges
 
             RemoveFromSpecificGameList(game);
             game.Dispose();
+        }
+
+        public static uint GetUserChallenges(ulong id)
+        {
+            UserChallenges.TryGetValue(id, out uint? challenges);
+
+            if (challenges == null)
+            {
+                UserChallenges.Add(key: id, value: 0);
+                return 0;
+            }
+            else
+            {
+                return (uint)challenges;
+            }
+        }
+
+        public static void IncrementUserChallenges(ulong id)
+        {
+            if (UserChallenges.ContainsKey(id))
+            {
+                uint? value = UserChallenges[id];
+                if (value.HasValue)
+                {
+                    UserChallenges[id] = value + 1;
+                }
+                else
+                {
+                    UserChallenges[id] = 1;
+                }
+            }
+            else
+            {
+                UserChallenges[id] = 1;
+            }
+        }
+
+        public static void DecrementUserChallenges(ulong id)
+        {
+            if (UserChallenges.ContainsKey(id))
+            {
+                uint? value = UserChallenges[id];
+                if (value.HasValue && value > 0)
+                {
+                    UserChallenges[id] = value - 1;
+                }
+            }
+            else
+            {
+                UserChallenges[id] = 0;
+            }
+        }
+
+        public static void AddUserChallenges(ulong id)
+        {
+            if (!UserChallenges.ContainsKey(id))
+            {
+                UserChallenges[id] = 0;
+            }
         }
     }
 }

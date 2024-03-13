@@ -25,6 +25,19 @@ namespace Database
             optionsBuilder.UseSqlite(connection);
         }
 
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Server>()
+                .Property(s => s.MaxQuoteLength)
+                .HasDefaultValue(4096u); // Set default value for MaxQuoteLength
+
+            modelBuilder.Entity<User>()
+                .Property(u => u.ProfileColor)
+                .HasDefaultValue("#2C2F33"); // Set default value for ProfileColor
+
+            base.OnModelCreating(modelBuilder);
+        }
+
         /// <summary>
         /// GetServer() returns a Server object using the Guild.Id as the key. If a server is not found in the database then a new entry is made and then returned.
         /// </summary>

@@ -196,24 +196,50 @@ namespace Commands.Helpers
 
         private static string GetFinalTitle(Trivia game, bool forfeited = false)
         {
-            if (game.Player2.IsBot)
+            float winner = GetWinner(game, forfeited);
+
+            if (winner == 0.0f)
             {
-                return $"### ⚔️ {game.Player1.Mention}'s Completed Game of {game.Title}.";
+                return $"### ⚔️ {game.Player1.Mention}'s Completed Game of {game.Title}.";  
             }
             else
             {
-                // All ways for player1 to lose
-                if (game.player1Points < game.player2Points || (forfeited && game.player1Answer == null && game.player1Points < game.player2Points))
+                // player1 lost
+                if (winner == 2.0f)
                 {
                     return $"### ⚔️ {game.Player1.Mention} Was Defeated By {game.Player2.Mention} in {game.Title}.";
                 }
-                else if ((forfeited && game.player1Points + game.player2Points == 0) || game.player1Points == game.player2Points) // draw
+                else if (winner == 0.5f) // draw
                 {
                     return $"### ⚔️ {game.Player1.Mention} Drew {game.Player2.Mention} in {game.Title}.";
                 }
                 else // else player1 won
                 {
                     return $"### ⚔️ {game.Player1.Mention} Defeated {game.Player2.Mention} in {game.Title}.";
+                }
+            }
+        }
+
+        public static float GetWinner(Trivia game, bool forfeited = false)
+        {
+            if (game.Player2.IsBot)
+            {
+                return 0.0f;
+            }
+            else
+            {
+                // All ways for player1 to lose
+                if (game.player1Points < game.player2Points || (forfeited && game.player1Answer == null && game.player1Points < game.player2Points))
+                {
+                    return 2.0f;
+                }
+                else if ((forfeited && game.player1Points + game.player2Points == 0) || game.player1Points == game.player2Points) // draw
+                {
+                    return 0.5f;
+                }
+                else // else player1 won
+                {
+                    return 1.0f;
                 }
             }
         }

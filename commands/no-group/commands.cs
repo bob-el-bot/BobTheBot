@@ -23,6 +23,10 @@ using System.Runtime.CompilerServices;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal;
 using Microsoft.EntityFrameworkCore.Storage;
 using System.ComponentModel.Design.Serialization;
+using System.Security.Cryptography;
+using PremiumInterface;
+using System.Reactive;
+using ColorMethods;
 
 namespace Commands
 {
@@ -117,9 +121,10 @@ namespace Commands
             }
             else
             {
-                if (!Challenge.CanChallenge(Context.User.Id, opponent.Id))
+                (bool, string) canChallenge = await Challenge.CanChallengeAsync(Context.User.Id, opponent.Id);
+                if (!canChallenge.Item1)
                 {
-                    await RespondAsync(text: "❌ You can't challenge them.", ephemeral: true);
+                    await RespondAsync(text: canChallenge.Item2, ephemeral: true);
                 }
                 else
                 {
@@ -195,9 +200,10 @@ namespace Commands
             }
             else
             {
-                if (!Challenge.CanChallenge(Context.User.Id, opponent.Id))
+                (bool, string) canChallenge = await Challenge.CanChallengeAsync(Context.User.Id, opponent.Id);
+                if (!canChallenge.Item1)
                 {
-                    await RespondAsync(text: "❌ You can't challenge them.", ephemeral: true);
+                    await RespondAsync(text: canChallenge.Item2, ephemeral: true);
                 }
                 else
                 {
@@ -260,9 +266,10 @@ namespace Commands
             }
             else
             {
-                if (!Challenge.CanChallenge(Context.User.Id, opponent.Id))
+                (bool, string) canChallenge = await Challenge.CanChallengeAsync(Context.User.Id, opponent.Id);
+                if (!canChallenge.Item1)
                 {
-                    await RespondAsync(text: "❌ You can't challenge them.", ephemeral: true);
+                    await RespondAsync(text: canChallenge.Item2, ephemeral: true);
                 }
                 else
                 {
@@ -339,6 +346,9 @@ namespace Commands
                 {
                     await DeferAsync();
 
+                    // Update User Info
+                    Challenge.IncrementUserChallenges(challenge.Player2.Id);
+
                     await challenge.StartGame((SocketMessageComponent)Context.Interaction);
                 }
             }
@@ -363,6 +373,9 @@ namespace Commands
                 else
                 {
                     await DeferAsync();
+
+                    // Update User Info
+                    Challenge.DecrementUserChallenges(challenge.Player1.Id);
 
                     // Format Message
                     var embed = new EmbedBuilder
@@ -410,9 +423,14 @@ namespace Commands
         [SlashCommand("announce", "Bob will create a fancy embed announcement in the channel the command is used in.")]
         public async Task Announce([Summary("title", "The title of the announcement (the title of the embed).")] string title, [Summary("description", "The anouncement (the description of the embed).")] string description, [Summary("color", "A color name (purple), or valid hex code (#8D52FD).")] string color)
         {
-            Color finalColor = Convert.ToUInt32(Announcement.StringToHex(color), 16);
+            Color finalColor = Convert.ToUInt32(Colors.StringToHex(color), 16);
 
-            if (finalColor == 0)
+            // Check if Bob has permission to send messages in given channel
+            if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel).SendMessages || !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel).ViewChannel)
+            {
+                await RespondAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{Context.Channel.Id}>\n- Try giving Bob the following pemrissions: `View Channel`, `Send Messages`.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+            }
+            else if (finalColor == 0)
             {
                 await RespondAsync(text: $"❌ `{color}` is an invalid color. Here is a list of valid colors:\n- red, pink, orange, yellow, blue, green, white, gray (grey), black. \n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
@@ -481,7 +499,7 @@ namespace Commands
                 Color = Bot.theme
             };
 
-            embed.AddField(name: "🗒️ Creator's Notes", value: "- `/encrypt` and `/decrypt` have now been made into Groups to support special functionality for specific ciphers. Additionally, the Vigenere cipher has been added!\n- `/tic-tac-toe` has been added with bot, and multiplayer options.\n- `/trivia` has been added with bot and multiplayer options.\n- `/quote new` has been buffed. It now has a \"Jump To\" feature.\n- Stay 📺 tuned for some awesome updates!", inline: false).AddField(name: "✨ Latest Update", value: commitMessage, inline: true).AddField(name: ":calendar_spiral: Date", value: $"<t:{commitDateID}:f>", inline: true).AddField(name: "🔮 See What's In the Works", value: "[Road Map](https://github.com/orgs/bob-el-bot/projects/4)");
+            embed.AddField(name: "🗒️ Creator's Notes", value: "Premium has now been officially implented and will only get better!\n💜 **thanks so much to those of you who supported Bob before premium features even existed!**\n- Added `/profile display` for looking at 🪪 user's game stats.\n- Added `/premium` for buying *premium* (💜 another thanks to the og supporters!).\n- Added `/profile set-color` for *premium* users to change their profiles' 🌈 color.\n- Added **unlimited** challenges for *premium* users.\n- Added `/quote set-max-length` and `/quote set-min-length` for *premium* users to add 📏 length standards for their server's quotes.\n- Added `/welcome set-message` for *premium* users to create custom 👋 welcome messages on their servers.\n- Fixed bug where `/poll` and `/announce` would not check for Send Messages permission.\n- Stay 📺 tuned for some awesome updates!", inline: false).AddField(name: "✨ Latest Update", value: commitMessage, inline: true).AddField(name: ":calendar_spiral: Date", value: $"<t:{commitDateID}:f>", inline: true).AddField(name: "🔮 See What's In the Works", value: "[Road Map](https://github.com/orgs/bob-el-bot/projects/4)");
 
             await RespondAsync(embed: embed.Build());
         }
@@ -517,6 +535,8 @@ namespace Commands
 **🖊️ Quoting:** [Quoting Docs](https://docs.bobthebot.net#quoting)
 - `/quote new [quote] [user] [tag]*3` Formats and shares the quote in designated channel. [Docs](https://docs.bobthebot.net#quote-new)
 - `/quote channel [channel]` Sets the quote channel for the server. [Docs](https://docs.bobthebot.net#quote-channel)
+- `/quote set-max-length [length]` Sets the maximum length of quotes for the server.
+- `/quote set-min-length [length]` Sets the minimum length of quotes for the server.
 **🔒 Encryption commands:** [Encryption Docs](https://docs.bobthebot.net#encrypt)
 - `/encrypt a1z26 [message]` Encrypts your message by swapping letters to their corresponding number. [Docs](https://docs.bobthebot.net#encrypt-a1z26)
 - `/encrypt atbash [message]` Encrypts your message by swapping letters to their opposite position. [Docs](https://docs.bobthebot.net#encrypt-atbash)
@@ -545,8 +565,13 @@ namespace Commands
   - `[option]*4` usage: You must provide 2-4 options. These are essentially the poll's choices.
 - `/ship [user]*2` See how good of a match 2 users are. [Docs](https://docs.bobthebot.net#ship)
 - `/hug [user]*5` Show your friends some love with a hug. [Docs](https://docs.bobthebot.net#hug)
-- `/welcome [welcome]` Bob will send welcome messages to new server members. [Docs](https://docs.bobthebot.net#welcome)
+- `/welcome toggle [welcome]` Bob will send welcome messages to new server members. [Docs](https://docs.bobthebot.net#welcome)
+- `/welcome set-message [message]` Set a custom message to welcome new users with.
+- `/welcome remove-message` Bob will stop using the custom message to welcome users.
 **🗄️ Informational / Help:** [Info Docs](https://docs.bobthebot.net#info)
+- `/premium` Ensures Bob knows you have premium! If not you will be given a button to get it!
+- `/profile display [user]` Displays the specified user's profile.
+- `/profile set-color [color]` Sets your profile color.
 - `/new` See the latest updates to Bob. [Docs](https://docs.bobthebot.net#new)
 - `/quote-prompts` See all valid prompts for `/random quote`. [Docs](https://docs.bobthebot.net#quote-prompts)
 - `/ping` Find the client's latency. [Docs](https://docs.bobthebot.net#ping)
@@ -580,6 +605,42 @@ namespace Commands
         }
 
         [EnabledInDm(true)]
+        [SlashCommand("premium", "Update your premium status or buy it!")]
+        public async Task PremiumStatus()
+        {
+            await DeferAsync();
+            User user;
+            using var context = new BobEntities();
+            user = await context.GetUser(Context.User.Id);
+
+            // If user has premium ensure DB is updated.
+            bool isPremium = Premium.IsPremium(Context.Interaction.Entitlements);
+            if (isPremium || Premium.IsValidPremium(user.PremiumExpiration))
+            {
+
+                if (isPremium != false)
+                {
+                    // Get Expiration Date
+                    var expirationDate = (DateTimeOffset)Context.Interaction.Entitlements.FirstOrDefault(x => x.SkuId == 1169107771673812992).EndsAt;
+
+                    // Only write to DB if needed.
+                    if (user.PremiumExpiration == expirationDate)
+                    {
+                        user.PremiumExpiration = expirationDate;
+                        await context.UpdateUser(user);
+                    }
+                }
+
+                // Respond
+                await FollowupAsync(text: "✨ Your premium status has been updated!\n**💜 Thanks so much** for your support and have fun with your new features!");
+            }
+            else
+            {
+                await RespondWithPremiumRequiredAsync();
+            }
+        }
+
+        [EnabledInDm(true)]
         [SlashCommand("support", "Sends an invite to Bob's support Server.")]
         public async Task Support()
         {
@@ -588,60 +649,15 @@ namespace Commands
         }
 
         [EnabledInDm(false)]
-        [SlashCommand("welcome", "Enable or disable Bob welcoming users to your server!")]
-        public async Task Welcome([Summary("welcome", "If checked, Bob will send welcome messages.")] bool welcome)
-        {
-            await DeferAsync(ephemeral: true);
-
-            if (Context.Guild.SystemChannel == null)
-            {
-                await FollowupAsync(text: $"❌ You **need** to set a *System Messages* channel in settings in order for Bob to greet people.", ephemeral: true);
-            }
-            // Check if the user has manage channels permissions
-            else if (!Context.Guild.GetUser(Context.User.Id).GetPermissions(Context.Guild.SystemChannel).ManageChannel)
-            {
-                await FollowupAsync(text: $"❌ You do not have permissions to manage <#{Context.Guild.SystemChannel.Id}> (The system channel where welcome messages are sent)\n- Try asking a user with the permission **Manage Channel**.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
-            }
-            // Check if Bob has permission to send messages in given channel
-            else if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions(Context.Guild.SystemChannel).SendMessages || !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions(Context.Guild.SystemChannel).ViewChannel)
-            {
-                await FollowupAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{Context.Guild.SystemChannel.Id}> (The system channel where welcome messages are sent)\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
-            }
-            // Update server welcome information.
-            else
-            {
-                Server server;
-                using (var context = new BobEntities())
-                {
-                    server = await context.GetServer(Context.Guild.Id);
-                    server.Welcome = welcome;
-                    await context.UpdateServer(server);
-                }
-
-                if (welcome)
-                {
-                    if (Context.Guild.SystemChannel == null)
-                    {
-                        await FollowupAsync(text: $"❌ Bob knows to welcome users now, but you **need** to set a *System Messages* channel in settings for this to take effect.", ephemeral: true);
-                    }
-                    else
-                    {
-                        await FollowupAsync(text: $"✅ Bob will now greet people in <#{Context.Guild.SystemChannel.Id}>", ephemeral: true);
-                    }
-                }
-                else
-                {
-                    await FollowupAsync(text: $"✅ Bob will not greet people anymore.", ephemeral: true);
-                }
-            }
-        }
-
-        [EnabledInDm(false)]
         [SlashCommand("poll", "Bob will create a poll.")]
         public async Task Poll([Summary("prompt", "The question you are asking.")] string prompt, [Summary("option1", "an answer / response to your question")] string option1, [Summary("option2", "an answer / response to your question")] string option2, [Summary("option3", "an answer / response to your question")] string option3 = "", [Summary("option4", "an answer / response to your question")] string option4 = "")
         {
-            // Check for permissions
-            if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel).AddReactions)
+            // Check if Bob has permission to send messages in given channel
+            if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel).SendMessages || !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel).ViewChannel)
+            {
+                await RespondAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{Context.Channel.Id}>\n- Try giving Bob the following pemrissions: `View Channel`, `Send Messages`.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+            }
+            else if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel).AddReactions) // Check if Bob can add reactions
             {
                 await RespondAsync("❌ Bob needs the **Add Reactions** permission to use `/poll`\n- Try asking an administrator.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }

@@ -4,7 +4,7 @@
     <img src="https://skillicons.dev/icons?i=cs,net,raspberrypi,discord">
 <p>
 
-<p>The bot for 🎲 RNG, 🖊️ quoting, 📜 fonts, 🔒 encryption, and ✨ more! Currently serving 20,000+ users in 300+ servers!</p>
+<p>The bot for 🎲 RNG, 🖊️ quoting, 📜 fonts, 🔒 encryption, and ✨ more! Currently serving 50,000+ users in 600+ servers!</p>
 
 <a href="https://discord.com/oauth2/authorize?client_id=705680059809398804&permissions=1110719392886&scope=bot%20applications.commands">Invite</a>
 <span>|
@@ -77,6 +77,8 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 ### 🖊️ Quoting commands:
 - `/quote new [quote] [user] [tag]*3` Formats and shares the quote in designated channel.
 - `/quote channel [channel]` Sets the quote channel for the server.
+- `/quote set-max-length [length]` Sets the maximum length of quotes for the server.
+- `/quote set-min-length [length]` Sets the minimum length of quotes for the server.
 
 ### ✨ Miscellaneous commands: 
 - `/code preview [link]` Preview specific lines of code from a file on GitHub.
@@ -87,7 +89,9 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/poll [prompt] [option]*4` Create a poll.
 - `/ship [user]*2` See how good of a match 2 users are.
 - `/hug [user]*5` Show your friends some love with a hug.
-- `/welcome [welcome]` Bob will send welcome messages to new server members.
+- `/welcome toggle [welcome]` Bob will send welcome messages to new server members.
+- `/welcome set-message [message]` Set a custom message to welcome new users with.
+- `/welcome remove-message` Bob will stop using the custom message to welcome users.
 - `/hi` Say hi to Bob.
 
 ### 🔒 Encryption commands:
@@ -105,6 +109,9 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/decrypt vigenere [message] [key]` Decrypts your message using a specified key.
 
 ### 🗄️ Informational / help commands:
+- `/premium` Ensures Bob knows you have premium! If not you will be given a button to get it!
+- `/profile display [user]` Displays the specified user's profile.
+- `/profile set-color [color]` Sets your profile color.
 - `/help` Get DMed information for *all* commands.
 - `/new` See the latest updates to Bob.
 - `/quote-prompts` See all valid prompts for `/random quote`.

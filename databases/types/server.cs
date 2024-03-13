@@ -8,7 +8,17 @@ namespace Database.Types
         public ulong Id { get; set; }
 
         public ulong? QuoteChannelId { get; set; }
+        public uint? MaxQuoteLength { get; set; }
+        public uint MinQuoteLength { get; set; }
 
         public bool Welcome { get; set; }
+        public string CustomWelcomeMessage { get; set; }
+
+        // Constructor to set default values
+        public Server()
+        {
+            MaxQuoteLength = 4096;
+            MinQuoteLength = 0;
+        }
     }
 }
