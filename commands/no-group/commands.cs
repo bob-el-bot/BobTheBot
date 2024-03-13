@@ -425,7 +425,12 @@ namespace Commands
         {
             Color finalColor = Convert.ToUInt32(Colors.StringToHex(color), 16);
 
-            if (finalColor == 0)
+            // Check if Bob has permission to send messages in given channel
+            if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel).SendMessages || !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel).ViewChannel)
+            {
+                await RespondAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{Context.Channel.Id}>\n- Try giving Bob the following pemrissions: `View Channel`, `Send Messages`.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+            }
+            else if (finalColor == 0)
             {
                 await RespondAsync(text: $"❌ `{color}` is an invalid color. Here is a list of valid colors:\n- red, pink, orange, yellow, blue, green, white, gray (grey), black. \n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
@@ -647,8 +652,12 @@ namespace Commands
         [SlashCommand("poll", "Bob will create a poll.")]
         public async Task Poll([Summary("prompt", "The question you are asking.")] string prompt, [Summary("option1", "an answer / response to your question")] string option1, [Summary("option2", "an answer / response to your question")] string option2, [Summary("option3", "an answer / response to your question")] string option3 = "", [Summary("option4", "an answer / response to your question")] string option4 = "")
         {
-            // Check for permissions
-            if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel).AddReactions)
+            // Check if Bob has permission to send messages in given channel
+            if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel).SendMessages || !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel).ViewChannel)
+            {
+                await RespondAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{Context.Channel.Id}>\n- Try giving Bob the following pemrissions: `View Channel`, `Send Messages`.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+            }
+            else if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel).AddReactions) // Check if Bob can add reactions
             {
                 await RespondAsync("❌ Bob needs the **Add Reactions** permission to use `/poll`\n- Try asking an administrator.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
