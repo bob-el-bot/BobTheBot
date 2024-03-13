@@ -83,8 +83,6 @@ namespace Commands
             }
             else
             {
-                await DeferAsync();
-
                 // Only write to DB if needed.
                 if (user.ProfileColor != color)
                 {
