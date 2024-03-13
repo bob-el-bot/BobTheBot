@@ -110,6 +110,8 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 
 ### 🗄️ Informational / help commands:
 - `/premium` Ensures Bob knows you have premium! If not you will be given a button to get it!
+- `/profile display [user]` Displays the specified user's profile.
+- `/profile set-color [color]` Sets your profile color.
 - `/help` Get DMed information for *all* commands.
 - `/new` See the latest updates to Bob.
 - `/quote-prompts` See all valid prompts for `/random quote`.

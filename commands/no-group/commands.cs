@@ -565,6 +565,8 @@ namespace Commands
 - `/welcome remove-message` Bob will stop using the custom message to welcome users.
 **🗄️ Informational / Help:** [Info Docs](https://docs.bobthebot.net#info)
 - `/premium` Ensures Bob knows you have premium! If not you will be given a button to get it!
+- `/profile display [user]` Displays the specified user's profile.
+- `/profile set-color [color]` Sets your profile color.
 - `/new` See the latest updates to Bob. [Docs](https://docs.bobthebot.net#new)
 - `/quote-prompts` See all valid prompts for `/random quote`. [Docs](https://docs.bobthebot.net#quote-prompts)
 - `/ping` Find the client's latency. [Docs](https://docs.bobthebot.net#ping)
