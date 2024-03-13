@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using ColorMethods;
 using Commands.Helpers;
 using Database;
 using Database.Types;
@@ -41,7 +42,7 @@ namespace Commands
                 // Check Premium
                 bool hasPremium = Premium.IsValidPremium(userToDisplay.PremiumExpiration);
 
-                Color color = hasPremium ? Convert.ToUInt32(Announcement.StringToHex(userToDisplay.ProfileColor), 16) : 0x2C2F33;
+                Color color = hasPremium ? Convert.ToUInt32(Colors.StringToHex(userToDisplay.ProfileColor), 16) : 0x2C2F33;
 
                 // Create Embed
                 var embed = new EmbedBuilder
@@ -70,7 +71,7 @@ namespace Commands
             using var context = new BobEntities();
             user = await context.GetUser(Context.User.Id);
 
-            Color finalColor = Convert.ToUInt32(Announcement.StringToHex(color), 16);
+            Color finalColor = Convert.ToUInt32(Colors.StringToHex(color), 16);
 
             // Check if the user has premium.
             if (Premium.IsValidPremium(user.PremiumExpiration) == false)

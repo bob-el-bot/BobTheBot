@@ -26,6 +26,7 @@ using System.ComponentModel.Design.Serialization;
 using System.Security.Cryptography;
 using PremiumInterface;
 using System.Reactive;
+using ColorMethods;
 
 namespace Commands
 {
@@ -422,7 +423,7 @@ namespace Commands
         [SlashCommand("announce", "Bob will create a fancy embed announcement in the channel the command is used in.")]
         public async Task Announce([Summary("title", "The title of the announcement (the title of the embed).")] string title, [Summary("description", "The anouncement (the description of the embed).")] string description, [Summary("color", "A color name (purple), or valid hex code (#8D52FD).")] string color)
         {
-            Color finalColor = Convert.ToUInt32(Announcement.StringToHex(color), 16);
+            Color finalColor = Convert.ToUInt32(Colors.StringToHex(color), 16);
 
             if (finalColor == 0)
             {
