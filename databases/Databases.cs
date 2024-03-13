@@ -31,6 +31,10 @@ namespace Database
                 .Property(s => s.MaxQuoteLength)
                 .HasDefaultValue(4096u); // Set default value for MaxQuoteLength
 
+            modelBuilder.Entity<User>()
+                .Property(u => u.ProfileColor)
+                .HasDefaultValue("#2C2F33"); // Set default value for ProfileColor
+
             base.OnModelCreating(modelBuilder);
         }
 

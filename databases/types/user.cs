@@ -9,6 +9,8 @@ namespace Database.Types
         public ulong Id { get; set; }
         // Premium
         public DateTimeOffset PremiumExpiration { get; set; }
+        // Profile
+        public string ProfileColor { get; set; }
         // Stats
         public float TriviaWins { get; set; } 
         public int TotalTriviaGames { get; set; }
