@@ -628,7 +628,7 @@ namespace Commands
                     var expirationDate = (DateTimeOffset)Context.Interaction.Entitlements.FirstOrDefault(x => x.SkuId == 1169107771673812992).EndsAt;
 
                     // Only write to DB if needed.
-                    if (user.PremiumExpiration == expirationDate)
+                    if (user.PremiumExpiration != expirationDate)
                     {
                         user.PremiumExpiration = expirationDate;
                         await context.UpdateUser(user);
