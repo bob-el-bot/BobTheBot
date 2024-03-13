@@ -7,7 +7,6 @@ using Database.Types;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using Newtonsoft.Json;
 using PremiumInterface;
 
 namespace Commands
@@ -35,9 +34,9 @@ namespace Commands
                 using var context = new BobEntities();
                 userToDisplay = await context.GetUser(user.Id);
 
-                float rpsWinPercent = (float)Math.Round(userToDisplay.RockPaperScissorsWins / userToDisplay.TotalRockPaperScissorsGames * 100, 2);
-                float tttWinPercent = (float)Math.Round(userToDisplay.TicTacToeWins / userToDisplay.TotalTicTacToeGames * 100, 2);
-                float triviaWinPercent = (float)Math.Round(userToDisplay.TriviaWins / userToDisplay.TotalTriviaGames * 100, 2);
+                float rpsWinPercent = (float)Math.Round(userToDisplay.TotalRockPaperScissorsGames != 0 ? userToDisplay.RockPaperScissorsWins / userToDisplay.TotalRockPaperScissorsGames * 100 : 0, 2);
+                float tttWinPercent = (float)Math.Round(userToDisplay.TotalTicTacToeGames != 0 ? userToDisplay.TicTacToeWins / userToDisplay.TotalTicTacToeGames * 100 : 0, 2);
+                float triviaWinPercent = (float)Math.Round(userToDisplay.TotalTriviaGames != 0 ? userToDisplay.TriviaWins / userToDisplay.TotalTriviaGames * 100 : 0, 2);
 
                 // Check Premium
                 bool hasPremium = Premium.IsValidPremium(userToDisplay.PremiumExpiration);
