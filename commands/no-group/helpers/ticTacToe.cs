@@ -79,7 +79,7 @@ namespace Commands.Helpers
                     Challenge.DecrementUserChallenges(Player1.Id);
                     Challenge.DecrementUserChallenges(Player2.Id);
 
-                    float winner = TTTMethods.GetWinner(grid, turns, isPlayer1Turn, true);
+                    Challenge.WinCases winner = TTTMethods.GetWinner(grid, turns, isPlayer1Turn, true);
 
                     // Update User Info
                     using var context = new BobEntities();
@@ -90,11 +90,11 @@ namespace Commands.Helpers
                     {
                         user.TotalTicTacToeGames++;
 
-                        if ((user.Id == Player1.Id && winner == 1.0f) || (user.Id == Player2.Id && winner == 2.0f))
+                        if ((user.Id == Player1.Id && winner == Challenge.WinCases.Player1) || (user.Id == Player2.Id && winner == Challenge.WinCases.Player2))
                         {
                             user.TicTacToeWins++;
                         }
-                        else if (winner == 0.5f)
+                        else if (winner == Challenge.WinCases.Tie)
                         {
                             user.TicTacToeWins += 0.5f;
                         }
@@ -182,7 +182,7 @@ namespace Commands.Helpers
                     Challenge.DecrementUserChallenges(Player1.Id);
                     Challenge.DecrementUserChallenges(Player2.Id);
 
-                    float winner = TTTMethods.GetWinner(grid, turns, isPlayer1Turn);
+                    Challenge.WinCases winner = TTTMethods.GetWinner(grid, turns, isPlayer1Turn);
 
                     // Update User Info
                     using var context = new BobEntities();
@@ -193,11 +193,11 @@ namespace Commands.Helpers
                     {
                         user.TotalTicTacToeGames++;
 
-                        if ((user.Id == Player1.Id && winner == 1.0f) || (user.Id == Player2.Id && winner == 2.0f))
+                        if ((user.Id == Player1.Id && winner == Challenge.WinCases.Player1) || (user.Id == Player2.Id && winner == Challenge.WinCases.Player2))
                         {
                             user.TicTacToeWins++;
                         }
-                        else if (winner == 0.5f)
+                        else if (winner == Challenge.WinCases.Tie)
                         {
                             user.TicTacToeWins += 0.5f;
                         }
@@ -260,14 +260,14 @@ namespace Commands.Helpers
 
         private string GetFinalTitle(bool forfeited = false)
         {
-            float winner = TTTMethods.GetWinner(grid, turns, isPlayer1Turn, forfeited);
+            Challenge.WinCases winner = TTTMethods.GetWinner(grid, turns, isPlayer1Turn, forfeited);
 
             // All ways for player1 to lose
-            if (winner == 2.0f)
+            if (winner == Challenge.WinCases.Player2)
             {
                 return $"### ⚔️ {Player1.Mention} Was Defeated By {Player2.Mention} in {Title}.";
             }
-            else if (winner == 0.5f && turns == 9 || (forfeited && turns == 0)) // draw
+            else if (winner == Challenge.WinCases.Tie && turns == 9 || (forfeited && turns == 0)) // draw
             {
                 return $"### ⚔️ {Player1.Mention} Drew {Player2.Mention} in {Title}.";
             }

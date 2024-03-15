@@ -1,12 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
-using Discord.Audio.Streams;
 
 namespace Commands.Helpers
 {
-    public class Announcement
+    public static class Announcement
     {
         public static string FormatDescription(string description)
         {
