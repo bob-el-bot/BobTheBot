@@ -509,11 +509,14 @@ namespace Commands
         public async Task help()
         {
             await DeferAsync(ephemeral: true);
-            var firstEmbed = new EmbedBuilder
+
+            try
             {
-                Title = $"📖 Here is a list of all of my commands.",
-                Color = Bot.theme,
-                Description = @"See the [Docs](https://docs.bobthebot.net#other) for more in depth info.
+                var firstEmbed = new EmbedBuilder
+                {
+                    Title = $"📖 Here is a list of all of my commands.",
+                    Color = Bot.theme,
+                    Description = @"See the [Docs](https://docs.bobthebot.net#other) for more in depth info.
 **🎲 Randomly Generated (RNG):** [RNG Docs](https://docs.bobthebot.net#rng)
 - `/random color` Get a color with Hex, CMYK, HSL, HSV and RGB codes. [Docs](https://docs.bobthebot.net#random-color)
 - `/random dice-roll [sides]` Roll a die with a specified # of sides. [Docs](https://docs.bobthebot.net#random-dice-roll)
@@ -543,13 +546,13 @@ namespace Commands
 - `/encrypt caesar [message] [shift]` Encrypts your message by shifting the letters the specified amount. [Docs](https://docs.bobthebot.net#encrypt-caesar)
 - `/encrypt morse [message]` Encrypts your message using Morse code. [Docs](https://docs.bobthebot.net#encrypt-morse)
 - `/encrypt vigenere [message] [key]` Encrypts your message using a specified key. [Docs](https://docs.bobthebot.net#encrypt-vigenere)"
-            };
+                };
 
-            var secondEmbed = new EmbedBuilder
-            {
-                Title = $"",
-                Color = Bot.theme,
-                Description = @"**🔓 Decryption commands:** [Decryption Docs](https://docs.bobthebot.net#decrypt)
+                var secondEmbed = new EmbedBuilder
+                {
+                    Title = $"",
+                    Color = Bot.theme,
+                    Description = @"**🔓 Decryption commands:** [Decryption Docs](https://docs.bobthebot.net#decrypt)
 - `/decrypt a1z26 [message]` Decrypts your message by swapping letters to their corresponding number [Docs](https://docs.bobthebot.net#decrypt-a1z26).
 - `/decrypt atbash [message]` Decrypts your message by swapping letters to their opposite position [Docs](https://docs.bobthebot.net#decrypt-atbash).
 - `/decrypt caesar [message] [shift]` Decrypts your message by shifting the letters the specified amount [Docs](https://docs.bobthebot.net#decrypt-caesar).
@@ -578,11 +581,15 @@ namespace Commands
 - `/analyze-link` See where a link will take you, and check for rick rolls. [Docs](https://docs.bobthebot.net#analyze-link)
 - `/info` Learn about Bob. [Docs](https://docs.bobthebot.net#info)
 - `/support` Sends an invite to Bob's support Server. [Docs](https://docs.bobthebot.net#support)"
-            };
+                };
 
-            await Context.User.SendMessageAsync(embed: firstEmbed.Build());
-            await Context.User.SendMessageAsync(embed: secondEmbed.Build());
-            await FollowupAsync(text: $"📪 Check your DMs.", ephemeral: true);
+                await Context.User.SendMessageAsync(embed: firstEmbed.Build());
+                await Context.User.SendMessageAsync(embed: secondEmbed.Build());
+                await FollowupAsync(text: $"📪 Check your DMs.", ephemeral: true);
+            }
+            catch {
+                await FollowupAsync(text: $"❌ Bob could not share the command list via DMs.\n- Try opening your DMs (making them open).\n- Or you can simply view the commands list here: [docs.bobthebot.net](<https://bobthebot.net/commands.html>)", ephemeral: true);
+            }
         }
 
         [EnabledInDm(false)]
