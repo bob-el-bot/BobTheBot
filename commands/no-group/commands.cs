@@ -587,7 +587,8 @@ namespace Commands
                 await Context.User.SendMessageAsync(embed: secondEmbed.Build());
                 await FollowupAsync(text: $"📪 Check your DMs.", ephemeral: true);
             }
-            catch {
+            catch
+            {
                 await FollowupAsync(text: $"❌ Bob could not share the command list via DMs.\n- Try opening your DMs (making them open).\n- Or you can simply view the commands list here: [docs.bobthebot.net](<https://bobthebot.net/commands.html>)", ephemeral: true);
             }
         }
@@ -600,14 +601,22 @@ namespace Commands
             {
                 await RespondAsync(text: "❌ Sorry, but no sending messages to bots.", ephemeral: true);
             }
-            else if (message.Length + 3 + signoff.Length > 2000) // 2000 is max characters in a message.
+
+            try
             {
-                await RespondAsync($"❌ The message *cannot* be delivered because it contains **{message.Length + 3 + signoff.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **2000** characters.", ephemeral: true);
+                if (message.Length + 3 + signoff.Length > 2000) // 2000 is max characters in a message.
+                {
+                    await RespondAsync($"❌ The message *cannot* be delivered because it contains **{message.Length + 3 + signoff.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **2000** characters.", ephemeral: true);
+                }
+                else
+                {
+                    await user.SendMessageAsync($"{message} - {signoff}");
+                    await RespondAsync(text: $"✉️ Your message has been sent!\nMessage: **{message} - {signoff}** was sent to **{user.Username}**", ephemeral: true);
+                }
             }
-            else
+            catch
             {
-                await user.SendMessageAsync($"{message} - {signoff}");
-                await RespondAsync(text: $"✉️ Your message has been sent!\nMessage: **{message} - {signoff}** was sent to **{user.Username}**", ephemeral: true);
+                await RespondAsync(text: $"❌ Bob could not DM {user.Mention}.\n- You could try again, but this probably means their DMs are closed which Bob cannot change.", ephemeral: true);
             }
         }
 
