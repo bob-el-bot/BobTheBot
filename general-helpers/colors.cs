@@ -38,17 +38,22 @@ namespace ColorMethods
 
         private static string WordToHex(string input)
         {
-            Dictionary<string, string> colors = new() { { "red", "ED4245" }, { "orange", "FFA500" }, { "yellow", "FEE75C" }, { "green", "57F287" }, { "black", "23272A" }, { "pink", "EB459E" }, { "blue", "3498DB" }, { "grey", "95A5A6" }, { "gray", "95A5A6" }, { "white", "FFFFFF" }, {"purple", "8D52FD" } };
+            Dictionary<string, string> colors = new() { { "red", "ED4245" }, { "orange", "FFA500" }, { "yellow", "FEE75C" }, { "green", "57F287" }, { "black", "23272A" }, { "pink", "EB459E" }, { "blue", "3498DB" }, { "grey", "95A5A6" }, { "gray", "95A5A6" }, { "white", "FFFFFF" }, { "purple", "8D52FD" } };
+
+            string lowerInput = input.ToLowerInvariant();
 
             string match = null;
 
             foreach (var color in colors)
             {
-                match = Regex.Replace(input, color.Key, color.Value, RegexOptions.IgnoreCase) ?? null;
+                if (lowerInput.Contains(color.Key))
+                {
+                    match = color.Value;
+                    break;
+                }
             }
 
-            colors.TryGetValue(match, out string output);
-            return output;
+            return match;
         }
     }
 }
