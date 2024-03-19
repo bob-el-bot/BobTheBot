@@ -4,16 +4,17 @@ using System.Threading.Tasks;
 using Commands.Helpers;
 using Database;
 using Database.Types;
+using Discord;
 using Discord.Interactions;
 using PremiumInterface;
 
 namespace Commands
 {
-    [EnabledInDm(false)]
+    [CommandContextType(InteractionContextType.Guild)]
+    [IntegrationType(ApplicationIntegrationType.GuildInstall)]
     [Group("welcome", "All welcome commands.")]
     public class WelcomeGroup : InteractionModuleBase<SocketInteractionContext>
     {
-        [EnabledInDm(false)]
         [SlashCommand("toggle", "Enable or disable Bob welcoming users to your server!")]
         public async Task WelcomeToggle([Summary("welcome", "If checked (true), Bob will send welcome messages.")] bool welcome)
         {
@@ -62,7 +63,6 @@ namespace Commands
             }
         }
 
-        [EnabledInDm(false)]
         [SlashCommand("set-message", "Create a custom welcome message for your server!")]
         public async Task SetCustomWelcomeMessage([Summary("message", "Whatever you want said to your users. Type @ where you want the ping.")] string message)
         {
@@ -118,7 +118,6 @@ namespace Commands
             }
         }
 
-        [EnabledInDm(false)]
         [SlashCommand("remove-message", "Removes the custom welcome message from your server. Does not disable general welcome messages.")]
         public async Task RemoveCustomWelcomeMessage()
         {

@@ -196,7 +196,7 @@ namespace Commands.Helpers
 
         private static string GetFinalTitle(Trivia game, bool forfeited = false)
         {
-            float winner = GetWinner(game, forfeited);
+            Challenge.WinCases winner = GetWinner(game, forfeited);
 
             if (winner == 0.0f)
             {
@@ -205,11 +205,11 @@ namespace Commands.Helpers
             else
             {
                 // player1 lost
-                if (winner == 2.0f)
+                if (winner == Challenge.WinCases.Player2)
                 {
                     return $"### ⚔️ {game.Player1.Mention} Was Defeated By {game.Player2.Mention} in {game.Title}.";
                 }
-                else if (winner == 0.5f) // draw
+                else if (winner == Challenge.WinCases.Tie) // draw
                 {
                     return $"### ⚔️ {game.Player1.Mention} Drew {game.Player2.Mention} in {game.Title}.";
                 }
@@ -220,26 +220,26 @@ namespace Commands.Helpers
             }
         }
 
-        public static float GetWinner(Trivia game, bool forfeited = false)
+        public static Challenge.WinCases GetWinner(Trivia game, bool forfeited = false)
         {
             if (game.Player2.IsBot)
             {
-                return 0.0f;
+                return Challenge.WinCases.None;
             }
             else
             {
                 // All ways for player1 to lose
                 if (game.player1Points < game.player2Points || (forfeited && game.player1Answer == null && game.player1Points < game.player2Points))
                 {
-                    return 2.0f;
+                    return Challenge.WinCases.Player2;
                 }
                 else if ((forfeited && game.player1Points + game.player2Points == 0) || game.player1Points == game.player2Points) // draw
                 {
-                    return 0.5f;
+                    return Challenge.WinCases.Tie;
                 }
                 else // else player1 won
                 {
-                    return 1.0f;
+                    return Challenge.WinCases.Player1;
                 }
             }
         }

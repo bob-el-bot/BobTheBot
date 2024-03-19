@@ -79,7 +79,7 @@ namespace Commands.Helpers
                     Challenge.DecrementUserChallenges(Player1.Id);
                     Challenge.DecrementUserChallenges(Player2.Id);
 
-                    float winner = GetWinner(true);
+                    Challenge.WinCases winner = GetWinner(true);
 
                     // Update User Info
                     using var context = new BobEntities();
@@ -90,11 +90,11 @@ namespace Commands.Helpers
                     {
                         user.TotalRockPaperScissorsGames++;
 
-                        if ((user.Id == Player1.Id && winner == 1.0f) || (user.Id == Player2.Id && winner == 2.0f))
+                        if ((user.Id == Player1.Id && winner == Challenge.WinCases.Player1) || (user.Id == Player2.Id && winner == Challenge.WinCases.Player2))
                         {
                             user.RockPaperScissorsWins++;
                         }
-                        else if (winner == 0.5f)
+                        else if (winner == Challenge.WinCases.Tie)
                         {
                             user.RockPaperScissorsWins += 0.5f;
                         }
@@ -121,7 +121,7 @@ namespace Commands.Helpers
                     Challenge.DecrementUserChallenges(Player1.Id);
                     Challenge.DecrementUserChallenges(Player2.Id);
 
-                    float winner = GetWinner();
+                    Challenge.WinCases winner = GetWinner();
 
                     // Update User Info
                     using var context = new BobEntities();
@@ -132,11 +132,11 @@ namespace Commands.Helpers
                     {
                         user.TotalRockPaperScissorsGames++;
 
-                        if ((user.Id == Player1.Id && winner == 1.0f) || (user.Id == Player2.Id && winner == 2.0f))
+                        if ((user.Id == Player1.Id && winner == Challenge.WinCases.Player1) || (user.Id == Player2.Id && winner == Challenge.WinCases.Player2))
                         {
                             user.RockPaperScissorsWins++;
                         }
-                        else if (winner == 0.5f)
+                        else if (winner == Challenge.WinCases.Tie)
                         {
                             user.RockPaperScissorsWins += 0.5f;
                         }
@@ -165,33 +165,33 @@ namespace Commands.Helpers
             };
         }
 
-        private float GetWinner(bool forfeited = false)
+        private Challenge.WinCases GetWinner(bool forfeited = false)
         {
             // All ways for player1 to lose
             if ((player1Choice == 0 && player2Choice == 1) || (player1Choice == 1 && player2Choice == 2) || (player1Choice == 2 && player2Choice == 0))
             {
-                return 2.0f;
+                return Challenge.WinCases.Player2;
             }
             else if (player1Choice == player2Choice || forfeited)
             {
-                return 0.5f;
+                return Challenge.WinCases.Tie;
             }
             else // else player1 won
             {
-                return 1.0f;
+                return Challenge.WinCases.Player1;
             }
         }
 
         private string GetFinalTitle(bool forfeited = false)
         {
-            float winner = GetWinner(forfeited);
+            Challenge.WinCases winner = GetWinner(forfeited);
 
             // All ways for player1 to lose
-            if (winner == 2.0f)
+            if (winner == Challenge.WinCases.Player2)
             {
                 return $"### ⚔️ {Player1.Mention} Was Defeated By {Player2.Mention} in {Title}.";
             }
-            else if (winner == 0.5f) // draw
+            else if (winner == Challenge.WinCases.Tie) // draw
             {
                 return $"### ⚔️ {Player1.Mention} Drew {Player2.Mention} in {Title}.";
             }

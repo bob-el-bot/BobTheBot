@@ -32,21 +32,24 @@ namespace Commands
 {
     public class NoGroup : InteractionModuleBase<SocketInteractionContext>
     {
-        [EnabledInDm(false)]
+        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("ping", "Bob will share his ping.")]
         public async Task Ping()
         {
             await RespondAsync(text: $"🏓 Pong! The client latency is **{Bot.Client.Latency}** ms.");
         }
 
-        [EnabledInDm(true)]
+        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("hi", "Say hi to Bob.")]
         public async Task Hi()
         {
             await RespondAsync(text: "👋 hi!");
         }
 
-        [EnabledInDm(true)]
+        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("analyze-link", "Bob will check out a link, and see where it takes you.")]
         public async Task AnalyzeLink([Summary("link", "The link in question.")] string link)
         {
@@ -66,7 +69,8 @@ namespace Commands
             }
         }
 
-        [EnabledInDm(true)]
+        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
         [MessageCommand("Analyze Link")]
         public async Task AnalyzeMessageLink(IMessage message)
         {
@@ -89,7 +93,8 @@ namespace Commands
             }
         }
 
-        [EnabledInDm(true)]
+        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("hug", "Hug your friends! (up to 5 people in a group hug!)")]
         public async Task Hug(SocketUser person1, SocketUser person2 = null, SocketUser person3 = null, SocketUser person4 = null, SocketUser person5 = null)
         {
@@ -109,7 +114,8 @@ namespace Commands
             await RespondAsync(text: $"🤗🫂 {response}" + "!");
         }
 
-        [EnabledInDm(true)]
+        [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
+        [IntegrationType(ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("tic-tac-toe", "Play a game of Tic Tac Toe.")]
         public async Task TicTacToe([Summary("opponent", "Leave empty to verse an AI.")] SocketUser opponent = null)
         {
@@ -188,7 +194,8 @@ namespace Commands
             }
         }
 
-        [EnabledInDm(true)]
+        [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
+        [IntegrationType(ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("trivia", "Play a game of trivia.")]
         public async Task Trivia([Summary("opponent", "Leave empty to play alone.")] SocketUser opponent = null)
         {
@@ -254,7 +261,8 @@ namespace Commands
             }
         }
 
-        [EnabledInDm(true)]
+        [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
+        [IntegrationType(ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("rock-paper-scissors", "Play a game of Rock Paper Scissors.")]
         public async Task RPS([Summary("opponent", "Leave empty to verse an AI.")] SocketUser opponent = null)
         {
@@ -395,7 +403,8 @@ namespace Commands
             }
         }
 
-        [EnabledInDm(true)]
+        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("review", "Leave a review for Bob on Top.gg")]
         public async Task Review()
         {
@@ -403,7 +412,8 @@ namespace Commands
             await RespondAsync(text: "📝 If you're enjoying BobTheBot, please consider leaving a review on Top.gg!\n[review here](https://top.gg/bot/705680059809398804#reviews)");
         }
 
-        [EnabledInDm(true)]
+        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("vote", "Vote for Bob on Top.gg")]
         public async Task Vote()
         {
@@ -411,7 +421,8 @@ namespace Commands
             await RespondAsync(text: "**Top.gg is not associated with BobTheBot and so ads cannot be removed by Bob's creators.**\n\nVote for Bob!\n[vote here](https://top.gg/bot/705680059809398804/vote)");
         }
 
-        [EnabledInDm(false)]
+        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("quote-prompts", "Bob will give you all valid prompts for /random quote.")]
         public async Task QuotePrompts()
         {
@@ -419,7 +430,8 @@ namespace Commands
             await RespondAsync(text: $"Here are all valid prompts for `/random quote`:\nage, athletics, business, change, character, competition, conservative, courage, education, ethics, failure, faith, family, famous-quotes, film, freedom, future, generosity, genius, gratitude, happiness, health, history, honor, humor, humorous, inspirational, knowledge, leadership, life, love, mathematics, motivational, nature, oppurtunity, pain, perseverance, philosphy, politics, power-quotes, proverb, religion, sadness, science, self, sports, stupidity, success, technology, time, tolerance, truth, virtue, war, weakness, wellness, wisdom, work");
         }
 
-        [EnabledInDm(true)]
+        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+        [IntegrationType(ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("announce", "Bob will create a fancy embed announcement in the channel the command is used in.")]
         public async Task Announce([Summary("title", "The title of the announcement (the title of the embed).")] string title, [Summary("description", "The anouncement (the description of the embed).")] string description, [Summary("color", "A color name (purple), or valid hex code (#8D52FD).")] string color)
         {
@@ -461,7 +473,8 @@ namespace Commands
             }
         }
 
-        [EnabledInDm(true)]
+        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("info", "Learn about Bob.")]
         public async Task Info()
         {
@@ -478,7 +491,8 @@ namespace Commands
             await RespondAsync(embed: embed.Build());
         }
 
-        [EnabledInDm(false)]
+        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("new", "See the newest changes to Bob, and find out what's next.")]
         public async Task New()
         {
@@ -504,16 +518,20 @@ namespace Commands
             await RespondAsync(embed: embed.Build());
         }
 
-        [EnabledInDm(false)]
+        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("help", "Bob will DM you all relevant information for every command.")]
         public async Task help()
         {
             await DeferAsync(ephemeral: true);
-            var firstEmbed = new EmbedBuilder
+
+            try
             {
-                Title = $"📖 Here is a list of all of my commands.",
-                Color = Bot.theme,
-                Description = @"See the [Docs](https://docs.bobthebot.net#other) for more in depth info.
+                var firstEmbed = new EmbedBuilder
+                {
+                    Title = $"📖 Here is a list of all of my commands.",
+                    Color = Bot.theme,
+                    Description = @"See the [Docs](https://docs.bobthebot.net#other) for more in depth info.
 **🎲 Randomly Generated (RNG):** [RNG Docs](https://docs.bobthebot.net#rng)
 - `/random color` Get a color with Hex, CMYK, HSL, HSV and RGB codes. [Docs](https://docs.bobthebot.net#random-color)
 - `/random dice-roll [sides]` Roll a die with a specified # of sides. [Docs](https://docs.bobthebot.net#random-dice-roll)
@@ -527,7 +545,7 @@ namespace Commands
 - `/random date [earliestYear] [latestYear]` Get a random date between the inputted years. [Docs](https://docs.bobthebot.net#random-date)
 - `/random advice` Get a random piece of advice. [Docs](https://docs.bobthebot.net#random-advice)
 **🎮 Games:** [Games Docs](https://docs.bobthebot.net#games)
-- `trivia [opponent]` Play a game of trivia with or without someone.
+- `trivia [opponent]` Play a game of trivia with or without someone. [Docs](https://docs.bobthebot.net#trivia)
 - `/tic-tac-toe [opponent]` Play Bob or a user in a game of Tic Tac Toe. [Docs](https://docs.bobthebot.net#tic-tac-toe)
 - `/rock-paper-scissors [opponent]` Play Bob or a user in a game of Rock Paper Scissors. [Docs](https://docs.bobthebot.net#rock-paper-scissors)
 - `/master-mind new-game` Play a game of Master Mind, the rules will shared upon usage. [Docs](https://docs.bobthebot.net#master-mind-new)
@@ -535,21 +553,21 @@ namespace Commands
 **🖊️ Quoting:** [Quoting Docs](https://docs.bobthebot.net#quoting)
 - `/quote new [quote] [user] [tag]*3` Formats and shares the quote in designated channel. [Docs](https://docs.bobthebot.net#quote-new)
 - `/quote channel [channel]` Sets the quote channel for the server. [Docs](https://docs.bobthebot.net#quote-channel)
-- `/quote set-max-length [length]` Sets the maximum length of quotes for the server.
-- `/quote set-min-length [length]` Sets the minimum length of quotes for the server.
+- `/quote set-max-length [length]` Sets the maximum length of quotes for the server. [Docs](https://docs.bobthebot.net#quote-set-max-length)
+- `/quote set-min-length [length]` Sets the minimum length of quotes for the server. [Docs](https://docs.bobthebot.net#quote-set-min-length)
 **🔒 Encryption commands:** [Encryption Docs](https://docs.bobthebot.net#encrypt)
 - `/encrypt a1z26 [message]` Encrypts your message by swapping letters to their corresponding number. [Docs](https://docs.bobthebot.net#encrypt-a1z26)
 - `/encrypt atbash [message]` Encrypts your message by swapping letters to their opposite position. [Docs](https://docs.bobthebot.net#encrypt-atbash)
 - `/encrypt caesar [message] [shift]` Encrypts your message by shifting the letters the specified amount. [Docs](https://docs.bobthebot.net#encrypt-caesar)
 - `/encrypt morse [message]` Encrypts your message using Morse code. [Docs](https://docs.bobthebot.net#encrypt-morse)
 - `/encrypt vigenere [message] [key]` Encrypts your message using a specified key. [Docs](https://docs.bobthebot.net#encrypt-vigenere)"
-            };
+                };
 
-            var secondEmbed = new EmbedBuilder
-            {
-                Title = $"",
-                Color = Bot.theme,
-                Description = @"**🔓 Decryption commands:** [Decryption Docs](https://docs.bobthebot.net#decrypt)
+                var secondEmbed = new EmbedBuilder
+                {
+                    Title = $"",
+                    Color = Bot.theme,
+                    Description = @"**🔓 Decryption commands:** [Decryption Docs](https://docs.bobthebot.net#decrypt)
 - `/decrypt a1z26 [message]` Decrypts your message by swapping letters to their corresponding number [Docs](https://docs.bobthebot.net#decrypt-a1z26).
 - `/decrypt atbash [message]` Decrypts your message by swapping letters to their opposite position [Docs](https://docs.bobthebot.net#decrypt-atbash).
 - `/decrypt caesar [message] [shift]` Decrypts your message by shifting the letters the specified amount [Docs](https://docs.bobthebot.net#decrypt-caesar).
@@ -566,45 +584,59 @@ namespace Commands
 - `/ship [user]*2` See how good of a match 2 users are. [Docs](https://docs.bobthebot.net#ship)
 - `/hug [user]*5` Show your friends some love with a hug. [Docs](https://docs.bobthebot.net#hug)
 - `/welcome toggle [welcome]` Bob will send welcome messages to new server members. [Docs](https://docs.bobthebot.net#welcome)
-- `/welcome set-message [message]` Set a custom message to welcome new users with.
-- `/welcome remove-message` Bob will stop using the custom message to welcome users.
+- `/welcome set-message [message]` Set a custom message to welcome new users with. [Docs](https://docs.bobthebot.net#welcome-set-message)
+- `/welcome remove-message` Bob will stop using the custom message to welcome users. [Docs](https://docs.bobthebot.net#welcome-remove-message)
 **🗄️ Informational / Help:** [Info Docs](https://docs.bobthebot.net#info)
-- `/premium` Ensures Bob knows you have premium! If not you will be given a button to get it!
-- `/profile display [user]` Displays the specified user's profile.
-- `/profile set-color [color]` Sets your profile color.
+- `/premium` Ensures Bob knows you have premium! If not you will be given a button to get it! [Docs](https://docs.bobthebot.net#premium)
+- `/profile display [user]` Displays the specified user's profile. [Docs](https://docs.bobthebot.net#profile-display)
+- `/profile set-color [color]` Sets your profile color. [Docs](https://docs.bobthebot.net#profile-set-color)
 - `/new` See the latest updates to Bob. [Docs](https://docs.bobthebot.net#new)
 - `/quote-prompts` See all valid prompts for `/random quote`. [Docs](https://docs.bobthebot.net#quote-prompts)
 - `/ping` Find the client's latency. [Docs](https://docs.bobthebot.net#ping)
 - `/analyze-link` See where a link will take you, and check for rick rolls. [Docs](https://docs.bobthebot.net#analyze-link)
 - `/info` Learn about Bob. [Docs](https://docs.bobthebot.net#info)
 - `/support` Sends an invite to Bob's support Server. [Docs](https://docs.bobthebot.net#support)"
-            };
+                };
 
-            await Context.User.SendMessageAsync(embed: firstEmbed.Build());
-            await Context.User.SendMessageAsync(embed: secondEmbed.Build());
-            await FollowupAsync(text: $"📪 Check your DMs.", ephemeral: true);
+                await Context.User.SendMessageAsync(embed: firstEmbed.Build());
+                await Context.User.SendMessageAsync(embed: secondEmbed.Build());
+                await FollowupAsync(text: $"📪 Check your DMs.", ephemeral: true);
+            }
+            catch
+            {
+                await FollowupAsync(text: $"❌ Bob could not share the command list via DMs.\n- Try opening your DMs (making them open).\n- Or you can simply view the commands list here: [docs.bobthebot.net](<https://bobthebot.net/commands.html>)", ephemeral: true);
+            }
         }
 
-        [EnabledInDm(false)]
+        [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
+        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("confess", "Bob will send someone a message anonymously")]
         public async Task confess(string message, SocketUser user, string signoff)
         {
-            if (user.IsBot)
+            try
             {
-                await RespondAsync(text: "❌ Sorry, but no sending messages to bots.", ephemeral: true);
+                if (user.IsBot)
+                {
+                    await RespondAsync(text: "❌ Sorry, but no sending messages to bots.", ephemeral: true);
+                }
+                else if (message.Length + 3 + signoff.Length > 2000) // 2000 is max characters in a message.
+                {
+                    await RespondAsync($"❌ The message *cannot* be delivered because it contains **{message.Length + 3 + signoff.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **2000** characters.", ephemeral: true);
+                }
+                else
+                {
+                    await user.SendMessageAsync($"{message} - {signoff}");
+                    await RespondAsync(text: $"✉️ Your message has been sent!\nMessage: **{message} - {signoff}** was sent to **{user.Username}**", ephemeral: true);
+                }
             }
-            else if (message.Length + 3 + signoff.Length > 2000) // 2000 is max characters in a message.
+            catch
             {
-                await RespondAsync($"❌ The message *cannot* be delivered because it contains **{message.Length + 3 + signoff.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **2000** characters.", ephemeral: true);
-            }
-            else
-            {
-                await user.SendMessageAsync($"{message} - {signoff}");
-                await RespondAsync(text: $"✉️ Your message has been sent!\nMessage: **{message} - {signoff}** was sent to **{user.Username}**", ephemeral: true);
+                await RespondAsync(text: $"❌ Bob could not DM {user.Mention}.\n- You could try again, but this probably means their DMs are closed which Bob cannot change.", ephemeral: true);
             }
         }
 
-        [EnabledInDm(true)]
+        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("premium", "Update your premium status or buy it!")]
         public async Task PremiumStatus()
         {
@@ -640,7 +672,8 @@ namespace Commands
             }
         }
 
-        [EnabledInDm(true)]
+        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("support", "Sends an invite to Bob's support Server.")]
         public async Task Support()
         {
@@ -648,7 +681,8 @@ namespace Commands
             await RespondAsync(text: "🏰 Having issues with Bob? [Join Here](https://discord.gg/HvGMRZD8jQ) for help.");
         }
 
-        [EnabledInDm(false)]
+        [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
+        [IntegrationType(ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("poll", "Bob will create a poll.")]
         public async Task Poll([Summary("prompt", "The question you are asking.")] string prompt, [Summary("option1", "an answer / response to your question")] string option1, [Summary("option2", "an answer / response to your question")] string option2, [Summary("option3", "an answer / response to your question")] string option3 = "", [Summary("option4", "an answer / response to your question")] string option4 = "")
         {
@@ -708,7 +742,8 @@ namespace Commands
             }
         }
 
-        [EnabledInDm(true)]
+        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("fonts", "Bob will type your text in a font of your choice")]
         public async Task Fonts([Summary("text", "the text you want converted. NOTE: only the alphabet is converted.")] string text, FontConversion.FontTypes font)
         {
@@ -732,7 +767,8 @@ namespace Commands
             }
         }
 
-        [EnabledInDm(false)]
+        [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
+        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("ship", "Bob will determine how good of a couple two users would make")]
         public async Task Ship(SocketUser person1, SocketUser person2)
         {

@@ -13,7 +13,7 @@ namespace Debug
     {
         public static async Task LogErrorToDiscord(SocketTextChannel channel, IInteractionContext ctx, SlashCommandInfo info, string errorReason = null)
         {
-            var location = ctx.Interaction.GuildId == null ? "a DM" : Bot.Client.GetGuild(ulong.Parse(ctx.Interaction.GuildId.ToString())).ToString();
+           string location = (ctx.Interaction.GuildId == null) ? "a DM" : (Bot.Client.GetGuild((ulong)ctx.Interaction.GuildId) == null ? "User Install" : Bot.Client.GetGuild((ulong)ctx.Interaction.GuildId).ToString());
             var commandName = info.IsTopLevelCommand ? $"/{info.Name}" : $"/{info.Module.SlashGroupName} {info.Name}";
             string methodName = info.MethodName;
             IUser user = ctx.User;

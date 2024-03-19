@@ -7,19 +7,20 @@ using Database.Types;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using Microsoft.VisualBasic;
 using PremiumInterface;
 
 namespace Commands
 {
-    [EnabledInDm(true)]
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+    [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
     [Group("profile", "All profile commands.")]
     public class ProfileGroup : InteractionModuleBase<SocketInteractionContext>
     {
-        [EnabledInDm(true)]
         [SlashCommand("display", "View a user's profile.")]
         public async Task Display([Summary("user", "The user whose profile you would like displayed (leave empty to display your own).")] SocketUser user = null)
         {
-            user = (user != null ? user : Context.User);
+            user ??= Context.User;
 
             if (user.IsBot)
             {
@@ -60,7 +61,6 @@ namespace Commands
             }
         }
 
-        [EnabledInDm(true)]
         [SlashCommand("set-color", "Set your profile's embed color.")]
         public async Task SetColor([Summary("color", "A color name (purple), or valid hex code (#8D52FD).")] string color)
         {

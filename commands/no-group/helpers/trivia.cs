@@ -186,7 +186,7 @@ namespace Commands.Helpers
                 Challenge.DecrementUserChallenges(Player1.Id);
                 Challenge.DecrementUserChallenges(Player2.Id);
 
-                float winner = TriviaMethods.GetWinner(this);
+                Challenge.WinCases winner = TriviaMethods.GetWinner(this);
 
                 // Update User Info
                 using var context = new BobEntities();
@@ -197,11 +197,11 @@ namespace Commands.Helpers
                 {
                     user.TotalTriviaGames++;
 
-                    if ((user.Id == Player1.Id && winner == 1.0f) || (user.Id == Player2.Id && winner == 2.0f))
+                    if ((user.Id == Player1.Id && winner == Challenge.WinCases.Player1) || (user.Id == Player2.Id && winner == Challenge.WinCases.Player2))
                     {
                         user.TriviaWins++;
                     }
-                    else if (winner == 0.5f)
+                    else if (winner == Challenge.WinCases.Tie)
                     {
                         user.TriviaWins += 0.5f;
                     }
@@ -231,7 +231,7 @@ namespace Commands.Helpers
                 Challenge.DecrementUserChallenges(Player1.Id);
                 Challenge.DecrementUserChallenges(Player2.Id);
 
-                float winner = TriviaMethods.GetWinner(this);
+                Challenge.WinCases winner = TriviaMethods.GetWinner(this);
 
                 // Update User Info
                 using var context = new BobEntities();
@@ -242,11 +242,11 @@ namespace Commands.Helpers
                 {
                     user.TotalTriviaGames++;
 
-                    if ((user.Id == Player1.Id && winner == 1.0f) || (user.Id == Player2.Id && winner == 2.0f))
+                    if ((user.Id == Player1.Id && winner == Challenge.WinCases.Player1) || (user.Id == Player2.Id && winner == Challenge.WinCases.Player2))
                     {
                         user.TriviaWins++;
                     }
-                    else if (winner == 0.5f)
+                    else if (winner == Challenge.WinCases.Tie)
                     {
                         user.TriviaWins += 0.5f;
                     }

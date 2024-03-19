@@ -108,11 +108,9 @@ namespace Commands.Helpers
             int redirectCount = 0;
             while (redirectCount <= maximumRedirectCount && !string.IsNullOrWhiteSpace(link))
             {
-                CookieContainer cookies = new();
                 HttpClientHandler handler = new()
                 {
                     AllowAutoRedirect = false,
-                    CookieContainer = cookies
                 };
                 HttpClient httpClient = new(handler);
                 HttpRequestMessage request = new(HttpMethod.Head, link);
@@ -124,6 +122,8 @@ namespace Commands.Helpers
                 {
                     var req = await httpClient.GetAsync(link);
 
+                    bool hasCookies = req.Headers.TryGetValues("Set-Cookie", out _);
+
                     if (req.IsSuccessStatusCode)
                     {
                         string code = await req.Content.ReadAsStringAsync();
@@ -134,7 +134,21 @@ namespace Commands.Helpers
                         string jsRedirect = GetJavaScriptRedirectLink(code);
                         HtmlNode metaTag = doc.DocumentNode.SelectSingleNode("//meta[@http-equiv='refresh']");
 
-                        if (metaTag != null)
+                        if (IsGitHubRepository(link))
+                        {
+                            Link gitHubRepoLink = new()
+                            {
+                                link = link,
+                                statusCode = req.StatusCode,
+                                isRedirect = false,
+                                isShortened = IsShortenedUrl(link, false),
+                                containsCookies = hasCookies,
+                                failed = false
+                            };
+                            trail.Add(gitHubRepoLink);
+                            link = null;
+                        }
+                        else if (metaTag != null)
                         {
                             string content = metaTag.GetAttributeValue("content", "");
                             string url = GetUrlFromContent(content);
@@ -143,7 +157,7 @@ namespace Commands.Helpers
                                 link = $"{link}",
                                 statusCode = req.StatusCode,
                                 specialCase = "Meta-Refresh Redirect",
-                                containsCookies = cookies.GetCookies(new Uri(link)).Count != 0,
+                                containsCookies = hasCookies,
                                 isRickRoll = link == "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
                                 isRedirect = true,
                                 isShortened = IsShortenedUrl(link, true)
@@ -159,7 +173,7 @@ namespace Commands.Helpers
                                 link = $"{link}",
                                 statusCode = req.StatusCode,
                                 specialCase = "JavaScript Redirect",
-                                containsCookies = cookies.GetCookies(new Uri(link)).Count != 0,
+                                containsCookies = hasCookies,
                                 isRickRoll = link == "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
                                 isRedirect = true,
                                 isShortened = IsShortenedUrl(link, true)
@@ -175,7 +189,7 @@ namespace Commands.Helpers
                             {
                                 link = $"{link}",
                                 statusCode = req.StatusCode,
-                                containsCookies = cookies.GetCookies(new Uri(link)).Count != 0,
+                                containsCookies = hasCookies,
                                 isRickRoll = link == "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
                                 isRedirect = isRedirect,
                                 isShortened = IsShortenedUrl(link, isRedirect)
@@ -191,7 +205,7 @@ namespace Commands.Helpers
                         {
                             link = $"{link}",
                             statusCode = req.StatusCode,
-                            containsCookies = cookies.GetCookies(new Uri(link)).Count != 0,
+                            containsCookies = hasCookies,
                             isRickRoll = link == "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
                             isRedirect = isRedirect,
                             isShortened = IsShortenedUrl(link, isRedirect)
@@ -234,20 +248,37 @@ namespace Commands.Helpers
             return trail;
         }
 
+        private static bool IsGitHubRepository(string url)
+        {
+            // GitHub repository URL pattern (example)
+            string gitHubRepoPattern = @"https://github.com/.*/.*";
+            return Regex.IsMatch(url, gitHubRepoPattern);
+        }
+
         private static string GetJavaScriptRedirectLink(string htmlContent)
         {
-            string scriptPattern = @"<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>";
+            // Regular expression pattern to match script tags
+            string scriptPattern = @"<script\b[^>]*>([\s\S]*?)<\/script>";
             var scriptMatches = Regex.Matches(htmlContent, scriptPattern, RegexOptions.IgnoreCase | RegexOptions.Singleline);
 
+            // Loop through each script tag
             foreach (Match scriptMatch in scriptMatches.Cast<Match>())
             {
-                string scriptContent = scriptMatch.Value;
+                string scriptContent = scriptMatch.Groups[1].Value; // Extract script content
 
+                // Check if the script content contains window.location.href
                 if (scriptContent.Contains("window.location.href"))
                 {
-                    string redirectLinkPattern = @"window\.location\.href\s*=\s*['""]([^'""]+)['""]";
+                    // Regular expression pattern to check if window.location.href is not inside onclick function
+                    string redirectLinkPattern = @"window\.location\.href\s*=\s*[""']([^""']+)";
+
+                    // Add a negative lookahead to exclude window.location.href inside onclick functions
+                    redirectLinkPattern += @"(?![\s\S]*?onclick)";
+
+                    // Search for window.location.href outside onclick functions
                     var redirectLinkMatch = Regex.Match(scriptContent, redirectLinkPattern);
 
+                    // If a match is found, return the redirected link
                     if (redirectLinkMatch.Success)
                     {
                         return redirectLinkMatch.Groups[1].Value;
@@ -255,6 +286,7 @@ namespace Commands.Helpers
                 }
             }
 
+            // If no redirected link is found, return null
             return null;
         }
 
@@ -266,7 +298,7 @@ namespace Commands.Helpers
         private static bool ContainsShortenedDomain(string url)
         {
             // List of common URL shortener domains
-            string[] shortenerDomains = { "dis.gd", "v.gd", "ow.ly", "bl.ink", "3.ly", "tiny.cc", "bit.ly", "tinyurl.com", "goo.gl", "shorturl.at", "t.ly", "youtu.be", "y2u.be", "t.co", "short.gy", "snip.ly", "Buff.ly", "redd.it", "rb.gy", "msha.ke", };
+            string[] shortenerDomains = { "dis.gd", "v.gd", "ow.ly", "bl.ink", "3.ly", "tiny.cc", "bit.ly", "tinyurl.com", "goo.gl", "shorturl.at", "t.ly", "youtu.be", "y2u.be", "t.co", "short.gy", "snip.ly", "Buff.ly", "redd.it", "rb.gy", "msha.ke", "trib.al" };
 
             if (Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
             {

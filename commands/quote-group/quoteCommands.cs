@@ -10,11 +10,11 @@ using PremiumInterface;
 
 namespace Commands
 {
-    [EnabledInDm(false)]
+    [CommandContextType(InteractionContextType.Guild)]
+    [IntegrationType(ApplicationIntegrationType.GuildInstall)]
     [Group("quote", "All quoting commands.")]
     public class QuoteGroup : InteractionModuleBase<SocketInteractionContext>
     {
-        [EnabledInDm(false)]
         [SlashCommand("new", "Create a quote.")]
         public async Task New([Summary("quote", "The text you want quoted. Quotation marks (\") will be added.")] string quote, [Summary("user", "The user who the quote belongs to.")] SocketUser user, [Summary("tag1", "A tag for sorting quotes later on (needs premium).")] string tag1 = "", [Summary("tag2", "A tag for sorting quotes later on (needs premium).")] string tag2 = "", [Summary("tag3", "A tag for sorting quotes later on (needs premium).")] string tag3 = "")
         {
@@ -121,7 +121,6 @@ namespace Commands
             }
         }
 
-        [EnabledInDm(false)]
         [MessageCommand(name: "Quote")]
         public async Task Quote(IMessage message)
         {
@@ -219,7 +218,6 @@ namespace Commands
             }
         }
 
-        [EnabledInDm(false)]
         [SlashCommand("channel", "Configure /quote channel.")]
         public async Task Settings([Summary("channel", "The quotes channel for the server.")] SocketChannel channel)
         {
@@ -255,7 +253,6 @@ namespace Commands
             }
         }
 
-        [EnabledInDm(false)]
         [SlashCommand("set-max-length", "Set a maximum character length for quotes.")]
         public async Task SetMaxQuoteLength([Summary("length", "The number of characters you would like, at most, to be in a quote (Discord has a limit 4096).")] int length)
         {
@@ -304,7 +301,6 @@ namespace Commands
             }
         }
 
-        [EnabledInDm(false)]
         [SlashCommand("set-min-length", "Set a minimum character length for quotes.")]
         public async Task SetMinQuoteLength([Summary("length", "The number of characters you would like, at least, to be in a quote.")] int length)
         {

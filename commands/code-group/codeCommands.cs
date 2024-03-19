@@ -9,11 +9,11 @@ using static ApiInteractions.Interface;
 
 namespace Commands
 {
-    [EnabledInDm(true)]
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
+    [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
     [Group("code", "All commands relevant to code.")]
     public class CodeGroup : InteractionModuleBase<SocketInteractionContext>
     {
-        [EnabledInDm(true)]
         [SlashCommand("preview", "Preview specific lines from a file on GitHub right on Discord.")]
         public async Task Preview([Summary("link", "A GitHub Link to specific lines of code.")] string link)
         {
@@ -72,7 +72,6 @@ namespace Commands
             }
         }
 
-        [EnabledInDm(true)]
         [MessageCommand("Preview Code")]
         public async Task PreviewCodeMessage(IMessage message)
         {

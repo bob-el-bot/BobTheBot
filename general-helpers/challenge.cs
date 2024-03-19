@@ -13,9 +13,21 @@ namespace Challenges
 {
     public static class Challenge
     {
+        /// <summary>
+        /// The default color for challenge messages (Grey).
+        /// </summary>
         public static readonly Color DefaultColor = Color.LighterGrey;
+        /// <summary>
+        /// The color for player 1 in challenge messages (Blue).
+        /// </summary>
         public static readonly Color Player1Color = Color.Blue;
+        /// <summary>
+        /// The color for player 2 in challenge messages (Red).
+        /// </summary>
         public static readonly Color Player2Color = Color.Red;
+        /// <summary>
+        /// The color for messages involving both players (Purple).
+        /// </summary>
         public static readonly Color BothPlayersColor = Color.Purple;
 
         // Caches
@@ -26,6 +38,12 @@ namespace Challenges
         public static Dictionary<ulong, uint?> UserChallenges { get; } = new();
         // public static Dictionary<ulong, Connect4> Connect4Games { get; } = new();
 
+        /// <summary>
+        /// Checks if a user can challenge another user asynchronously.
+        /// </summary>
+        /// <param name="player1Id">The ID of the challenger.</param>
+        /// <param name="player2Id">The ID of the user being challenged.</param>
+        /// <returns>A tuple indicating whether the challenge is possible and a message explaining why or why not.</returns>
         public static async Task<(bool, string)> CanChallengeAsync(ulong player1Id, ulong player2Id)
         {
             using var context = new BobEntities();
@@ -47,6 +65,11 @@ namespace Challenges
             return (true, "Loading...");
         }
 
+        /// <summary>
+        /// Sends a challenge message to the specified interaction.
+        /// </summary>
+        /// <param name="interaction">The interaction context.</param>
+        /// <param name="game">The game being challenged.</param>
         public static async Task SendMessage(SocketInteraction interaction, Games.Game game)
         {
             // Loading Message
@@ -81,6 +104,10 @@ namespace Challenges
             await game.Message.ModifyAsync(x => { x.Content = $"> ### ⚔️ {game.Player1.Mention} Challenges {game.Player2.Mention} to {game.Title}.\n> Accept or decline <t:{dateTime}:R>."; x.Components = components.Build(); });
         }
 
+        /// <summary>
+        /// Adds the game to the specific game list based on its type.
+        /// </summary>
+        /// <param name="game">The game to be added.</param>
         public static void AddToSpecificGameList(Games.Game game)
         {
             switch (game.Type)
@@ -104,6 +131,10 @@ namespace Challenges
             Games.Add(game.Id, game);
         }
 
+        /// <summary>
+        /// Removes the game from the specific game list based on its type.
+        /// </summary>
+        /// <param name="game">The game to be removed.</param>
         public static void RemoveFromSpecificGameList(Games.Game game)
         {
             switch (game.Type)
@@ -127,6 +158,10 @@ namespace Challenges
             Games.Remove(game.Id);
         }
 
+        /// <summary>
+        /// Handles the expiration of a game challenge.
+        /// </summary>
+        /// <param name="game">The game that has expired.</param>
         public static async void ExpireGame(Games.Game game)
         {
             switch (game.State)
@@ -167,6 +202,11 @@ namespace Challenges
             game.Dispose();
         }
 
+        /// <summary>
+        /// Gets the number of challenges for a specific user.
+        /// </summary>
+        /// <param name="id">The ID of the user.</param>
+        /// <returns>The number of challenges for the user.</returns>
         public static uint GetUserChallenges(ulong id)
         {
             UserChallenges.TryGetValue(id, out uint? challenges);
@@ -182,6 +222,10 @@ namespace Challenges
             }
         }
 
+        /// <summary>
+        /// Increments the number of challenges for a specific user.
+        /// </summary>
+        /// <param name="id">The ID of the user.</param>
         public static void IncrementUserChallenges(ulong id)
         {
             if (UserChallenges.ContainsKey(id))
@@ -202,6 +246,10 @@ namespace Challenges
             }
         }
 
+        /// <summary>
+        /// Decrements the number of challenges for a specific user.
+        /// </summary>
+        /// <param name="id">The ID of the user.</param>
         public static void DecrementUserChallenges(ulong id)
         {
             if (UserChallenges.ContainsKey(id))
@@ -218,12 +266,23 @@ namespace Challenges
             }
         }
 
+        /// <summary>
+        /// Adds a user to the user challenges dictionary if not already present.
+        /// </summary>
+        /// <param name="id">The ID of the user.</param>
         public static void AddUserChallenges(ulong id)
         {
             if (!UserChallenges.ContainsKey(id))
             {
                 UserChallenges[id] = 0;
             }
+        }
+
+        public enum WinCases {
+            Player1,
+            Player2,
+            Tie,
+            None
         }
     }
 }

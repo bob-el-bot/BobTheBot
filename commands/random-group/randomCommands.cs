@@ -9,16 +9,17 @@ using Discord.Interactions;
 using static Commands.Helpers.Choose;
 using System.IO;
 using Commands.Helpers;
+using Discord;
 
 namespace Commands
 {
-    [EnabledInDm(true)]
+    [CommandContextType(InteractionContextType.BotDm, InteractionContextType.PrivateChannel, InteractionContextType.Guild)]
+    [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
     [Group("random", "All random (RNG) commands.")]
     public class RandomGroup : InteractionModuleBase<SocketInteractionContext>
     {
         private readonly Random random = new();
 
-        [EnabledInDm(true)]
         [SlashCommand("dice-roll", "Bob will roll a die with the side amount specified.")]
         public async Task DiceRoll(int sides)
         {
@@ -33,7 +34,6 @@ namespace Commands
             }
         }
 
-        [EnabledInDm(true)]
         [SlashCommand("date", "Bob will will pick a random date.")]
         public async Task RandomDate([Summary("earliestYear", "A year that is as early as you want the date to occur in.")] int earliestYear, [Summary("latestYear", "A year that is as late as you want the date to occur in.")] int latestYear)
         {
@@ -65,7 +65,6 @@ namespace Commands
             }
         }
 
-        [EnabledInDm(true)]
         [SlashCommand("8ball", "Bob will shake a magic 8 ball in response to a question.")]
         public async Task Magic8Ball(string prompt)
         {
@@ -84,7 +83,6 @@ namespace Commands
             }
         }
 
-        [EnabledInDm(true)]
         [SlashCommand("choose", "Can't make up your mind? Bob can for you!")]
         public async Task Pick(string option1, string option2, string option3 = "", string option4 = "", string option5 = "")
         {
@@ -116,7 +114,6 @@ namespace Commands
             }
         }
 
-        [EnabledInDm(true)]
         [SlashCommand("color", "Bob will choose a random color.")]
         public async Task Color()
         {
@@ -126,13 +123,13 @@ namespace Commands
             HSL hsl = ColorConverter.HexToHsl(new HEX(hex));
             HSV hsv = ColorConverter.HexToHsv(new HEX(hex));
             RGB rgb = ColorConverter.HexToRgb(new HEX(hex));
-            Discord.Color displayColor = new(Convert.ToUInt32(hex, 16));
+            Color displayColor = new(Convert.ToUInt32(hex, 16));
 
             // Make Color Image
             using MemoryStream imageStream = ColorPreview.CreateColorImage(100, 100, hex);
-            
+
             // Make Embed
-            var embed = new Discord.EmbedBuilder { };
+            var embed = new EmbedBuilder { };
             embed.AddField("Hex", $"```#{hex}```")
             .AddField("RGB", $"```R: {rgb.R}, G: {rgb.G}, B: {rgb.B}```")
             .AddField("CMYK", $"```C: {cmyk.C}, M: {cmyk.M}, Y: {cmyk.Y}, K: {cmyk.K}```")
@@ -144,7 +141,8 @@ namespace Commands
             await RespondWithFileAsync(imageStream, "image.png", "", embed: embed.Build());
         }
 
-        [EnabledInDm(false)]
+        [CommandContextType(InteractionContextType.Guild | InteractionContextType.PrivateChannel)]
+        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("quote", "Bob will tell you a quote.")]
         public async Task Quote([Summary("prompt", "use /quote-prompts to see all valid prompts")] string prompt = "")
         {
@@ -167,7 +165,6 @@ namespace Commands
             }
         }
 
-        [EnabledInDm(true)]
         [SlashCommand("coin-toss", "Bob will flip a coin")]
         public async Task CoinToss()
         {
@@ -184,7 +181,8 @@ namespace Commands
             await RespondAsync(text: $"🪙 The coin landed **" + result + "**!");
         }
 
-        [EnabledInDm(false)]
+        [CommandContextType(InteractionContextType.Guild | InteractionContextType.PrivateChannel)]
+        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("fact", "Bob will provide you with an outrageous fact.")]
         public async Task RandomFacts()
         {
@@ -208,7 +206,8 @@ namespace Commands
             await RespondAsync(text: $"🤓 {factFormatted}");
         }
 
-        [EnabledInDm(false)]
+        [CommandContextType(InteractionContextType.Guild | InteractionContextType.PrivateChannel)]
+        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("dog", "Bob will find you a cute doggo image!")]
         public async Task RandomDog()
         {
@@ -223,7 +222,8 @@ namespace Commands
             await RespondAsync(text: $"{dogEmojis[random.Next(0, dogEmojis.Length)]}[dog]({image})");
         }
 
-        [EnabledInDm(false)]
+        [CommandContextType(InteractionContextType.Guild | InteractionContextType.PrivateChannel)]
+        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("advice", "Bob will provide you with random advice.")]
         public async Task RandomAdvice()
         {
@@ -238,7 +238,8 @@ namespace Commands
             await RespondAsync(text: $"🦉 *{advice}*");
         }
 
-        [EnabledInDm(false)]
+        [CommandContextType(InteractionContextType.Guild | InteractionContextType.PrivateChannel)]
+        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("dad-joke", "Bob will tell you a dad joke.")]
         public async Task DadJoke()
         {

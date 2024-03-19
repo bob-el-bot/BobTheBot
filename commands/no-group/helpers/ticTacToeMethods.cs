@@ -52,22 +52,22 @@ namespace Commands.Helpers
             };
         }
 
-        public static float GetWinner(int[,] grid, int turns, bool isPlayer1Turn, bool forfeited = false)
+        public static Challenge.WinCases GetWinner(int[,] grid, int turns, bool isPlayer1Turn, bool forfeited = false)
         {
             int winner = GetWinnerOutcome(grid, turns);
 
             // All ways for player1 to lose
             if (winner == 2 || (forfeited && isPlayer1Turn))
             {
-                return 2.0f;
+                return Challenge.WinCases.Player2;
             }
             else if (winner == 0 && turns == 9 || (forfeited && turns == 0)) // draw
             {
-                return 0.5f;
+                return Challenge.WinCases.Tie;
             }
             else // else player1 won
             {
-                return 1.0f;
+                return Challenge.WinCases.Player1;
             }
         }
 

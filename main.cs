@@ -71,7 +71,8 @@ public static class Bot
 
     private static async Task Ready()
     {
-        Service = new(Client, new InteractionServiceConfig()
+        try {
+            Service = new(Client, new InteractionServiceConfig()
         {
             UseCompiledLambda = true,
             ThrowOnError = true
@@ -138,6 +139,10 @@ public static class Bot
         Console.WriteLine("RAM at Ready: " + ramUsage.ToString() + "%");
 
         Client.Ready -= Ready;
+        }
+        catch(Exception e) {
+            Console.WriteLine(e);
+        }
     }
 
     private static Task GuildAvailable(SocketGuild guild)
@@ -273,7 +278,7 @@ public static class Bot
         {
             var cpuUsage = await GetCpuUsageForProcess();
             var ramUsage = GetRamUsageForProcess();
-            var location = ctx.Interaction.GuildId == null ? "a DM" : Client.GetGuild(ulong.Parse(ctx.Interaction.GuildId.ToString())).ToString();
+            string location = (ctx.Interaction.GuildId == null) ? "a DM" : (Client.GetGuild((ulong)ctx.Interaction.GuildId) == null ? "User Install" : Client.GetGuild((ulong)ctx.Interaction.GuildId).ToString());
             var commandName = info.IsTopLevelCommand ? $"/{info.Name}" : $"/{info.Module.SlashGroupName} {info.Name}";
             Console.WriteLine($"{DateTime.Now:dd/MM. H:mm:ss} | {FormatPerformance(cpuUsage, ramUsage)} | Location: {location} | Command: {commandName}");
 
