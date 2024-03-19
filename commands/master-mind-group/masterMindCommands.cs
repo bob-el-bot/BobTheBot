@@ -6,11 +6,11 @@ using Discord.WebSocket;
 
 namespace Commands
 {
-    [EnabledInDm(false)]
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
+    [IntegrationType(ApplicationIntegrationType.GuildInstall)]
     [Group("master-mind", "All commands relevant to the game Master Mind.")]
     public class MasterMindGroup : InteractionModuleBase<SocketInteractionContext>
     {
-        [EnabledInDm(false)]
         [SlashCommand("new-game", "Start a game of Master Mind (rules will be sent upon use of this command).")]
         public async Task NewGame()
         {
@@ -46,7 +46,6 @@ namespace Commands
             }
         }
 
-        [EnabledInDm(false)]
         [SlashCommand("guess", "make a guess in an existing game of Master Mind")]
         public async Task Guess([Summary("guess", "Type a 4 digit guess as to what the answer is.")] string guess)
         {
