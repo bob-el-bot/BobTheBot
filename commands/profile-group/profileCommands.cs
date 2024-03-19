@@ -42,7 +42,7 @@ namespace Commands
                 // Check Premium
                 bool hasPremium = Premium.IsValidPremium(userToDisplay.PremiumExpiration);
 
-                Color color = hasPremium ? Convert.ToUInt32(Colors.StringToHex(userToDisplay.ProfileColor), 16) : 0x2C2F33;
+                Color color = hasPremium ? Colors.TryGetColor(userToDisplay.ProfileColor) : 0x2C2F33;
 
                 // Create Embed
                 var embed = new EmbedBuilder
@@ -70,7 +70,7 @@ namespace Commands
             using var context = new BobEntities();
             user = await context.GetUser(Context.User.Id);
 
-            Color finalColor = Convert.ToUInt32(Colors.StringToHex(color), 16);
+            Color finalColor = Colors.TryGetColor(color);
 
             // Check if the user has premium.
             if (Premium.IsValidPremium(user.PremiumExpiration) == false)
@@ -79,7 +79,7 @@ namespace Commands
             }
             else if (finalColor == 0)
             {
-                await FollowupAsync(text: $"❌ `{color}` is an invalid color. Here is a list of valid colors:\n- red, pink, orange, yellow, blue, green, white, gray (grey), black. \n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await FollowupAsync(text: $"❌ `{color}` is an invalid color. Here is a list of valid colors:\n- {Colors.GetSupportedColorsString()}.\n- Valid hex codes are also accepted.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
             else
             {

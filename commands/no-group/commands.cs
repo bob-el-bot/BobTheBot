@@ -435,7 +435,7 @@ namespace Commands
         [SlashCommand("announce", "Bob will create a fancy embed announcement in the channel the command is used in.")]
         public async Task Announce([Summary("title", "The title of the announcement (the title of the embed).")] string title, [Summary("description", "The anouncement (the description of the embed).")] string description, [Summary("color", "A color name (purple), or valid hex code (#8D52FD).")] string color)
         {
-            Color finalColor = Convert.ToUInt32(Colors.StringToHex(color), 16);
+            Color finalColor = Colors.TryGetColor(color);
 
             // Check if Bob has permission to send messages in given channel
             if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel).SendMessages || !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel).ViewChannel)
@@ -444,7 +444,7 @@ namespace Commands
             }
             else if (finalColor == 0)
             {
-                await RespondAsync(text: $"❌ `{color}` is an invalid color. Here is a list of valid colors:\n- red, pink, orange, yellow, blue, green, white, gray (grey), black. \n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await RespondAsync(text: $"❌ `{color}` is an invalid color. Here is a list of valid colors:\n- {Colors.GetSupportedColorsString()}.\n- Valid hex codes are also accepted.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
             else if (title.Length > 256) // 256 is max characters in an embed title.
             {
