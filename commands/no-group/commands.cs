@@ -545,7 +545,7 @@ namespace Commands
 - `/random date [earliestYear] [latestYear]` Get a random date between the inputted years. [Docs](https://docs.bobthebot.net#random-date)
 - `/random advice` Get a random piece of advice. [Docs](https://docs.bobthebot.net#random-advice)
 **🎮 Games:** [Games Docs](https://docs.bobthebot.net#games)
-- `trivia [opponent]` Play a game of trivia with or without someone.
+- `trivia [opponent]` Play a game of trivia with or without someone. [Docs](https://docs.bobthebot.net#trivia)
 - `/tic-tac-toe [opponent]` Play Bob or a user in a game of Tic Tac Toe. [Docs](https://docs.bobthebot.net#tic-tac-toe)
 - `/rock-paper-scissors [opponent]` Play Bob or a user in a game of Rock Paper Scissors. [Docs](https://docs.bobthebot.net#rock-paper-scissors)
 - `/master-mind new-game` Play a game of Master Mind, the rules will shared upon usage. [Docs](https://docs.bobthebot.net#master-mind-new)
@@ -553,8 +553,8 @@ namespace Commands
 **🖊️ Quoting:** [Quoting Docs](https://docs.bobthebot.net#quoting)
 - `/quote new [quote] [user] [tag]*3` Formats and shares the quote in designated channel. [Docs](https://docs.bobthebot.net#quote-new)
 - `/quote channel [channel]` Sets the quote channel for the server. [Docs](https://docs.bobthebot.net#quote-channel)
-- `/quote set-max-length [length]` Sets the maximum length of quotes for the server.
-- `/quote set-min-length [length]` Sets the minimum length of quotes for the server.
+- `/quote set-max-length [length]` Sets the maximum length of quotes for the server. [Docs](https://docs.bobthebot.net#quote-set-max-length)
+- `/quote set-min-length [length]` Sets the minimum length of quotes for the server. [Docs](https://docs.bobthebot.net#quote-set-min-length)
 **🔒 Encryption commands:** [Encryption Docs](https://docs.bobthebot.net#encrypt)
 - `/encrypt a1z26 [message]` Encrypts your message by swapping letters to their corresponding number. [Docs](https://docs.bobthebot.net#encrypt-a1z26)
 - `/encrypt atbash [message]` Encrypts your message by swapping letters to their opposite position. [Docs](https://docs.bobthebot.net#encrypt-atbash)
@@ -584,12 +584,12 @@ namespace Commands
 - `/ship [user]*2` See how good of a match 2 users are. [Docs](https://docs.bobthebot.net#ship)
 - `/hug [user]*5` Show your friends some love with a hug. [Docs](https://docs.bobthebot.net#hug)
 - `/welcome toggle [welcome]` Bob will send welcome messages to new server members. [Docs](https://docs.bobthebot.net#welcome)
-- `/welcome set-message [message]` Set a custom message to welcome new users with.
-- `/welcome remove-message` Bob will stop using the custom message to welcome users.
+- `/welcome set-message [message]` Set a custom message to welcome new users with. [Docs](https://docs.bobthebot.net#welcome-set-message)
+- `/welcome remove-message` Bob will stop using the custom message to welcome users. [Docs](https://docs.bobthebot.net#welcome-remove-message)
 **🗄️ Informational / Help:** [Info Docs](https://docs.bobthebot.net#info)
-- `/premium` Ensures Bob knows you have premium! If not you will be given a button to get it!
-- `/profile display [user]` Displays the specified user's profile.
-- `/profile set-color [color]` Sets your profile color.
+- `/premium` Ensures Bob knows you have premium! If not you will be given a button to get it! [Docs](https://docs.bobthebot.net#premium)
+- `/profile display [user]` Displays the specified user's profile. [Docs](https://docs.bobthebot.net#profile-display)
+- `/profile set-color [color]` Sets your profile color. [Docs](https://docs.bobthebot.net#profile-set-color)
 - `/new` See the latest updates to Bob. [Docs](https://docs.bobthebot.net#new)
 - `/quote-prompts` See all valid prompts for `/random quote`. [Docs](https://docs.bobthebot.net#quote-prompts)
 - `/ping` Find the client's latency. [Docs](https://docs.bobthebot.net#ping)
