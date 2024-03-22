@@ -119,21 +119,6 @@ public static class Bot
                 }
             });
 
-            _ = Task.Run(() =>
-            {
-                // Status
-                string[] statuses = { "/help | Games!", "/help | Premium! ❤︎", "/help | bobthebot.net", "/help | RNG!", "/help | Quotes!", "/help | Confessions!" };
-                int index = 0;
-                timer = new(async x =>
-                {
-                    if (Client.ConnectionState == ConnectionState.Connected)
-                    {
-                        await Client.SetCustomStatusAsync(statuses[index]);
-                        index = index + 1 == statuses.Length ? 0 : index + 1;
-                    }
-                }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(16));
-            });
-
             var cpuUsage = await GetCpuUsageForProcess();
             Console.WriteLine("CPU at Ready: " + cpuUsage.ToString() + "%");
             var ramUsage = GetRamUsageForProcess();
@@ -145,16 +130,39 @@ public static class Bot
         {
             Console.WriteLine(e);
         }
+
+        string[] statuses = { "/help | Games!", "/help | Premium! ❤︎", "/help | bobthebot.net", "/help | RNG!", "/help | Quotes!", "/help | Confessions!" };
+        int index = 0;
+
+        _ = Task.Run(() =>
+        {
+            // Status
+            timer = new Timer(async x =>
+            {
+                try
+                {
+                    if (Client.ConnectionState == ConnectionState.Connected)
+                    {
+                        await Client.SetCustomStatusAsync(statuses[index]);
+                        index = (index + 1) % statuses.Length;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error setting status: {ex.Message} | {statuses[index]}");
+                }
+            }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(16));
+        });
     }
 
     private static Task GuildAvailable(SocketGuild guild)
     {
-        // Download all of the users SEPARATELY from the Gateway Connection to keep WebSocket Connection Alive
-        // (This is opposed to the standard: AlwaysDownloadUsers = true; flag) 
-        _ = Task.Run(async () =>
-        {
-            await guild.DownloadUsersAsync();
-        });
+        // // Download all of the users SEPARATELY from the Gateway Connection to keep WebSocket Connection Alive
+        // // (This is opposed to the standard: AlwaysDownloadUsers = true; flag) 
+        // _ = Task.Run(async () =>
+        // {
+        //     await guild.DownloadUsersAsync();
+        // });
 
         return Task.CompletedTask;
     }
