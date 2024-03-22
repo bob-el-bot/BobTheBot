@@ -7,7 +7,7 @@ namespace ColorMethods
 {
     public static class Colors
     {
-        public static readonly Dictionary<string, string> colors = new() { { "red", "ED4245" }, { "orange", "FFA500" }, { "yellow", "FEE75C" }, { "green", "57F287" }, { "black", "23272A" }, { "pink", "EB459E" }, { "blue", "3498DB" }, { "grey", "95A5A6" }, { "gray", "95A5A6" }, { "white", "FFFFFF" }, { "purple", "8D52FD" } };
+        private static readonly Dictionary<string, string> colors = new() { { "red", "ED4245" }, { "orange", "FFA500" }, { "yellow", "FEE75C" }, { "green", "57F287" }, { "black", "23272A" }, { "pink", "EB459E" }, { "blue", "3498DB" }, { "grey", "95A5A6" }, { "gray", "95A5A6" }, { "white", "FFFFFF" }, { "purple", "8D52FD" } };
 
         public static Color TryGetColor(string input)
         {

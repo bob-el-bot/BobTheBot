@@ -1,7 +1,7 @@
 <div align="center">
     <img src="BobLogo.png">
 <p>
-    <img src="https://skillicons.dev/icons?i=cs,net,raspberrypi,discord">
+    <img src="https://skillicons.dev/icons?i=cs,net,raspberrypi,discord,sqlite">
 <p>
 
 <p>The bot for 🎲 RNG, 🖊️ quoting, 📜 fonts, 🔒 encryption, and ✨ more! Currently serving 50,000+ users in 600+ servers!</p>
@@ -13,6 +13,8 @@
 <a href="https://github.com/bob-el-bot/BobTheBot#all-commands">See Commands</a>
 <span>|
 <a href="https://bobthebot.net">Visit Bob's Website</a>
+<span>|
+<a href="https://discord.com/application-directory/705680059809398804/premium">Premium</a>
 <span>|
 <a href="https://top.gg/bot/705680059809398804/vote">Vote For Bob</a>
 <span>|
@@ -51,7 +53,7 @@ Bob has a ***plethora*** of random commands to either fuel your Dungeons and Dra
 Bob has many features *built in* to ensure that you never get stuck. Give an invalid input to a command? *Fear not* as Bob will let you know, and inform you about valid inputs.
 
 # All Commands
-Bob The Bot has many features all of which are `/slash` commands for ease of use!
+Bob The Bot has many features all of which are `/slash` commands for ease of use! You can visit [docs.bobthebot.net](https://docs.bobthebot.net) to get more in-depth information.
 
 ### 🎲 RNG (randomly generated) commands: 
 - `/random color` Get a color with Hex, CMYK, HSL, HSV and RGB codes.

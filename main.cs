@@ -33,7 +33,7 @@ public static class Bot
 
     private static InteractionService Service;
 
-    private static readonly string Token = Config.GetToken();
+    private static readonly string Token = Config.GetTestToken();
 
     // Purple (normal) Theme: 9261821 | Orange (halloween) Theme: 16760153
     public static readonly Color theme = new(9261821);
@@ -71,76 +71,78 @@ public static class Bot
 
     private static async Task Ready()
     {
-        try {
+        try
+        {
             Service = new(Client, new InteractionServiceConfig()
-        {
-            UseCompiledLambda = true,
-            ThrowOnError = true
-        });
-
-        await Service.AddModulesAsync(Assembly.GetEntryAssembly(), null);
-        await Service.RegisterCommandsGloballyAsync();
-
-        ModuleInfo[] debugCommands = Service.Modules.Where((x) => x.Preconditions.Any(x => x is RequireGuildAttribute)).ToArray();
-        IGuild supportServer = Client.GetGuild(supportServerId);
-        await Service.AddModulesToGuildAsync(supportServer, true, debugCommands);
-
-        Client.InteractionCreated += InteractionCreated;
-        Service.SlashCommandExecuted += SlashCommandResulted;
-
-        _ = Task.Run(async () =>
-        {
-            // Determine the user count
-            // Throwaway as to not block Gateway Tasks.
-            foreach (var guild in Client.Guilds)
             {
-                totalUsers += guild.MemberCount;
-            }
+                UseCompiledLambda = true,
+                ThrowOnError = true
+            });
 
-            totalUsers -= (Token == Config.GetTestToken()) ? 0 : 72000;
-            Console.WriteLine($"Total Users: {totalUsers}");
+            await Service.AddModulesAsync(Assembly.GetEntryAssembly(), null);
+            await Service.RegisterCommandsGloballyAsync();
 
-            // Update third party stats
-            // Throwaway as to not block Gateway Tasks.
-            if (Token != Config.GetTestToken())
+            ModuleInfo[] debugCommands = Service.Modules.Where((x) => x.Preconditions.Any(x => x is RequireGuildAttribute)).ToArray();
+            IGuild supportServer = Client.GetGuild(supportServerId);
+            await Service.AddModulesToGuildAsync(supportServer, true, debugCommands);
+
+            Client.InteractionCreated += InteractionCreated;
+            Service.SlashCommandExecuted += SlashCommandResulted;
+
+            _ = Task.Run(async () =>
             {
-                // Top GG
-                var topGGResult = await PostToAPI("https://top.gg/api/bots/705680059809398804/stats", Config.GetTopGGToken(), new StringContent("{\"server_count\":" + Client.Guilds.Count.ToString() + "}", Encoding.UTF8, "application/json"));
-                Console.WriteLine($"TopGG POST status: {topGGResult}");
+                // Determine the user count
+                // Throwaway as to not block Gateway Tasks.
+                foreach (var guild in Client.Guilds)
+                {
+                    totalUsers += guild.MemberCount;
+                }
 
-                // Discord Bots GG
-                var discordBotsResult = await PostToAPI("https://discord.bots.gg/api/v1/bots/705680059809398804/stats", Config.GetDiscordBotsToken(), new StringContent("{\"guildCount\":" + Client.Guilds.Count.ToString() + "}", Encoding.UTF8, "application/json"));
-                Console.WriteLine($"Discord Bots GG POST status: {discordBotsResult}");
-            }
-            else
+                totalUsers -= (Token == Config.GetTestToken()) ? 0 : 72000;
+                Console.WriteLine($"Total Users: {totalUsers}");
+
+                // Update third party stats
+                // Throwaway as to not block Gateway Tasks.
+                if (Token != Config.GetTestToken())
+                {
+                    // Top GG
+                    var topGGResult = await PostToAPI("https://top.gg/api/bots/705680059809398804/stats", Config.GetTopGGToken(), new StringContent("{\"server_count\":" + Client.Guilds.Count.ToString() + "}", Encoding.UTF8, "application/json"));
+                    Console.WriteLine($"TopGG POST status: {topGGResult}");
+
+                    // Discord Bots GG
+                    var discordBotsResult = await PostToAPI("https://discord.bots.gg/api/v1/bots/705680059809398804/stats", Config.GetDiscordBotsToken(), new StringContent("{\"guildCount\":" + Client.Guilds.Count.ToString() + "}", Encoding.UTF8, "application/json"));
+                    Console.WriteLine($"Discord Bots GG POST status: {discordBotsResult}");
+                }
+                else
+                {
+                    Console.WriteLine("Third party stats NOT updated because test bot is in use.");
+                }
+            });
+
+            _ = Task.Run(() =>
             {
-                Console.WriteLine("Third party stats NOT updated because test bot is in use.");
-            }
-        });
+                // Status
+                string[] statuses = { "/help | Games!", "/help | Premium! ❤︎", "/help | bobthebot.net", "/help | RNG!", "/help | Quotes!", "/help | Confessions!" };
+                int index = 0;
+                timer = new(async x =>
+                {
+                    if (Client.ConnectionState == ConnectionState.Connected)
+                    {
+                        await Client.SetCustomStatusAsync(statuses[index]);
+                        index = index + 1 == statuses.Length ? 0 : index + 1;
+                    }
+                }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(16));
+            });
 
-        // _ = Task.Run(() =>
-        // {
-        //     // Status
-        //     string[] statuses = { "/help | Games!", "/help | Fonts!", "/help | RNG!", "/help | Quotes!", "/help | Confessions!" };
-        //     int index = 0;
-        //     timer = new(async x =>
-        //     {
-        //     if (Client.ConnectionState == ConnectionState.Connected)
-        //     {
-        //         await Client.SetCustomStatusAsync(statuses[index]);
-        //         index = index + 1 == statuses.Length ? 0 : index + 1;
-        //     }
-        //     }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(16));
-        // });
+            var cpuUsage = await GetCpuUsageForProcess();
+            Console.WriteLine("CPU at Ready: " + cpuUsage.ToString() + "%");
+            var ramUsage = GetRamUsageForProcess();
+            Console.WriteLine("RAM at Ready: " + ramUsage.ToString() + "%");
 
-        var cpuUsage = await GetCpuUsageForProcess();
-        Console.WriteLine("CPU at Ready: " + cpuUsage.ToString() + "%");
-        var ramUsage = GetRamUsageForProcess();
-        Console.WriteLine("RAM at Ready: " + ramUsage.ToString() + "%");
-
-        Client.Ready -= Ready;
+            Client.Ready -= Ready;
         }
-        catch(Exception e) {
+        catch (Exception e)
+        {
             Console.WriteLine(e);
         }
     }
