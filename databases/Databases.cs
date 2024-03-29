@@ -16,6 +16,7 @@ namespace Database
     {
         public virtual DbSet<Server> Server { get; set; }
         public virtual DbSet<User> User { get; set; }
+        public virtual DbSet<NewsChannel> NewsChannel { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -142,6 +143,47 @@ namespace Database
                 User.Update(user);
             }
 
+            await SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Retrieves a news channel by its unique identifier asynchronously.
+        /// </summary>
+        /// <param name="id">The unique identifier of the news channel to retrieve.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation. The task result contains the retrieved <see cref="NewsChannel"/>.
+        /// </returns>
+        public async Task<NewsChannel> GetNewsChannel(ulong id)
+        {
+            return await NewsChannel.FindAsync(keyValues: id);
+        }
+
+        /// <summary>
+        /// Updates a news channel asynchronously.
+        /// </summary>
+        public async Task UpdateNewsChannel(NewsChannel newsChannel)
+        {
+            NewsChannel.Update(newsChannel);
+            await SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Removes a news channel asynchronously.
+        /// </summary>
+        /// <param name="newsChannel">The news channel to be removed.</param>
+        public async Task RemoveNewsChannel(NewsChannel newsChannel)
+        {
+            NewsChannel.Remove(newsChannel);
+            await SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Adds a new news channel asynchronously.
+        /// </summary>
+        /// <param name="newsChannel">The news channel to be added.</param>
+        public async Task AddNewsChannel(NewsChannel newsChannel)
+        {
+            await NewsChannel.AddAsync(newsChannel);
             await SaveChangesAsync();
         }
     }
