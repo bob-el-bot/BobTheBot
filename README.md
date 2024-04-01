@@ -76,25 +76,20 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/master-mind new-game` Play a game of Master Mind, the rules will shared upon usage.
 - `/master-mind guess` Make a guess in a game of Master Mind.
 
+### 👤 Profile Commands
+- `/profile display [user]` Displays the specified user's profile.
+- `/profile set-color [color]` Sets your profile color.
+
 ### 🖊️ Quoting commands:
 - `/quote new [quote] [user] [tag]*3` Formats and shares the quote in designated channel.
 - `/quote channel [channel]` Sets the quote channel for the server.
 - `/quote set-max-length [length]` Sets the maximum length of quotes for the server.
 - `/quote set-min-length [length]` Sets the minimum length of quotes for the server.
 
-### ✨ Miscellaneous commands: 
-- `/code preview [link]` Preview specific lines of code from a file on GitHub.
-- `/fonts [text] [font]` Change your text to a different font.
-    - `[font]` choices: 𝖒𝖊𝖉𝖎𝖊𝖛𝖆𝖑, 𝓯𝓪𝓷𝓬𝔂, 𝕠𝕦𝕥𝕝𝕚𝕟𝕖𝕕, s̷l̷̷a̷s̷h̷e̷d̷, ɟןıddǝp, and 🄱🄾🅇🄴🄳.
-- `/confess [message] [user] [signoff]` Have Bob DM a user a message.
-- `/announce [title] [description] [color]` Have a fancy embed message sent.
-- `/poll [prompt] [option]*4` Create a poll.
-- `/ship [user]*2` See how good of a match 2 users are.
-- `/hug [user]*5` Show your friends some love with a hug.
+### 👋 Welcome commands:
 - `/welcome toggle [welcome]` Bob will send welcome messages to new server members.
 - `/welcome set-message [message]` Set a custom message to welcome new users with.
 - `/welcome remove-message` Bob will stop using the custom message to welcome users.
-- `/hi` Say hi to Bob.
 
 ### 🔒 Encryption commands:
 - `/encrypt a1z26 [message]` Encrypts your message by swapping letters to their corresponding number.
@@ -110,10 +105,22 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/decrypt morse [message]` Decrypts your message using Morse code.
 - `/decrypt vigenere [message] [key]` Decrypts your message using a specified key.
 
+### ✨ Miscellaneous commands: 
+- `/code preview [link]` Preview specific lines of code from a file on GitHub.
+- `/fonts [text] [font]` Change your text to a different font.
+    - `[font]` choices: 𝖒𝖊𝖉𝖎𝖊𝖛𝖆𝖑, 𝓯𝓪𝓷𝓬𝔂, 𝕠𝕦𝕥𝕝𝕚𝕟𝕖𝕕, s̷l̷̷a̷s̷h̷e̷d̷, ɟןıddǝp, and 🄱🄾🅇🄴🄳.
+- `/confess [message] [user] [signoff]` Have Bob DM a user a message.
+- `/announce [title] [description] [color]` Have a fancy embed message sent.
+- `/poll [prompt] [option]*4` Create a poll.
+- `/ship [user]*2` See how good of a match 2 users are.
+- `/hug [user]*5` Show your friends some love with a hug.
+- `/hi` Say hi to Bob.
+
+### 🖨️ Auto commands:
+- `/auto publish-announcements [publish] [channel]` Bob will publish all messages sent in the given channel.
+
 ### 🗄️ Informational / help commands:
 - `/premium` Ensures Bob knows you have premium! If not you will be given a button to get it!
-- `/profile display [user]` Displays the specified user's profile.
-- `/profile set-color [color]` Sets your profile color.
 - `/help` Get DMed information for *all* commands.
 - `/new` See the latest updates to Bob.
 - `/quote-prompts` See all valid prompts for `/random quote`.
