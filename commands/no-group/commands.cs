@@ -336,6 +336,71 @@ namespace Commands
             }
         }
 
+        // [EnabledInDm(false)]
+        // [SlashCommand("connect4", "Play a game of Connect 4.")]
+        // public async Task Connect4([Summary("opponent", "Leave empty to verse an AI.")] SocketUser opponent = null)
+        // {
+        //     if (opponent == null || opponent.IsBot)
+        //     {
+        //         await DeferAsync();
+        //         Connect4 game = new(Context.User, opponent ?? Bot.Client.CurrentUser);
+        //         await game.StartBotGame(Context.Interaction);
+        //     }
+        //     else
+        //     {
+        //         if (!await Challenge.CanChallengeAsync(Context.User.Id, opponent.Id))
+        //         {
+        //             await RespondAsync(text: "❌ You can't challenge them.", ephemeral: true);
+        //         }
+        //         else
+        //         {
+        //             await DeferAsync();
+        //             await Challenge.SendMessage(Context.Interaction, new Connect4(Context.User, opponent));
+        //         }
+        //     }
+        // }
+
+        // [ComponentInteraction("connect4:*:*")]
+        // public async Task Connect4ButtonHandler(string column, string Id)
+        // {
+        //     SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
+
+        //     Challenge.Connect4Games.TryGetValue(Convert.ToUInt64(Id), out Connect4 game);
+
+        //     if (game == null)
+        //     {
+        //         await component.RespondAsync(text: $"❌ This game no longer exists\n- Use `/connect4` to start a new game.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+        //     }
+        //     else
+        //     {
+        //         bool isPlayer1 = component.User.Id == game.Player1.Id;
+        //         bool isPlayer2 = component.User.Id == game.Player2.Id;
+
+        //         if (!isPlayer1 && !isPlayer2)
+        //         {
+        //             await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+        //         }
+        //         else if (game.player1Answer != null && isPlayer1 || game.player2Answer != null && isPlayer2)
+        //         {
+        //             await component.RespondAsync(text: $"❌ You have already answered.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+        //         }
+        //         else
+        //         {
+        //             await DeferAsync();
+
+        //             // Answer
+        //             if (game.Player2.IsBot)
+        //             {
+        //                 await game.AloneAnswer(answer, component);
+        //             }
+        //             else
+        //             {
+        //                 await game.Answer(isPlayer1, answer, component);
+        //             }
+        //         }
+        //     }
+        // }
+
         [ComponentInteraction("acceptChallenge:*")]
         public async Task AcceptChallengeButtonHandler(string Id)
         {
@@ -531,7 +596,7 @@ namespace Commands
                 {
                     Title = $"📖 Here is a list of all of my commands.",
                     Color = Bot.theme,
-                    Description = @"See the [Docs](https://docs.bobthebot.net#other) for more in depth info.
+                    Description = @"See the [Docs](https://docs.bobthebot.net) for more in depth info.
 **🎲 Randomly Generated (RNG):** [RNG Docs](https://docs.bobthebot.net#rng)
 - `/random color` Get a color with Hex, CMYK, HSL, HSV and RGB codes. [Docs](https://docs.bobthebot.net#random-color)
 - `/random dice-roll [sides]` Roll a die with a specified # of sides. [Docs](https://docs.bobthebot.net#random-dice-roll)
@@ -550,24 +615,31 @@ namespace Commands
 - `/rock-paper-scissors [opponent]` Play Bob or a user in a game of Rock Paper Scissors. [Docs](https://docs.bobthebot.net#rock-paper-scissors)
 - `/master-mind new-game` Play a game of Master Mind, the rules will shared upon usage. [Docs](https://docs.bobthebot.net#master-mind-new)
 - `/master-mind guess` Make a guess in a game of Master Mind. [Docs](https://docs.bobthebot.net#master-mind-guess)
+**👤 Profiles:** [Profile Docs](https://docs.bobthebot.net#profile)
+- `/profile display [user]` Displays the specified user's profile. [Docs](https://docs.bobthebot.net#profile-display)
+- `/profile set-color [color]` Sets your profile color. [Docs](https://docs.bobthebot.net#profile-set-color)
 **🖊️ Quoting:** [Quoting Docs](https://docs.bobthebot.net#quoting)
 - `/quote new [quote] [user] [tag]*3` Formats and shares the quote in designated channel. [Docs](https://docs.bobthebot.net#quote-new)
 - `/quote channel [channel]` Sets the quote channel for the server. [Docs](https://docs.bobthebot.net#quote-channel)
 - `/quote set-max-length [length]` Sets the maximum length of quotes for the server. [Docs](https://docs.bobthebot.net#quote-set-max-length)
 - `/quote set-min-length [length]` Sets the minimum length of quotes for the server. [Docs](https://docs.bobthebot.net#quote-set-min-length)
-**🔒 Encryption commands:** [Encryption Docs](https://docs.bobthebot.net#encrypt)
-- `/encrypt a1z26 [message]` Encrypts your message by swapping letters to their corresponding number. [Docs](https://docs.bobthebot.net#encrypt-a1z26)
-- `/encrypt atbash [message]` Encrypts your message by swapping letters to their opposite position. [Docs](https://docs.bobthebot.net#encrypt-atbash)
-- `/encrypt caesar [message] [shift]` Encrypts your message by shifting the letters the specified amount. [Docs](https://docs.bobthebot.net#encrypt-caesar)
-- `/encrypt morse [message]` Encrypts your message using Morse code. [Docs](https://docs.bobthebot.net#encrypt-morse)
-- `/encrypt vigenere [message] [key]` Encrypts your message using a specified key. [Docs](https://docs.bobthebot.net#encrypt-vigenere)"
+**👋 Welcoming:** [Welcome Docs](https://docs.bobthebot.net#welcome)
+- `/welcome toggle [welcome]` Bob will send welcome messages to new server members. [Docs](https://docs.bobthebot.net#welcome-toggle)
+- `/welcome set-message [message]` Set a custom message to welcome new users with. [Docs](https://docs.bobthebot.net#welcome-set-message)
+- `/welcome remove-message` Bob will stop using the custom message to welcome users. [Docs](https://docs.bobthebot.net#welcome-remove-message)"
                 };
 
                 var secondEmbed = new EmbedBuilder
                 {
                     Title = $"",
                     Color = Bot.theme,
-                    Description = @"**🔓 Decryption commands:** [Decryption Docs](https://docs.bobthebot.net#decrypt)
+                    Description = @"**🔒 Encryption commands:** [Encryption Docs](https://docs.bobthebot.net#encrypt)
+- `/encrypt a1z26 [message]` Encrypts your message by swapping letters to their corresponding number. [Docs](https://docs.bobthebot.net#encrypt-a1z26)
+- `/encrypt atbash [message]` Encrypts your message by swapping letters to their opposite position. [Docs](https://docs.bobthebot.net#encrypt-atbash)
+- `/encrypt caesar [message] [shift]` Encrypts your message by shifting the letters the specified amount. [Docs](https://docs.bobthebot.net#encrypt-caesar)
+- `/encrypt morse [message]` Encrypts your message using Morse code. [Docs](https://docs.bobthebot.net#encrypt-morse)
+- `/encrypt vigenere [message] [key]` Encrypts your message using a specified key. [Docs](https://docs.bobthebot.net#encrypt-vigenere)
+**🔓 Decryption commands:** [Decryption Docs](https://docs.bobthebot.net#decrypt)
 - `/decrypt a1z26 [message]` Decrypts your message by swapping letters to their corresponding number [Docs](https://docs.bobthebot.net#decrypt-a1z26).
 - `/decrypt atbash [message]` Decrypts your message by swapping letters to their opposite position [Docs](https://docs.bobthebot.net#decrypt-atbash).
 - `/decrypt caesar [message] [shift]` Decrypts your message by shifting the letters the specified amount [Docs](https://docs.bobthebot.net#decrypt-caesar).
@@ -583,13 +655,10 @@ namespace Commands
   - `[option]*4` usage: You must provide 2-4 options. These are essentially the poll's choices.
 - `/ship [user]*2` See how good of a match 2 users are. [Docs](https://docs.bobthebot.net#ship)
 - `/hug [user]*5` Show your friends some love with a hug. [Docs](https://docs.bobthebot.net#hug)
-- `/welcome toggle [welcome]` Bob will send welcome messages to new server members. [Docs](https://docs.bobthebot.net#welcome)
-- `/welcome set-message [message]` Set a custom message to welcome new users with. [Docs](https://docs.bobthebot.net#welcome-set-message)
-- `/welcome remove-message` Bob will stop using the custom message to welcome users. [Docs](https://docs.bobthebot.net#welcome-remove-message)
+**🖨️ Auto commands:** [Auto Docs](https://docs.bobthebot.net#auto)
+- `/auto publish-announcements [publish] [channel]` Bob will publish all messages sent in the given channel. [Docs](https://docs.bobthebot.net#auto-publish-announcements)
 **🗄️ Informational / Help:** [Info Docs](https://docs.bobthebot.net#info)
 - `/premium` Ensures Bob knows you have premium! If not you will be given a button to get it! [Docs](https://docs.bobthebot.net#premium)
-- `/profile display [user]` Displays the specified user's profile. [Docs](https://docs.bobthebot.net#profile-display)
-- `/profile set-color [color]` Sets your profile color. [Docs](https://docs.bobthebot.net#profile-set-color)
 - `/new` See the latest updates to Bob. [Docs](https://docs.bobthebot.net#new)
 - `/quote-prompts` See all valid prompts for `/random quote`. [Docs](https://docs.bobthebot.net#quote-prompts)
 - `/ping` Find the client's latency. [Docs](https://docs.bobthebot.net#ping)
