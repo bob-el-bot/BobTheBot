@@ -22,12 +22,13 @@ using Microsoft.VisualBasic;
 using System.Diagnostics;
 using Commands.Attributes;
 using Commands.Helpers;
+using Newtonsoft.Json;
 
 public static class Bot
 {
     public static readonly DiscordSocketClient Client = new(new DiscordSocketConfig()
     {
-        GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers,
+        GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers | GatewayIntents.GuildMessages,
         AlwaysDownloadUsers = true,
     });
 
@@ -60,6 +61,7 @@ public static class Bot
         Client.EntitlementCreated += EntitlementCreated;
         Client.EntitlementDeleted += EntitlementDeleted;
         Client.EntitlementUpdated += EntitlementUpdated;
+        Client.MessageReceived += MessageReceived;
 
         await Client.LoginAsync(TokenType.Bot, Token);
         await Client.StartAsync();
@@ -225,6 +227,39 @@ public static class Bot
     private static Task EntitlementDeleted(Cacheable<SocketEntitlement, ulong> ent)
     {
         return Task.CompletedTask;
+    }
+
+    private static async Task MessageReceived(SocketMessage message)
+    {
+        try
+        {
+            var channel = message.Channel as SocketGuildChannel;
+
+            // Auto Publish if in a News Channel
+            if (message.Channel.GetChannelType() == ChannelType.News)
+            {
+                NewsChannel newsChannel;
+                using (var context = new BobEntities())
+                {
+                    newsChannel = await context.GetNewsChannel(channel.Id);
+                }
+
+                if (newsChannel != null)
+                {
+                    IGuildUser fetchedBot = Client.GetGuild(newsChannel.ServerId).GetUser(Client.CurrentUser.Id);
+                    var botPerms = fetchedBot.GetPermissions(channel);
+                    if (botPerms.SendMessages == true)
+                    {
+                        IUserMessage userMessage = (IUserMessage)message;
+                        await userMessage.CrosspostAsync();
+                    }
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
     }
 
     private static async Task InteractionCreated(SocketInteraction interaction)

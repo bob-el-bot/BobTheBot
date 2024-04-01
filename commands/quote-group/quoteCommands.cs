@@ -219,17 +219,12 @@ namespace Commands
         }
 
         [SlashCommand("channel", "Configure /quote channel.")]
-        public async Task Settings([Summary("channel", "The quotes channel for the server.")] SocketChannel channel)
+        public async Task Settings([Summary("channel", "The quotes channel for the server.")] [ChannelTypes(ChannelType.Text)] SocketChannel channel)
         {
             // Check permissions
             if (!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageChannels)
             {
                 await RespondAsync(text: "❌ Ask an admin or mod to configure this for you.\n- Permission(s) needed: `Manage Channels`\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
-            }
-            // Check if the channel is a text channel
-            if (channel.GetChannelType() != ChannelType.Text)
-            {
-                await RespondAsync(text: $"❌ The channel <#{channel.Id}> is not a text channel\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
             // Check if Bob has permission to send messages in given channel
             else if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)channel).SendMessages || !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)channel).ViewChannel)
