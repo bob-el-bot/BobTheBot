@@ -236,7 +236,7 @@ public static class Bot
             var channel = message.Channel as SocketGuildChannel;
 
             // Auto Publish if in a News Channel
-            if (message.Channel.GetChannelType() == ChannelType.News)
+            if (message.Channel.GetChannelType() == ChannelType.News && message.Components == null)
             {
                 NewsChannel newsChannel;
                 using (var context = new BobEntities())
