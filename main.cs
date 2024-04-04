@@ -171,26 +171,33 @@ public static class Bot
 
     private static async Task UserJoined(SocketGuildUser user)
     {
-        Server server;
-        using (var context = new BobEntities())
+        try
         {
-            server = await context.GetServer(user.Guild.Id);
-        }
-
-        if (server.Welcome == true)
-        {
-            if (user.Guild.SystemChannel != null && user.Guild.GetUser(Client.CurrentUser.Id).GetPermissions(user.Guild.SystemChannel).SendMessages && user.Guild.GetUser(Client.CurrentUser.Id).GetPermissions(user.Guild.SystemChannel).ViewChannel)
+            Server server;
+            using (var context = new BobEntities())
             {
-                if (server.CustomWelcomeMessage != null && server.CustomWelcomeMessage != "")
+                server = await context.GetServer(user.Guild.Id);
+            }
+
+            if (server.Welcome == true)
+            {
+                if (user.Guild.SystemChannel != null && user.Guild.GetUser(Client.CurrentUser.Id).GetPermissions(user.Guild.SystemChannel).SendMessages && user.Guild.GetUser(Client.CurrentUser.Id).GetPermissions(user.Guild.SystemChannel).ViewChannel)
                 {
-                    await user.Guild.SystemChannel.SendMessageAsync(text: Welcome.FormatCustomMessage(server.CustomWelcomeMessage, user.Mention));
-                }
-                else
-                {
-                    // Get random greeting
-                    await user.Guild.SystemChannel.SendMessageAsync(text: Welcome.GetRandomMessage(user.Mention));
+                    if (server.CustomWelcomeMessage != null && server.CustomWelcomeMessage != "")
+                    {
+                        await user.Guild.SystemChannel.SendMessageAsync(text: Welcome.FormatCustomMessage(server.CustomWelcomeMessage, user.Mention));
+                    }
+                    else
+                    {
+                        // Get random greeting
+                        await user.Guild.SystemChannel.SendMessageAsync(text: Welcome.GetRandomMessage(user.Mention));
+                    }
                 }
             }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
         }
     }
 
