@@ -18,11 +18,9 @@ using SQLitePCL;
 using Microsoft.EntityFrameworkCore;
 using Discord.Rest;
 using System.Text;
-using Microsoft.VisualBasic;
-using System.Diagnostics;
 using Commands.Attributes;
 using Commands.Helpers;
-using Newtonsoft.Json;
+using BadgeInterface;
 
 public static class Bot
 {
@@ -197,6 +195,16 @@ public static class Bot
                         await user.Guild.SystemChannel.SendMessageAsync(text: Welcome.GetRandomMessage(user.Mention));
                     }
                 }
+            }
+
+            // If support server, then give the user the Friend badge
+            if (user.Guild.Id == supportServerId)
+            {
+                User dbUser;
+                using var context = new BobEntities();
+                dbUser = await context.GetUser(user.Id);
+
+                await Badge.GiveUserBadge(dbUser, Badges.Badges.Friend);
             }
         }
         catch (Exception e)
