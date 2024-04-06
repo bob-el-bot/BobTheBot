@@ -130,7 +130,7 @@ namespace Commands
                 }
 
                 IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
-                
+
                 if (discordUser.IsBot)
                 {
                     await FollowupAsync(text: $"❌ You **cannot** perform this action on bots.");
@@ -163,7 +163,7 @@ namespace Commands
                 }
 
                 IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
-                
+
                 if (discordUser.IsBot)
                 {
                     await FollowupAsync(text: $"❌ You **cannot** perform this action on bots.");
@@ -181,6 +181,34 @@ namespace Commands
                     await Badge.GiveUserBadge(dbUser, badge);
 
                     await FollowupAsync(text: $"✅ `Badge given to User: {discordUser.GlobalName}, {discordUser.Id}`\n```cs\nPremium Expiration: {dbUser.PremiumExpiration}\nProfile Color: {dbUser.ProfileColor}\nRock Paper Scissors Wins: {dbUser.RockPaperScissorsWins}\nTotal Rock Paper Scissor Games: {dbUser.TotalRockPaperScissorsGames}\nTic-Tac-Toe Wins: {dbUser.TicTacToeWins}\nTotal Tic-Tac-Toe Games: {dbUser.TotalTicTacToeGames}\nTrivia Wins: {dbUser.TriviaWins}\nTotal Trivia Games: {dbUser.TotalTriviaGames}\nBadges: {Badge.GetBadgesProfileString(dbUser.EarnedBadges)}```");
+                }
+            }
+
+            [SlashCommand("get-server", "Gets the server object with the given ID.")]
+            public async Task GetServer(string serverId)
+            {
+                await DeferAsync();
+
+                bool conversionResult = ulong.TryParse(serverId, out ulong parsedId);
+                if (conversionResult == false)
+                {
+                    await FollowupAsync(text: $"❌ The given server ID: `{serverId}` is invalid.");
+                    return;
+                }
+
+                IGuild discordServer = Bot.Client.GetGuild(parsedId);
+
+                if (discordServer == null)
+                {
+                    await FollowupAsync(text: $"❌ Bob could not find the server with the id: `{serverId}`.\n- This probably means Bob is not in the server.");
+                }
+                else
+                {
+                    Server dbServer;
+                    using var context = new BobEntities();
+                    dbServer = await context.GetServer(parsedId);
+
+                    await FollowupAsync(text: $"✅ `Showing Server: {discordServer.Name}, {discordServer.Id}`\n```cs\nCustom Welcome Message: {dbServer.CustomWelcomeMessage}\nWelcome: {dbServer.Welcome}\nQuote Channel ID: {dbServer.QuoteChannelId}\nMax Quote Length: {dbServer.MaxQuoteLength}\nMin Quote Length: {dbServer.MinQuoteLength}```");
                 }
             }
         }
