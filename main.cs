@@ -310,13 +310,13 @@ public static class Bot
 
                     await LogErrorToDiscord(logChannel, ctx, info, $"{executionResult.ErrorReason}\n{executionResult.Exception}");
 
-                    // // Live Debugging
-                    // // Server Logging
-                    // if (ctx.Interaction.GuildId != null && DebugGroup.LogGroup.serversToLog.ContainsKey(ctx.Guild.Id))
-                    // {
-                    //     DebugGroup.LogGroup.serverLogChannels.TryGetValue(ctx.Guild.Id, out RestTextChannel logChannel);
-                    //     await LogToDiscord(logChannel, ctx, info, res.ErrorReason);
-                    // }
+                    // Live Debugging
+                    // Server Logging
+                    if (ctx.Interaction.GuildId != null && DebugGroup.LogGroup.serversToLog.ContainsKey(ctx.Guild.Id))
+                    {
+                        DebugGroup.LogGroup.serverLogChannels.TryGetValue(ctx.Guild.Id, out RestTextChannel debugLogChannel);
+                        await LogServerUseToDiscord(debugLogChannel, ctx, info, res.ErrorReason);
+                    }
                     break;
                 case InteractionCommandError.Unsuccessful:
                     await ctx.Interaction.FollowupAsync("❌ Command could not be executed");
@@ -334,13 +334,13 @@ public static class Bot
             var commandName = info.IsTopLevelCommand ? $"/{info.Name}" : $"/{info.Module.SlashGroupName} {info.Name}";
             Console.WriteLine($"{DateTime.Now:dd/MM. H:mm:ss} | {FormatPerformance(cpuUsage, ramUsage)} | Location: {location} | Command: {commandName}");
 
-            // // Live Debugging
-            // // Server Logging
-            // if (ctx.Interaction.GuildId != null && DebugGroup.LogGroup.serversToLog.ContainsKey(ctx.Guild.Id))
-            // {
-            //     DebugGroup.LogGroup.serverLogChannels.TryGetValue(ctx.Guild.Id, out RestTextChannel logChannel);
-            //     await LogToDiscord(logChannel, ctx, info);
-            // }
+            // Live Debugging
+            // Server Logging
+            if (ctx.Interaction.GuildId != null && DebugGroup.LogGroup.serversToLog.ContainsKey(ctx.Guild.Id))
+            {
+                DebugGroup.LogGroup.serverLogChannels.TryGetValue(ctx.Guild.Id, out RestTextChannel debugLogChannel);
+                await LogServerUseToDiscord(debugLogChannel, ctx, info);
+            }
         }
     }
 
