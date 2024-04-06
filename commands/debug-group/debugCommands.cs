@@ -180,7 +180,7 @@ namespace Commands
 
                     await Badge.GiveUserBadge(dbUser, badge);
 
-                    await FollowupAsync(text: $"✅ `Showing User: {discordUser.GlobalName}, {discordUser.Id}`\n```cs\nPremium Expiration: {dbUser.PremiumExpiration}\nProfile Color: {dbUser.ProfileColor}\nRock Paper Scissors Wins: {dbUser.RockPaperScissorsWins}\nTotal Rock Paper Scissor Games: {dbUser.TotalRockPaperScissorsGames}\nTic-Tac-Toe Wins: {dbUser.TicTacToeWins}\nTotal Tic-Tac-Toe Games: {dbUser.TotalTicTacToeGames}\nTrivia Wins: {dbUser.TriviaWins}\nTotal Trivia Games: {dbUser.TotalTriviaGames}\nBadges: {Badge.GetBadgesProfileString(dbUser.EarnedBadges)}```");
+                    await FollowupAsync(text: $"✅ `Badge given to User: {discordUser.GlobalName}, {discordUser.Id}`\n```cs\nPremium Expiration: {dbUser.PremiumExpiration}\nProfile Color: {dbUser.ProfileColor}\nRock Paper Scissors Wins: {dbUser.RockPaperScissorsWins}\nTotal Rock Paper Scissor Games: {dbUser.TotalRockPaperScissorsGames}\nTic-Tac-Toe Wins: {dbUser.TicTacToeWins}\nTotal Tic-Tac-Toe Games: {dbUser.TotalTicTacToeGames}\nTrivia Wins: {dbUser.TriviaWins}\nTotal Trivia Games: {dbUser.TotalTriviaGames}\nBadges: {Badge.GetBadgesProfileString(dbUser.EarnedBadges)}```");
                 }
             }
         }
