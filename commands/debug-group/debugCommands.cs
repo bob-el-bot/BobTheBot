@@ -84,5 +84,30 @@ namespace Commands
                 await FollowupAsync(text: "✅ All data and channels relevant to server logging have been deleted.");
             }
         }
+
+        [Group("stat", "All debug commands for stats")]
+        public class StatsGroup : InteractionModuleBase<SocketInteractionContext>
+        {
+            [SlashCommand("exact-user-count", "Calculates the EXACT user count excluding bots.")]
+            public async Task ExactUserCount()
+            {
+                await DeferAsync();
+
+                int totalUsers = 0;
+
+                foreach (var guild in Bot.Client.Guilds)
+                {
+                    foreach (var user in guild.Users)
+                    {
+                        if (user.IsBot == false)
+                        {
+                            totalUsers++;
+                        }
+                    }
+                }
+
+                await FollowupAsync(text: $"✅ The exact amount of real users bob has: `{totalUsers}`");
+            }
+        }
     }
 }
