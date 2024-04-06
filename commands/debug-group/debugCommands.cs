@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using BadgeInterface;
 using Commands.Attributes;
+using Database;
+using Database.Types;
 using Discord;
 using Discord.Interactions;
 using Discord.Rest;
@@ -107,6 +110,78 @@ namespace Commands
                 }
 
                 await FollowupAsync(text: $"✅ The exact amount of real users bob has: `{totalUsers}`");
+            }
+        }
+
+        [Group("database", "All debug commands for the database")]
+        public class DatabaseGroup : InteractionModuleBase<SocketInteractionContext>
+        {
+
+            [SlashCommand("get-user", "Gets the user object of a given user.")]
+            public async Task GetUser(IUser user = null, string userId = null)
+            {
+                await DeferAsync();
+
+                bool conversionResult = ulong.TryParse(userId, out ulong parsedId);
+                if (user == null && userId == null)
+                {
+                    await FollowupAsync(text: $"❌ You **must** specify a `user` **or** a `userId`.");
+                    return;
+                }
+
+                IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
+                
+                if (discordUser.IsBot)
+                {
+                    await FollowupAsync(text: $"❌ You **cannot** perform this action on bots.");
+                }
+                else if (user != null && conversionResult != false && user.Id != parsedId)
+                {
+                    await FollowupAsync(text: $"❌ The given `user` **and** `userId` must have matching IDs.");
+                }
+                else
+                {
+                    User dbUser;
+                    using var context = new BobEntities();
+                    dbUser = await context.GetUser(user == null ? parsedId : user.Id);
+
+                    await FollowupAsync(text: $"✅ `Showing User: {discordUser.GlobalName}, {discordUser.Id}`\n```cs\nPremium Expiration: {dbUser.PremiumExpiration}\nProfile Color: {dbUser.ProfileColor}\nRock Paper Scissors Wins: {dbUser.RockPaperScissorsWins}\nTotal Rock Paper Scissor Games: {dbUser.TotalRockPaperScissorsGames}\nTic-Tac-Toe Wins: {dbUser.TicTacToeWins}\nTotal Tic-Tac-Toe Games: {dbUser.TotalTicTacToeGames}\nTrivia Wins: {dbUser.TriviaWins}\nTotal Trivia Games: {dbUser.TotalTriviaGames}\nBadges: {Badge.GetBadgesProfileString(dbUser.EarnedBadges)}```");
+                }
+            }
+
+            [SlashCommand("give-user-badge", "Gives the given user the given badge.")]
+            public async Task GiveUserBadge(Badges.Badges badge, IUser user = null, string userId = null)
+            {
+                await DeferAsync();
+
+                bool conversionResult = ulong.TryParse(userId, out ulong parsedId);
+
+                if (user == null && userId == null)
+                {
+                    await FollowupAsync(text: $"❌ You **must** specify a `user` **or** a `userId`.");
+                    return;
+                }
+
+                IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
+                
+                if (discordUser.IsBot)
+                {
+                    await FollowupAsync(text: $"❌ You **cannot** perform this action on bots.");
+                }
+                else if (user != null && conversionResult != false && user.Id != parsedId)
+                {
+                    await FollowupAsync(text: $"❌ The given `user` **and** `userId` must have matching IDs.");
+                }
+                else
+                {
+                    User dbUser;
+                    using var context = new BobEntities();
+                    dbUser = await context.GetUser(user == null ? parsedId : user.Id);
+
+                    await Badge.GiveUserBadge(dbUser, badge);
+
+                    await FollowupAsync(text: $"✅ `Showing User: {discordUser.GlobalName}, {discordUser.Id}`\n```cs\nPremium Expiration: {dbUser.PremiumExpiration}\nProfile Color: {dbUser.ProfileColor}\nRock Paper Scissors Wins: {dbUser.RockPaperScissorsWins}\nTotal Rock Paper Scissor Games: {dbUser.TotalRockPaperScissorsGames}\nTic-Tac-Toe Wins: {dbUser.TicTacToeWins}\nTotal Tic-Tac-Toe Games: {dbUser.TotalTicTacToeGames}\nTrivia Wins: {dbUser.TriviaWins}\nTotal Trivia Games: {dbUser.TotalTriviaGames}\nBadges: {Badge.GetBadgesProfileString(dbUser.EarnedBadges)}```");
+                }
             }
         }
     }

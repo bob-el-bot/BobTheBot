@@ -84,7 +84,11 @@ public static class Bot
             await Service.AddModulesAsync(Assembly.GetEntryAssembly(), null);
             await Service.RegisterCommandsGloballyAsync();
 
-            ModuleInfo[] debugCommands = Service.Modules.Where((x) => x.Preconditions.Any(x => x is RequireGuildAttribute)).ToArray();
+            // Register Debug Commands
+            ModuleInfo[] debugCommands = Service.Modules
+                .Where(module => module.Preconditions.Any(precondition => precondition is RequireGuildAttribute)
+                              && module.SlashGroupName == "debug")
+                .ToArray();
             IGuild supportServer = Client.GetGuild(supportServerId);
             await Service.AddModulesToGuildAsync(supportServer, true, debugCommands);
 
