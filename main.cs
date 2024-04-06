@@ -353,6 +353,12 @@ public static class Bot
                 DebugGroup.LogGroup.serverLogChannels.TryGetValue(ctx.Guild.Id, out RestTextChannel debugLogChannel);
                 await LogServerUseToDiscord(debugLogChannel, ctx, info);
             }
+
+            if (DebugGroup.LogGroup.LogEverything == true)
+            {
+                SocketTextChannel logChannel = (SocketTextChannel)Client.GetGuild(supportServerId).GetChannel(Token != Config.GetTestToken() ? systemLogChannelId : devLogChannelId);
+                await LogErrorToDiscord(logChannel, ctx, info);
+            }
         }
     }
 

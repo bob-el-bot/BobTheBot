@@ -26,19 +26,26 @@ namespace Commands
             public const ulong DebugServerCategoryId = 1181420597138427967;
             public static Dictionary<ulong, IGuild> serversToLog = new();
             public static Dictionary<ulong, RestTextChannel> serverLogChannels = new();
+            public static bool LogEverything = false;
 
             [SlashCommand("server", "Log all usage of Bob from a specific server (toggleable).")]
             public async Task ServerLogToggle(string serverId)
             {
                 await DeferAsync();
 
-                ulong id = ulong.Parse(serverId);
+                bool conversionResult = ulong.TryParse(serverId, out ulong id);
+                if (conversionResult == false)
+                {
+                    await FollowupAsync(text: $"❌ The server ID `{serverId}` is invalid.");
+                    return;
+                }
+
                 if (serversToLog.ContainsKey(id))
                 {
                     serversToLog.Remove(id);
                     serverLogChannels.TryGetValue(id, out RestTextChannel channel);
 
-                    await FollowupAsync(text: $"✅ Debug logging for the serverId `{serverId}` has been **stopped** and {channel.Mention} will be deleted in 5 seconds.");
+                    await FollowupAsync(text: $"✅ Debug logging for the server ID `{serverId}` has been **stopped** and {channel.Mention} will be deleted in 5 seconds.");
 
                     await Task.Delay(5000);
                     await channel.DeleteAsync();
@@ -50,14 +57,14 @@ namespace Commands
                     if (guild != null)
                     {
                         RestTextChannel restChannel = await Context.Guild.CreateTextChannelAsync(name: $"{serverId}", tcp => tcp.CategoryId = DebugServerCategoryId);
-                        await FollowupAsync(text: $"✅ Debug logging for the serverId `{serverId}` has **started** in {restChannel.Mention}.");
+                        await FollowupAsync(text: $"✅ Debug logging for the server ID `{serverId}` has **started** in {restChannel.Mention}.");
                         serverLogChannels.Add(key: id, value: restChannel);
 
                         serversToLog.Add(key: id, value: guild);
                     }
                     else
                     {
-                        await FollowupAsync(text: $"❌ Debug logging for the serverId `{serverId}` has **not** started.\n- Bob is not in the provided server.");
+                        await FollowupAsync(text: $"❌ Debug logging for the server ID `{serverId}` has **not** started.\n- Bob is not in the provided server.");
                     }
                 }
             }
@@ -85,6 +92,27 @@ namespace Commands
                 }
 
                 await FollowupAsync(text: "✅ All data and channels relevant to server logging have been deleted.");
+            }
+
+            [SlashCommand("everything", "Log all usage of Bob.")]
+            public async Task LogEverythingToggle()
+            {
+                await DeferAsync();
+
+                if (LogEverything == true)
+                {
+                    LogEverything = false;
+
+                    await FollowupAsync(text: $"✅ Debug logging for **everything** has been stopped.");
+                }
+                else
+                {
+                    LogEverything = true;
+
+                    SocketTextChannel logChannel = (SocketTextChannel)Bot.Client.GetGuild(Bot.supportServerId).GetChannel(Bot.systemLogChannelId);
+
+                    await FollowupAsync(text: $"✅ Debug logging for **everything** has **started** in {logChannel.Mention}.");
+                }
             }
         }
 
