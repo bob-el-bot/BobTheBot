@@ -105,7 +105,7 @@ namespace Database
         /// <summary>
         /// AddUser() creates a new user entry in the database. 
         /// </summary>
-        public async Task AddUser(User user)
+        private async Task AddUser(User user)
         {
             await User.AddAsync(user);
             await SaveChangesAsync();
