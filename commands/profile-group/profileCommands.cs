@@ -7,8 +7,9 @@ using Database.Types;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using Microsoft.VisualBasic;
 using PremiumInterface;
+using BadgeInterface;
+using System.Runtime.InteropServices;
 
 namespace Commands
 {
@@ -44,12 +45,16 @@ namespace Commands
 
                 Color color = hasPremium ? Colors.TryGetColor(userToDisplay.ProfileColor) : 0x2C2F33;
 
+                // Format Description
+                string premium = hasPremium ? "💜✨ *Premium*" : "";
+                string description = $"{premium}\n**Badges:** {Badge.GetBadgesProfileString(userToDisplay.EarnedBadges)}";
+
                 // Create Embed
                 var embed = new EmbedBuilder
                 {
                     Author = new EmbedAuthorBuilder().WithName($"{user.Username}'s Profile").WithIconUrl(user.GetAvatarUrl()),
                     Color = color,
-                    Description = hasPremium ? "💜✨ *Premium*" : null
+                    Description = description
                 };
 
                 embed.AddField(name: $"✂️ Rock Paper Scissors", value: $"Total Wins: `{userToDisplay.RockPaperScissorsWins}`\nTotal Games: `{userToDisplay.TotalRockPaperScissorsGames}`\nWin %: `{rpsWinPercent}%`", inline: true)
@@ -99,6 +104,33 @@ namespace Commands
 
                 // Respond
                 await FollowupAsync(embed: embed.Build());
+            }
+        }
+
+        [SlashCommand("badge-info", "Get info about profile badges.")]
+        public async Task BadgeInfo([Summary("badge", "The badge you want to learn about (leave empty to show all).")] Badges.Badges? badge = null)
+        {
+            var embed = new EmbedBuilder
+            {
+                Color = Bot.theme,
+                Footer = new EmbedFooterBuilder {
+                    Text = "Have a badge idea? Let us know in Bob's official server."
+                }
+            };
+
+            if (badge != null)
+            {
+                embed.Title = $"{Badge.GetBadgeEmoji((Badges.Badges)badge)} {Badge.GetBadgeDisplayName((Badges.Badges)badge)} Info";
+                embed.Description = Badge.GetBadgeInfoString((Badges.Badges)badge);
+
+                await RespondAsync(embed: embed.Build());
+            }
+            else
+            {
+                embed.Title = "All Profile Badges Info";
+                embed.Description = Badge.GetBadgesInfoString();
+
+                await RespondAsync(embed: embed.Build());
             }
         }
     }
