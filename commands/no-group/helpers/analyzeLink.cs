@@ -158,7 +158,7 @@ namespace Commands.Helpers
                                 statusCode = req.StatusCode,
                                 specialCase = "Meta-Refresh Redirect",
                                 containsCookies = hasCookies,
-                                isRickRoll = link == "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                                isRickRoll = IsRickRoll(link),
                                 isRedirect = true,
                                 isShortened = IsShortenedUrl(link, true)
                             };
@@ -174,7 +174,7 @@ namespace Commands.Helpers
                                 statusCode = req.StatusCode,
                                 specialCase = "JavaScript Redirect",
                                 containsCookies = hasCookies,
-                                isRickRoll = link == "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                                isRickRoll = IsRickRoll(link),
                                 isRedirect = true,
                                 isShortened = IsShortenedUrl(link, true)
                             };
@@ -190,7 +190,7 @@ namespace Commands.Helpers
                                 link = $"{link}",
                                 statusCode = req.StatusCode,
                                 containsCookies = hasCookies,
-                                isRickRoll = link == "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                                isRickRoll = IsRickRoll(link),
                                 isRedirect = isRedirect,
                                 isShortened = IsShortenedUrl(link, isRedirect)
                             };
@@ -206,7 +206,7 @@ namespace Commands.Helpers
                             link = $"{link}",
                             statusCode = req.StatusCode,
                             containsCookies = hasCookies,
-                            isRickRoll = link == "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+                            isRickRoll = IsRickRoll(link),
                             isRedirect = isRedirect,
                             isShortened = IsShortenedUrl(link, isRedirect)
                         };
@@ -246,6 +246,11 @@ namespace Commands.Helpers
             }
 
             return trail;
+        }
+
+        private static bool IsRickRoll(string url)
+        {
+            return url.Contains("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
         }
 
         private static bool IsGitHubRepository(string url)
