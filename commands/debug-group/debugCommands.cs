@@ -212,6 +212,41 @@ namespace Commands
                 }
             }
 
+            [SlashCommand("remove-user-badge", "Removes the given badge from the given user.")]
+            public async Task RemoveUserBadge(Badges.Badges badge, IUser user = null, string userId = null)
+            {
+                await DeferAsync();
+
+                bool conversionResult = ulong.TryParse(userId, out ulong parsedId);
+
+                if (user == null && userId == null)
+                {
+                    await FollowupAsync(text: $"❌ You **must** specify a `user` **or** a `userId`.");
+                    return;
+                }
+
+                IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
+
+                if (discordUser.IsBot)
+                {
+                    await FollowupAsync(text: $"❌ You **cannot** perform this action on bots.");
+                }
+                else if (user != null && conversionResult != false && user.Id != parsedId)
+                {
+                    await FollowupAsync(text: $"❌ The given `user` **and** `userId` must have matching IDs.");
+                }
+                else
+                {
+                    User dbUser;
+                    using var context = new BobEntities();
+                    dbUser = await context.GetUser(user == null ? parsedId : user.Id);
+
+                    await Badge.RemoveUserBadge(dbUser, badge);
+
+                    await FollowupAsync(text: $"✅ `Badge removed from User: {discordUser.GlobalName}, {discordUser.Id}`\n```cs\nPremium Expiration: {dbUser.PremiumExpiration}\nProfile Color: {dbUser.ProfileColor}\nRock Paper Scissors Wins: {dbUser.RockPaperScissorsWins}\nTotal Rock Paper Scissor Games: {dbUser.TotalRockPaperScissorsGames}\nTic-Tac-Toe Wins: {dbUser.TicTacToeWins}\nTotal Tic-Tac-Toe Games: {dbUser.TotalTicTacToeGames}\nTrivia Wins: {dbUser.TriviaWins}\nTotal Trivia Games: {dbUser.TotalTriviaGames}\nBadges: {Badge.GetBadgesProfileString(dbUser.EarnedBadges)}```");
+                }
+            }
+
             [SlashCommand("get-server", "Gets the server object with the given ID.")]
             public async Task GetServer(string serverId)
             {

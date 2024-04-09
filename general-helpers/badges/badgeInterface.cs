@@ -136,5 +136,29 @@ namespace BadgeInterface
                 await context.UpdateUser(user);
             }
         }
+
+        /// <summary>
+        /// Removes a specified badge from a user's earned badges.
+        /// </summary>
+        /// <param name="user">The user from whom to remove the badge.</param>
+        /// <param name="badge">The badge to remove from the user.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public static async Task RemoveUserBadge(User user, Badges.Badges badge)
+        {
+            if (GetUserBadges(user.EarnedBadges).Contains(badge))
+            {
+                ulong currentBadges = user.EarnedBadges;
+
+                ulong badgeToRemoveBit = (ulong)badge;
+
+                ulong mask = ~badgeToRemoveBit;
+                currentBadges &= mask;
+
+                user.EarnedBadges = currentBadges;
+
+                using var context = new BobEntities();
+                await context.UpdateUser(user);
+            }
+        }
     }
 }
