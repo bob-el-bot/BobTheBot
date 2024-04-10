@@ -17,6 +17,12 @@ namespace Badges
         Decrypter = 1 << 3,
         [ChoiceDisplay("Bug Reporter")]
         BugReporter = 1 << 4,
+        [ChoiceDisplay("Winner")]
+        Winner1 = 1 << 5,
+        [ChoiceDisplay("Winner 2")]
+        Winner2 = 1 << 6,
+        [ChoiceDisplay("Winner 3")]
+        Winner3 = 1 << 7,
     }
 
     public class BadgeInformation
@@ -79,6 +85,36 @@ namespace Badges
                     Emoji = "🪲",
                     Description = "Great catch!",
                     HowToGet = "Report and help fix a bug on Bob's official server."
+                }
+            },
+            {
+                Badges.Winner1,
+                new BadgeInformation
+                {
+                    DisplayName = "Winner",
+                    Emoji = "🏆",
+                    Description = "In it to win it.",
+                    HowToGet = "Win 10 challenges in a row."
+                }
+            },
+            {
+                Badges.Winner2,
+                new BadgeInformation
+                {
+                    DisplayName = "Winner 2",
+                    Emoji = "🏆",
+                    Description = "In it to win it.",
+                    HowToGet = "Win 20 challenges in a row."
+                }
+            },
+            {
+                Badges.Winner3,
+                new BadgeInformation
+                {
+                    DisplayName = "Winner 3",
+                    Emoji = "🏆",
+                    Description = "In it to win it.",
+                    HowToGet = "Win 30 challenges in a row."
                 }
             },
         };

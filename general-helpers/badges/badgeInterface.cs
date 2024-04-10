@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.Common;
 using System.Dynamic;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Badges;
 using Database;
@@ -125,8 +126,18 @@ namespace BadgeInterface
             if (GetUserBadges(user.EarnedBadges).Contains(badge) == false)
             {
                 ulong currentBadges = user.EarnedBadges;
-
                 ulong earnedBadgeBit = (ulong)badge;
+
+                int endingNumber = GetBadgeTier(badge);
+                if (endingNumber != -1 && endingNumber > 1)
+                {
+                    Badges.Badges? badgeToRemove = GetBadgeWithLesserTier(badge);
+                    if (badgeToRemove != null)
+                    {
+                        ulong mask = ~(ulong)badgeToRemove;
+                        currentBadges &= mask;
+                    }
+                }
 
                 currentBadges |= earnedBadgeBit;
 
@@ -158,6 +169,62 @@ namespace BadgeInterface
 
                 using var context = new BobEntities();
                 await context.UpdateUser(user);
+            }
+        }
+
+        /// <summary>
+        /// Extracts the ending number from the string representation of the given badge.
+        /// </summary>
+        /// <param name="badge">The badge whose ending number will be extracted.</param>
+        /// <returns>
+        /// The ending number of the given badge, or -1 if no ending number is found in the string representation.
+        /// </returns>
+        private static int GetBadgeTier(Badges.Badges badge)
+        {
+            string badgeName = badge.ToString();
+            Match match = Regex.Match(badgeName, @"\d$");
+            if (match.Success)
+            {
+                return Convert.ToInt32(match.Value);
+            }
+            else
+            {
+                return -1;
+            }
+        }
+
+        /// <summary>
+        /// Extracts the base name from the string representation of the given badge.
+        /// </summary>
+        /// <param name="badge">The badge whose base name will be extracted.</param>
+        /// <returns>
+        /// The base name of the given badge, which excludes the ending number.
+        /// </returns>
+        private static string GetBadgeBaseName(Badges.Badges badge)
+        {
+            return badge.ToString()[..^1];
+        }
+
+        /// <summary>
+        /// Finds the badge in the <see cref="Badges.Badges"/> enum with an ending number that is one less than the given badge.
+        /// </summary>
+        /// <param name="badge">The badge whose ending number is used to find the previous tier badge.</param>
+        /// <returns>
+        /// The badge with an ending number that is one less than the ending number of the given badge, 
+        /// or <see langword="null"/> if no matching badge is found.
+        /// </returns>
+        public static Badges.Badges? GetBadgeWithLesserTier(Badges.Badges badge)
+        {
+            string baseBadgeName = GetBadgeBaseName(badge);
+            string targetBadgeName = $"{baseBadgeName}{GetBadgeTier(badge) - 1}";
+
+            if (Enum.TryParse(targetBadgeName, out Badges.Badges targetBadge))
+            {
+                return targetBadge;
+            }
+            else
+            {
+                return null;
             }
         }
     }
