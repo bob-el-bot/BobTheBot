@@ -15,6 +15,7 @@ namespace Database.Types
         // Badges
         public ulong EarnedBadges { get; set; }
         // Stats
+        public uint WinStreak { get; set; }
         public float TriviaWins { get; set; } 
         public int TotalTriviaGames { get; set; }
         public float TicTacToeWins { get; set; }

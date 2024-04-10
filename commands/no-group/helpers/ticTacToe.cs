@@ -79,28 +79,7 @@ namespace Commands.Helpers
                     Challenge.DecrementUserChallenges(Player1.Id);
                     Challenge.DecrementUserChallenges(Player2.Id);
 
-                    Challenge.WinCases winner = TTTMethods.GetWinner(grid, turns, isPlayer1Turn, true);
-
-                    // Update User Info
-                    using var context = new BobEntities();
-                    var userIds = new[] { Player1.Id, Player2.Id };
-                    var users = await context.GetUsers(userIds);
-
-                    foreach (var user in users)
-                    {
-                        user.TotalTicTacToeGames++;
-
-                        if ((user.Id == Player1.Id && winner == Challenge.WinCases.Player1) || (user.Id == Player2.Id && winner == Challenge.WinCases.Player2))
-                        {
-                            user.TicTacToeWins++;
-                        }
-                        else if (winner == Challenge.WinCases.Tie)
-                        {
-                            user.TicTacToeWins += 0.5f;
-                        }
-                    }
-
-                    await context.UpdateUsers(users);
+                    await Challenge.UpdateUserStats(this, TTTMethods.GetWinner(grid, turns, isPlayer1Turn, true));
                 }
                 await Message.ModifyAsync(x => { x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, GetFinalTitle(true)).Build(); x.Components = TTTMethods.GetButtons(grid, turns, Id, true).Build(); });
             }
@@ -182,28 +161,7 @@ namespace Commands.Helpers
                     Challenge.DecrementUserChallenges(Player1.Id);
                     Challenge.DecrementUserChallenges(Player2.Id);
 
-                    Challenge.WinCases winner = TTTMethods.GetWinner(grid, turns, isPlayer1Turn);
-
-                    // Update User Info
-                    using var context = new BobEntities();
-                    var userIds = new[] { Player1.Id, Player2.Id };
-                    var users = await context.GetUsers(userIds);
-
-                    foreach (var user in users)
-                    {
-                        user.TotalTicTacToeGames++;
-
-                        if ((user.Id == Player1.Id && winner == Challenge.WinCases.Player1) || (user.Id == Player2.Id && winner == Challenge.WinCases.Player2))
-                        {
-                            user.TicTacToeWins++;
-                        }
-                        else if (winner == Challenge.WinCases.Tie)
-                        {
-                            user.TicTacToeWins += 0.5f;
-                        }
-                    }
-
-                    await context.UpdateUsers(users);
+                    await Challenge.UpdateUserStats(this, TTTMethods.GetWinner(grid, turns, isPlayer1Turn));
                 }
             }
             catch (Exception)

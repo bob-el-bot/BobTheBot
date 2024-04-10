@@ -202,6 +202,91 @@ namespace Challenges
             game.Dispose();
         }
 
+        private static User UpdateSpecificGameUserStats(GameType gameType, User user, WinCases winner, bool isPlayer1)
+        {
+            switch (gameType)
+            {
+                case GameType.RockPaperScissors:
+                    user.TotalRockPaperScissorsGames++;
+                    break;
+                case GameType.TicTacToe:
+                    user.TotalTicTacToeGames++;
+                    break;
+                case GameType.Trivia:
+                    user.TotalTriviaGames++;
+                    break;
+                default:
+                    break;
+            }
+
+            user = UpdateGameUserStats(user, winner, gameType, isPlayer1);
+            return user;
+        }
+
+        private static User UpdateGameUserStats(User user, WinCases winner, GameType gameType, bool isPlayer1)
+        {
+            if (winner == WinCases.Player1 || winner == WinCases.Player2 || winner == WinCases.Tie)
+            {
+                if ((isPlayer1 && winner == WinCases.Player1) || (!isPlayer1 && winner == WinCases.Player2))
+                {
+                    user.WinStreak++;
+                }
+                else
+                {
+                    user.WinStreak = 0;
+                }
+
+                switch (gameType)
+                {
+                    case GameType.RockPaperScissors:
+                        if ((isPlayer1 && winner == WinCases.Player1) || (!isPlayer1 && winner == WinCases.Player2))
+                        {
+                            user.RockPaperScissorsWins++;
+                        }
+                        else if (winner == WinCases.Tie)
+                        {
+                            user.RockPaperScissorsWins += 0.5f;
+                        }
+                        break;
+                    case GameType.TicTacToe:
+                        if ((isPlayer1 && winner == WinCases.Player1) || (!isPlayer1 && winner == WinCases.Player2))
+                        {
+                            user.TicTacToeWins++;
+                        }
+                        else if (winner == WinCases.Tie)
+                        {
+                            user.TicTacToeWins += 0.5f;
+                        }
+                        break;
+                    case GameType.Trivia:
+                        if ((isPlayer1 && winner == WinCases.Player1) || (!isPlayer1 && winner == WinCases.Player2))
+                        {
+                            user.TriviaWins++;
+                        }
+                        else if (winner == WinCases.Tie)
+                        {
+                            user.TriviaWins += 0.5f;
+                        }
+                        break;
+                }
+            }
+
+            return user;
+        }
+
+
+        public static async Task UpdateUserStats(Games.Game game, WinCases winner)
+        {
+            using var context = new BobEntities();
+            var userIds = new[] { game.Player1.Id, game.Player2.Id };
+            var users = await context.GetUsers(userIds);
+
+            users[0] = UpdateSpecificGameUserStats(game.Type, users[0], winner, true);
+            users[1] = UpdateSpecificGameUserStats(game.Type, users[1], winner, false);
+
+            await context.UpdateUsers(users);
+        }
+
         /// <summary>
         /// Gets the number of challenges for a specific user.
         /// </summary>
@@ -278,7 +363,8 @@ namespace Challenges
             }
         }
 
-        public enum WinCases {
+        public enum WinCases
+        {
             Player1,
             Player2,
             Tie,

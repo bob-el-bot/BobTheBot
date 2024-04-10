@@ -144,7 +144,6 @@ namespace Commands
         [Group("database", "All debug commands for the database")]
         public class DatabaseGroup : InteractionModuleBase<SocketInteractionContext>
         {
-
             [SlashCommand("get-user", "Gets the user object of a given user.")]
             public async Task GetUser(IUser user = null, string userId = null)
             {
