@@ -6,7 +6,7 @@ namespace Commands.Helpers
 {
     public static class MasterMindGeneral
     {
-        public static List<MasterMindGame> currentGames = new();
+        public static List<MasterMindGame> CurrentGames { get; set; } = new();
 
         public static string GetCongrats()
         {

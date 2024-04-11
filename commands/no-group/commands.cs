@@ -551,7 +551,7 @@ namespace Commands
                 Color = Bot.theme
             };
 
-            embed.AddField(name: "📛 Username", value: $"{Bot.Client.CurrentUser.Username}", inline: true).AddField(name: "🪪 ID", value: $"`{Bot.Client.CurrentUser.Id}`", inline: true).AddField(name: ":calendar_spiral: Date Created", value: $"<t:{createdAt}:f>", inline: false).AddField(name: "📈 Servers", value: $"`{Bot.Client.Guilds.Count:n0}`", inline: true).AddField(name: "🤗 Users", value: $"`{Bot.totalUsers:n0}`", inline: true).AddField(name: "🌐 Website", value: "[bobthebot.net](https://bobthebot.net)").AddField(name: "⚡ Github Repository", value: "[github.com/bob-el-bot/BobTheBot](https://github.com/bob-el-bot/BobTheBot)").AddField(name: "🏗️ Made With", value: "C#, .NET", inline: true).AddField(name: "📡 Hosted With", value: "Raspberry PI 4", inline: true);
+            embed.AddField(name: "📛 Username", value: $"{Bot.Client.CurrentUser.Username}", inline: true).AddField(name: "🪪 ID", value: $"`{Bot.Client.CurrentUser.Id}`", inline: true).AddField(name: ":calendar_spiral: Date Created", value: $"<t:{createdAt}:f>", inline: false).AddField(name: "📈 Servers", value: $"`{Bot.Client.Guilds.Count:n0}`", inline: true).AddField(name: "🤗 Users", value: $"`{Bot.TotalUsers:n0}`", inline: true).AddField(name: "🌐 Website", value: "[bobthebot.net](https://bobthebot.net)").AddField(name: "⚡ Github Repository", value: "[github.com/bob-el-bot/BobTheBot](https://github.com/bob-el-bot/BobTheBot)").AddField(name: "🏗️ Made With", value: "C#, .NET", inline: true).AddField(name: "📡 Hosted With", value: "Raspberry PI 4", inline: true);
 
             await RespondAsync(embed: embed.Build());
         }

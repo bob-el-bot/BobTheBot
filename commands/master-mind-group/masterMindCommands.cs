@@ -14,14 +14,14 @@ namespace Commands
         [SlashCommand("new-game", "Start a game of Master Mind (rules will be sent upon use of this command).")]
         public async Task NewGame()
         {
-            if (MasterMindGeneral.currentGames != null && MasterMindGeneral.currentGames.Find(game => game.Id == Context.Channel.Id) != null)
+            if (MasterMindGeneral.CurrentGames != null && MasterMindGeneral.CurrentGames.Find(game => game.Id == Context.Channel.Id) != null)
             {
                 await RespondAsync(text: "❌ Only one game of Master Mind can be played per channel at a time.", ephemeral: true);
             }
             else // Display Rules / Initial Embed
             {
                 MasterMindGame game = new();
-                MasterMindGeneral.currentGames.Add(game);
+                MasterMindGeneral.CurrentGames.Add(game);
                 game.Id = Context.Channel.Id;
                 game.StartUser = Context.User;
 
@@ -49,12 +49,12 @@ namespace Commands
         [SlashCommand("guess", "make a guess in an existing game of Master Mind")]
         public async Task Guess([Summary("guess", "Type a 4 digit guess as to what the answer is.")] string guess)
         {
-            var game = MasterMindGeneral.currentGames.Find(game => game.Id == Context.Channel.Id);
+            var game = MasterMindGeneral.CurrentGames.Find(game => game.Id == Context.Channel.Id);
             if (game == null)
             {
                 await RespondAsync(text: "❌ There is currently not a game of Master Mind in this channel. To make one use `/master-mind new-game`", ephemeral: true);
             }
-            else if (MasterMindGeneral.currentGames.Count > 0 && game.IsStarted == false)
+            else if (MasterMindGeneral.CurrentGames.Count > 0 && game.IsStarted == false)
             {
                 await RespondAsync(text: "❌ Press \"Begin Game!\" to start guessing.", ephemeral: true);
             }
@@ -84,7 +84,7 @@ namespace Commands
                     embed.Description = MasterMindGeneral.GetCongrats();
                     embed.AddField(name: "Answer:", value: $"`{game.Key}`", inline: true).AddField(name: "Guesses Left:", value: $"`{game.GuessesLeft}`", inline: true);
                     await game.Message.ModifyAsync(x => { x.Embed = embed.Build(); x.Components = null; });
-                    MasterMindGeneral.currentGames.Remove(game);
+                    MasterMindGeneral.CurrentGames.Remove(game);
                 }
                 else if (game.GuessesLeft <= 0) // lose game
                 {
@@ -93,7 +93,7 @@ namespace Commands
                     embed.Description = "You have lost, but don't be sad you can just start a new game with `/master-mind new-game`";
                     embed.AddField(name: "Answer:", value: $"`{game.Key}`");
                     await game.Message.ModifyAsync(x => { x.Embed = embed.Build(); x.Components = null; });
-                    MasterMindGeneral.currentGames.Remove(game);
+                    MasterMindGeneral.CurrentGames.Remove(game);
                 }
                 else
                 {
@@ -111,7 +111,7 @@ namespace Commands
         {
             await DeferAsync();
             // Get Game
-            var game = MasterMindGeneral.currentGames.Find(game => game.Id == Context.Interaction.ChannelId);
+            var game = MasterMindGeneral.CurrentGames.Find(game => game.Id == Context.Interaction.ChannelId);
 
             // Set message
             var component = (SocketMessageComponent)Context.Interaction;
@@ -150,7 +150,7 @@ namespace Commands
             await DeferAsync();
 
             // Get Game
-            var game = MasterMindGeneral.currentGames.Find(game => game.Id == Context.Interaction.Channel.Id);
+            var game = MasterMindGeneral.CurrentGames.Find(game => game.Id == Context.Interaction.Channel.Id);
 
             if (game.StartUser.Id == Context.Interaction.User.Id)
             {
@@ -164,7 +164,7 @@ namespace Commands
                 embed.Title += " (forfeited)";
                 embed.AddField(name: "Answer:", value: $"`{game.Key}`");
                 await game.Message.ModifyAsync(x => { x.Embed = embed.Build(); x.Components = null; });
-                MasterMindGeneral.currentGames.Remove(game);
+                MasterMindGeneral.CurrentGames.Remove(game);
             }
             else
             {

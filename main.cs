@@ -47,7 +47,7 @@ public static class Bot
     {
         if (Token is null)
         {
-            throw new Exception("Discord bot token not set properly.");
+            throw new ArgumentException("Discord bot token not set properly.");
         }
 
         Client.Ready += Ready;
@@ -66,7 +66,7 @@ public static class Bot
         while (Console.ReadKey().Key != ConsoleKey.Q) ;
     }
 
-    public static int totalUsers;
+    public static int TotalUsers { get; set; }
 
     private static async Task Ready()
     {
@@ -98,11 +98,11 @@ public static class Bot
                 // Throwaway as to not block Gateway Tasks.
                 foreach (var guild in Client.Guilds)
                 {
-                    totalUsers += guild.MemberCount;
+                    TotalUsers += guild.MemberCount;
                 }
 
-                totalUsers -= (Token == Config.GetTestToken()) ? 0 : 72000;
-                Console.WriteLine($"Total Users: {totalUsers}");
+                TotalUsers -= (Token == Config.GetTestToken()) ? 0 : 72000;
+                Console.WriteLine($"Total Users: {TotalUsers}");
 
                 // Update third party stats
                 // Throwaway as to not block Gateway Tasks.
@@ -203,7 +203,7 @@ public static class Bot
     private static async Task JoinedGuild(SocketGuild guild)
     {
         // Update user count
-        totalUsers += guild.MemberCount;
+        TotalUsers += guild.MemberCount;
 
         // Add server to DB (if needed)
         using var context = new BobEntities();

@@ -15,21 +15,21 @@ namespace Commands.Helpers
     {
         public static readonly int maximumRedirectCount = 4;
 
-        public class Link
+        public class LinkInfo
         {
-            public string link;
-            public HttpStatusCode statusCode;
-            public string specialCase;
-            public bool isRickRoll;
-            public bool isRedirect;
-            public bool isShortened;
-            public bool containsCookies;
-            public bool failed;
+            public string Link { get; set; }
+            public HttpStatusCode StatusCode { get; set; }
+            public string SpecialCase { get; set; }
+            public bool IsRickRoll { get; set; }
+            public bool IsRedirect { get; set; }
+            public bool IsShortened { get; set; }
+            public bool ContainsCookies { get; set; }
+            public bool Failed { get; set; }
         }
 
         public static async Task<Embed> AnalyzeLink(string link)
         {
-            List<Link> trail = await GetUrlTrail(link);
+            List<LinkInfo> trail = await GetUrlTrail(link);
             StringBuilder description = new();
             description.AppendLine("**Clicking this URL will bring you to these places:**\n");
 
@@ -48,33 +48,33 @@ namespace Commands.Helpers
 
             // Format Description
             int linkCount = 1;
-            foreach (Link l in trail)
+            foreach (LinkInfo l in trail)
             {
-                if (l.isRickRoll && !isRickRoll)
+                if (l.IsRickRoll && !isRickRoll)
                 {
                     warnings.AppendLine("- You will get rick-rolled. ");
                     isRickRoll = true;
                 }
 
-                if (l.specialCase != null && !containsSpecialRedirect)
+                if (l.SpecialCase != null && !containsSpecialRedirect)
                 {
                     warnings.AppendLine("- Contains a hard-coded redirect. ");
                     containsSpecialRedirect = true;
                 }
 
-                if (l.containsCookies && !containsCookies)
+                if (l.ContainsCookies && !containsCookies)
                 {
                     warnings.AppendLine("- Contains cookies (these can be malicious, or safe). ");
                     containsCookies = true;
                 }
 
-                if (!l.failed)
+                if (!l.Failed)
                 {
-                    description.AppendLine($"{(linkCount == trail.Count ? "📍" : "⬇️")} <{l.link}> **Status Code:** `{(int)l.statusCode} {l.statusCode}{(l.specialCase != null ? $" - {l.specialCase}" : "")}`\n**Is Redirect?** {(l.isRedirect ? "true" : "false")} **Has Cookies?** {(l.containsCookies ? "true" : "false")} **Is Short URL?** {(l.isShortened ? "true" : "false")} **Is Rick Roll?** {(l.isRickRoll ? "true" : "false")} ");
+                    description.AppendLine($"{(linkCount == trail.Count ? "📍" : "⬇️")} <{l.Link}> **Status Code:** `{(int)l.StatusCode} {l.StatusCode}{(l.SpecialCase != null ? $" - {l.SpecialCase}" : "")}`\n**Is Redirect?** {(l.IsRedirect ? "true" : "false")} **Has Cookies?** {(l.ContainsCookies ? "true" : "false")} **Is Short URL?** {(l.IsShortened ? "true" : "false")} **Is Rick Roll?** {(l.IsRickRoll ? "true" : "false")} ");
                 }
                 else
                 {
-                    description.AppendLine($"❌ <{l.link}> **Failed to visit link.**");
+                    description.AppendLine($"❌ <{l.Link}> **Failed to visit link.**");
                     if (!failed)
                     {
                         warnings.AppendLine("- For an unknown reason, Bob could not open this page (it might not exist). ");
@@ -101,9 +101,9 @@ namespace Commands.Helpers
             return embed.Build();
         }
 
-        private static async Task<List<Link>> GetUrlTrail(string link)
+        private static async Task<List<LinkInfo>> GetUrlTrail(string link)
         {
-            List<Link> trail = new();
+            List<LinkInfo> trail = new();
 
             int redirectCount = 0;
             while (redirectCount <= maximumRedirectCount && !string.IsNullOrWhiteSpace(link))
@@ -136,14 +136,14 @@ namespace Commands.Helpers
 
                         if (IsGitHubRepository(link))
                         {
-                            Link gitHubRepoLink = new()
+                            LinkInfo gitHubRepoLink = new()
                             {
-                                link = link,
-                                statusCode = req.StatusCode,
-                                isRedirect = false,
-                                isShortened = IsShortenedUrl(link, false),
-                                containsCookies = hasCookies,
-                                failed = false
+                                Link = link,
+                                StatusCode = req.StatusCode,
+                                IsRedirect = false,
+                                IsShortened = IsShortenedUrl(link, false),
+                                ContainsCookies = hasCookies,
+                                Failed = false
                             };
                             trail.Add(gitHubRepoLink);
                             link = null;
@@ -152,15 +152,15 @@ namespace Commands.Helpers
                         {
                             string content = metaTag.GetAttributeValue("content", "");
                             string url = GetUrlFromContent(content);
-                            Link newLink = new()
+                            LinkInfo newLink = new()
                             {
-                                link = $"{link}",
-                                statusCode = req.StatusCode,
-                                specialCase = "Meta-Refresh Redirect",
-                                containsCookies = hasCookies,
-                                isRickRoll = IsRickRoll(link),
-                                isRedirect = true,
-                                isShortened = IsShortenedUrl(link, true)
+                                Link = $"{link}",
+                                StatusCode = req.StatusCode,
+                                SpecialCase = "Meta-Refresh Redirect",
+                                ContainsCookies = hasCookies,
+                                IsRickRoll = IsRickRoll(link),
+                                IsRedirect = true,
+                                IsShortened = IsShortenedUrl(link, true)
                             };
                             trail.Add(newLink);
                             link = url;
@@ -168,15 +168,15 @@ namespace Commands.Helpers
                         }
                         else if (jsRedirect != null)
                         {
-                            Link newLink = new()
+                            LinkInfo newLink = new()
                             {
-                                link = $"{link}",
-                                statusCode = req.StatusCode,
-                                specialCase = "JavaScript Redirect",
-                                containsCookies = hasCookies,
-                                isRickRoll = IsRickRoll(link),
-                                isRedirect = true,
-                                isShortened = IsShortenedUrl(link, true)
+                                Link = $"{link}",
+                                StatusCode = req.StatusCode,
+                                SpecialCase = "JavaScript Redirect",
+                                ContainsCookies = hasCookies,
+                                IsRickRoll = IsRickRoll(link),
+                                IsRedirect = true,
+                                IsShortened = IsShortenedUrl(link, true)
                             };
                             trail.Add(newLink);
                             link = jsRedirect;
@@ -185,14 +185,14 @@ namespace Commands.Helpers
                         else
                         {
                             bool isRedirect = (int)req.StatusCode >= 300 && (int)req.StatusCode <= 308;
-                            Link newLink = new()
+                            LinkInfo newLink = new()
                             {
-                                link = $"{link}",
-                                statusCode = req.StatusCode,
-                                containsCookies = hasCookies,
-                                isRickRoll = IsRickRoll(link),
-                                isRedirect = isRedirect,
-                                isShortened = IsShortenedUrl(link, isRedirect)
+                                Link = $"{link}",
+                                StatusCode = req.StatusCode,
+                                ContainsCookies = hasCookies,
+                                IsRickRoll = IsRickRoll(link),
+                                IsRedirect = isRedirect,
+                                IsShortened = IsShortenedUrl(link, isRedirect)
                             };
                             trail.Add(newLink);
                             link = null;
@@ -201,14 +201,14 @@ namespace Commands.Helpers
                     else
                     {
                         bool isRedirect = (int)req.StatusCode >= 300 && (int)req.StatusCode <= 308;
-                        Link newLink = new()
+                        LinkInfo newLink = new()
                         {
-                            link = $"{link}",
-                            statusCode = req.StatusCode,
-                            containsCookies = hasCookies,
-                            isRickRoll = IsRickRoll(link),
-                            isRedirect = isRedirect,
-                            isShortened = IsShortenedUrl(link, isRedirect)
+                            Link = $"{link}",
+                            StatusCode = req.StatusCode,
+                            ContainsCookies = hasCookies,
+                            IsRickRoll = IsRickRoll(link),
+                            IsRedirect = isRedirect,
+                            IsShortened = IsShortenedUrl(link, isRedirect)
                         };
                         trail.Add(newLink);
 
@@ -225,10 +225,10 @@ namespace Commands.Helpers
                 }
                 catch
                 {
-                    Link newLink = new()
+                    LinkInfo newLink = new()
                     {
-                        link = $"{link}",
-                        failed = true
+                        Link = $"{link}",
+                        Failed = true
                     };
                     trail.Add(newLink);
                     link = null;
@@ -237,10 +237,10 @@ namespace Commands.Helpers
 
             if (redirectCount > maximumRedirectCount)
             {
-                Link newLink = new()
+                LinkInfo newLink = new()
                 {
-                    link = $"Unknown (Bob follows **up to {maximumRedirectCount}** redirects.)",
-                    failed = true
+                    Link = $"Unknown (Bob follows **up to {maximumRedirectCount}** redirects.)",
+                    Failed = true
                 };
                 trail.Add(newLink);
             }
