@@ -243,7 +243,7 @@ namespace Commands
 
                     await Badge.RemoveUserBadge(dbUser, badge);
 
-                    await FollowupAsync(text: $"✅ `Badge removed from User: {discordUser.GlobalName}, {discordUser.Id}`\n```cs\nPremium Expiration: {dbUser.PremiumExpiration}\nProfile Color: {dbUser.ProfileColor}\nRock Paper Scissors Wins: {dbUser.RockPaperScissorsWins}\nTotal Rock Paper Scissor Games: {dbUser.TotalRockPaperScissorsGames}\nTic-Tac-Toe Wins: {dbUser.TicTacToeWins}\nTotal Tic-Tac-Toe Games: {dbUser.TotalTicTacToeGames}\nTrivia Wins: {dbUser.TriviaWins}\nTotal Trivia Games: {dbUser.TotalTriviaGames}\nBadges: {Badge.GetBadgesProfileString(dbUser.EarnedBadges)}```");
+                    await FollowupAsync(text: $"✅ `Badge removed from User: {discordUser.GlobalName}, {discordUser.Id}`\n{UserDebugging.GetUserPropertyString(dbUser)}");
                 }
             }
 

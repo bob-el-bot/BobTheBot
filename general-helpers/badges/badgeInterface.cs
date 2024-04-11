@@ -143,7 +143,9 @@ namespace BadgeInterface
         /// <returns>The user object with the awarded badge.</returns>
         private static User GiveUserObjectBadge(User user, Badges.Badges badge)
         {
-            if (GetUserBadges(user.EarnedBadges).Contains(badge) == false)
+            List<Badges.Badges> earnedBadges = GetUserBadges(user.EarnedBadges);
+
+            if (earnedBadges.Contains(badge) == false && HasHigherBadgeTier(earnedBadges, badge) == false)
             {
                 ulong currentBadges = user.EarnedBadges;
                 ulong earnedBadgeBit = (ulong)badge;
@@ -232,7 +234,7 @@ namespace BadgeInterface
         /// The badge with an ending number that is one less than the ending number of the given badge, 
         /// or <see langword="null"/> if no matching badge is found.
         /// </returns>
-        public static Badges.Badges? GetBadgeWithLesserTier(Badges.Badges badge)
+        private static Badges.Badges? GetBadgeWithLesserTier(Badges.Badges badge)
         {
             string baseBadgeName = GetBadgeBaseName(badge);
             string targetBadgeName = $"{baseBadgeName}{GetBadgeTier(badge) - 1}";
@@ -248,6 +250,43 @@ namespace BadgeInterface
         }
 
         /// <summary>
+        /// Checks if a user has a badge of a higher tier for a given badge type.
+        /// </summary>
+        /// <param name="earnedBadges">The list of badges earned by the user.</param>
+        /// <param name="badge">The badge type to check.</param>
+        /// <returns>True if the user has a badge of a higher tier, otherwise false.</returns>
+        private static bool HasHigherBadgeTier(List<Badges.Badges> earnedBadges, Badges.Badges badge)
+        {
+            int badgeTier = GetBadgeTier(badge);
+            if (badgeTier == -1)
+            {
+                // Not tiered
+                return false;
+            }
+
+            string baseBadgeName = GetBadgeBaseName(badge);
+            for (int nextTier = badgeTier + 1; ; nextTier++)
+            {
+                string higherTierBadgeName = $"{baseBadgeName}{nextTier}";
+                if (Enum.TryParse(higherTierBadgeName, out Badges.Badges higherTierBadge))
+                {
+                    if (earnedBadges.Contains(higherTierBadge))
+                    {
+                        // User has a badge of a higher tier.
+                        return true;
+                    }
+                }
+                else
+                {
+                    // No higher tier badge found.
+                    break;
+                }
+            }
+
+            return false;
+        }
+
+        /// <summary>
         /// Checks if users qualify for a specific badge and grants it to them if they do.
         /// </summary>
         /// <param name="users">The list of users to check for badge qualification.</param>
@@ -255,7 +294,7 @@ namespace BadgeInterface
         /// <returns>The list of users with updated badge information.</returns>
         public static List<User> CheckGivingUserBadge(List<User> users, Badges.Badges badge)
         {
-            for (int i = 0; i <= users.Count; i++)
+            for (int i = 0; i < users.Count; i++)
             {
                 switch (badge)
                 {
@@ -264,21 +303,21 @@ namespace BadgeInterface
                     case Badges.Badges.Winner1:
                         if (users[i].WinStreak >= 30)
                         {
-                            GiveUserObjectBadge(users[i], Badges.Badges.Winner3);
+                            users[i] = GiveUserObjectBadge(users[i], Badges.Badges.Winner3);
                         }
                         else if (users[i].WinStreak >= 20)
                         {
-                            GiveUserObjectBadge(users[i], Badges.Badges.Winner2);
+                            users[i] = GiveUserObjectBadge(users[i], Badges.Badges.Winner2);
                         }
                         else if (users[i].WinStreak >= 10)
                         {
-                            GiveUserObjectBadge(users[i], Badges.Badges.Winner1);
+                            users[i] = GiveUserObjectBadge(users[i], Badges.Badges.Winner1);
                         }
                         break;
                     case Badges.Badges.Friend:
                         if (Bot.Client.GetGuild(Bot.supportServerId).GetUser(users[i].Id) != null)
                         {
-                            GiveUserObjectBadge(users[i], badge);
+                            users[i] = GiveUserObjectBadge(users[i], badge);
                         }
                         break;
                     default:
