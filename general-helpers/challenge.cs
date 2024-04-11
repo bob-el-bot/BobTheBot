@@ -37,7 +37,6 @@ namespace Challenges
         public static Dictionary<ulong, TicTacToe> TicTacToeGames { get; } = new();
         public static Dictionary<ulong, Trivia> TriviaGames { get; } = new();
         public static Dictionary<ulong, uint?> UserChallenges { get; } = new();
-        // public static Dictionary<ulong, Connect4> Connect4Games { get; } = new();
 
         /// <summary>
         /// Checks if a user can challenge another user asynchronously.
@@ -122,9 +121,6 @@ namespace Challenges
                 case GameType.Trivia:
                     TriviaGames.Add(game.Id, (Trivia)game);
                     break;
-                // case GameType.Connect4:
-                //     Connect4Games.Add(game.Id, (Connect4)game);
-                //     break;
                 default:
                     break;
             }
@@ -149,9 +145,6 @@ namespace Challenges
                 case GameType.Trivia:
                     TriviaGames.Remove(game.Id);
                     break;
-                // case GameType.Connect4:
-                //     Connect4Games.Remove(game.Id);
-                //     break;
                 default:
                     break;
             }

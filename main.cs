@@ -52,7 +52,6 @@ public static class Bot
 
         Client.Ready += Ready;
         Client.Log += Log;
-        Client.GuildAvailable += GuildAvailable;
         Client.JoinedGuild += JoinedGuild;
         Client.LeftGuild += Feedback.Prompt.LeftGuild;
         Client.UserJoined += UserJoined;
@@ -157,18 +156,6 @@ public static class Bot
                 }
             }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(16));
         });
-    }
-
-    private static Task GuildAvailable(SocketGuild guild)
-    {
-        // // Download all of the users SEPARATELY from the Gateway Connection to keep WebSocket Connection Alive
-        // // (This is opposed to the standard: AlwaysDownloadUsers = true; flag) 
-        // _ = Task.Run(async () =>
-        // {
-        //     await guild.DownloadUsersAsync();
-        // });
-
-        return Task.CompletedTask;
     }
 
     private static async Task UserJoined(SocketGuildUser user)
@@ -324,9 +311,9 @@ public static class Bot
 
                     // Live Debugging
                     // Server Logging
-                    if (ctx.Interaction.GuildId != null && DebugGroup.LogGroup.serversToLog.ContainsKey(ctx.Guild.Id))
+                    if (ctx.Interaction.GuildId != null && DebugGroup.LogGroup.ServersToLog.ContainsKey(ctx.Guild.Id))
                     {
-                        DebugGroup.LogGroup.serverLogChannels.TryGetValue(ctx.Guild.Id, out RestTextChannel debugLogChannel);
+                        DebugGroup.LogGroup.ServerLogChannels.TryGetValue(ctx.Guild.Id, out RestTextChannel debugLogChannel);
                         await LogServerUseToDiscord(debugLogChannel, ctx, info, res.ErrorReason);
                     }
                     break;
@@ -348,9 +335,9 @@ public static class Bot
 
             // Live Debugging
             // Server Logging
-            if (ctx.Interaction.GuildId != null && DebugGroup.LogGroup.serversToLog.ContainsKey(ctx.Guild.Id))
+            if (ctx.Interaction.GuildId != null && DebugGroup.LogGroup.ServersToLog.ContainsKey(ctx.Guild.Id))
             {
-                DebugGroup.LogGroup.serverLogChannels.TryGetValue(ctx.Guild.Id, out RestTextChannel debugLogChannel);
+                DebugGroup.LogGroup.ServerLogChannels.TryGetValue(ctx.Guild.Id, out RestTextChannel debugLogChannel);
                 await LogServerUseToDiscord(debugLogChannel, ctx, info);
             }
 

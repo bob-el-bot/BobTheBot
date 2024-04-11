@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using BadgeInterface;
@@ -26,9 +25,9 @@ namespace Commands
         public class LogGroup : InteractionModuleBase<SocketInteractionContext>
         {
             public const ulong DebugServerCategoryId = 1181420597138427967;
-            public static Dictionary<ulong, IGuild> serversToLog = new();
-            public static Dictionary<ulong, RestTextChannel> serverLogChannels = new();
-            public static bool LogEverything = false;
+            public static Dictionary<ulong, IGuild> ServersToLog { get; set; } = new();
+            public static Dictionary<ulong, RestTextChannel> ServerLogChannels { get; set; } = new();
+            public static bool LogEverything { get; set; } = false;
 
             [SlashCommand("server", "Log all usage of Bob from a specific server (toggleable).")]
             public async Task ServerLogToggle(string serverId)
@@ -42,16 +41,16 @@ namespace Commands
                     return;
                 }
 
-                if (serversToLog.ContainsKey(id))
+                if (ServersToLog.ContainsKey(id))
                 {
-                    serversToLog.Remove(id);
-                    serverLogChannels.TryGetValue(id, out RestTextChannel channel);
+                    ServersToLog.Remove(id);
+                    ServerLogChannels.TryGetValue(id, out RestTextChannel channel);
 
                     await FollowupAsync(text: $"✅ Debug logging for the server ID `{serverId}` has been **stopped** and {channel.Mention} will be deleted in 5 seconds.");
 
                     await Task.Delay(5000);
                     await channel.DeleteAsync();
-                    serverLogChannels.Remove(id);
+                    ServerLogChannels.Remove(id);
                 }
                 else
                 {
@@ -60,9 +59,9 @@ namespace Commands
                     {
                         RestTextChannel restChannel = await Context.Guild.CreateTextChannelAsync(name: $"{serverId}", tcp => tcp.CategoryId = DebugServerCategoryId);
                         await FollowupAsync(text: $"✅ Debug logging for the server ID `{serverId}` has **started** in {restChannel.Mention}.");
-                        serverLogChannels.Add(key: id, value: restChannel);
+                        ServerLogChannels.Add(key: id, value: restChannel);
 
-                        serversToLog.Add(key: id, value: guild);
+                        ServersToLog.Add(key: id, value: guild);
                     }
                     else
                     {
@@ -76,14 +75,14 @@ namespace Commands
             {
                 await DeferAsync();
 
-                foreach (var guild in serversToLog)
+                foreach (var guild in ServersToLog)
                 {
-                    serversToLog.Remove(guild.Key);
+                    ServersToLog.Remove(guild.Key);
                 }
 
-                foreach (var channel in serverLogChannels)
+                foreach (var channel in ServerLogChannels)
                 {
-                    serversToLog.Remove(channel.Key);
+                    ServersToLog.Remove(channel.Key);
                 }
 
                 SocketCategoryChannel category = Context.Guild.GetCategoryChannel(DebugServerCategoryId);
