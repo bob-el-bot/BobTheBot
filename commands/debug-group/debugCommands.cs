@@ -10,6 +10,7 @@ using Discord;
 using Discord.Interactions;
 using Discord.Rest;
 using Discord.WebSocket;
+using Microsoft.EntityFrameworkCore;
 
 namespace Commands
 {
@@ -120,6 +121,35 @@ namespace Commands
         [Group("stat", "All debug commands for stats")]
         public class StatsGroup : InteractionModuleBase<SocketInteractionContext>
         {
+            [SlashCommand("all-tables", "Shows all stats relevant to the all tables.")]
+            public async Task AllTableStats()
+            {
+                await DeferAsync();
+
+                using var context = new BobEntities();
+                ulong entryCount = await context.GetTotalEntries();
+                int userEntriesCount = await context.User.CountAsync();
+                int serverEntriesCount = await context.Server.CountAsync();
+                int newsChannelEntriesCount = await context.NewsChannel.CountAsync();
+                double size = await context.GetDatabaseSizeBytes();
+
+                var embed = new EmbedBuilder
+                {
+                    Color = Bot.theme,
+                    Title = "✅ Showing stats for all tables",
+                };
+
+                embed.AddField(name: "Total Entries", value: $"`{entryCount}`", inline: true)
+                    .AddField(name: "User Entries", value: $"`{userEntriesCount}`", inline: true)
+                    .AddField(name: "Server Entries", value: $"`{serverEntriesCount}`", inline: true)
+                    .AddField(name: "NewsChannel Entries", value: $"`{newsChannelEntriesCount}`", inline: true)
+                    .AddField(name: "Size (Bytes)", value: $"`{size}`", inline: true)
+                    .AddField(name: "Size (MegaBytes)", value: $"`{size / 1024 / 1024}`", inline: true)
+                    .AddField(name: "Size (GigaBytes)", value: $"`{size / 1024 / 1024 / 1024}`", inline: true);
+
+                await FollowupAsync(embed: embed.Build());
+            }
+
             [SlashCommand("exact-user-count", "Calculates the EXACT user count excluding bots.")]
             public async Task ExactUserCount()
             {
