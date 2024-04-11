@@ -198,7 +198,7 @@ namespace Commands.Helpers
         {
             Challenge.WinCases winner = GetWinner(game, forfeited);
 
-            if (winner == 0.0f)
+            if (winner == Challenge.WinCases.None)
             {
                 return $"### ⚔️ {game.Player1.Mention}'s Completed Game of {game.Title}.";  
             }

@@ -10,35 +10,42 @@ namespace Feedback
     {
         public static async Task LeftGuild(SocketGuild guild)
         {
-            // Check if the guild still exists
-            IUser owner = guild.Owner ?? await Bot.Client.GetUserAsync(guild.OwnerId);
-            var components = new ComponentBuilder();
-
-            var selectMenu = new SelectMenuBuilder
+            try
             {
-                MinValues = 1,
-                CustomId = $"leftGuild:{guild.Name}",
-                Placeholder = "Select why...",
-            };
+                // Check if the guild still exists
+                IUser owner = guild.Owner ?? await Bot.Client.GetUserAsync(guild.OwnerId);
+                var components = new ComponentBuilder();
 
-            selectMenu.AddOption("Too complicated", "1 Too complicated");
-            selectMenu.AddOption("Found a better bot", "2 Found a better bot");
-            selectMenu.AddOption("Missing feature(s)", "3 Missing features");
-            selectMenu.AddOption("Invited on accident / wrong server", "4 Invited on accident / wrong server");
-            selectMenu.AddOption("Bot was not responding", "5 Bot was not responding");
-            selectMenu.AddOption("Other", "6 Other");
+                var selectMenu = new SelectMenuBuilder
+                {
+                    MinValues = 1,
+                    CustomId = $"leftGuild:{guild.Name}",
+                    Placeholder = "Select why...",
+                };
 
-            selectMenu.MaxValues = selectMenu.Options.Count;
+                selectMenu.AddOption("Too complicated", "1 Too complicated");
+                selectMenu.AddOption("Found a better bot", "2 Found a better bot");
+                selectMenu.AddOption("Missing feature(s)", "3 Missing features");
+                selectMenu.AddOption("Invited on accident / wrong server", "4 Invited on accident / wrong server");
+                selectMenu.AddOption("Bot was not responding", "5 Bot was not responding");
+                selectMenu.AddOption("Other", "6 Other");
 
-            components.WithSelectMenu(selectMenu);
+                selectMenu.MaxValues = selectMenu.Options.Count;
 
-            // Send the message to the guild owner
-            await owner.SendMessageAsync(text: "### 😢 Sorry to see you go...\nMind telling us why?", components: components.Build());
+                components.WithSelectMenu(selectMenu);
+
+                // Send the message to the guild owner
+                await owner.SendMessageAsync(text: "### 😢 Sorry to see you go...\nMind telling us why?", components: components.Build());
+            }
+            catch
+            {
+                // User's direct messages are closed, no action needed
+            }
         }
 
         [ComponentInteraction("leftGuild:*")]
         public async Task LeftGuildOptionsHandler(string guildName)
-        {   
+        {
             await DeferAsync();
 
             SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;

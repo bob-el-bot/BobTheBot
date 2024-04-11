@@ -79,28 +79,7 @@ namespace Commands.Helpers
                     Challenge.DecrementUserChallenges(Player1.Id);
                     Challenge.DecrementUserChallenges(Player2.Id);
 
-                    Challenge.WinCases winner = GetWinner(true);
-
-                    // Update User Info
-                    using var context = new BobEntities();
-                    var userIds = new[] { Player1.Id, Player2.Id };
-                    var users = await context.GetUsers(userIds);
-
-                    foreach (var user in users)
-                    {
-                        user.TotalRockPaperScissorsGames++;
-
-                        if ((user.Id == Player1.Id && winner == Challenge.WinCases.Player1) || (user.Id == Player2.Id && winner == Challenge.WinCases.Player2))
-                        {
-                            user.RockPaperScissorsWins++;
-                        }
-                        else if (winner == Challenge.WinCases.Tie)
-                        {
-                            user.RockPaperScissorsWins += 0.5f;
-                        }
-                    }
-
-                    await context.UpdateUsers(users);
+                    await Challenge.UpdateUserStats(this, GetWinner(true));
                 }
 
                 await Message.ModifyAsync(x => { x.Embed = CreateEmbed(GetFinalTitle(true)).Build(); x.Components = null; });
@@ -121,28 +100,7 @@ namespace Commands.Helpers
                     Challenge.DecrementUserChallenges(Player1.Id);
                     Challenge.DecrementUserChallenges(Player2.Id);
 
-                    Challenge.WinCases winner = GetWinner();
-
-                    // Update User Info
-                    using var context = new BobEntities();
-                    var userIds = new[] { Player1.Id, Player2.Id };
-                    var users = await context.GetUsers(userIds);
-
-                    foreach (var user in users)
-                    {
-                        user.TotalRockPaperScissorsGames++;
-
-                        if ((user.Id == Player1.Id && winner == Challenge.WinCases.Player1) || (user.Id == Player2.Id && winner == Challenge.WinCases.Player2))
-                        {
-                            user.RockPaperScissorsWins++;
-                        }
-                        else if (winner == Challenge.WinCases.Tie)
-                        {
-                            user.RockPaperScissorsWins += 0.5f;
-                        }
-                    }
-
-                    await context.UpdateUsers(users);
+                    await Challenge.UpdateUserStats(this, GetWinner());
                 }
 
                 string[] options = { "🪨", "📃", "✂️" };

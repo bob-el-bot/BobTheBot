@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Database.Types
 {
@@ -11,7 +12,10 @@ namespace Database.Types
         public DateTimeOffset PremiumExpiration { get; set; }
         // Profile
         public string ProfileColor { get; set; }
+        // Badges
+        public ulong EarnedBadges { get; set; }
         // Stats
+        public uint WinStreak { get; set; }
         public float TriviaWins { get; set; } 
         public int TotalTriviaGames { get; set; }
         public float TicTacToeWins { get; set; }

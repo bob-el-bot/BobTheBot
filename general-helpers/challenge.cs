@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using BadgeInterface;
 using Commands.Helpers;
 using Database;
 using Database.Types;
@@ -36,7 +37,6 @@ namespace Challenges
         public static Dictionary<ulong, TicTacToe> TicTacToeGames { get; } = new();
         public static Dictionary<ulong, Trivia> TriviaGames { get; } = new();
         public static Dictionary<ulong, uint?> UserChallenges { get; } = new();
-        // public static Dictionary<ulong, Connect4> Connect4Games { get; } = new();
 
         /// <summary>
         /// Checks if a user can challenge another user asynchronously.
@@ -121,9 +121,6 @@ namespace Challenges
                 case GameType.Trivia:
                     TriviaGames.Add(game.Id, (Trivia)game);
                     break;
-                // case GameType.Connect4:
-                //     Connect4Games.Add(game.Id, (Connect4)game);
-                //     break;
                 default:
                     break;
             }
@@ -148,9 +145,6 @@ namespace Challenges
                 case GameType.Trivia:
                     TriviaGames.Remove(game.Id);
                     break;
-                // case GameType.Connect4:
-                //     Connect4Games.Remove(game.Id);
-                //     break;
                 default:
                     break;
             }
@@ -200,6 +194,113 @@ namespace Challenges
 
             RemoveFromSpecificGameList(game);
             game.Dispose();
+        }
+
+        /// <summary>
+        /// Updates the specific game-related statistics of a user based on the game type and outcome.
+        /// </summary>
+        /// <param name="gameType">The type of the game.</param>
+        /// <param name="user">The user whose statistics will be updated.</param>
+        /// <param name="winner">The winner of the game (Player1, Player2, or Tie).</param>
+        /// <param name="isPlayer1">Specifies whether the user is Player 1 in the game.</param>
+        /// <returns>The updated user object.</returns>
+        private static User UpdateSpecificGameUserStats(GameType gameType, User user, WinCases winner, bool isPlayer1)
+        {
+            switch (gameType)
+            {
+                case GameType.RockPaperScissors:
+                    user.TotalRockPaperScissorsGames++;
+                    break;
+                case GameType.TicTacToe:
+                    user.TotalTicTacToeGames++;
+                    break;
+                case GameType.Trivia:
+                    user.TotalTriviaGames++;
+                    break;
+                default:
+                    break;
+            }
+
+            user = UpdateGameUserStats(user, winner, gameType, isPlayer1);
+            return user;
+        }
+
+        /// <summary>
+        /// Updates the general game-related statistics of a user based on the game outcome.
+        /// </summary>
+        /// <param name="user">The user whose statistics will be updated.</param>
+        /// <param name="winner">The winner of the game (Player1, Player2, or Tie).</param>
+        /// <param name="gameType">The type of the game.</param>
+        /// <param name="isPlayer1">Specifies whether the user is Player 1 in the game.</param>
+        /// <returns>The updated user object.</returns>
+        private static User UpdateGameUserStats(User user, WinCases winner, GameType gameType, bool isPlayer1)
+        {
+            if (winner == WinCases.Player1 || winner == WinCases.Player2 || winner == WinCases.Tie)
+            {
+                if ((isPlayer1 && winner == WinCases.Player1) || (!isPlayer1 && winner == WinCases.Player2))
+                {
+                    user.WinStreak++;
+                }
+                else
+                {
+                    user.WinStreak = 0;
+                }
+
+                switch (gameType)
+                {
+                    case GameType.RockPaperScissors:
+                        if ((isPlayer1 && winner == WinCases.Player1) || (!isPlayer1 && winner == WinCases.Player2))
+                        {
+                            user.RockPaperScissorsWins++;
+                        }
+                        else if (winner == WinCases.Tie)
+                        {
+                            user.RockPaperScissorsWins += 0.5f;
+                        }
+                        break;
+                    case GameType.TicTacToe:
+                        if ((isPlayer1 && winner == WinCases.Player1) || (!isPlayer1 && winner == WinCases.Player2))
+                        {
+                            user.TicTacToeWins++;
+                        }
+                        else if (winner == WinCases.Tie)
+                        {
+                            user.TicTacToeWins += 0.5f;
+                        }
+                        break;
+                    case GameType.Trivia:
+                        if ((isPlayer1 && winner == WinCases.Player1) || (!isPlayer1 && winner == WinCases.Player2))
+                        {
+                            user.TriviaWins++;
+                        }
+                        else if (winner == WinCases.Tie)
+                        {
+                            user.TriviaWins += 0.5f;
+                        }
+                        break;
+                }
+            }
+
+            return user;
+        }
+
+        /// <summary>
+        /// Updates the statistics of users involved in a game and checks if they qualify for any badges.
+        /// </summary>
+        /// <param name="game">The game being played.</param>
+        /// <param name="winner">The winner of the game.</param>
+        public static async Task UpdateUserStats(Games.Game game, WinCases winner)
+        {
+            using var context = new BobEntities();
+            var userIds = new[] { game.Player1.Id, game.Player2.Id };
+            var users = await context.GetUsers(userIds);
+
+            users[0] = UpdateSpecificGameUserStats(game.Type, users[0], winner, true);
+            users[1] = UpdateSpecificGameUserStats(game.Type, users[1], winner, false);
+
+            users = Badge.CheckGivingUserBadge(users, Badges.Badges.Winner3);
+
+            await context.UpdateUsers(users);
         }
 
         /// <summary>
@@ -278,7 +379,8 @@ namespace Challenges
             }
         }
 
-        public enum WinCases {
+        public enum WinCases
+        {
             Player1,
             Player2,
             Tie,

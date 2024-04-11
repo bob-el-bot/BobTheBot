@@ -40,6 +40,44 @@ namespace Database
         }
 
         /// <summary>
+        /// Retrieves the total size of the database in bytes.
+        /// </summary>
+        /// <returns>The size of the database in bytes.</returns>
+        public async Task<double> GetDatabaseSizeBytes()
+        {
+            using var command = Database.GetDbConnection().CreateCommand();
+            command.CommandText = "SELECT page_count * page_size FROM pragma_page_count(), pragma_page_size();";
+            await Database.OpenConnectionAsync();
+
+            var result = await command.ExecuteScalarAsync();
+            return Convert.ToUInt64(result);
+        }
+
+        /// <summary>
+        /// Retrieves the total number of entries in the entire database.
+        /// </summary>
+        /// <returns>The total number of entries in the database.</returns>
+        public async Task<ulong> GetTotalEntries()
+        {
+            ulong totalCount = 0;
+
+            foreach (var property in this.GetType().GetProperties())
+            {
+                if (property.PropertyType.IsGenericType &&
+                    property.PropertyType.GetGenericTypeDefinition() == typeof(DbSet<>))
+                {
+                    var dbSet = property.GetValue(this) as IQueryable<object>;
+
+                    ulong count = (ulong)await dbSet.LongCountAsync();
+
+                    totalCount += count;
+                }
+            }
+
+            return totalCount;
+        }
+
+        /// <summary>
         /// GetServer() returns a Server object using the Guild.Id as the key. If a server is not found in the database then a new entry is made and then returned.
         /// </summary>
         public async Task<Server> GetServer(ulong id)
@@ -105,7 +143,7 @@ namespace Database
         /// <summary>
         /// AddUser() creates a new user entry in the database. 
         /// </summary>
-        public async Task AddUser(User user)
+        private async Task AddUser(User user)
         {
             await User.AddAsync(user);
             await SaveChangesAsync();

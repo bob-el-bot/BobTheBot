@@ -186,28 +186,7 @@ namespace Commands.Helpers
                 Challenge.DecrementUserChallenges(Player1.Id);
                 Challenge.DecrementUserChallenges(Player2.Id);
 
-                Challenge.WinCases winner = TriviaMethods.GetWinner(this);
-
-                // Update User Info
-                using var context = new BobEntities();
-                var userIds = new[] { Player1.Id, Player2.Id };
-                var users = await context.GetUsers(userIds);
-
-                foreach (var user in users)
-                {
-                    user.TotalTriviaGames++;
-
-                    if ((user.Id == Player1.Id && winner == Challenge.WinCases.Player1) || (user.Id == Player2.Id && winner == Challenge.WinCases.Player2))
-                    {
-                        user.TriviaWins++;
-                    }
-                    else if (winner == Challenge.WinCases.Tie)
-                    {
-                        user.TriviaWins += 0.5f;
-                    }
-                }
-
-                await context.UpdateUsers(users);
+                await Challenge.UpdateUserStats(this, TriviaMethods.GetWinner(this));
             }
 
             try
@@ -231,28 +210,7 @@ namespace Commands.Helpers
                 Challenge.DecrementUserChallenges(Player1.Id);
                 Challenge.DecrementUserChallenges(Player2.Id);
 
-                Challenge.WinCases winner = TriviaMethods.GetWinner(this);
-
-                // Update User Info
-                using var context = new BobEntities();
-                var userIds = new[] { Player1.Id, Player2.Id };
-                var users = await context.GetUsers(userIds);
-
-                foreach (var user in users)
-                {
-                    user.TotalTriviaGames++;
-
-                    if ((user.Id == Player1.Id && winner == Challenge.WinCases.Player1) || (user.Id == Player2.Id && winner == Challenge.WinCases.Player2))
-                    {
-                        user.TriviaWins++;
-                    }
-                    else if (winner == Challenge.WinCases.Tie)
-                    {
-                        user.TriviaWins += 0.5f;
-                    }
-                }
-
-                await context.UpdateUsers(users);
+                await Challenge.UpdateUserStats(this, TriviaMethods.GetWinner(this, true));
             }
 
             try

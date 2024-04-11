@@ -18,11 +18,9 @@ using SQLitePCL;
 using Microsoft.EntityFrameworkCore;
 using Discord.Rest;
 using System.Text;
-using Microsoft.VisualBasic;
-using System.Diagnostics;
 using Commands.Attributes;
 using Commands.Helpers;
-using Newtonsoft.Json;
+using BadgeInterface;
 
 public static class Bot
 {
@@ -49,12 +47,11 @@ public static class Bot
     {
         if (Token is null)
         {
-            throw new Exception("Discord bot token not set properly.");
+            throw new ArgumentException("Discord bot token not set properly.");
         }
 
         Client.Ready += Ready;
         Client.Log += Log;
-        Client.GuildAvailable += GuildAvailable;
         Client.JoinedGuild += JoinedGuild;
         Client.LeftGuild += Feedback.Prompt.LeftGuild;
         Client.UserJoined += UserJoined;
@@ -69,7 +66,7 @@ public static class Bot
         while (Console.ReadKey().Key != ConsoleKey.Q) ;
     }
 
-    public static int totalUsers;
+    public static int TotalUsers { get; set; }
 
     private static async Task Ready()
     {
@@ -84,7 +81,11 @@ public static class Bot
             await Service.AddModulesAsync(Assembly.GetEntryAssembly(), null);
             await Service.RegisterCommandsGloballyAsync();
 
-            ModuleInfo[] debugCommands = Service.Modules.Where((x) => x.Preconditions.Any(x => x is RequireGuildAttribute)).ToArray();
+            // Register Debug Commands
+            ModuleInfo[] debugCommands = Service.Modules
+                .Where(module => module.Preconditions.Any(precondition => precondition is RequireGuildAttribute)
+                              && module.SlashGroupName == "debug")
+                .ToArray();
             IGuild supportServer = Client.GetGuild(supportServerId);
             await Service.AddModulesToGuildAsync(supportServer, true, debugCommands);
 
@@ -97,11 +98,11 @@ public static class Bot
                 // Throwaway as to not block Gateway Tasks.
                 foreach (var guild in Client.Guilds)
                 {
-                    totalUsers += guild.MemberCount;
+                    TotalUsers += guild.MemberCount;
                 }
 
-                totalUsers -= (Token == Config.GetTestToken()) ? 0 : 72000;
-                Console.WriteLine($"Total Users: {totalUsers}");
+                TotalUsers -= (Token == Config.GetTestToken()) ? 0 : 72000;
+                Console.WriteLine($"Total Users: {TotalUsers}");
 
                 // Update third party stats
                 // Throwaway as to not block Gateway Tasks.
@@ -157,47 +158,52 @@ public static class Bot
         });
     }
 
-    private static Task GuildAvailable(SocketGuild guild)
-    {
-        // // Download all of the users SEPARATELY from the Gateway Connection to keep WebSocket Connection Alive
-        // // (This is opposed to the standard: AlwaysDownloadUsers = true; flag) 
-        // _ = Task.Run(async () =>
-        // {
-        //     await guild.DownloadUsersAsync();
-        // });
-
-        return Task.CompletedTask;
-    }
-
     private static async Task UserJoined(SocketGuildUser user)
     {
-        Server server;
-        using (var context = new BobEntities())
+        try
         {
-            server = await context.GetServer(user.Guild.Id);
-        }
-
-        if (server.Welcome == true)
-        {
-            if (user.Guild.SystemChannel != null && user.Guild.GetUser(Client.CurrentUser.Id).GetPermissions(user.Guild.SystemChannel).SendMessages && user.Guild.GetUser(Client.CurrentUser.Id).GetPermissions(user.Guild.SystemChannel).ViewChannel)
+            Server server;
+            using (var context = new BobEntities())
             {
-                if (server.CustomWelcomeMessage != null && server.CustomWelcomeMessage != "")
+                server = await context.GetServer(user.Guild.Id);
+            }
+
+            if (server.Welcome == true)
+            {
+                if (user.Guild.SystemChannel != null && user.Guild.GetUser(Client.CurrentUser.Id).GetPermissions(user.Guild.SystemChannel).SendMessages && user.Guild.GetUser(Client.CurrentUser.Id).GetPermissions(user.Guild.SystemChannel).ViewChannel)
                 {
-                    await user.Guild.SystemChannel.SendMessageAsync(text: Welcome.FormatCustomMessage(server.CustomWelcomeMessage, user.Mention));
-                }
-                else
-                {
-                    // Get random greeting
-                    await user.Guild.SystemChannel.SendMessageAsync(text: Welcome.GetRandomMessage(user.Mention));
+                    if (server.CustomWelcomeMessage != null && server.CustomWelcomeMessage != "")
+                    {
+                        await user.Guild.SystemChannel.SendMessageAsync(text: Welcome.FormatCustomMessage(server.CustomWelcomeMessage, user.Mention));
+                    }
+                    else
+                    {
+                        // Get random greeting
+                        await user.Guild.SystemChannel.SendMessageAsync(text: Welcome.GetRandomMessage(user.Mention));
+                    }
                 }
             }
+
+            // If support server, then give the user the Friend badge
+            if (user.Guild.Id == supportServerId)
+            {
+                User dbUser;
+                using var context = new BobEntities();
+                dbUser = await context.GetUser(user.Id);
+
+                await Badge.GiveUserBadge(dbUser, Badges.Badges.Friend);
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
         }
     }
 
     private static async Task JoinedGuild(SocketGuild guild)
     {
         // Update user count
-        totalUsers += guild.MemberCount;
+        TotalUsers += guild.MemberCount;
 
         // Add server to DB (if needed)
         using var context = new BobEntities();
@@ -236,7 +242,7 @@ public static class Bot
             var channel = message.Channel as SocketGuildChannel;
 
             // Auto Publish if in a News Channel
-            if (message.Channel.GetChannelType() == ChannelType.News)
+            if (message.Channel.GetChannelType() == ChannelType.News && message.Components == null)
             {
                 NewsChannel newsChannel;
                 using (var context = new BobEntities())
@@ -303,13 +309,13 @@ public static class Bot
 
                     await LogErrorToDiscord(logChannel, ctx, info, $"{executionResult.ErrorReason}\n{executionResult.Exception}");
 
-                    // // Live Debugging
-                    // // Server Logging
-                    // if (ctx.Interaction.GuildId != null && DebugGroup.LogGroup.serversToLog.ContainsKey(ctx.Guild.Id))
-                    // {
-                    //     DebugGroup.LogGroup.serverLogChannels.TryGetValue(ctx.Guild.Id, out RestTextChannel logChannel);
-                    //     await LogToDiscord(logChannel, ctx, info, res.ErrorReason);
-                    // }
+                    // Live Debugging
+                    // Server Logging
+                    if (ctx.Interaction.GuildId != null && DebugGroup.LogGroup.ServersToLog.ContainsKey(ctx.Guild.Id))
+                    {
+                        DebugGroup.LogGroup.ServerLogChannels.TryGetValue(ctx.Guild.Id, out RestTextChannel debugLogChannel);
+                        await LogServerUseToDiscord(debugLogChannel, ctx, info, res.ErrorReason);
+                    }
                     break;
                 case InteractionCommandError.Unsuccessful:
                     await ctx.Interaction.FollowupAsync("❌ Command could not be executed");
@@ -327,13 +333,19 @@ public static class Bot
             var commandName = info.IsTopLevelCommand ? $"/{info.Name}" : $"/{info.Module.SlashGroupName} {info.Name}";
             Console.WriteLine($"{DateTime.Now:dd/MM. H:mm:ss} | {FormatPerformance(cpuUsage, ramUsage)} | Location: {location} | Command: {commandName}");
 
-            // // Live Debugging
-            // // Server Logging
-            // if (ctx.Interaction.GuildId != null && DebugGroup.LogGroup.serversToLog.ContainsKey(ctx.Guild.Id))
-            // {
-            //     DebugGroup.LogGroup.serverLogChannels.TryGetValue(ctx.Guild.Id, out RestTextChannel logChannel);
-            //     await LogToDiscord(logChannel, ctx, info);
-            // }
+            // Live Debugging
+            // Server Logging
+            if (ctx.Interaction.GuildId != null && DebugGroup.LogGroup.ServersToLog.ContainsKey(ctx.Guild.Id))
+            {
+                DebugGroup.LogGroup.ServerLogChannels.TryGetValue(ctx.Guild.Id, out RestTextChannel debugLogChannel);
+                await LogServerUseToDiscord(debugLogChannel, ctx, info);
+            }
+
+            if (DebugGroup.LogGroup.LogEverything == true)
+            {
+                SocketTextChannel logChannel = (SocketTextChannel)Client.GetGuild(supportServerId).GetChannel(Token != Config.GetTestToken() ? systemLogChannelId : devLogChannelId);
+                await LogErrorToDiscord(logChannel, ctx, info);
+            }
         }
     }
 

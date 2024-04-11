@@ -79,6 +79,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 ### 👤 Profile Commands
 - `/profile display [user]` Displays the specified user's profile.
 - `/profile set-color [color]` Sets your profile color.
+- `/profile badge-info [badge]` Shows how to unlock the given badge.
 
 ### 🖊️ Quoting commands:
 - `/quote new [quote] [user] [tag]*3` Formats and shares the quote in designated channel.
