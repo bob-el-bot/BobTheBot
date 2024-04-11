@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using BadgeInterface;
 using Commands.Helpers;
 using Database;
 using Database.Types;
@@ -202,6 +203,14 @@ namespace Challenges
             game.Dispose();
         }
 
+        /// <summary>
+        /// Updates the specific game-related statistics of a user based on the game type and outcome.
+        /// </summary>
+        /// <param name="gameType">The type of the game.</param>
+        /// <param name="user">The user whose statistics will be updated.</param>
+        /// <param name="winner">The winner of the game (Player1, Player2, or Tie).</param>
+        /// <param name="isPlayer1">Specifies whether the user is Player 1 in the game.</param>
+        /// <returns>The updated user object.</returns>
         private static User UpdateSpecificGameUserStats(GameType gameType, User user, WinCases winner, bool isPlayer1)
         {
             switch (gameType)
@@ -223,6 +232,14 @@ namespace Challenges
             return user;
         }
 
+        /// <summary>
+        /// Updates the general game-related statistics of a user based on the game outcome.
+        /// </summary>
+        /// <param name="user">The user whose statistics will be updated.</param>
+        /// <param name="winner">The winner of the game (Player1, Player2, or Tie).</param>
+        /// <param name="gameType">The type of the game.</param>
+        /// <param name="isPlayer1">Specifies whether the user is Player 1 in the game.</param>
+        /// <returns>The updated user object.</returns>
         private static User UpdateGameUserStats(User user, WinCases winner, GameType gameType, bool isPlayer1)
         {
             if (winner == WinCases.Player1 || winner == WinCases.Player2 || winner == WinCases.Tie)
@@ -274,7 +291,11 @@ namespace Challenges
             return user;
         }
 
-
+        /// <summary>
+        /// Updates the statistics of users involved in a game and checks if they qualify for any badges.
+        /// </summary>
+        /// <param name="game">The game being played.</param>
+        /// <param name="winner">The winner of the game.</param>
         public static async Task UpdateUserStats(Games.Game game, WinCases winner)
         {
             using var context = new BobEntities();
@@ -283,6 +304,8 @@ namespace Challenges
 
             users[0] = UpdateSpecificGameUserStats(game.Type, users[0], winner, true);
             users[1] = UpdateSpecificGameUserStats(game.Type, users[1], winner, false);
+
+            users = Badge.CheckGivingUserBadge(users, Badges.Badges.Winner3);
 
             await context.UpdateUsers(users);
         }

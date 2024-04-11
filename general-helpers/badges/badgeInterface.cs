@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using System.Dynamic;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -116,12 +117,31 @@ namespace BadgeInterface
         }
 
         /// <summary>
-        /// Awards a badge to a user if they have not already earned it.
+        /// Awards a badge to a user if they have not already earned it. 
+        /// It is important to remember that this updates the DB.
         /// </summary>
         /// <param name="user">The user to award the badge to.</param>
         /// <param name="badge">The badge to award.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
         public static async Task GiveUserBadge(User user, Badges.Badges badge)
+        {
+            if (GetUserBadges(user.EarnedBadges).Contains(badge) == false)
+            {
+                user = GiveUserObjectBadge(user, badge);
+
+                using var context = new BobEntities();
+                await context.UpdateUser(user);
+            }
+        }
+
+        /// <summary>
+        /// Awards a badge to a user object if they have not already earned it. 
+        /// This does not write to the DB which is useful for shrinking the amount of overall writes.
+        /// </summary>
+        /// <param name="user">The user object to award the badge to.</param>
+        /// <param name="badge">The badge to award.</param>
+        /// <returns>The user object with the awarded badge.</returns>
+        private static User GiveUserObjectBadge(User user, Badges.Badges badge)
         {
             if (GetUserBadges(user.EarnedBadges).Contains(badge) == false)
             {
@@ -142,10 +162,9 @@ namespace BadgeInterface
                 currentBadges |= earnedBadgeBit;
 
                 user.EarnedBadges = currentBadges;
-
-                using var context = new BobEntities();
-                await context.UpdateUser(user);
             }
+
+            return user;
         }
 
         /// <summary>
@@ -226,6 +245,48 @@ namespace BadgeInterface
             {
                 return null;
             }
+        }
+
+        /// <summary>
+        /// Checks if users qualify for a specific badge and grants it to them if they do.
+        /// </summary>
+        /// <param name="users">The list of users to check for badge qualification.</param>
+        /// <param name="badge">The badge to check for and grant to qualifying users.</param>
+        /// <returns>The list of users with updated badge information.</returns>
+        public static List<User> CheckGivingUserBadge(List<User> users, Badges.Badges badge)
+        {
+            for (int i = 0; i <= users.Count; i++)
+            {
+                switch (badge)
+                {
+                    case Badges.Badges.Winner3:
+                    case Badges.Badges.Winner2:
+                    case Badges.Badges.Winner1:
+                        if (users[i].WinStreak >= 30)
+                        {
+                            GiveUserObjectBadge(users[i], Badges.Badges.Winner3);
+                        }
+                        else if (users[i].WinStreak >= 20)
+                        {
+                            GiveUserObjectBadge(users[i], Badges.Badges.Winner2);
+                        }
+                        else if (users[i].WinStreak >= 10)
+                        {
+                            GiveUserObjectBadge(users[i], Badges.Badges.Winner1);
+                        }
+                        break;
+                    case Badges.Badges.Friend:
+                        if (Bot.Client.GetGuild(Bot.supportServerId).GetUser(users[i].Id) != null)
+                        {
+                            GiveUserObjectBadge(users[i], badge);
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+
+            return users;
         }
     }
 }
