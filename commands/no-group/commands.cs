@@ -618,6 +618,7 @@ namespace Commands
 **👤 Profiles:** [Profile Docs](https://docs.bobthebot.net#profile)
 - `/profile display [user]` Displays the specified user's profile. [Docs](https://docs.bobthebot.net#profile-display)
 - `/profile set-color [color]` Sets your profile color. [Docs](https://docs.bobthebot.net#profile-set-color)
+- `/profile badge-info [badge]` Shows how to unlock the given badge.
 **🖊️ Quoting:** [Quoting Docs](https://docs.bobthebot.net#quoting)
 - `/quote new [quote] [user] [tag]*3` Formats and shares the quote in designated channel. [Docs](https://docs.bobthebot.net#quote-new)
 - `/quote channel [channel]` Sets the quote channel for the server. [Docs](https://docs.bobthebot.net#quote-channel)
