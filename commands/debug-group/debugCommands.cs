@@ -17,7 +17,7 @@ namespace Commands
     [IntegrationType(ApplicationIntegrationType.GuildInstall)]
     [DontAutoRegister]
     [RequireGuild(Bot.supportServerId)]
-    [RequireOwner]
+    [RequireTeam]
     [Group("debug", "All commands relevant to debugging.")]
     public class DebugGroup : InteractionModuleBase<SocketInteractionContext>
     {
