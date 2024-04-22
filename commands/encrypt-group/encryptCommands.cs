@@ -3,6 +3,8 @@ using Discord.Interactions;
 using SimpleCiphers;
 using Commands.Helpers;
 using Discord;
+using System.Linq;
+using System;
 
 namespace Commands
 {
@@ -22,7 +24,7 @@ namespace Commands
         public async Task Caesar([Summary("message", "the text you want to encrypt")] string message, [Summary("shift", "the amount of letters to shift by")] int shift)
         {
             await DeferAsync(ephemeral: true);
-            await Encrypt.SendEncryptMessage(Context.Interaction, Encryption.Caesar(message, (uint)shift));
+            await Encrypt.SendEncryptMessage(Context.Interaction, Encryption.Caesar(message, (uint)Math.Abs(shift)));
         }
 
         [SlashCommand("a1z26", "Bob will encrypt your message by swapping letters to their corresponding number.")]
@@ -43,7 +45,14 @@ namespace Commands
         public async Task Vigenere([Summary("message", "the text you want to encrypt")] string message, [Summary("key", "the key for the encryption")] string key)
         {
             await DeferAsync(ephemeral: true);
-            await Encrypt.SendEncryptMessage(Context.Interaction, Encryption.Vigenere(message, key));
+            if (key.Any(char.IsDigit))
+            {
+                await FollowupAsync(text: "❌ The message *cannot* be encrypted because the key contains numbers.", ephemeral: true);
+            }
+            else
+            {
+                await Encrypt.SendEncryptMessage(Context.Interaction, Encryption.Vigenere(message, key));
+            }
         }
     }
 }

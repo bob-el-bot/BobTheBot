@@ -8,24 +8,11 @@ using System.Text;
 using static ApiInteractions.Interface;
 using Commands.Helpers;
 using Database.Types;
-using SimpleCiphers;
-using System.Reflection.Emit;
-using System.Collections.Generic;
-using ColorHelper;
-using System.ComponentModel;
-using Microsoft.EntityFrameworkCore.Diagnostics;
 using Database;
 using System.Text.RegularExpressions;
 using System.Linq;
-using Games;
 using Challenges;
-using System.Runtime.CompilerServices;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions.Internal;
-using Microsoft.EntityFrameworkCore.Storage;
-using System.ComponentModel.Design.Serialization;
-using System.Security.Cryptography;
 using PremiumInterface;
-using System.Reactive;
 using ColorMethods;
 
 namespace Commands

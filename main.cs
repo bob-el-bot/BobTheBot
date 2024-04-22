@@ -291,13 +291,34 @@ public static class Bot
             switch (res.Error)
             {
                 case InteractionCommandError.UnmetPrecondition:
-                    await ctx.Interaction.FollowupAsync($"❌ Unmet Precondition: {res.ErrorReason}");
+                    if (ctx.Interaction.HasResponded)
+                    {
+                        await ctx.Interaction.FollowupAsync($"❌ Something went wrong: {res.ErrorReason}", ephemeral: true);
+                    }
+                    else
+                    {
+                        await ctx.Interaction.RespondAsync($"❌ Something went wrong: {res.ErrorReason}", ephemeral: true);
+                    }
                     break;
                 case InteractionCommandError.UnknownCommand:
-                    await ctx.Interaction.FollowupAsync("❌ Unknown command");
+                    if (ctx.Interaction.HasResponded)
+                    {
+                        await ctx.Interaction.FollowupAsync("❌ Unknown command", ephemeral: true);
+                    }
+                    else
+                    {
+                        await ctx.Interaction.RespondAsync("❌ Unknown command", ephemeral: true);
+                    }
                     break;
                 case InteractionCommandError.BadArgs:
-                    await ctx.Interaction.FollowupAsync("❌ Invalid number or arguments");
+                    if (ctx.Interaction.HasResponded)
+                    {
+                        await ctx.Interaction.FollowupAsync("❌ Invalid number or arguments", ephemeral: true);
+                    }
+                    else
+                    {
+                        await ctx.Interaction.RespondAsync("❌ Invalid number or arguments", ephemeral: true);
+                    }
                     break;
                 case InteractionCommandError.Exception:
                     await ctx.Interaction.FollowupAsync($"❌ Something went wrong...\n- Ensure Bob has the **View Channel** and **Send Messages** permissions.\n- Try again later.\n- Join Bob's support server, let us know here: https://discord.gg/HvGMRZD8jQ");
