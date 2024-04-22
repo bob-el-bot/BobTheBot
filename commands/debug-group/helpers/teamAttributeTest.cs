@@ -58,7 +58,7 @@ namespace Discord.Interactions
                     }
 
                     if (idFound == false)
-                        return PreconditionResult.FromError(ErrorMessage ?? $"Command can only be run by a member of the bot's team {(TeamRoles.Length == 0 ? "." : "with the specified permissions.")}");
+                        return PreconditionResult.FromError(ErrorMessage ?? $"Command can only be run by a member of the bot's team{(TeamRoles.Length == 0 ? "." : " with the specified permissions.")}");
                     return PreconditionResult.FromSuccess();
                 default:
                     return PreconditionResult.FromError($"{nameof(RequireTeamAttribute)} is not supported by this {nameof(TokenType)}.");
