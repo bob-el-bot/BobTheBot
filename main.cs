@@ -63,7 +63,7 @@ public static class Bot
         await Client.LoginAsync(TokenType.Bot, Token);
         await Client.StartAsync();
 
-        while (Console.ReadKey().Key != ConsoleKey.Q) ;
+        while (Console.ReadKey().Key != ConsoleKey.Q);
     }
 
     public static int TotalUsers { get; set; }
@@ -313,11 +313,11 @@ public static class Bot
                 case InteractionCommandError.BadArgs:
                     if (ctx.Interaction.HasResponded)
                     {
-                        await ctx.Interaction.FollowupAsync("❌ Invalid number or arguments", ephemeral: true);
+                        await ctx.Interaction.FollowupAsync("❌ Invalid number or arguments.", ephemeral: true);
                     }
                     else
                     {
-                        await ctx.Interaction.RespondAsync("❌ Invalid number or arguments", ephemeral: true);
+                        await ctx.Interaction.RespondAsync("❌ Invalid number or arguments.", ephemeral: true);
                     }
                     break;
                 case InteractionCommandError.Exception:
