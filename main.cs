@@ -303,11 +303,11 @@ public static class Bot
                 case InteractionCommandError.UnknownCommand:
                     if (ctx.Interaction.HasResponded)
                     {
-                        await ctx.Interaction.FollowupAsync("❌ Unknown command", ephemeral: true);
+                        await ctx.Interaction.FollowupAsync("❌ Unknown command\n- Try refreshing your Discord client.", ephemeral: true);
                     }
                     else
                     {
-                        await ctx.Interaction.RespondAsync("❌ Unknown command", ephemeral: true);
+                        await ctx.Interaction.RespondAsync("❌ Unknown command\n- Try refreshing your Discord client.", ephemeral: true);
                     }
                     break;
                 case InteractionCommandError.BadArgs:
@@ -321,7 +321,7 @@ public static class Bot
                     }
                     break;
                 case InteractionCommandError.Exception:
-                    await ctx.Interaction.FollowupAsync($"❌ Something went wrong...\n- Ensure Bob has the **View Channel** and **Send Messages** permissions.\n- Try again later.\n- Join Bob's support server, let us know here: https://discord.gg/HvGMRZD8jQ");
+                    await ctx.Interaction.FollowupAsync($"❌ Something went wrong...\n- Ensure Bob has the **View Channel** and **Send Messages** permissions.\n- Try again later.\n- Or, join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ) and let us know about it.", ephemeral: true);
 
                     var executionResult = (ExecuteResult)res;
                     Console.WriteLine($"Error: {executionResult.Exception}");
@@ -339,10 +339,10 @@ public static class Bot
                     }
                     break;
                 case InteractionCommandError.Unsuccessful:
-                    await ctx.Interaction.FollowupAsync("❌ Command could not be executed");
+                    await ctx.Interaction.FollowupAsync("❌ Command could not be executed. This is odd...\n- Try again later.\n- You can also join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ) and let us know about it.", ephemeral: true);
                     break;
                 default:
-                    await ctx.Interaction.FollowupAsync("❌ Command could not be executed, but it is not Bob's fualt. Please try again later while the developers work out what is wrong.");
+                    await ctx.Interaction.FollowupAsync("❌ Command could not be executed, but it is not Bob's fault (it is most likely Discord's API failing). Please try again later while the developers work out what is wrong.\n- You can join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ) and to let us know anything and/or stay posted on updates.", ephemeral: true);
                     break;
             }
         }
