@@ -14,6 +14,8 @@ namespace Database.Types
         public bool Welcome { get; set; }
         public string CustomWelcomeMessage { get; set; }
 
+        public bool AutoEmbedGitHubLinks { get; set; }
+
         // Constructor to set default values
         public Server()
         {

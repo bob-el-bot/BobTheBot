@@ -21,12 +21,13 @@ using System.Text;
 using Commands.Attributes;
 using Commands.Helpers;
 using BadgeInterface;
+using System.Text.Json.Nodes;
 
 public static class Bot
 {
     public static readonly DiscordSocketClient Client = new(new DiscordSocketConfig()
     {
-        GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers | GatewayIntents.GuildMessages,
+        GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers | GatewayIntents.GuildMessages | GatewayIntents.MessageContent,
         AlwaysDownloadUsers = true,
     });
 
@@ -63,7 +64,7 @@ public static class Bot
         await Client.LoginAsync(TokenType.Bot, Token);
         await Client.StartAsync();
 
-        while (Console.ReadKey().Key != ConsoleKey.Q);
+        while (Console.ReadKey().Key != ConsoleKey.Q) ;
     }
 
     public static int TotalUsers { get; set; }
@@ -237,12 +238,21 @@ public static class Bot
 
     private static async Task MessageReceived(SocketMessage message)
     {
+        var channel = message.Channel as SocketGuildChannel;
+
+        IGuildUser fetchedBot = Client.GetGuild(channel.Guild.Id).GetUser(Client.CurrentUser.Id);
+        var botPerms = fetchedBot.GetPermissions(channel);
+
+        // Ensure Bob can send messages in the channel.
+        if (botPerms.SendMessages != true)
+        {
+            return;
+        }
+
         try
         {
-            var channel = message.Channel as SocketGuildChannel;
-
             // Auto Publish if in a News Channel
-            if (message.Channel.GetChannelType() == ChannelType.News && message.Components == null)
+            if (channel.GetChannelType() == ChannelType.News && message.Components == null)
             {
                 NewsChannel newsChannel;
                 using (var context = new BobEntities())
@@ -252,13 +262,48 @@ public static class Bot
 
                 if (newsChannel != null)
                 {
-                    IGuildUser fetchedBot = Client.GetGuild(newsChannel.ServerId).GetUser(Client.CurrentUser.Id);
-                    var botPerms = fetchedBot.GetPermissions(channel);
-                    if (botPerms.SendMessages == true)
-                    {
-                        IUserMessage userMessage = (IUserMessage)message;
-                        await userMessage.CrosspostAsync();
-                    }
+                    IUserMessage userMessage = (IUserMessage)message;
+                    await userMessage.CrosspostAsync();
+
+                    return;
+                }
+            }
+
+            // Ensure message was not from a Bot.
+            if (message.Author.IsBot)
+            {
+                return;
+            }
+
+            // Auto Embed if GitHub Link and Server has Auto Embeds for GitHub 
+            GitHubLinkParse.GitHubLink gitHubLink = GitHubLinkParse.GetUrl(message.Content);
+
+            if (gitHubLink != null && gitHubLink.Type != GitHubLinkParse.GitHubLinkType.Unknown)
+            {
+                IUserMessage userMessage = (IUserMessage)message;
+
+                switch (gitHubLink.Type)
+                {
+                    case GitHubLinkParse.GitHubLinkType.CodeFile:
+                        LinkInfo linkInfo = CodeReader.CreateLinkInfo(gitHubLink.Url, true);
+
+                        // Send Request
+                        string content = await GetFromAPI(linkInfo.GetApiUrl(), AcceptTypes.application_json);
+
+                        // Parse Content
+                        JsonObject jsonData = JsonNode.Parse(content).AsObject();
+                        byte[] fileData = Convert.FromBase64String(jsonData["content"].ToString());
+                        string fileContent = Encoding.UTF8.GetString(fileData);
+                        string previewLines = CodeReader.GetPreview(fileContent, ref linkInfo.LineNumbers.Item1, ref linkInfo.LineNumbers.Item2);
+
+                        // Format final response
+                        string preview = $"🔎 Showing {CodeReader.GetFormattedLineNumbers(linkInfo.LineNumbers)} of [{linkInfo.Repository}/{linkInfo.Branch}/{linkInfo.File}](<{gitHubLink.Url}>)\n```{linkInfo.File[(linkInfo.File.IndexOf('.') + 1)..]}\n{previewLines}```";
+                        await message.Channel.SendMessageAsync(text: preview);
+                        break;
+                    case GitHubLinkParse.GitHubLinkType.PullRequest:
+                        break;
+                    case GitHubLinkParse.GitHubLinkType.Issue:
+                        break;
                 }
             }
         }

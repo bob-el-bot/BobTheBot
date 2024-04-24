@@ -53,8 +53,7 @@ namespace Commands
                 string previewLines = CodeReader.GetPreview(fileContent, ref lineNumbers.Item1, ref lineNumbers.Item2);
 
                 // Format final response
-                string formattedLineNumbers = $"**#{lineNumbers.Item1}-{lineNumbers.Item2}**";
-                string preview = $"🔎 Showing {formattedLineNumbers} of [{repository}/{branch}/{file}](<{link}>)\n```{file[(file.IndexOf('.') + 1)..]}\n{previewLines}```";
+                string preview = $"🔎 Showing {CodeReader.GetFormattedLineNumbers(lineNumbers)} of [{repository}/{branch}/{file}](<{link}>)\n```{file[(file.IndexOf('.') + 1)..]}\n{previewLines}```";
 
                 // Check if message is too long for Discord API.
                 if (preview.Length > 2000)
@@ -121,8 +120,7 @@ namespace Commands
                     string previewLines = CodeReader.GetPreview(fileContent, ref lineNumbers.Item1, ref lineNumbers.Item2);
 
                     // Format final response
-                    string formattedLineNumbers = $"**#{lineNumbers.Item1}-{lineNumbers.Item2}**";
-                    string preview = $"🔎 Showing {formattedLineNumbers} of [{repository}/{branch}/{file}](<{link}>)\n```{file[(file.IndexOf('.') + 1)..]}\n{previewLines}```";
+                    string preview = $"🔎 Showing {CodeReader.GetFormattedLineNumbers(lineNumbers)} of [{repository}/{branch}/{file}](<{link}>)\n```{file[(file.IndexOf('.') + 1)..]}\n{previewLines}```";
 
                     // Check if message is too long for Discord API.
                     if (preview.Length > 2000)
