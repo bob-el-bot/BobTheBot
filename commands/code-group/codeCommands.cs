@@ -29,36 +29,23 @@ namespace Commands
                 Uri uri = new(link);
 
                 // Check if the host is github.com
-                if (uri.Host != "github.com")
+                if (uri.Host.Contains("github.com") == false)
                 {
-                    throw new InvalidOperationException("Invalid GitHub link format");
+                    throw new InvalidOperationException("Invalid GitHub link format | Host other than GitHub");
                 }
 
-                // Extracting relevant components
-                string organization = uri.Segments[1].Trim('/');
-                string repository = uri.Segments[2].Trim('/');
-                string branch = uri.Segments[4].Trim('/');
-                string file = string.Join("/", uri.Segments[5..]).Replace("//", "/");
+                LinkInfo linkInfo = CodeReader.CreateLinkInfo(link);
 
-                // If these values are null then show as many lines as possible from the beginning.
-                (ushort?, ushort?) lineNumbers = CodeReader.GetLineNumbers(uri.Fragment);
-
-                // Send Request
-                string content = await GetFromAPI($"https://api.github.com/repos/{organization}/{repository}/contents/{file}?ref={branch}", AcceptTypes.application_json);
-
-                // Parse Content
-                JsonObject jsonData = JsonNode.Parse(content).AsObject();
-                byte[] fileData = Convert.FromBase64String(jsonData["content"].ToString());
-                string fileContent = System.Text.Encoding.UTF8.GetString(fileData);
-                string previewLines = CodeReader.GetPreview(fileContent, ref lineNumbers.Item1, ref lineNumbers.Item2);
+                string previewLines = await CodeReader.GetPreview(linkInfo);
 
                 // Format final response
-                string preview = $"🔎 Showing {CodeReader.GetFormattedLineNumbers(lineNumbers)} of [{repository}/{branch}/{file}](<{link}>)\n```{file[(file.IndexOf('.') + 1)..]}\n{previewLines}```";
+                string formattedLineNumbers = CodeReader.GetFormattedLineNumbers(linkInfo.LineNumbers);
+                string preview = $"🔎 Showing {formattedLineNumbers} of [{linkInfo.Repository}/{linkInfo.Branch}/{linkInfo.File}](<{link}>)\n```{linkInfo.File[(linkInfo.File.IndexOf('.') + 1)..]}\n{previewLines}```";
 
                 // Check if message is too long for Discord API.
                 if (preview.Length > 2000)
                 {
-                    await RespondAsync(text: $"❌ The preview of lines {lineNumbers} *cannot* be shown because it contains **{preview.Length}** characters.\n- Try previewing fewer lines.\n- Discord has a limit of **2000** characters.", ephemeral: true);
+                    await RespondAsync(text: $"❌ The preview of lines {formattedLineNumbers} *cannot* be shown because it contains **{preview.Length}** characters.\n- Try previewing fewer lines.\n- Discord has a limit of **2000** characters.", ephemeral: true);
                 }
                 else
                 {
@@ -96,36 +83,23 @@ namespace Commands
                     Uri uri = new(link);
 
                     // Check if the host is github.com
-                    if (uri.Host != "github.com")
+                    if (uri.Host.Contains("github.com") == false)
                     {
                         throw new InvalidOperationException("Invalid GitHub link format | Host other than GitHub");
                     }
 
-                    // Extracting relevant components
-                    string organization = uri.Segments[1].Trim('/');
-                    string repository = uri.Segments[2].Trim('/');
-                    string branch = uri.Segments[4].Trim('/');
-                    string file = Uri.UnescapeDataString(string.Join("/", uri.Segments[5..]).Replace("//", "/"));
+                    LinkInfo linkInfo = CodeReader.CreateLinkInfo(link, true);
 
-                    // If these values are null then show as many lines as possible from the beginning.
-                    (ushort?, ushort?) lineNumbers = CodeReader.GetLineNumbers(uri.Fragment);
-
-                    // Send Request
-                    string content = await GetFromAPI($"https://api.github.com/repos/{organization}/{repository}/contents/{file}?ref={branch}", AcceptTypes.application_json);
-
-                    // Parse Content
-                    JsonObject jsonData = JsonNode.Parse(content).AsObject();
-                    byte[] fileData = Convert.FromBase64String(jsonData["content"].ToString());
-                    string fileContent = System.Text.Encoding.UTF8.GetString(fileData);
-                    string previewLines = CodeReader.GetPreview(fileContent, ref lineNumbers.Item1, ref lineNumbers.Item2);
+                    string previewLines = await CodeReader.GetPreview(linkInfo);
 
                     // Format final response
-                    string preview = $"🔎 Showing {CodeReader.GetFormattedLineNumbers(lineNumbers)} of [{repository}/{branch}/{file}](<{link}>)\n```{file[(file.IndexOf('.') + 1)..]}\n{previewLines}```";
+                    string formattedLineNumbers = CodeReader.GetFormattedLineNumbers(linkInfo.LineNumbers);
+                    string preview = $"🔎 Showing {CodeReader.GetFormattedLineNumbers(linkInfo.LineNumbers)} of [{linkInfo.Repository}/{linkInfo.Branch}/{linkInfo.File}](<{link}>)\n```{linkInfo.File[(linkInfo.File.IndexOf('.') + 1)..]}\n{previewLines}```";
 
                     // Check if message is too long for Discord API.
                     if (preview.Length > 2000)
                     {
-                        await RespondAsync(text: $"❌ The preview of lines {lineNumbers} *cannot* be shown because it contains **{preview.Length}** characters.\n- Try previewing fewer lines.\n- Discord has a limit of **2000** characters.", ephemeral: true);
+                        await RespondAsync(text: $"❌ The preview of lines {formattedLineNumbers} *cannot* be shown because it contains **{preview.Length}** characters.\n- Try previewing fewer lines.\n- Discord has a limit of **2000** characters.", ephemeral: true);
                     }
                     else
                     {

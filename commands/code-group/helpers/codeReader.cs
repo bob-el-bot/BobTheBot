@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using static ApiInteractions.Interface;
 
@@ -7,6 +8,19 @@ namespace Commands.Helpers
 {
     public static class CodeReader
     {
+        public static async Task<string> GetPreview(LinkInfo linkInfo)
+        {
+            // Send Request
+            string content = await GetFromAPI(linkInfo.GetApiUrl(), AcceptTypes.application_json);
+
+            // Parse Content
+            JsonObject jsonData = JsonNode.Parse(content).AsObject();
+            byte[] fileData = Convert.FromBase64String(jsonData["content"].ToString());
+            string fileContent = Encoding.UTF8.GetString(fileData);
+            
+            return FormatResponse(fileContent, ref linkInfo.LineNumbers.Item1, ref linkInfo.LineNumbers.Item2);
+        }
+
         /// <summary>
         /// Gets a preview of code lines from a file content.
         /// </summary>
@@ -14,7 +28,7 @@ namespace Commands.Helpers
         /// <param name="startLine">The start line number.</param>
         /// <param name="endLine">The end line number.</param>
         /// <returns>A string containing the preview of code lines.</returns>
-        public static string GetPreview(string fileContent, ref ushort? startLine, ref ushort? endLine)
+        private static string FormatResponse(string fileContent, ref ushort? startLine, ref ushort? endLine)
         {
             if (startLine == null && endLine == null)
             {
@@ -172,7 +186,7 @@ namespace Commands.Helpers
             link.Branch = uri.Segments[4].Trim('/');
             link.File = fromMessage ? string.Join("/", uri.Segments[5..]).Replace("//", "/") : Uri.UnescapeDataString(string.Join("/", uri.Segments[5..]).Replace("//", "/"));
             link.LineNumbers = GetLineNumbers(uri.Fragment);
-            
+
             return link;
         }
     }

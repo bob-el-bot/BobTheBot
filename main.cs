@@ -287,14 +287,7 @@ public static class Bot
                     case GitHubLinkParse.GitHubLinkType.CodeFile:
                         LinkInfo linkInfo = CodeReader.CreateLinkInfo(gitHubLink.Url, true);
 
-                        // Send Request
-                        string content = await GetFromAPI(linkInfo.GetApiUrl(), AcceptTypes.application_json);
-
-                        // Parse Content
-                        JsonObject jsonData = JsonNode.Parse(content).AsObject();
-                        byte[] fileData = Convert.FromBase64String(jsonData["content"].ToString());
-                        string fileContent = Encoding.UTF8.GetString(fileData);
-                        string previewLines = CodeReader.GetPreview(fileContent, ref linkInfo.LineNumbers.Item1, ref linkInfo.LineNumbers.Item2);
+                        string previewLines = await CodeReader.GetPreview(linkInfo);
 
                         // Format final response
                         string preview = $"🔎 Showing {CodeReader.GetFormattedLineNumbers(linkInfo.LineNumbers)} of [{linkInfo.Repository}/{linkInfo.Branch}/{linkInfo.File}](<{gitHubLink.Url}>)\n```{linkInfo.File[(linkInfo.File.IndexOf('.') + 1)..]}\n{previewLines}```";
