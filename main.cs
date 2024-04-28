@@ -285,7 +285,7 @@ public static class Bot
                 switch (gitHubLink.Type)
                 {
                     case GitHubLinkParse.GitHubLinkType.CodeFile:
-                        LinkInfo linkInfo = CodeReader.CreateLinkInfo(gitHubLink.Url, true);
+                        FileLinkInfo linkInfo = CodeReader.CreateFileLinkInfo(gitHubLink.Url, true);
 
                         string previewLines = await CodeReader.GetPreview(linkInfo);
 

@@ -8,7 +8,12 @@ namespace Commands.Helpers
 {
     public static class CodeReader
     {
-        public static async Task<string> GetPreview(LinkInfo linkInfo)
+        /// <summary>
+        /// Asynchronously retrieves a preview of the content from the provided link information.
+        /// </summary>
+        /// <param name="linkInfo">The FileLinkInfo object containing information about the link.</param>
+        /// <returns>A formatted preview of the content.</returns>
+        public static async Task<string> GetPreview(FileLinkInfo linkInfo)
         {
             // Send Request
             string content = await GetFromAPI(linkInfo.GetApiUrl(), AcceptTypes.application_json);
@@ -17,7 +22,7 @@ namespace Commands.Helpers
             JsonObject jsonData = JsonNode.Parse(content).AsObject();
             byte[] fileData = Convert.FromBase64String(jsonData["content"].ToString());
             string fileContent = Encoding.UTF8.GetString(fileData);
-            
+
             return FormatResponse(fileContent, ref linkInfo.LineNumbers.Item1, ref linkInfo.LineNumbers.Item2);
         }
 
@@ -175,9 +180,9 @@ namespace Commands.Helpers
         /// <param name="url">The URL to create the LinkInfo object from.</param>
         /// <param name="fromMessage">Specifies whether the URL is from a message.</param>
         /// <returns>The LinkInfo object created from the URL.</returns>
-        public static LinkInfo CreateLinkInfo(string url, bool fromMessage = false)
+        public static FileLinkInfo CreateFileLinkInfo(string url, bool fromMessage = false)
         {
-            LinkInfo link = new();
+            FileLinkInfo link = new();
             Uri uri = new(url);
 
             // Extracting relevant components
@@ -191,7 +196,7 @@ namespace Commands.Helpers
         }
     }
 
-    public class LinkInfo
+    public class FileLinkInfo
     {
         public string Organization { get; set; }
         public string Repository { get; set; }

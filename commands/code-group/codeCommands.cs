@@ -34,7 +34,7 @@ namespace Commands
                     throw new InvalidOperationException("Invalid GitHub link format | Host other than GitHub");
                 }
 
-                LinkInfo linkInfo = CodeReader.CreateLinkInfo(link);
+                FileLinkInfo linkInfo = CodeReader.CreateFileLinkInfo(link);
 
                 string previewLines = await CodeReader.GetPreview(linkInfo);
 
@@ -88,7 +88,7 @@ namespace Commands
                         throw new InvalidOperationException("Invalid GitHub link format | Host other than GitHub");
                     }
 
-                    LinkInfo linkInfo = CodeReader.CreateLinkInfo(link, true);
+                    FileLinkInfo linkInfo = CodeReader.CreateFileLinkInfo(link, true);
 
                     string previewLines = await CodeReader.GetPreview(linkInfo);
 
