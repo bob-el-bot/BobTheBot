@@ -6,6 +6,9 @@ using static ApiInteractions.Interface;
 
 namespace Commands.Helpers
 {
+    /// <summary>
+    /// A helper class for reading code files from GitHub API.
+    /// </summary>
     public static class CodeReader
     {
         /// <summary>

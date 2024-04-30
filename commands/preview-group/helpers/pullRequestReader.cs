@@ -76,7 +76,7 @@ namespace Commands.Helpers
                 embed.Description = embed.Description[..maxDescriptionLength];
             }
 
-            embed.AddField(name: "State", value: $"`{pullRequestInfo.State}`", inline: true);
+            embed.AddField(name: $"{(!pullRequestInfo.Merged ? "<:pull_request_git:1234992648280866836>" : "<:merge_git:1234992673618919507>")} State", value: $"`{pullRequestInfo.State}`", inline: true);
             if (pullRequestInfo.MergedAt != null)
             {
                 embed.AddField(name: "Merged At", value: TimeStamp.FromString(pullRequestInfo.MergedAt, TimeStamp.Formats.Detailed), inline: true);
@@ -91,7 +91,7 @@ namespace Commands.Helpers
                 embed.AddField(name: "Merged", value: $"`{pullRequestInfo.Merged}`", inline: true);
             }
 
-            embed.AddField(name: "Locked", value: $"`{pullRequestInfo.Locked}`", inline: true)
+            embed.AddField(name: "<:lock_git:1234998466904854648> Locked", value: $"`{pullRequestInfo.Locked}`", inline: true)
             .AddField(name: "Comments", value: $"`{pullRequestInfo.Comments}`", inline: true)
             .AddField(name: "ReviewComments", value: $"`{pullRequestInfo.ReviewComments}`", inline: true)
             .AddField(name: "Commits", value: $"`{pullRequestInfo.Commits}`", inline: true)

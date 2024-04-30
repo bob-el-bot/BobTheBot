@@ -296,11 +296,13 @@ public static class Bot
                         break;
                     case GitHubLinkParse.GitHubLinkType.PullRequest:
                         PullRequestInfo pullRequestInfo = PullRequestReader.CreatePullRequestInfo(gitHubLink.Url);
-
                         await message.Channel.SendMessageAsync(embed: await PullRequestReader.GetPreview(pullRequestInfo));
 
                         break;
                     case GitHubLinkParse.GitHubLinkType.Issue:
+                        IssueInfo issueInfo = IssueReader.CreateIssueInfo(gitHubLink.Url);
+                        await message.Channel.SendMessageAsync(embed: await IssueReader.GetPreview(issueInfo));
+
                         break;
                 }
             }
