@@ -62,7 +62,7 @@ namespace Commands.Helpers
             {
                 Color = GetColor(pullRequestInfo.State),
                 Author = new EmbedAuthorBuilder().WithName($"{pullRequestInfo.Organization}/{pullRequestInfo.Repository}").WithIconUrl(orgData["avatar_url"].ToString()),
-                Description = $"### [{pullRequestInfo.Title}]({pullRequestInfo.Url})\n{pullRequestInfo.Description ?? ""}",
+                Description = $"### [#{pullRequestInfo.PullNumber} {pullRequestInfo.Title}]({pullRequestInfo.Url})\n{pullRequestInfo.Description ?? ""}",
                 Timestamp = DateTimeOffset.Parse(pullRequestInfo.CreatedAt),
                 Footer = new EmbedFooterBuilder().WithIconUrl(userData["avatar_url"].ToString()).WithText($"Author: {pullRequestInfo.Author}")
             };

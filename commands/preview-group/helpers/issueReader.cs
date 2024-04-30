@@ -59,7 +59,7 @@ namespace Commands.Helpers
             {
                 Color = GetColor(issueInfo.State),
                 Author = new EmbedAuthorBuilder().WithName($"{issueInfo.Organization}/{issueInfo.Repository}"),
-                Description = $"### [{issueInfo.Title}]({issueInfo.Url})\n{issueInfo.Description ?? ""}",
+                Description = $"### [#{issueInfo.IssueNumber} {issueInfo.Title}]({issueInfo.Url})\n{issueInfo.Description ?? ""}",
                 Timestamp = DateTimeOffset.Parse(issueInfo.CreatedAt),
                 Footer = new EmbedFooterBuilder().WithIconUrl(userData["avatar_url"].ToString()).WithText($"Author: {issueInfo.Author}")
             };

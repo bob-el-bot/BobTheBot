@@ -165,7 +165,7 @@ namespace Commands
             }
             catch
             {
-                await RespondAsync(text: "❌ Your link is not valid. Here are some things to know: \n- Your link needs to start with `https://github.com/` or `github.com/`.\n- Your link must be to an issue.\n- A valid link could look like this: `https://github.com/bob-el-bot/BobTheBot/issues/143`\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await RespondAsync(text: "❌ Your link is not valid. Here are some things to know: \n- Your link needs to start with `https://github.com/` or `github.com/`.\n- Your link must be to an issue.\n- A valid link could look like this: `https://github.com/bob-el-bot/BobTheBot/issues/153`\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
         }
     }
