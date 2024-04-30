@@ -653,6 +653,7 @@ namespace Commands
 **🔎 Preview commands:**
 - `/preview code [link]` Preview specific lines of code from a file on GitHub. [Docs](https://docs.bobthebot.net#code-preview)
 - `/preview pull-request [link]` Preview a pull request from GitHub right on Discord.
+- `/preview issue [link]` Preview an issue from GitHub right on Discord.
 **🖨️ Auto commands:** [Auto Docs](https://docs.bobthebot.net#auto)
 - `/auto publish-announcements [publish] [channel]` Bob will publish all messages sent in the given channel. [Docs](https://docs.bobthebot.net#auto-publish-announcements)
 **🗄️ Informational / Help:** [Info Docs](https://docs.bobthebot.net#info)

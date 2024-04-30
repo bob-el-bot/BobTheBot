@@ -119,6 +119,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 ### 🔎 Preview commands:
 - `/preview code [link]` Preview specific lines of code from a file on GitHub.
 - `/preview pull-request [link]` Preview a pull request from GitHub right on Discord.
+- `/preview issue [link]` Preview an issue from GitHub right on Discord.
 
 ### 🖨️ Auto commands:
 - `/auto publish-announcements [publish] [channel]` Bob will publish all messages sent in the given channel.

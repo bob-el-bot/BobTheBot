@@ -136,7 +136,36 @@ namespace Commands
             }
             catch
             {
-                await RespondAsync(text: "❌ Your link is not valid. Here are some things to know: \n- Your link needs to start with `https://github.com/` or `github.com/`.\n- If you preview a link with no line specificaions, Bob will automatically show as many lines as possible from the start.\n- For line specifications, put `#L15` or `#L15-L18` at the end of the link to the file. (see below).\n- If you are sharing a single line it could look like this: `https://github.com/bob-el-bot/website/blob/main/index.html#L15`\n- If you are sharing multiple lines it could look like this: `https://github.com/bob-el-bot/website/blob/main/index.html#L15-L18`\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await RespondAsync(text: "❌ Your link is not valid. Here are some things to know: \n- Your link needs to start with `https://github.com/` or `github.com/`.\n- Your link must be to a pull request.\n- A valid link could look like this: `https://github.com/bob-el-bot/BobTheBot/pull/149`\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+            }
+        }
+
+        [SlashCommand("issue", "Preview an issue from GitHub right on Discord.")]
+        public async Task IssuePreview([Summary("link", "A GitHub Link to a specific issue.")] string link)
+        {
+            try
+            {
+                // Add HTTP if missing.
+                if ((link.Contains('.', StringComparison.Ordinal) && link.Length < 7) || (link.Length >= 7 && link[..7] != "http://" && link.Length >= 8 && link[..8] != "https://"))
+                {
+                    link = $"https://{link}";
+                }
+
+                // Parse Link using Uri class
+                Uri uri = new(link);
+
+                // Check if the host is github.com
+                if (uri.Host.Contains("github.com") == false)
+                {
+                    throw new InvalidOperationException("Invalid GitHub link format | Host other than GitHub");
+                }
+
+                IssueInfo issueInfo = IssueReader.CreateIssueInfo(link);
+                await RespondAsync(embed: await IssueReader.GetPreview(issueInfo));
+            }
+            catch
+            {
+                await RespondAsync(text: "❌ Your link is not valid. Here are some things to know: \n- Your link needs to start with `https://github.com/` or `github.com/`.\n- Your link must be to an issue.\n- A valid link could look like this: `https://github.com/bob-el-bot/BobTheBot/issues/143`\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
         }
     }
