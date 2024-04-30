@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Discord;
+using TimeStamps;
 using static ApiInteractions.Interface;
 
 namespace Commands.Helpers
@@ -78,13 +79,13 @@ namespace Commands.Helpers
             embed.AddField(name: "State", value: $"`{pullRequestInfo.State}`", inline: true);
             if (pullRequestInfo.MergedAt != null)
             {
-                embed.AddField(name: "Merged At", value: $"<t:{new DateTimeOffset(DateTime.Parse(pullRequestInfo.MergedAt)).ToUnixTimeSeconds()}:f>", inline: true);
+                embed.AddField(name: "Merged At", value: TimeStamp.FromString(pullRequestInfo.MergedAt, TimeStamp.Formats.Detailed), inline: true);
             }
             else
             {
                 if (pullRequestInfo.State == "closed")
                 {
-                    embed.AddField(name: "Closed At", value: $"<t:{new DateTimeOffset(DateTime.Parse(pullRequestInfo.ClosedAt)).ToUnixTimeSeconds()}:f>", inline: true);
+                    embed.AddField(name: "Closed At", value: TimeStamp.FromString(pullRequestInfo.ClosedAt, TimeStamp.Formats.Detailed), inline: true);
                 }
 
                 embed.AddField(name: "Merged", value: $"`{pullRequestInfo.Merged}`", inline: true);
@@ -94,7 +95,7 @@ namespace Commands.Helpers
             .AddField(name: "Comments", value: $"`{pullRequestInfo.Comments}`", inline: true)
             .AddField(name: "ReviewComments", value: $"`{pullRequestInfo.ReviewComments}`", inline: true)
             .AddField(name: "Commits", value: $"`{pullRequestInfo.Commits}`", inline: true)
-            .AddField(name: "Last Updated", value: $"<t:{new DateTimeOffset(DateTime.Parse(pullRequestInfo.UpdatedAt)).ToUnixTimeSeconds()}:f>", inline: true)
+            .AddField(name: "Last Updated", value: TimeStamp.FromString(pullRequestInfo.UpdatedAt, TimeStamp.Formats.Detailed), inline: true)
             .AddField(name: "Labels", value: pullRequestInfo.Labels.Count > 0 ? FormatLabels(pullRequestInfo.Labels) : "`none`")
             .AddField(name: "Diff", value: FormatDiff(pullRequestInfo.ChangedFiles, pullRequestInfo.Additions, pullRequestInfo.Deletions));
 

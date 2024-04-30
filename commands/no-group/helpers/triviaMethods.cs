@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Challenges;
 using Discord;
 using Discord.Interactions;
+using TimeStamps;
 using static ApiInteractions.Interface;
 
 namespace Commands.Helpers
@@ -144,15 +145,13 @@ namespace Commands.Helpers
             description.AppendLine($"Question: {game.questions.Count}/{TotalQuestions}\n");
             description.AppendLine(FormatQuestionText(game.questions.Last()));
 
-            long expiration = new DateTimeOffset(game.ExpirationTime).ToUnixTimeSeconds();
-
             if (!game.Player2.IsBot)
             {
-                description.AppendLine($"(Forfeit <t:{expiration}:R>).");
+                description.AppendLine($"({TimeStamp.FromDateTime(game.ExpirationTime, TimeStamp.Formats.Relative)}).");
             }
             else
             {
-                description.AppendLine($"(Ends <t:{expiration}:R>).");
+                description.AppendLine($"(Ends {TimeStamp.FromDateTime(game.ExpirationTime, TimeStamp.Formats.Relative)}).");
             }
 
             var embed = new EmbedBuilder

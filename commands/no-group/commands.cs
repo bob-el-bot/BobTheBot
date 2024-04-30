@@ -14,6 +14,7 @@ using System.Linq;
 using Challenges;
 using PremiumInterface;
 using ColorMethods;
+using TimeStamps;
 
 namespace Commands
 {
@@ -530,15 +531,21 @@ namespace Commands
         [SlashCommand("info", "Learn about Bob.")]
         public async Task Info()
         {
-            var createdAt = Bot.Client.CurrentUser.CreatedAt.ToUnixTimeSeconds();
-
             var embed = new EmbedBuilder
             {
                 Title = $"Bob's Info",
                 Color = Bot.theme
             };
 
-            embed.AddField(name: "📛 Username", value: $"{Bot.Client.CurrentUser.Username}", inline: true).AddField(name: "🪪 ID", value: $"`{Bot.Client.CurrentUser.Id}`", inline: true).AddField(name: ":calendar_spiral: Date Created", value: $"<t:{createdAt}:f>", inline: false).AddField(name: "📈 Servers", value: $"`{Bot.Client.Guilds.Count:n0}`", inline: true).AddField(name: "🤗 Users", value: $"`{Bot.TotalUsers:n0}`", inline: true).AddField(name: "🌐 Website", value: "[bobthebot.net](https://bobthebot.net)").AddField(name: "⚡ Github Repository", value: "[github.com/bob-el-bot/BobTheBot](https://github.com/bob-el-bot/BobTheBot)").AddField(name: "🏗️ Made With", value: "C#, .NET", inline: true).AddField(name: "📡 Hosted With", value: "Raspberry PI 4", inline: true);
+            embed.AddField(name: "📛 Username", value: $"{Bot.Client.CurrentUser.Username}", inline: true)
+            .AddField(name: "🪪 ID", value: $"`{Bot.Client.CurrentUser.Id}`", inline: true)
+            .AddField(name: ":calendar_spiral: Date Created", value: TimeStamp.FromDateTimeOffset(Bot.Client.CurrentUser.CreatedAt, TimeStamp.Formats.Detailed), inline: false)
+            .AddField(name: "📈 Servers", value: $"`{Bot.Client.Guilds.Count:n0}`", inline: true)
+            .AddField(name: "🤗 Users", value: $"`{Bot.TotalUsers:n0}`", inline: true)
+            .AddField(name: "🌐 Website", value: "[bobthebot.net](https://bobthebot.net)")
+            .AddField(name: "⚡ Github Repository", value: "[github.com/bob-el-bot/BobTheBot](https://github.com/bob-el-bot/BobTheBot)")
+            .AddField(name: "🏗️ Made With", value: "C#, .NET", inline: true)
+            .AddField(name: "📡 Hosted With", value: "Raspberry PI 4", inline: true);
 
             await RespondAsync(embed: embed.Build());
         }
@@ -556,8 +563,6 @@ namespace Commands
             var commitMessage = commit["message"].ToString();
             var commitAuthor = JsonNode.Parse(commit["author"].ToString()).AsObject();
             var commitDate = commitAuthor["date"].ToString();
-            // 2023-07-29T03:50:42Z -> unix epoch time
-            var commitDateID = DateTimeOffset.Parse(commitDate).ToUnixTimeSeconds();
 
             var embed = new EmbedBuilder
             {
@@ -565,7 +570,10 @@ namespace Commands
                 Color = Bot.theme
             };
 
-            embed.AddField(name: "🗒️ Creator's Notes", value: "Premium has now been officially implented and will only get better!\n💜 **thanks so much to those of you who supported Bob before premium features even existed!**\n- Added `/profile display` for looking at 🪪 user's game stats.\n- Added `/premium` for buying *premium* (💜 another thanks to the og supporters!).\n- Added `/profile set-color` for *premium* users to change their profiles' 🌈 color.\n- Added **unlimited** challenges for *premium* users.\n- Added `/quote set-max-length` and `/quote set-min-length` for *premium* users to add 📏 length standards for their server's quotes.\n- Added `/welcome set-message` for *premium* users to create custom 👋 welcome messages on their servers.\n- Fixed bug where `/poll` and `/announce` would not check for Send Messages permission.\n- Stay 📺 tuned for some awesome updates!", inline: false).AddField(name: "✨ Latest Update", value: commitMessage, inline: true).AddField(name: ":calendar_spiral: Date", value: $"<t:{commitDateID}:f>", inline: true).AddField(name: "🔮 See What's In the Works", value: "[Road Map](https://github.com/orgs/bob-el-bot/projects/4)");
+            embed.AddField(name: "🗒️ Creator's Notes", value: "Premium has now been officially implented and will only get better!\n💜 **thanks so much to those of you who supported Bob before premium features even existed!**\n- Added `/profile display` for looking at 🪪 user's game stats.\n- Added `/premium` for buying *premium* (💜 another thanks to the og supporters!).\n- Added `/profile set-color` for *premium* users to change their profiles' 🌈 color.\n- Added **unlimited** challenges for *premium* users.\n- Added `/quote set-max-length` and `/quote set-min-length` for *premium* users to add 📏 length standards for their server's quotes.\n- Added `/welcome set-message` for *premium* users to create custom 👋 welcome messages on their servers.\n- Fixed bug where `/poll` and `/announce` would not check for Send Messages permission.\n- Stay 📺 tuned for some awesome updates!", inline: false)
+            .AddField(name: "✨ Latest Update", value: commitMessage, inline: true)
+            .AddField(name: ":calendar_spiral: Date", value: TimeStamp.FromString(commitDate, TimeStamp.Formats.Detailed), inline: true)
+            .AddField(name: "🔮 See What's In the Works", value: "[Road Map](https://github.com/orgs/bob-el-bot/projects/4)");
 
             await RespondAsync(embed: embed.Build());
         }
