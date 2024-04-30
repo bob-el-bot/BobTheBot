@@ -642,7 +642,6 @@ namespace Commands
 - `/decrypt morse [message]` Decrypts your message using Morse code [Docs](https://docs.bobthebot.net#decrypt-morse).
 - `/decrypt vigenere [message] [key]` Decrypts your message using a specified key [Docs](https://docs.bobthebot.net#decrypt-vigenere).
 **✨ Other:** [Other Docs](https://docs.bobthebot.net#other)
-- `/code preview [link]` Preview specific lines of code from a file on GitHub. [Docs](https://docs.bobthebot.net#code-preview)
 - `/fonts [text] [font]` Change your text to a different font. [Docs](https://docs.bobthebot.net#fonts)
   - `[font]` choices: 𝖒𝖊𝖉𝖎𝖊𝖛𝖆𝖑, 𝓯𝓪𝓷𝓬𝔂, 𝕠𝕦𝕥𝕝𝕚𝕟𝕖𝕕, ɟןıddǝp, s̷l̷̷a̷s̷h̷e̷d̷, and 🄱🄾🅇🄴🄳.
 - `/confess [message] [user] [signoff]` Have Bob DM a user a message. [Docs](https://docs.bobthebot.net#confess)
@@ -651,6 +650,9 @@ namespace Commands
   - `[option]*4` usage: You must provide 2-4 options. These are essentially the poll's choices.
 - `/ship [user]*2` See how good of a match 2 users are. [Docs](https://docs.bobthebot.net#ship)
 - `/hug [user]*5` Show your friends some love with a hug. [Docs](https://docs.bobthebot.net#hug)
+**🔎 Preview commands:**
+- `/preview code [link]` Preview specific lines of code from a file on GitHub. [Docs](https://docs.bobthebot.net#code-preview)
+- `/preview pull-request [link]` Preview a pull request from GitHub right on Discord.
 **🖨️ Auto commands:** [Auto Docs](https://docs.bobthebot.net#auto)
 - `/auto publish-announcements [publish] [channel]` Bob will publish all messages sent in the given channel. [Docs](https://docs.bobthebot.net#auto-publish-announcements)
 **🗄️ Informational / Help:** [Info Docs](https://docs.bobthebot.net#info)

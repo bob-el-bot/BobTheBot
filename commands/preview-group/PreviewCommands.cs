@@ -1,21 +1,19 @@
 using System;
-using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Commands.Helpers;
 using Discord;
 using Discord.Interactions;
-using static ApiInteractions.Interface;
 
 namespace Commands
 {
     [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
     [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
-    [Group("code", "All commands relevant to code.")]
-    public class CodeGroup : InteractionModuleBase<SocketInteractionContext>
+    [Group("preview", "All commands relevant to previewing.")]
+    public class PreviewGroup : InteractionModuleBase<SocketInteractionContext>
     {
-        [SlashCommand("preview", "Preview specific lines from a file on GitHub right on Discord.")]
-        public async Task Preview([Summary("link", "A GitHub Link to specific lines of code.")] string link)
+        [SlashCommand("code", "Preview specific lines from a file on GitHub right on Discord.")]
+        public async Task CodePreview([Summary("link", "A GitHub Link to specific lines of code.")] string link)
         {
             try
             {
@@ -110,6 +108,35 @@ namespace Commands
                 {
                     await RespondAsync(text: "❌ Your link is not valid. Here are some things to know: \n- Your link needs to start with `https://github.com/`.\n- If you preview a link with no line specificaions, Bob will automatically show as many lines as possible from the start.\n- For line specifications, put `#L15` or `#L15-L18` at the end of the link to the file. (see below).\n- If you are sharing a single line it could look like this: `https://github.com/bob-el-bot/website/blob/main/index.html#L15`\n- If you are sharing multiple lines it could look like this: `https://github.com/bob-el-bot/website/blob/main/index.html#L15-L18`\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
                 }
+            }
+        }
+
+        [SlashCommand("pull-request", "Preview a pull request from GitHub right on Discord.")]
+        public async Task PullRequestPreview([Summary("link", "A GitHub Link to a specific pull request.")] string link)
+        {
+            try
+            {
+                // Add HTTP if missing.
+                if ((link.Contains('.', StringComparison.Ordinal) && link.Length < 7) || (link.Length >= 7 && link[..7] != "http://" && link.Length >= 8 && link[..8] != "https://"))
+                {
+                    link = $"https://{link}";
+                }
+
+                // Parse Link using Uri class
+                Uri uri = new(link);
+
+                // Check if the host is github.com
+                if (uri.Host.Contains("github.com") == false)
+                {
+                    throw new InvalidOperationException("Invalid GitHub link format | Host other than GitHub");
+                }
+
+                PullRequestInfo pullRequestInfo = PullRequestReader.CreatePullRequestInfo(link);
+                await RespondAsync(embed: await PullRequestReader.GetPreview(pullRequestInfo));
+            }
+            catch
+            {
+                await RespondAsync(text: "❌ Your link is not valid. Here are some things to know: \n- Your link needs to start with `https://github.com/` or `github.com/`.\n- If you preview a link with no line specificaions, Bob will automatically show as many lines as possible from the start.\n- For line specifications, put `#L15` or `#L15-L18` at the end of the link to the file. (see below).\n- If you are sharing a single line it could look like this: `https://github.com/bob-el-bot/website/blob/main/index.html#L15`\n- If you are sharing multiple lines it could look like this: `https://github.com/bob-el-bot/website/blob/main/index.html#L15-L18`\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
         }
     }

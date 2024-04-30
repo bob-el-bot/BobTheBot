@@ -107,7 +107,6 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/decrypt vigenere [message] [key]` Decrypts your message using a specified key.
 
 ### ✨ Miscellaneous commands: 
-- `/code preview [link]` Preview specific lines of code from a file on GitHub.
 - `/fonts [text] [font]` Change your text to a different font.
     - `[font]` choices: 𝖒𝖊𝖉𝖎𝖊𝖛𝖆𝖑, 𝓯𝓪𝓷𝓬𝔂, 𝕠𝕦𝕥𝕝𝕚𝕟𝕖𝕕, s̷l̷̷a̷s̷h̷e̷d̷, ɟןıddǝp, and 🄱🄾🅇🄴🄳.
 - `/confess [message] [user] [signoff]` Have Bob DM a user a message.
@@ -116,6 +115,10 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/ship [user]*2` See how good of a match 2 users are.
 - `/hug [user]*5` Show your friends some love with a hug.
 - `/hi` Say hi to Bob.
+
+### 🔎 Preview commands:
+- `/preview code [link]` Preview specific lines of code from a file on GitHub.
+- `/preview pull-request [link]` Preview a pull request from GitHub right on Discord.
 
 ### 🖨️ Auto commands:
 - `/auto publish-announcements [publish] [channel]` Bob will publish all messages sent in the given channel.
