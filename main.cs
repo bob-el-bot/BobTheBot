@@ -276,34 +276,40 @@ public static class Bot
             }
 
             // Auto Embed if GitHub Link and Server has Auto Embeds for GitHub 
-            GitHubLinkParse.GitHubLink gitHubLink = GitHubLinkParse.GetUrl(message.Content);
-
-            if (gitHubLink != null && gitHubLink.Type != GitHubLinkParse.GitHubLinkType.Unknown)
+            Server server;
+            using var dbContext = new BobEntities();
+            server = await dbContext.GetServer(channel.Guild.Id);
+            if (server.AutoEmbedGitHubLinks == true)
             {
-                IUserMessage userMessage = (IUserMessage)message;
+                GitHubLinkParse.GitHubLink gitHubLink = GitHubLinkParse.GetUrl(message.Content);
 
-                switch (gitHubLink.Type)
+                if (gitHubLink != null && gitHubLink.Type != GitHubLinkParse.GitHubLinkType.Unknown)
                 {
-                    case GitHubLinkParse.GitHubLinkType.CodeFile:
-                        FileLinkInfo linkInfo = CodeReader.CreateFileLinkInfo(gitHubLink.Url, true);
+                    IUserMessage userMessage = (IUserMessage)message;
 
-                        string previewLines = await CodeReader.GetPreview(linkInfo);
+                    switch (gitHubLink.Type)
+                    {
+                        case GitHubLinkParse.GitHubLinkType.CodeFile:
+                            FileLinkInfo linkInfo = CodeReader.CreateFileLinkInfo(gitHubLink.Url, true);
 
-                        // Format final response
-                        string preview = $"🔎 Showing {CodeReader.GetFormattedLineNumbers(linkInfo.LineNumbers)} of [{linkInfo.Repository}/{linkInfo.Branch}/{linkInfo.File}](<{gitHubLink.Url}>)\n```{linkInfo.File[(linkInfo.File.IndexOf('.') + 1)..]}\n{previewLines}```";
-                        await message.Channel.SendMessageAsync(text: preview);
+                            string previewLines = await CodeReader.GetPreview(linkInfo);
 
-                        break;
-                    case GitHubLinkParse.GitHubLinkType.PullRequest:
-                        PullRequestInfo pullRequestInfo = PullRequestReader.CreatePullRequestInfo(gitHubLink.Url);
-                        await message.Channel.SendMessageAsync(embed: await PullRequestReader.GetPreview(pullRequestInfo));
+                            // Format final response
+                            string preview = $"🔎 Showing {CodeReader.GetFormattedLineNumbers(linkInfo.LineNumbers)} of [{linkInfo.Repository}/{linkInfo.Branch}/{linkInfo.File}](<{gitHubLink.Url}>)\n```{linkInfo.File[(linkInfo.File.IndexOf('.') + 1)..]}\n{previewLines}```";
+                            await message.Channel.SendMessageAsync(text: preview);
 
-                        break;
-                    case GitHubLinkParse.GitHubLinkType.Issue:
-                        IssueInfo issueInfo = IssueReader.CreateIssueInfo(gitHubLink.Url);
-                        await message.Channel.SendMessageAsync(embed: await IssueReader.GetPreview(issueInfo));
+                            break;
+                        case GitHubLinkParse.GitHubLinkType.PullRequest:
+                            PullRequestInfo pullRequestInfo = PullRequestReader.CreatePullRequestInfo(gitHubLink.Url);
+                            await message.Channel.SendMessageAsync(embed: await PullRequestReader.GetPreview(pullRequestInfo));
 
-                        break;
+                            break;
+                        case GitHubLinkParse.GitHubLinkType.Issue:
+                            IssueInfo issueInfo = IssueReader.CreateIssueInfo(gitHubLink.Url);
+                            await message.Channel.SendMessageAsync(embed: await IssueReader.GetPreview(issueInfo));
+
+                            break;
+                    }
                 }
             }
         }

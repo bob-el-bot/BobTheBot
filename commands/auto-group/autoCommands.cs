@@ -23,7 +23,8 @@ namespace Commands
             using var context = new BobEntities();
             user = await context.GetUser(Context.User.Id);
 
-            if (user.Id == 444592456369963009) {
+            if (user.Id == 444592456369963009)
+            {
                 user.PremiumExpiration = DateTimeOffset.MaxValue;
             }
 
@@ -81,6 +82,49 @@ namespace Commands
                     }
 
                     await FollowupAsync(text: $"✅ Bob will no longer auto publish in {givenNewsChannel.Mention}", ephemeral: true);
+                }
+            }
+        }
+
+        [SlashCommand("preview-github", "Bob will automatically preview valid GitHub links (code files, issues, and pull requests).")]
+        public async Task PreviewGitHub([Summary("preview", "If checked (true), Bob will auto preview.")] bool preview)
+        {
+            await DeferAsync(ephemeral: true);
+
+            User user;
+            using var context = new BobEntities();
+            user = await context.GetUser(Context.User.Id);
+
+            if (user.Id == 444592456369963009)
+            {
+                user.PremiumExpiration = DateTimeOffset.MaxValue;
+            }
+
+            // Check if the user has premium.
+            if (preview == true && Premium.IsValidPremium(user.PremiumExpiration) == false)
+            {
+                await FollowupAsync(text: $"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}", ephemeral: true);
+            }
+            // Update github preview information.
+            else
+            {
+                Server server;
+                server = await context.GetServer(Context.Guild.Id);
+
+                // Only write to DB if needed.
+                if (server.AutoEmbedGitHubLinks != preview)
+                {
+                    server.AutoEmbedGitHubLinks = preview;
+                    await context.UpdateServer(server);
+                }
+
+                if (preview == true)
+                {
+                    await FollowupAsync(text: $"✅ Bob will now auto preview GitHub links.", ephemeral: true);
+                }
+                else
+                {
+                    await FollowupAsync(text: $"✅ Bob will no longer auto preview GitHub links.", ephemeral: true);
                 }
             }
         }
