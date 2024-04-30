@@ -292,8 +292,13 @@ public static class Bot
                         // Format final response
                         string preview = $"🔎 Showing {CodeReader.GetFormattedLineNumbers(linkInfo.LineNumbers)} of [{linkInfo.Repository}/{linkInfo.Branch}/{linkInfo.File}](<{gitHubLink.Url}>)\n```{linkInfo.File[(linkInfo.File.IndexOf('.') + 1)..]}\n{previewLines}```";
                         await message.Channel.SendMessageAsync(text: preview);
+
                         break;
                     case GitHubLinkParse.GitHubLinkType.PullRequest:
+                        PullRequestInfo pullRequestInfo = PullRequestReader.CreatePullRequestInfo(gitHubLink.Url);
+
+                        await message.Channel.SendMessageAsync(embed: await PullRequestReader.GetPreview(pullRequestInfo));
+
                         break;
                     case GitHubLinkParse.GitHubLinkType.Issue:
                         break;
