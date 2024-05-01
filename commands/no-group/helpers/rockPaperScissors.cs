@@ -5,6 +5,7 @@ using Database;
 using Discord;
 using Discord.WebSocket;
 using Games;
+using TimeStamps;
 
 namespace Commands.Helpers
 {
@@ -37,7 +38,6 @@ namespace Commands.Helpers
 
             // Reset Expiration Time.
             UpdateExpirationTime(TimeSpan.FromMinutes(1));
-            var dateTime = new DateTimeOffset(ExpirationTime).ToUnixTimeSeconds();
 
             Expired += Challenge.ExpireGame;
 
@@ -46,7 +46,7 @@ namespace Commands.Helpers
             .WithButton(label: "📃 Paper", customId: $"rps:1:{Id}", style: ButtonStyle.Secondary)
             .WithButton(label: "✂️ Scissors", customId: $"rps:2:{Id}", style: ButtonStyle.Secondary);
 
-            await Message.ModifyAsync(x => { x.Content = null; x.Embed = CreateEmbed($"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\nChoose <t:{dateTime}:R>.").Build(); x.Components = components.Build(); });
+            await Message.ModifyAsync(x => { x.Content = null; x.Embed = CreateEmbed($"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\nChoose {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)}.").Build(); x.Components = components.Build(); });
         }
 
         public override async Task StartGame(SocketMessageComponent interaction)
@@ -56,14 +56,13 @@ namespace Commands.Helpers
 
             // Reset Expiration Time.
             UpdateExpirationTime(TimeSpan.FromMinutes(1));
-            var dateTime = new DateTimeOffset(ExpirationTime).ToUnixTimeSeconds();
 
             // Format Message
             var components = new ComponentBuilder().WithButton(label: "🪨 Rock", customId: $"rps:0:{Id}", style: ButtonStyle.Secondary)
             .WithButton(label: "📃 Paper", customId: $"rps:1:{Id}", style: ButtonStyle.Secondary)
             .WithButton(label: "✂️ Scissors", customId: $"rps:2:{Id}", style: ButtonStyle.Secondary);
 
-            await interaction.ModifyOriginalResponseAsync(x => { x.Content = null; x.Embed = CreateEmbed($"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\nChoose <t:{dateTime}:R>.").Build(); x.Components = components.Build(); });
+            await interaction.ModifyOriginalResponseAsync(x => { x.Content = null; x.Embed = CreateEmbed($"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\nChoose  {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)}.").Build(); x.Components = components.Build(); });
         }
 
         public override async Task EndGameOnTime()

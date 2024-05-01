@@ -8,26 +8,52 @@ using System;
 
 namespace ApiInteractions
 {
+    /// <summary>
+    /// Provides methods for interacting with APIs.
+    /// </summary>
     public static class Interface
     {
+        /// <summary>
+        /// The product value used in the user agent header.
+        /// </summary>
         public static readonly ProductInfoHeaderValue productValue = new("BobTheBot", "1.0");
+
+        /// <summary>
+        /// The comment value used in the user agent header.
+        /// </summary>
         public static readonly ProductInfoHeaderValue commentValue = new("(+https://github.com/Quantam-Studios/BobTheBot)");
 
         private static readonly HttpClient Client = new();
 
+        /// <summary>
+        /// Enumeration of accept types for specifying the type of content to accept in the response.
+        /// </summary>
         public enum AcceptTypes
         {
+            /// <summary>
+            /// Accept application/json content type.
+            /// </summary>
             application_json,
+
+            /// <summary>
+            /// Accept text/plain content type.
+            /// </summary>
             text_plain,
+
+            /// <summary>
+            /// Accept image content type.
+            /// </summary>
             image,
         }
 
         /// <summary>
         /// Sends a GET request to the specified URL.
-        /// <returns>Returns an HttpResponseMessage as a string.</returns>
-        /// <remarks>Do not use this method for authenticated requests.</remarks>
         /// </summary>
-        public static async Task<string> GetFromAPI(string link, AcceptTypes accept)
+        /// <param name="link">The URL to send the request to.</param>
+        /// <param name="accept">The type of content to accept in the response.</param>
+        /// <param name="token">Optional. The authentication token to include in the request header.</param>
+        /// <returns>Returns the response content as a string.</returns>
+        public static async Task<string> GetFromAPI(string link, AcceptTypes accept, string token = null)
         {
             // Formulate Request
             HttpRequestMessage request = new(HttpMethod.Get, link);
@@ -37,6 +63,12 @@ namespace ApiInteractions
             request.Headers.UserAgent.Add(commentValue);
             request.Headers.Accept.Add(acceptValue);
 
+            // if authentication is given, use it.
+            if (token != null)
+            {
+                request.Headers.Authorization = new AuthenticationHeaderValue(token);
+            }
+
             // Send Request (Get The Quote)
             var resp = await Client.SendAsync(request);
             // Read In Content
@@ -45,9 +77,12 @@ namespace ApiInteractions
 
         /// <summary>
         /// Sends a POST request to the specified URL.
-        /// <returns>Returns an HttpResponseCode.</returns>
-        /// <remarks>Only use this method for authenticated requests.</remarks>
         /// </summary>
+        /// <param name="link">The URL to send the request to.</param>
+        /// <param name="token">The authentication token to include in the request header.</param>
+        /// <param name="content">The content to include in the request body.</param>
+        /// <returns>Returns the HTTP status code of the response.</returns>
+        /// <remarks>Use this method only for authenticated requests.</remarks>
         public static async Task<HttpStatusCode> PostToAPI(string link, string token, StringContent content)
         {
             // Formulate Request

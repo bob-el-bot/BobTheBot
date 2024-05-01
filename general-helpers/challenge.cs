@@ -9,6 +9,7 @@ using Discord;
 using Discord.WebSocket;
 using Games;
 using PremiumInterface;
+using TimeStamps;
 
 namespace Challenges
 {
@@ -93,7 +94,7 @@ namespace Challenges
             var embed = new EmbedBuilder
             {
                 Color = DefaultColor,
-                Description = $"### ⚔️ {game.Player1.Mention} Challenges {game.Player2.Mention} to {game.Title}.\nAccept or decline <t:{dateTime}:R>."
+                Description = $"### ⚔️ {game.Player1.Mention} Challenges {game.Player2.Mention} to {game.Title}.\nAccept or decline {TimeStamp.FromDateTime(game.ExpirationTime, TimeStamp.Formats.Relative)}."
             };
 
             var components = new ComponentBuilder().WithButton(label: "⚔️ Accept", customId: $"acceptChallenge:{game.Id}", style: ButtonStyle.Success)
@@ -101,7 +102,7 @@ namespace Challenges
 
             // Start Challenge
             game.Expired += ExpireGame;
-            await game.Message.ModifyAsync(x => { x.Content = $"> ### ⚔️ {game.Player1.Mention} Challenges {game.Player2.Mention} to {game.Title}.\n> Accept or decline <t:{dateTime}:R>."; x.Components = components.Build(); });
+            await game.Message.ModifyAsync(x => { x.Content = $"> ### ⚔️ {game.Player1.Mention} Challenges {game.Player2.Mention} to {game.Title}.\n> Accept or decline {TimeStamp.FromDateTime(game.ExpirationTime, TimeStamp.Formats.Relative)}."; x.Components = components.Build(); });
         }
 
         /// <summary>
