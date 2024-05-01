@@ -656,6 +656,7 @@ namespace Commands
 - `/preview issue [link]` Preview an issue from GitHub right on Discord.
 **🖨️ Auto commands:** [Auto Docs](https://docs.bobthebot.net#auto)
 - `/auto publish-announcements [publish] [channel]` Bob will publish all messages sent in the given channel. [Docs](https://docs.bobthebot.net#auto-publish-announcements)
+- `/auto preview-github [preview]` Bob will preview all valid GitHub links in the server.
 **🗄️ Informational / Help:** [Info Docs](https://docs.bobthebot.net#info)
 - `/premium` Ensures Bob knows you have premium! If not you will be given a button to get it! [Docs](https://docs.bobthebot.net#premium)
 - `/new` See the latest updates to Bob. [Docs](https://docs.bobthebot.net#new)
