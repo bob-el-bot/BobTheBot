@@ -23,11 +23,6 @@ namespace Commands
             using var context = new BobEntities();
             user = await context.GetUser(Context.User.Id);
 
-            if (user.Id == 444592456369963009)
-            {
-                user.PremiumExpiration = DateTimeOffset.MaxValue;
-            }
-
             SocketNewsChannel givenNewsChannel = (SocketNewsChannel)channel;
 
             // Check if the user has Send Message channels permissions.
@@ -94,11 +89,6 @@ namespace Commands
             User user;
             using var context = new BobEntities();
             user = await context.GetUser(Context.User.Id);
-
-            if (user.Id == 444592456369963009)
-            {
-                user.PremiumExpiration = DateTimeOffset.MaxValue;
-            }
 
             // Check if the user has premium.
             if (preview == true && Premium.IsValidPremium(user.PremiumExpiration) == false)
