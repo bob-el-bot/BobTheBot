@@ -25,9 +25,8 @@ namespace ApiInteractions
         /// <summary>
         /// Sends a GET request to the specified URL.
         /// <returns>Returns an HttpResponseMessage as a string.</returns>
-        /// <remarks>Do not use this method for authenticated requests.</remarks>
         /// </summary>
-        public static async Task<string> GetFromAPI(string link, AcceptTypes accept)
+        public static async Task<string> GetFromAPI(string link, AcceptTypes accept, string token = null)
         {
             // Formulate Request
             HttpRequestMessage request = new(HttpMethod.Get, link);
@@ -36,6 +35,12 @@ namespace ApiInteractions
             request.Headers.UserAgent.Add(productValue);
             request.Headers.UserAgent.Add(commentValue);
             request.Headers.Accept.Add(acceptValue);
+
+            // if authentication is given, use it.
+            if (token != null)
+            {
+                request.Headers.Authorization = new AuthenticationHeaderValue(token);
+            }
 
             // Send Request (Get The Quote)
             var resp = await Client.SendAsync(request);
