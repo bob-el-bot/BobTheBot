@@ -84,7 +84,7 @@ namespace Commands
                     };
                 }
 
-                embed.Color = new Color(2895667);
+                embed.Color = new Color(0x2B2D31);
                 embed.WithAuthor(new EmbedAuthorBuilder().WithName(user.GlobalName).WithIconUrl(user.GetAvatarUrl()));
 
                 // Footer
@@ -195,7 +195,7 @@ namespace Commands
                 }
                 else
                 {
-                    embed.Color = new Color(2895667);
+                    embed.Color = new Color(0x2B2D31);
                     embed.WithAuthor(new EmbedAuthorBuilder().WithName(user.GlobalName).WithIconUrl(user.GetAvatarUrl()));
 
                     // Orignal Message Field
