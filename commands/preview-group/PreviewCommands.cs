@@ -168,5 +168,32 @@ namespace Commands
                 await RespondAsync(text: "❌ Your link is not valid. Here are some things to know: \n- Your link needs to start with `https://github.com/` or `github.com/`.\n- Your link must be to an issue.\n- A valid link could look like this: `https://github.com/bob-el-bot/BobTheBot/issues/153`\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
         }
+
+        [SlashCommand("message", "Preview a message from any server that Bob is in.")]
+        public async Task MessagePreview([Summary("link", "A Discord message link.")] string link)
+        {
+            try
+            {
+                // Parse the Discord message link
+                var messageInfo = MessageReader.CreateMessageInfo(link);
+
+                // Get the message preview
+                var embed = await MessageReader.GetPreview(messageInfo);
+
+                // Respond with the embed
+                if (embed != null)
+                {
+                    await RespondAsync(embed: embed);
+                }
+                else
+                {
+                    await RespondAsync(text: "❌ Unable to fetch message preview.\n- This probably means Bob is not in the server of the given message.\n- It could mean that Bob needs the permissions **View Channel** or **View Message History** in the channel of the given message.\n- It could also mean the message has no text, and no embed with a title or description.", ephemeral: true);
+                }
+            }
+            catch
+            {
+                await RespondAsync(text: "❌ Your link is not valid. Here are some things to know: \n- Your link needs to start with `https://discord.com/channels/`.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+            }
+        }
     }
 }

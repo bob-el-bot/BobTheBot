@@ -118,5 +118,43 @@ namespace Commands
                 }
             }
         }
+
+        [SlashCommand("preview-messages", "Bob will automatically preview valid Discord message links.")]
+        public async Task PreviewMessages([Summary("preview", "If checked (true), Bob will auto preview.")] bool preview)
+        {
+            await DeferAsync(ephemeral: true);
+
+            User user;
+            using var context = new BobEntities();
+            user = await context.GetUser(Context.User.Id);
+
+            // Check if the user has premium.
+            if (preview == true && Premium.IsValidPremium(user.PremiumExpiration) == false)
+            {
+                await FollowupAsync(text: $"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}", ephemeral: true);
+            }
+            // Update github preview information.
+            else
+            {
+                Server server;
+                server = await context.GetServer(Context.Guild.Id);
+
+                // Only write to DB if needed.
+                if (server.AutoEmbedMessageLinks != preview)
+                {
+                    server.AutoEmbedMessageLinks = preview;
+                    await context.UpdateServer(server);
+                }
+
+                if (preview == true)
+                {
+                    await FollowupAsync(text: $"✅ Bob will now auto preview Discord message links.", ephemeral: true);
+                }
+                else
+                {
+                    await FollowupAsync(text: $"✅ Bob will no longer auto preview Discord message links.", ephemeral: true);
+                }
+            }
+        }
     }
 }

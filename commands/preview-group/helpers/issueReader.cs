@@ -70,7 +70,7 @@ namespace Commands.Helpers
                 int overMaxLengthBy = embed.Description.Length + "...".Length - 4096;
                 int maxDescriptionLength = issueInfo.Description.Length - overMaxLengthBy;
 
-                embed.Description = embed.Description[..maxDescriptionLength];
+                embed.Description = embed.Description[..maxDescriptionLength] + "...";
             }
 
             embed.AddField(name: "Reactions", value: FormatReactions(issueInfo));

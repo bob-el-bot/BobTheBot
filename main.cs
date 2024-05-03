@@ -22,6 +22,7 @@ using Commands.Attributes;
 using Commands.Helpers;
 using BadgeInterface;
 using System.Text.Json.Nodes;
+using static Commands.Helpers.MessageReader;
 
 public static class Bot
 {
@@ -283,7 +284,7 @@ public static class Bot
             {
                 GitHubLinkParse.GitHubLink gitHubLink = GitHubLinkParse.GetUrl(message.Content);
 
-                if (gitHubLink != null && gitHubLink.Type != GitHubLinkParse.GitHubLinkType.Unknown)
+                if (gitHubLink != null)
                 {
                     IUserMessage userMessage = (IUserMessage)message;
 
@@ -309,6 +310,23 @@ public static class Bot
                             await message.Channel.SendMessageAsync(embed: await IssueReader.GetPreview(issueInfo));
 
                             break;
+                    }
+
+                    return;
+                }
+            }
+            
+            if (server.AutoEmbedMessageLinks)
+            {
+                DiscordMessageLinkParse.DiscordLink discordLink = DiscordMessageLinkParse.GetUrl(message.Content);
+
+                if (discordLink != null)
+                {
+                    DiscordLinkInfo linkInfo = CreateMessageInfo(discordLink.Url);
+                    Embed preview = await GetPreview(linkInfo);
+                    if (preview != null)
+                    {
+                        await message.Channel.SendMessageAsync(embed: preview);
                     }
                 }
             }
