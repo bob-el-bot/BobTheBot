@@ -1,23 +1,13 @@
-MIT License
+This code is the property of Zachary Goodson. All rights reserved.
 
-Copyright (c) 2023 Zach Goodson
+Permission is hereby granted, free of charge, to any person or organization obtaining a copy of this code and associated documentation files (the "Code"), to view and understand the Code for educational or review purposes only, subject to the following conditions:
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+1. The Code may be viewed and understood for educational or review purposes only. Any modification, reproduction, distribution, or sublicensing of the Code is strictly prohibited without prior written permission from Zachary Goodson.
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+2. This license applies solely to the Code and does not permit hosting, modification, reproduction, distribution, or sublicensing of the Code elsewhere. Hosting the Code on any other platform or server is strictly prohibited without prior written permission from Zachary Goodson.
 
-The original creator meaning the root source of this software must be credited.
+3. This license applies only to the Code and does not restrict the usage of the Discord bot deployed by Zachary Goodson. Users are permitted to interact with the Discord bot hosted by Zachary Goodson in accordance with Discord's terms of service (https://discord.com/terms) and the Discord bot's terms of service (https://bobthebot.net/tos.html).
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+4. This license may be revoked at any time by Zachary Goodson without prior notice.
+
+For permissions or inquiries regarding the use of the Code beyond the scope of this license, please contact Zachary Goodson at quantamstudios@gmail.com.
