@@ -14,6 +14,7 @@ using System.Linq;
 using Challenges;
 using PremiumInterface;
 using ColorMethods;
+using TimeStamps;
 
 namespace Commands
 {
@@ -530,15 +531,21 @@ namespace Commands
         [SlashCommand("info", "Learn about Bob.")]
         public async Task Info()
         {
-            var createdAt = Bot.Client.CurrentUser.CreatedAt.ToUnixTimeSeconds();
-
             var embed = new EmbedBuilder
             {
                 Title = $"Bob's Info",
                 Color = Bot.theme
             };
 
-            embed.AddField(name: "📛 Username", value: $"{Bot.Client.CurrentUser.Username}", inline: true).AddField(name: "🪪 ID", value: $"`{Bot.Client.CurrentUser.Id}`", inline: true).AddField(name: ":calendar_spiral: Date Created", value: $"<t:{createdAt}:f>", inline: false).AddField(name: "📈 Servers", value: $"`{Bot.Client.Guilds.Count:n0}`", inline: true).AddField(name: "🤗 Users", value: $"`{Bot.TotalUsers:n0}`", inline: true).AddField(name: "🌐 Website", value: "[bobthebot.net](https://bobthebot.net)").AddField(name: "⚡ Github Repository", value: "[github.com/bob-el-bot/BobTheBot](https://github.com/bob-el-bot/BobTheBot)").AddField(name: "🏗️ Made With", value: "C#, .NET", inline: true).AddField(name: "📡 Hosted With", value: "Raspberry PI 4", inline: true);
+            embed.AddField(name: "📛 Username", value: $"{Bot.Client.CurrentUser.Username}", inline: true)
+            .AddField(name: "🪪 ID", value: $"`{Bot.Client.CurrentUser.Id}`", inline: true)
+            .AddField(name: ":calendar_spiral: Date Created", value: TimeStamp.FromDateTimeOffset(Bot.Client.CurrentUser.CreatedAt, TimeStamp.Formats.Detailed), inline: false)
+            .AddField(name: "📈 Servers", value: $"`{Bot.Client.Guilds.Count:n0}`", inline: true)
+            .AddField(name: "🤗 Users", value: $"`{Bot.TotalUsers:n0}`", inline: true)
+            .AddField(name: "🌐 Website", value: "[bobthebot.net](https://bobthebot.net)")
+            .AddField(name: "⚡ Github Repository", value: "[github.com/bob-el-bot/BobTheBot](https://github.com/bob-el-bot/BobTheBot)")
+            .AddField(name: "🏗️ Made With", value: "C#, .NET", inline: true)
+            .AddField(name: "📡 Hosted With", value: "Raspberry PI 4", inline: true);
 
             await RespondAsync(embed: embed.Build());
         }
@@ -556,8 +563,6 @@ namespace Commands
             var commitMessage = commit["message"].ToString();
             var commitAuthor = JsonNode.Parse(commit["author"].ToString()).AsObject();
             var commitDate = commitAuthor["date"].ToString();
-            // 2023-07-29T03:50:42Z -> unix epoch time
-            var commitDateID = DateTimeOffset.Parse(commitDate).ToUnixTimeSeconds();
 
             var embed = new EmbedBuilder
             {
@@ -565,7 +570,10 @@ namespace Commands
                 Color = Bot.theme
             };
 
-            embed.AddField(name: "🗒️ Creator's Notes", value: "Premium has now been officially implented and will only get better!\n💜 **thanks so much to those of you who supported Bob before premium features even existed!**\n- Added `/profile display` for looking at 🪪 user's game stats.\n- Added `/premium` for buying *premium* (💜 another thanks to the og supporters!).\n- Added `/profile set-color` for *premium* users to change their profiles' 🌈 color.\n- Added **unlimited** challenges for *premium* users.\n- Added `/quote set-max-length` and `/quote set-min-length` for *premium* users to add 📏 length standards for their server's quotes.\n- Added `/welcome set-message` for *premium* users to create custom 👋 welcome messages on their servers.\n- Fixed bug where `/poll` and `/announce` would not check for Send Messages permission.\n- Stay 📺 tuned for some awesome updates!", inline: false).AddField(name: "✨ Latest Update", value: commitMessage, inline: true).AddField(name: ":calendar_spiral: Date", value: $"<t:{commitDateID}:f>", inline: true).AddField(name: "🔮 See What's In the Works", value: "[Road Map](https://github.com/orgs/bob-el-bot/projects/4)");
+            embed.AddField(name: "🗒️ Creator's Notes", value: "- Added `/preview message` for viewing 💬 messages from Discord message links.\n- Added `/preview pull-request` for viewing information about a GitHub <:pull_request_git:1234992648280866836> pull request.\n- Added `/preview issue` for viewing information about a GitHub <:issue_opened_git:1234993539134259290> issue.\n- Changed `/code preview` to `/preview code`.\n- Added new auto 🔎 preview features for *premium* users. Message links and all GitHub links can now be conveniently auto previewed when sent.\n- Stay 📺 tuned for some awesome updates!", inline: false)
+            .AddField(name: "✨ Latest Update", value: commitMessage, inline: true)
+            .AddField(name: ":calendar_spiral: Date", value: TimeStamp.FromString(commitDate, TimeStamp.Formats.Detailed), inline: true)
+            .AddField(name: "🔮 See What's In the Works", value: "[Road Map](https://github.com/orgs/bob-el-bot/projects/4)");
 
             await RespondAsync(embed: embed.Build());
         }
@@ -614,7 +622,11 @@ namespace Commands
 **👋 Welcoming:** [Welcome Docs](https://docs.bobthebot.net#welcome)
 - `/welcome toggle [welcome]` Bob will send welcome messages to new server members. [Docs](https://docs.bobthebot.net#welcome-toggle)
 - `/welcome set-message [message]` Set a custom message to welcome new users with. [Docs](https://docs.bobthebot.net#welcome-set-message)
-- `/welcome remove-message` Bob will stop using the custom message to welcome users. [Docs](https://docs.bobthebot.net#welcome-remove-message)"
+- `/welcome remove-message` Bob will stop using the custom message to welcome users. [Docs](https://docs.bobthebot.net#welcome-remove-message)
+**🖨️ Auto commands:** [Auto Docs](https://docs.bobthebot.net#auto)
+- `/auto publish-announcements [publish] [channel]` Bob will publish all messages sent in the given channel. [Docs](https://docs.bobthebot.net#auto-publish-announcements)
+- `/auto preview-github [preview]` Bob will preview all valid GitHub links in the server. [Docs](https://docs.bobthebot.net#auto-preview-github)
+- `/auto preview-messages [preview]` Bob will preview all valid Discord message links in the server. [Docs](https://docs.bobthebot.net#auto-preview-messages)"
                 };
 
                 var secondEmbed = new EmbedBuilder
@@ -634,7 +646,6 @@ namespace Commands
 - `/decrypt morse [message]` Decrypts your message using Morse code [Docs](https://docs.bobthebot.net#decrypt-morse).
 - `/decrypt vigenere [message] [key]` Decrypts your message using a specified key [Docs](https://docs.bobthebot.net#decrypt-vigenere).
 **✨ Other:** [Other Docs](https://docs.bobthebot.net#other)
-- `/code preview [link]` Preview specific lines of code from a file on GitHub. [Docs](https://docs.bobthebot.net#code-preview)
 - `/fonts [text] [font]` Change your text to a different font. [Docs](https://docs.bobthebot.net#fonts)
   - `[font]` choices: 𝖒𝖊𝖉𝖎𝖊𝖛𝖆𝖑, 𝓯𝓪𝓷𝓬𝔂, 𝕠𝕦𝕥𝕝𝕚𝕟𝕖𝕕, ɟןıddǝp, s̷l̷̷a̷s̷h̷e̷d̷, and 🄱🄾🅇🄴🄳.
 - `/confess [message] [user] [signoff]` Have Bob DM a user a message. [Docs](https://docs.bobthebot.net#confess)
@@ -643,8 +654,11 @@ namespace Commands
   - `[option]*4` usage: You must provide 2-4 options. These are essentially the poll's choices.
 - `/ship [user]*2` See how good of a match 2 users are. [Docs](https://docs.bobthebot.net#ship)
 - `/hug [user]*5` Show your friends some love with a hug. [Docs](https://docs.bobthebot.net#hug)
-**🖨️ Auto commands:** [Auto Docs](https://docs.bobthebot.net#auto)
-- `/auto publish-announcements [publish] [channel]` Bob will publish all messages sent in the given channel. [Docs](https://docs.bobthebot.net#auto-publish-announcements)
+**🔎 Preview commands:** [Preview Docs](https://docs.bobthebot.net#preview)
+- `/preview code [link]` Preview specific lines of code from a file on GitHub. [Docs](https://docs.bobthebot.net#preview-code)
+- `/preview pull-request [link]` Preview a pull request from GitHub right on Discord. [Docs](https://docs.bobthebot.net#preview-pull-request)
+- `/preview issue [link]` Preview an issue from GitHub right on Discord. [Docs](https://docs.bobthebot.net#preview-issue)
+- `/preview message [link]` Preview a Discord message from any server Bob is in. [Docs](https://docs.bobthebot.net#preview-message)
 **🗄️ Informational / Help:** [Info Docs](https://docs.bobthebot.net#info)
 - `/premium` Ensures Bob knows you have premium! If not you will be given a button to get it! [Docs](https://docs.bobthebot.net#premium)
 - `/new` See the latest updates to Bob. [Docs](https://docs.bobthebot.net#new)
@@ -746,7 +760,7 @@ namespace Commands
             // Check if Bob has permission to send messages in given channel
             if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel).SendMessages || !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel).ViewChannel)
             {
-                await RespondAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{Context.Channel.Id}>\n- Try giving Bob the following pemrissions: `View Channel`, `Send Messages`.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await RespondAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{Context.Channel.Id}>\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
             else if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel).AddReactions) // Check if Bob can add reactions
             {

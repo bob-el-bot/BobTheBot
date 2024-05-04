@@ -21,12 +21,14 @@ using System.Text;
 using Commands.Attributes;
 using Commands.Helpers;
 using BadgeInterface;
+using System.Text.Json.Nodes;
+using static Commands.Helpers.MessageReader;
 
 public static class Bot
 {
     public static readonly DiscordSocketClient Client = new(new DiscordSocketConfig()
     {
-        GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers | GatewayIntents.GuildMessages,
+        GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers | GatewayIntents.GuildMessages | GatewayIntents.MessageContent,
         AlwaysDownloadUsers = true,
     });
 
@@ -101,7 +103,7 @@ public static class Bot
                     TotalUsers += guild.MemberCount;
                 }
 
-                TotalUsers -= (Token == Config.GetTestToken()) ? 0 : 72000;
+                TotalUsers -= (Token == Config.GetTestToken()) ? 0 : 10000;
                 Console.WriteLine($"Total Users: {TotalUsers}");
 
                 // Update third party stats
@@ -237,12 +239,21 @@ public static class Bot
 
     private static async Task MessageReceived(SocketMessage message)
     {
+        var channel = message.Channel as SocketGuildChannel;
+
+        IGuildUser fetchedBot = Client.GetGuild(channel.Guild.Id).GetUser(Client.CurrentUser.Id);
+        var botPerms = fetchedBot.GetPermissions(channel);
+
+        // Ensure Bob can send messages in the channel.
+        if (botPerms.SendMessages != true)
+        {
+            return;
+        }
+
         try
         {
-            var channel = message.Channel as SocketGuildChannel;
-
             // Auto Publish if in a News Channel
-            if (message.Channel.GetChannelType() == ChannelType.News && message.Components == null)
+            if (channel.GetChannelType() == ChannelType.News && message.Components == null)
             {
                 NewsChannel newsChannel;
                 using (var context = new BobEntities())
@@ -252,12 +263,70 @@ public static class Bot
 
                 if (newsChannel != null)
                 {
-                    IGuildUser fetchedBot = Client.GetGuild(newsChannel.ServerId).GetUser(Client.CurrentUser.Id);
-                    var botPerms = fetchedBot.GetPermissions(channel);
-                    if (botPerms.SendMessages == true)
+                    IUserMessage userMessage = (IUserMessage)message;
+                    await userMessage.CrosspostAsync();
+
+                    return;
+                }
+            }
+
+            // Ensure message was not from a Bot.
+            if (message.Author.IsBot)
+            {
+                return;
+            }
+
+            // Auto Embed if GitHub Link and Server has Auto Embeds for GitHub 
+            Server server;
+            using var dbContext = new BobEntities();
+            server = await dbContext.GetServer(channel.Guild.Id);
+            if (server.AutoEmbedGitHubLinks == true)
+            {
+                GitHubLinkParse.GitHubLink gitHubLink = GitHubLinkParse.GetUrl(message.Content);
+
+                if (gitHubLink != null)
+                {
+                    IUserMessage userMessage = (IUserMessage)message;
+
+                    switch (gitHubLink.Type)
                     {
-                        IUserMessage userMessage = (IUserMessage)message;
-                        await userMessage.CrosspostAsync();
+                        case GitHubLinkParse.GitHubLinkType.CodeFile:
+                            FileLinkInfo linkInfo = CodeReader.CreateFileLinkInfo(gitHubLink.Url, true);
+
+                            string previewLines = await CodeReader.GetPreview(linkInfo);
+
+                            // Format final response
+                            string preview = $"🔎 Showing {CodeReader.GetFormattedLineNumbers(linkInfo.LineNumbers)} of [{linkInfo.Repository}/{linkInfo.Branch}/{linkInfo.File}](<{gitHubLink.Url}>)\n```{linkInfo.File[(linkInfo.File.IndexOf('.') + 1)..]}\n{previewLines}```";
+                            await message.Channel.SendMessageAsync(text: preview);
+
+                            break;
+                        case GitHubLinkParse.GitHubLinkType.PullRequest:
+                            PullRequestInfo pullRequestInfo = PullRequestReader.CreatePullRequestInfo(gitHubLink.Url);
+                            await message.Channel.SendMessageAsync(embed: await PullRequestReader.GetPreview(pullRequestInfo));
+
+                            break;
+                        case GitHubLinkParse.GitHubLinkType.Issue:
+                            IssueInfo issueInfo = IssueReader.CreateIssueInfo(gitHubLink.Url);
+                            await message.Channel.SendMessageAsync(embed: await IssueReader.GetPreview(issueInfo));
+
+                            break;
+                    }
+
+                    return;
+                }
+            }
+            
+            if (server.AutoEmbedMessageLinks)
+            {
+                DiscordMessageLinkParse.DiscordLink discordLink = DiscordMessageLinkParse.GetUrl(message.Content);
+
+                if (discordLink != null)
+                {
+                    DiscordLinkInfo linkInfo = CreateMessageInfo(discordLink.Url);
+                    Embed preview = await GetPreview(linkInfo);
+                    if (preview != null)
+                    {
+                        await message.Channel.SendMessageAsync(embed: preview);
                     }
                 }
             }
@@ -303,25 +372,25 @@ public static class Bot
                 case InteractionCommandError.UnknownCommand:
                     if (ctx.Interaction.HasResponded)
                     {
-                        await ctx.Interaction.FollowupAsync("❌ Unknown command", ephemeral: true);
+                        await ctx.Interaction.FollowupAsync("❌ Unknown command\n- Try refreshing your Discord client.", ephemeral: true);
                     }
                     else
                     {
-                        await ctx.Interaction.RespondAsync("❌ Unknown command", ephemeral: true);
+                        await ctx.Interaction.RespondAsync("❌ Unknown command\n- Try refreshing your Discord client.", ephemeral: true);
                     }
                     break;
                 case InteractionCommandError.BadArgs:
                     if (ctx.Interaction.HasResponded)
                     {
-                        await ctx.Interaction.FollowupAsync("❌ Invalid number or arguments", ephemeral: true);
+                        await ctx.Interaction.FollowupAsync("❌ Invalid number or arguments.", ephemeral: true);
                     }
                     else
                     {
-                        await ctx.Interaction.RespondAsync("❌ Invalid number or arguments", ephemeral: true);
+                        await ctx.Interaction.RespondAsync("❌ Invalid number or arguments.", ephemeral: true);
                     }
                     break;
                 case InteractionCommandError.Exception:
-                    await ctx.Interaction.FollowupAsync($"❌ Something went wrong...\n- Ensure Bob has the **View Channel** and **Send Messages** permissions.\n- Try again later.\n- Join Bob's support server, let us know here: https://discord.gg/HvGMRZD8jQ");
+                    await ctx.Interaction.FollowupAsync($"❌ Something went wrong...\n- Ensure Bob has the **View Channel** and **Send Messages** permissions.\n- Try again later.\n- Or, join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ) and let us know about it.", ephemeral: true);
 
                     var executionResult = (ExecuteResult)res;
                     Console.WriteLine($"Error: {executionResult.Exception}");
@@ -339,10 +408,10 @@ public static class Bot
                     }
                     break;
                 case InteractionCommandError.Unsuccessful:
-                    await ctx.Interaction.FollowupAsync("❌ Command could not be executed");
+                    await ctx.Interaction.FollowupAsync("❌ Command could not be executed. This is odd...\n- Try again later.\n- You can also join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ) and let us know about it.", ephemeral: true);
                     break;
                 default:
-                    await ctx.Interaction.FollowupAsync("❌ Command could not be executed, but it is not Bob's fualt. Please try again later while the developers work out what is wrong.");
+                    await ctx.Interaction.FollowupAsync("❌ Command could not be executed, but it is not Bob's fault (it is most likely Discord's API failing). Please try again later while the developers work out what is wrong.\n- You can join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ) and to let us know anything and/or stay posted on updates.", ephemeral: true);
                     break;
             }
         }

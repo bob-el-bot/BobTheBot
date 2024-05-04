@@ -4,7 +4,7 @@
     <img src="https://skillicons.dev/icons?i=cs,net,raspberrypi,discord,sqlite">
 <p>
 
-<p>The bot for 🎲 RNG, 🖊️ quoting, 📜 fonts, 🔒 encryption, and ✨ more! Currently serving 60,000+ users in 600+ servers!</p>
+<p>The bot for 🎲 RNG, 🖊️ quoting, 📜 fonts, 🔒 encryption, and ✨ more! Currently serving 100,000+ users in 750+ servers!</p>
 
 <a href="https://discord.com/oauth2/authorize?client_id=705680059809398804&permissions=1110719392886&scope=bot%20applications.commands">Invite</a>
 <span>|
@@ -27,7 +27,7 @@ Bob is constantly being updated, and improved! A road map of updates can be foun
 > **Note**
 The order is irrelevant, and features are added from one of the to do sections as the developer wants.
 
-- [See what's in the works!](https://github.com/users/Quantam-Studios/projects/3)
+- [See what's in the works!](https://github.com/orgs/bob-el-bot/projects/4)
 
 ### Suggestions
 Have an idea? Share it on the `feature-ideas` channel on [Bob's official server](https://discord.com/invite/HvGMRZD8jQ), for it to be considered.
@@ -45,6 +45,9 @@ Use `/fonts`, to transform your text into something that is *guaranteed* to grab
 
 ### 🎮 Play games!
 With multiple games to choose from like `/rock-paper-scissors`, `/tic-tac-toe`, `/trivia`, `/master-mind`, and *only more* on the way, Bob is ready to keep provide your server with the entertainment it *needs* to thrive.
+
+### 🖨️ Automatically do things!
+With commands like `/auto preview-messages` and `/auto preview-github` you can see the contents of a message, code file, pull request, or issue without ever leaving the channel they were shared in. Plus, you don't need to worry about publishing messages in news channels with `/auto publish-announcements`.
 
 ### 🎲 All the RNG!
 Bob has a ***plethora*** of random commands to either fuel your Dungeons and Dragons experience like `/random dice-roll`, or simply cure your boredom with `/random 8ball`, `/random dad-joke`, `/random fact`, and many more!
@@ -107,7 +110,6 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/decrypt vigenere [message] [key]` Decrypts your message using a specified key.
 
 ### ✨ Miscellaneous commands: 
-- `/code preview [link]` Preview specific lines of code from a file on GitHub.
 - `/fonts [text] [font]` Change your text to a different font.
     - `[font]` choices: 𝖒𝖊𝖉𝖎𝖊𝖛𝖆𝖑, 𝓯𝓪𝓷𝓬𝔂, 𝕠𝕦𝕥𝕝𝕚𝕟𝕖𝕕, s̷l̷̷a̷s̷h̷e̷d̷, ɟןıddǝp, and 🄱🄾🅇🄴🄳.
 - `/confess [message] [user] [signoff]` Have Bob DM a user a message.
@@ -117,8 +119,16 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/hug [user]*5` Show your friends some love with a hug.
 - `/hi` Say hi to Bob.
 
+### 🔎 Preview commands:
+- `/preview code [link]` Preview specific lines of code from a file on GitHub.
+- `/preview pull-request [link]` Preview a pull request from GitHub right on Discord.
+- `/preview issue [link]` Preview an issue from GitHub right on Discord.
+- `/preview message [link]` Preview a Discord message from any server Bob is in.
+
 ### 🖨️ Auto commands:
 - `/auto publish-announcements [publish] [channel]` Bob will publish all messages sent in the given channel.
+- `/auto preview-github [preview]` Bob will preview all valid GitHub links in the server.
+- `/auto preview-messages [preview]` Bob will preview all valid Discord message links in the server.
 
 ### 🗄️ Informational / help commands:
 - `/premium` Ensures Bob knows you have premium! If not you will be given a button to get it!

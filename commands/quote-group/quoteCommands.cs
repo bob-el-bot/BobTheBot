@@ -7,6 +7,7 @@ using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using PremiumInterface;
+using TimeStamps;
 
 namespace Commands
 {
@@ -38,7 +39,7 @@ namespace Commands
             }
             else if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions(Context.Guild.GetChannel((ulong)server.QuoteChannelId)).SendMessages || !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions(Context.Guild.GetChannel((ulong)server.QuoteChannelId)).ViewChannel)
             {
-                await FollowupAsync(text: $"❌ Bob is either missing permissions to view *or* send messages in the channel <#{server.QuoteChannelId}>.\n- Try giving Bob the following pemrissions: `View Channel`, `Send Messages`.\n- Use `/quote channel` to set a new channel.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await FollowupAsync(text: $"❌ Bob is either missing permissions to view *or* send messages in the channel <#{server.QuoteChannelId}>.\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`.\n- Use `/quote channel` to set a new channel.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
             else if (quote.Length > (server.MaxQuoteLength ?? 4096) || quote.Length < server.MinQuoteLength) // 4096 is max characters in an embed description.
             {
@@ -50,9 +51,6 @@ namespace Commands
             }
             else
             {
-                // Date
-                var dateTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-
                 // Format Quote
                 string formattedQuote = quote;
                 if (quote[0] != '"' && quote[^1] != '"')
@@ -72,13 +70,13 @@ namespace Commands
                     embed = new EmbedBuilder
                     {
                         Title = $"{formattedQuote}",
-                        Description = $"-{user.Mention}, <t:{dateTime}:R>"
+                        Description = $"-{user.Mention}, {TimeStamp.FromDateTimeOffset(DateTimeOffset.UtcNow, TimeStamp.Formats.Relative)}"
                     };
                 }
                 else
                 {
                     // Use description for quote to fit up to 4096 characters or contains mentions/links
-                    string description = $"**{formattedQuote}**\n-{user.Mention}, <t:{dateTime}:R>";
+                    string description = $"**{formattedQuote}**\n-{user.Mention}, {TimeStamp.FromDateTimeOffset(DateTimeOffset.UtcNow, TimeStamp.Formats.Relative)}";
                     embed = new EmbedBuilder
                     {
                         Title = "",
@@ -86,7 +84,7 @@ namespace Commands
                     };
                 }
 
-                embed.Color = new Color(2895667);
+                embed.Color = new Color(0x2B2D31);
                 embed.WithAuthor(new EmbedAuthorBuilder().WithName(user.GlobalName).WithIconUrl(user.GetAvatarUrl()));
 
                 // Footer
@@ -146,7 +144,7 @@ namespace Commands
             }
             else if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions(Context.Guild.GetChannel((ulong)server.QuoteChannelId)).SendMessages || !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions(Context.Guild.GetChannel((ulong)server.QuoteChannelId)).ViewChannel)
             {
-                await FollowupAsync(text: $"❌ Bob is either missing permissions to view *or* send messages in the channel <#{server.QuoteChannelId}>.\n- Try giving Bob the following pemrissions: `View Channel`, `Send Messages`.\n- Use `/quote channel` to set a new channel.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await FollowupAsync(text: $"❌ Bob is either missing permissions to view *or* send messages in the channel <#{server.QuoteChannelId}>.\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`.\n- Use `/quote channel` to set a new channel.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
             else if (quote == null || quote == "")
             {
@@ -177,13 +175,13 @@ namespace Commands
                     embed = new EmbedBuilder
                     {
                         Title = $"{formattedQuote}",
-                        Description = $"-{user.Mention}, <t:{message.Timestamp.ToUnixTimeSeconds()}:R>"
+                        Description = $"-{user.Mention}, {TimeStamp.FromDateTimeOffset(message.Timestamp, TimeStamp.Formats.Relative)}"
                     };
                 }
                 else
                 {
                     // Use description for quote to fit up to 4096 characters or contains mentions/links
-                    string description = $"**{formattedQuote}**\n-{user.Mention}, <t:{message.Timestamp.ToUnixTimeSeconds()}:R>";
+                    string description = $"**{formattedQuote}**\n-{user.Mention}, {TimeStamp.FromDateTimeOffset(message.Timestamp, TimeStamp.Formats.Relative)}";
                     embed = new EmbedBuilder
                     {
                         Title = "",
@@ -197,7 +195,7 @@ namespace Commands
                 }
                 else
                 {
-                    embed.Color = new Color(2895667);
+                    embed.Color = new Color(0x2B2D31);
                     embed.WithAuthor(new EmbedAuthorBuilder().WithName(user.GlobalName).WithIconUrl(user.GetAvatarUrl()));
 
                     // Orignal Message Field
@@ -229,7 +227,7 @@ namespace Commands
             // Check if Bob has permission to send messages in given channel
             else if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)channel).SendMessages || !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)channel).ViewChannel)
             {
-                await RespondAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{channel.Id}>\n- Try giving Bob the following pemrissions: `View Channel`, `Send Messages`.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await RespondAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{channel.Id}>\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
             else
             {
