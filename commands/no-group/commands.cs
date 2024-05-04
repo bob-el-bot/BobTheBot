@@ -622,7 +622,11 @@ namespace Commands
 **👋 Welcoming:** [Welcome Docs](https://docs.bobthebot.net#welcome)
 - `/welcome toggle [welcome]` Bob will send welcome messages to new server members. [Docs](https://docs.bobthebot.net#welcome-toggle)
 - `/welcome set-message [message]` Set a custom message to welcome new users with. [Docs](https://docs.bobthebot.net#welcome-set-message)
-- `/welcome remove-message` Bob will stop using the custom message to welcome users. [Docs](https://docs.bobthebot.net#welcome-remove-message)"
+- `/welcome remove-message` Bob will stop using the custom message to welcome users. [Docs](https://docs.bobthebot.net#welcome-remove-message)
+**🖨️ Auto commands:** [Auto Docs](https://docs.bobthebot.net#auto)
+- `/auto publish-announcements [publish] [channel]` Bob will publish all messages sent in the given channel. [Docs](https://docs.bobthebot.net#auto-publish-announcements)
+- `/auto preview-github [preview]` Bob will preview all valid GitHub links in the server. [Docs](https://docs.bobthebot.net#auto-preview-github)
+- `/auto preview-messages [preview]` Bob will preview all valid Discord message links in the server. [Docs](https://docs.bobthebot.net#auto-preview-messages)"
                 };
 
                 var secondEmbed = new EmbedBuilder
@@ -650,15 +654,11 @@ namespace Commands
   - `[option]*4` usage: You must provide 2-4 options. These are essentially the poll's choices.
 - `/ship [user]*2` See how good of a match 2 users are. [Docs](https://docs.bobthebot.net#ship)
 - `/hug [user]*5` Show your friends some love with a hug. [Docs](https://docs.bobthebot.net#hug)
-**🔎 Preview commands:**
-- `/preview code [link]` Preview specific lines of code from a file on GitHub. [Docs](https://docs.bobthebot.net#code-preview)
-- `/preview pull-request [link]` Preview a pull request from GitHub right on Discord.
-- `/preview issue [link]` Preview an issue from GitHub right on Discord.
-- `/preview message [link]` Preview a Discord message from any server Bob is in.
-**🖨️ Auto commands:** [Auto Docs](https://docs.bobthebot.net#auto)
-- `/auto publish-announcements [publish] [channel]` Bob will publish all messages sent in the given channel. [Docs](https://docs.bobthebot.net#auto-publish-announcements)
-- `/auto preview-github [preview]` Bob will preview all valid GitHub links in the server.
-- `/auto preview-messages [preview]` Bob will preview all valid Discord message links in the server.
+**🔎 Preview commands:** [Preview Docs](https://docs.bobthebot.net#preview)
+- `/preview code [link]` Preview specific lines of code from a file on GitHub. [Docs](https://docs.bobthebot.net#preview-code)
+- `/preview pull-request [link]` Preview a pull request from GitHub right on Discord. [Docs](https://docs.bobthebot.net#preview-pull-request)
+- `/preview issue [link]` Preview an issue from GitHub right on Discord. [Docs](https://docs.bobthebot.net#preview-issue)
+- `/preview message [link]` Preview a Discord message from any server Bob is in. [Docs](https://docs.bobthebot.net#preview-message)
 **🗄️ Informational / Help:** [Info Docs](https://docs.bobthebot.net#info)
 - `/premium` Ensures Bob knows you have premium! If not you will be given a button to get it! [Docs](https://docs.bobthebot.net#premium)
 - `/new` See the latest updates to Bob. [Docs](https://docs.bobthebot.net#new)
