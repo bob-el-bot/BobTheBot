@@ -43,17 +43,17 @@ namespace Commands.Helpers
                 }
 
                 // Check if both message content and embeds are empty or null, return null in that case
-                if (string.IsNullOrEmpty(embed.Description) && string.IsNullOrEmpty(embedTitle))
+                if (string.IsNullOrEmpty(embed.Description) && string.IsNullOrEmpty(embedTitle) && message.Attachments.Count == 0)
                 {
                     return null;
                 }
 
                 embed.Color = Bot.theme;
-                embed.Author = new EmbedAuthorBuilder().WithName($"Sender: {message.Author.Username}").WithIconUrl(message.Author.GetAvatarUrl());
+                embed.Author = new EmbedAuthorBuilder().WithName($"{message.Author.Username}").WithIconUrl(message.Author.GetAvatarUrl());
                 embed.Timestamp = message.Timestamp;
                 embed.Footer = new EmbedFooterBuilder().WithIconUrl(channel.Guild.IconUrl).WithText($"Server: {channel.Guild.Name}");
 
-                if (embed.Description.Length > 4096)
+                if (embed.Description != null && embed.Description.Length > 4096)
                 {
                     // Calculate the maximum length for the description
                     int overMaxLengthBy = embed.Description.Length + "...".Length - 4096;
