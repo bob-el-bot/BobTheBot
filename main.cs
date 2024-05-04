@@ -103,7 +103,7 @@ public static class Bot
                     TotalUsers += guild.MemberCount;
                 }
 
-                TotalUsers -= (Token == Config.GetTestToken()) ? 0 : 72000;
+                TotalUsers -= (Token == Config.GetTestToken()) ? 0 : 10000;
                 Console.WriteLine($"Total Users: {TotalUsers}");
 
                 // Update third party stats
