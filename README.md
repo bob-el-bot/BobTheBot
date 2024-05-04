@@ -27,7 +27,7 @@ Bob is constantly being updated, and improved! A road map of updates can be foun
 > **Note**
 The order is irrelevant, and features are added from one of the to do sections as the developer wants.
 
-- [See what's in the works!](https://github.com/users/Quantam-Studios/projects/3)
+- [See what's in the works!](https://github.com/orgs/bob-el-bot/projects/4)
 
 ### Suggestions
 Have an idea? Share it on the `feature-ideas` channel on [Bob's official server](https://discord.com/invite/HvGMRZD8jQ), for it to be considered.
