@@ -315,7 +315,7 @@ public static class Bot
                     return;
                 }
             }
-            
+
             if (server.AutoEmbedMessageLinks)
             {
                 DiscordMessageLinkParse.DiscordLink discordLink = DiscordMessageLinkParse.GetUrl(message.Content);
@@ -425,7 +425,7 @@ public static class Bot
 
             // Live Debugging
             // Server Logging
-            if (ctx.Interaction.GuildId != null && DebugGroup.LogGroup.ServersToLog.ContainsKey(ctx.Guild.Id))
+            if (ctx.Interaction.GuildId != null && DebugGroup.LogGroup.ServersToLog.ContainsKey((ulong)ctx.Interaction.GuildId))
             {
                 DebugGroup.LogGroup.ServerLogChannels.TryGetValue(ctx.Guild.Id, out RestTextChannel debugLogChannel);
                 await LogServerUseToDiscord(debugLogChannel, ctx, info);
