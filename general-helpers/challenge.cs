@@ -250,7 +250,11 @@ namespace Challenges
                 switch (gameType)
                 {
                     case GameType.RockPaperScissors:
-                        if ((isPlayer1 && winner == WinCases.Player1) || (!isPlayer1 && winner == WinCases.Player2))
+                        if (isPlayer1 && winner == WinCases.Player1)
+                        {
+                            user.RockPaperScissorsWins++;
+                        }
+                        else if (!isPlayer1 && winner == WinCases.Player2)
                         {
                             user.RockPaperScissorsWins++;
                         }
@@ -260,7 +264,11 @@ namespace Challenges
                         }
                         break;
                     case GameType.TicTacToe:
-                        if ((isPlayer1 && winner == WinCases.Player1) || (!isPlayer1 && winner == WinCases.Player2))
+                        if (isPlayer1 && winner == WinCases.Player1)
+                        {
+                            user.TicTacToeWins++;
+                        }
+                        else if (!isPlayer1 && winner == WinCases.Player2)
                         {
                             user.TicTacToeWins++;
                         }
@@ -270,7 +278,11 @@ namespace Challenges
                         }
                         break;
                     case GameType.Trivia:
-                        if ((isPlayer1 && winner == WinCases.Player1) || (!isPlayer1 && winner == WinCases.Player2))
+                        if (isPlayer1 && winner == WinCases.Player1)
+                        {
+                            user.TriviaWins++;
+                        }
+                        else if (!isPlayer1 && winner == WinCases.Player2)
                         {
                             user.TriviaWins++;
                         }
