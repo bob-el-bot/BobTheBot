@@ -172,7 +172,8 @@ public static class Bot
 
             if (server.Welcome == true)
             {
-                if (user.Guild.SystemChannel != null && user.Guild.GetUser(Client.CurrentUser.Id).GetPermissions(user.Guild.SystemChannel).SendMessages && user.Guild.GetUser(Client.CurrentUser.Id).GetPermissions(user.Guild.SystemChannel).ViewChannel)
+                ChannelPermissions permissions = user.Guild.GetUser(Client.CurrentUser.Id).GetPermissions(user.Guild.SystemChannel);
+                if (user.Guild.SystemChannel != null && permissions.SendMessages && permissions.ViewChannel)
                 {
                     if (server.CustomWelcomeMessage != null && server.CustomWelcomeMessage != "")
                     {
