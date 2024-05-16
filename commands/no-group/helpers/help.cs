@@ -1,4 +1,8 @@
+using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Text;
+using Discord;
 
 namespace Commands.Helpers
 {
@@ -27,8 +31,78 @@ namespace Commands.Helpers
         public string Description { get; set; }
     }
 
-    public class Help
+    public static class Help
     {
+        public static Embed GetCategoryEmbed(int index)
+        {
+            StringBuilder description = new();
+
+            description.AppendLine($"[Docs]({CommandGroups[index].Url}) {CommandGroups[index].Description}");
+
+            foreach (var command in CommandGroups[index].Commands)
+            {
+                var name = command.InheritGroupName ? $"{CommandGroups[index].Name} {command.Name}" : command.Name;
+                description.AppendLine($"- [Docs]({command.Url}) `/{name}` {command.Description}");
+				
+                if (command.Parameters != null)
+                {
+                    foreach (var parameter in command.Parameters)
+                    {
+                        description.AppendLine($"  - `{parameter.Name}` {parameter.Description}");
+                    }
+                }
+            }
+
+            var embed = new EmbedBuilder
+            {
+                Title = $"{CommandGroups[index].Emoji} {CommandGroups[index].Title} Commands.",
+                Description = description.ToString(),
+                Color = Bot.theme
+            };
+
+            return embed.Build();
+        }
+
+        public static MessageComponent GetComponents()
+        {
+            var components = new ComponentBuilder();
+
+            var selectMenu = new SelectMenuBuilder
+            {
+                MinValues = 1,
+                MaxValues = 1,
+                CustomId = "help",
+                Placeholder = "Select Category...",
+            };
+
+            int i = 0;
+            foreach (var category in Help.CommandGroups)
+            {
+                selectMenu.AddOption(label: category.Title, value: $"{i}", description: category.Description, emote: new Emoji(category.Emoji));
+                i++;
+            }
+
+            components.WithSelectMenu(selectMenu);
+            components.WithButton(Help.SupportServerButton)
+            .WithButton(Help.DocsButton);
+
+            return components.Build();
+        }
+
+        private static ButtonBuilder SupportServerButton = new ButtonBuilder
+        {
+            Label = "Support Server",
+            Style = ButtonStyle.Link,
+            Url = "https://discord.com/invite/HvGMRZD8jQ"
+        };
+
+        private static ButtonBuilder DocsButton = new ButtonBuilder
+        {
+            Label = "Web Docs",
+            Style = ButtonStyle.Link,
+            Url = "https://docs.bobthebot.net"
+        };
+
         public static CommandInfoGroup[] CommandGroups =
         {
             new CommandInfoGroup
@@ -58,8 +132,7 @@ namespace Commands.Helpers
                             new ParameterInfo
                             {
                                 Name = "sides",
-                                Description =
-                                    "The number of sides you want the dice to have (atleast 0)"
+                                Description = "The number of sides you want the dice to have (atleast 0)"
                             }
                         }
                     },
