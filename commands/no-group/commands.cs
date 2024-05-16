@@ -104,6 +104,7 @@ namespace Commands
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.GuildInstall)]
+        [RequireBotPermission(ChannelPermission.ViewChannel)]
         [SlashCommand("tic-tac-toe", "Play a game of Tic Tac Toe.")]
         public async Task TicTacToe([Summary("opponent", "Leave empty to verse an AI.")] SocketUser opponent = null)
         {
@@ -184,6 +185,7 @@ namespace Commands
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.GuildInstall)]
+        [RequireBotPermission(ChannelPermission.ViewChannel)]
         [SlashCommand("trivia", "Play a game of trivia.")]
         public async Task Trivia([Summary("opponent", "Leave empty to play alone.")] SocketUser opponent = null)
         {
@@ -251,6 +253,7 @@ namespace Commands
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.GuildInstall)]
+        [RequireBotPermission(ChannelPermission.ViewChannel)]
         [SlashCommand("rock-paper-scissors", "Play a game of Rock Paper Scissors.")]
         public async Task RPS([Summary("opponent", "Leave empty to verse an AI.")] SocketUser opponent = null)
         {
