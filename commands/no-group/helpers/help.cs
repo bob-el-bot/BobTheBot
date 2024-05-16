@@ -76,15 +76,15 @@ namespace Commands.Helpers
             };
 
             int i = 0;
-            foreach (var category in Help.CommandGroups)
+            foreach (var category in CommandGroups)
             {
                 selectMenu.AddOption(label: category.Title, value: $"{i}", description: category.Description, emote: new Emoji(category.Emoji));
                 i++;
             }
 
             components.WithSelectMenu(selectMenu);
-            components.WithButton(Help.SupportServerButton)
-            .WithButton(Help.DocsButton);
+            components.WithButton(SupportServerButton)
+            .WithButton(DocsButton);
 
             return components.Build();
         }
