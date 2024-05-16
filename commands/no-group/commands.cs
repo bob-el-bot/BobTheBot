@@ -474,7 +474,7 @@ namespace Commands
                 }
             };
 
-            var components = new ComponentBuilder().WithButton(label: "Review Bob!", style: ButtonStyle.Link, url: "https://top.gg/bot/705680059809398804#reviews");
+            var components = new ComponentBuilder().WithButton(label: "Review Bob!", style: ButtonStyle.Link, emote: new Emoji("✍️"), url: "https://top.gg/bot/705680059809398804#reviews");
 
             // Respond
             await RespondAsync(embed: embed.Build(), components: components.Build());
@@ -495,7 +495,7 @@ namespace Commands
                 }
             };
 
-            var components = new ComponentBuilder().WithButton(label: "Vote for Bob!", style: ButtonStyle.Link, url: "https://top.gg/bot/705680059809398804/vote");
+            var components = new ComponentBuilder().WithButton(label: "Vote for Bob!", style: ButtonStyle.Link, emote: new Emoji("🗳️"), url: "https://top.gg/bot/705680059809398804/vote");
 
             // Respond
             await RespondAsync(embed: embed.Build(), components: components.Build());
