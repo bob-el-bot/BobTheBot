@@ -620,6 +620,9 @@ namespace Commands
                 Color = Bot.theme
             };
 
+            embed.AddField(name: "Categories", value: $"`{Help.CommandGroups.Length}`", inline: true)
+            .AddField(name: "Commands", value: $"`{Help.GetCommandCount()}`", inline: true);
+
             await FollowupAsync(embed: embed.Build(), components: Help.GetComponents());
         }
 

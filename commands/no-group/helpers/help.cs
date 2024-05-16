@@ -103,6 +103,21 @@ namespace Commands.Helpers
             Url = "https://docs.bobthebot.net"
         };
 
+        public static int GetCommandCount()
+        {
+            int total = 0;
+
+            foreach (var group in CommandGroups)
+            {
+                foreach (var command in group.Commands)
+                {
+                    total++;
+                }
+            }
+
+            return total;
+        }
+
         public static CommandInfoGroup[] CommandGroups =
         {
             new() {
