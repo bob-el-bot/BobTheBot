@@ -885,7 +885,21 @@ namespace Commands.Helpers
                                 Description = "The users to hug."
                             }
                         }
-                    }
+                    },
+                    new CommandInfo
+                    {
+                        Name = "vote",
+                        InheritGroupName = false,
+                        Description = "Get a link to upvote Bob on Top.GG",
+                        Url = "https://docs.bobthebot.net#vote",
+                    },
+                    new CommandInfo
+                    {
+                        Name = "review",
+                        InheritGroupName = false,
+                        Description = "Get a link to review Bob on Top.GG",
+                        Url = "https://docs.bobthebot.net#review",
+                    },
                 }
             },
             new() {

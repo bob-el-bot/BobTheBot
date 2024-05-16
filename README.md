@@ -117,6 +117,8 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/poll [prompt] [option]*4` Create a poll.
 - `/ship [user]*2` See how good of a match 2 users are.
 - `/hug [user]*5` Show your friends some love with a hug.
+- `/vote` Get a link to upvote Bob on Top.GG.
+- `/review` Get a link to review Bob on Top.GG.
 - `/hi` Say hi to Bob.
 
 ### 🔎 Preview commands:
