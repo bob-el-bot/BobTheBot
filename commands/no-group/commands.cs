@@ -518,7 +518,8 @@ namespace Commands
             Color finalColor = Colors.TryGetColor(color);
 
             // Check if Bob has permission to send messages in given channel
-            if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel).SendMessages || !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel).ViewChannel)
+            ChannelPermissions permissions = Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel);
+            if (!Context.Interaction.IsDMInteraction && (!permissions.SendMessages || !permissions.ViewChannel))
             {
                 await RespondAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{Context.Channel.Id}>\n- Try giving Bob the following pemrissions: `View Channel`, `Send Messages`.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
