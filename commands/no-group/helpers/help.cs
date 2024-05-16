@@ -43,7 +43,7 @@ namespace Commands.Helpers
             {
                 var name = command.InheritGroupName ? $"{CommandGroups[index].Name} {command.Name}" : command.Name;
                 description.AppendLine($"- [Docs]({command.Url}) `/{name}` {command.Description}");
-				
+
                 if (command.Parameters != null)
                 {
                     foreach (var parameter in command.Parameters)
@@ -328,7 +328,7 @@ namespace Commands.Helpers
                             new ParameterInfo
                             {
                                 Name = "user",
-                                Description = "User whose profile to display."
+                                Description = "User whose profile to display. If left empty it display your own."
                             }
                         }
                     },
@@ -343,7 +343,7 @@ namespace Commands.Helpers
                             new ParameterInfo
                             {
                                 Name = "color",
-                                Description = "Color to set for your profile."
+                                Description = "A color name (like \"purple\"), or a valid hex code (like \"#8D52FD\")"
                             }
                         }
                     },
@@ -358,7 +358,7 @@ namespace Commands.Helpers
                             new ParameterInfo
                             {
                                 Name = "badge",
-                                Description = "Badge to get information about."
+                                Description = "The (optional) badge you want to learn about. If left empty, information for all badges will be shown."
                             }
                         }
                     }
@@ -384,17 +384,17 @@ namespace Commands.Helpers
                             new ParameterInfo
                             {
                                 Name = "quote",
-                                Description = "The quote to share."
+                                Description = "The text you want quoted. Quotation marks (\") are automatically added."
                             },
                             new ParameterInfo
                             {
                                 Name = "user",
-                                Description = "User to attribute the quote to."
+                                Description = "The user the quote belongs to."
                             },
                             new ParameterInfo
                             {
                                 Name = "tag * 3",
-                                Description = "Up to three tags for the quote."
+                                Description = "You can optionally add a tag to make searching them easier."
                             }
                         }
                     },
@@ -409,7 +409,7 @@ namespace Commands.Helpers
                             new ParameterInfo
                             {
                                 Name = "channel",
-                                Description = "Channel to set for quotes."
+                                Description = "The text channel you want to use as the quotes channel for the server."
                             }
                         }
                     },
@@ -417,14 +417,14 @@ namespace Commands.Helpers
                     {
                         Name = "set-max-length",
                         InheritGroupName = true,
-                        Description = "Sets the maximum length of quotes for the server.",
+                        Description = "Sets the maximum quote length for the server (Discord has a limit of 4096).",
                         Url = "https://docs.bobthebot.net#quote-set-max-length",
                         Parameters = new[]
                         {
                             new ParameterInfo
                             {
                                 Name = "length",
-                                Description = "Maximum length for quotes."
+                                Description = "The amount of characters you want, at most, in a quote."
                             }
                         }
                     },
@@ -432,14 +432,14 @@ namespace Commands.Helpers
                     {
                         Name = "set-min-length",
                         InheritGroupName = true,
-                        Description = "Sets the minimum length of quotes for the server.",
+                        Description = "Sets the minimum quote length for the server (must be atleast 0).",
                         Url = "https://docs.bobthebot.net#quote-set-min-length",
                         Parameters = new[]
                         {
                             new ParameterInfo
                             {
                                 Name = "length",
-                                Description = "Minimum length for quotes."
+                                Description = "The amount of characters you want, at least, in a quote."
                             }
                         }
                     }
@@ -465,7 +465,7 @@ namespace Commands.Helpers
                             new ParameterInfo
                             {
                                 Name = "welcome",
-                                Description = "Enable or disable welcome messages."
+                                Description = "Enable or disable welcome messages. Choose from: True, False."
                             }
                         }
                     },
@@ -473,31 +473,23 @@ namespace Commands.Helpers
                     {
                         Name = "set-message",
                         InheritGroupName = true,
-                        Description = "Set the welcome message to the given string.",
+                        Description = "Set a custom message to welcome new users with.",
                         Url = "https://docs.bobthebot.net#welcome-set-message",
                         Parameters = new[]
                         {
                             new ParameterInfo
                             {
                                 Name = "message",
-                                Description = "Message to set for welcoming new members."
+                                Description = "The message you want sent to welcome users to your server. Type @ where you want a ping and/or mention to be."
                             }
                         }
                     },
-                    new CommandInfo
+					new CommandInfo
                     {
-                        Name = "set-channel",
+                        Name = "remove-message",
                         InheritGroupName = true,
-                        Description = "Set the welcome message channel to the given channel.",
-                        Url = "https://docs.bobthebot.net#welcome-set-channel",
-                        Parameters = new[]
-                        {
-                            new ParameterInfo
-                            {
-                                Name = "channel",
-                                Description = "Channel to set for welcome messages."
-                            }
-                        }
+                        Description = "Bob will stop using the custom message to welcome users.",
+                        Url = "https://docs.bobthebot.net#welcome-remove-message",
                     }
                 }
             },
@@ -521,12 +513,12 @@ namespace Commands.Helpers
                             new ParameterInfo
                             {
                                 Name = "publish",
-                                Description = "Enable or disable publishing."
+                                Description = "Enable or disable publishing. Choose from: True, False."
                             },
                             new ParameterInfo
                             {
                                 Name = "channel",
-                                Description = "The channel to publish announcements in."
+                                Description = "The announcement channel to publish announcements in."
                             }
                         }
                     },
@@ -534,14 +526,14 @@ namespace Commands.Helpers
                     {
                         Name = "preview-github",
                         InheritGroupName = true,
-                        Description = "Bob will preview all valid GitHub links in the server.",
+                        Description = "Bob will preview all valid github links (code files, issues, and pull requests).",
                         Url = "https://docs.bobthebot.net#auto-preview-github",
                         Parameters = new[]
                         {
                             new ParameterInfo
                             {
                                 Name = "preview",
-                                Description = "Enable or disable GitHub link previews."
+                                Description = "Enable or disable GitHub link previews. Choose from: True, False."
                             }
                         }
                     },
@@ -550,14 +542,14 @@ namespace Commands.Helpers
                         Name = "preview-messages",
                         InheritGroupName = true,
                         Description =
-                            "Bob will preview all valid Discord message links in the server.",
+                            "Bob will preview all valid Discord message links.",
                         Url = "https://docs.bobthebot.net#auto-preview-messages",
                         Parameters = new[]
                         {
                             new ParameterInfo
                             {
                                 Name = "preview",
-                                Description = "Enable or disable message link previews."
+                                Description = "Enable or disable message link previews. Choose from: True, False."
                             }
                         }
                     }
@@ -826,17 +818,17 @@ namespace Commands.Helpers
                             new ParameterInfo
                             {
                                 Name = "title",
-                                Description = "The title of the announcement."
+                                Description = "The title of the announcement (the embed title)."
                             },
                             new ParameterInfo
                             {
                                 Name = "description",
-                                Description = "The description of the announcement."
+                                Description = "The in-depth announcement (the embed description). Use \"###\" for headings and \"-\" for lists."
                             },
                             new ParameterInfo
                             {
                                 Name = "color",
-                                Description = "The color of the embed."
+                                Description = "The color of the embd. A color name (like \"purple\"), or a valid hex code (like \"#8D52FD\")"
                             }
                         }
                     },
@@ -908,7 +900,7 @@ namespace Commands.Helpers
                             new ParameterInfo
                             {
                                 Name = "link",
-                                Description = "The link to the GitHub file."
+                                Description = "The GitHub file link you want to share. Character indicators are ignored. Valid formats include: `https://github.com/bob-el-bot/website/blob/main/index.html#L15` and `https://github.com/bob-el-bot/website/blob/main/index.html#L15-L18`"
                             }
                         }
                     },
@@ -923,7 +915,7 @@ namespace Commands.Helpers
                             new ParameterInfo
                             {
                                 Name = "link",
-                                Description = "The link to the GitHub pull request."
+                                Description = "The link to the GitHub pull request. Valid formats include: `https://github.com/bob-el-bot/BobTheBot/pull/149`"
                             }
                         }
                     },
@@ -938,7 +930,7 @@ namespace Commands.Helpers
                             new ParameterInfo
                             {
                                 Name = "link",
-                                Description = "The link to the GitHub issue."
+                                Description = "The link to the GitHub issue. `https://github.com/bob-el-bot/BobTheBot/issues/153`"
                             }
                         }
                     },
@@ -953,7 +945,7 @@ namespace Commands.Helpers
                             new ParameterInfo
                             {
                                 Name = "link",
-                                Description = "The link to the Discord message."
+                                Description = "The link to the Discord message. Valid formats include: `https://discord.com/channels/1058077635692994651/1058081599222186074/1111715651476799619`"
                             }
                         }
                     }
@@ -1000,7 +992,7 @@ namespace Commands.Helpers
                     {
                         Name = "analyze-link",
                         InheritGroupName = false,
-                        Description = "See where a link will take you, and check for rick rolls.",
+                        Description = "See where a link will take you, and check for rick rolls. Valid formats include: `bobthebot.net` and `https://bobthebot.net`",
                         Url = "https://docs.bobthebot.net#analyze-link"
                     },
                     new CommandInfo
