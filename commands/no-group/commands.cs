@@ -464,8 +464,20 @@ namespace Commands
         [SlashCommand("review", "Leave a review for Bob on Top.gg")]
         public async Task Review()
         {
+            var embed = new EmbedBuilder
+            {
+                Title = "<:bob:1161511472791293992> Review Bob on Top.GG",
+                Color = Bot.theme,
+                Footer = new EmbedFooterBuilder
+                {
+                    Text = "Top.gg is not associated with BobTheBot."
+                }
+            };
+
+            var components = new ComponentBuilder().WithButton(label: "Review Bob!", style: ButtonStyle.Link, url: "https://top.gg/bot/705680059809398804#reviews");
+
             // Respond
-            await RespondAsync(text: "📝 If you're enjoying BobTheBot, please consider leaving a review on Top.gg!\n[review here](https://top.gg/bot/705680059809398804#reviews)");
+            await RespondAsync(embed: embed.Build(), components: components.Build());
         }
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
@@ -473,8 +485,20 @@ namespace Commands
         [SlashCommand("vote", "Vote for Bob on Top.gg")]
         public async Task Vote()
         {
+            var embed = new EmbedBuilder
+            {
+                Title = "<:bob:1161511472791293992> Upvote Bob on Top.GG",
+                Color = Bot.theme,
+                Footer = new EmbedFooterBuilder
+                {
+                    Text = "Top.gg is not associated with BobTheBot."
+                }
+            };
+
+            var components = new ComponentBuilder().WithButton(label: "Vote for Bob!", style: ButtonStyle.Link, url: "https://top.gg/bot/705680059809398804/vote");
+
             // Respond
-            await RespondAsync(text: "**Top.gg is not associated with BobTheBot and so ads cannot be removed by Bob's creators.**\n\nVote for Bob!\n[vote here](https://top.gg/bot/705680059809398804/vote)");
+            await RespondAsync(embed: embed.Build(), components: components.Build());
         }
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
