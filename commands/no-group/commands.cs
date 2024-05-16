@@ -636,7 +636,7 @@ namespace Commands
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("confess", "Bob will send someone a message anonymously")]
-        public async Task confess(string message, SocketUser user, string signoff)
+        public async Task Confess(string message, SocketUser user, string signoff)
         {
             try
             {
