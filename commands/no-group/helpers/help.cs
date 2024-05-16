@@ -93,6 +93,7 @@ namespace Commands.Helpers
         {
             Label = "Support Server",
             Style = ButtonStyle.Link,
+            Emote = new Emoji("🏰"),
             Url = "https://discord.com/invite/HvGMRZD8jQ"
         };
 
@@ -100,6 +101,7 @@ namespace Commands.Helpers
         {
             Label = "Web Docs",
             Style = ButtonStyle.Link,
+            Emote = new Emoji("🌐"),
             Url = "https://docs.bobthebot.net"
         };
 
