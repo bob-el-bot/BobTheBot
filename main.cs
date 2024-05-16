@@ -172,7 +172,8 @@ public static class Bot
 
             if (server.Welcome == true)
             {
-                if (user.Guild.SystemChannel != null && user.Guild.GetUser(Client.CurrentUser.Id).GetPermissions(user.Guild.SystemChannel).SendMessages && user.Guild.GetUser(Client.CurrentUser.Id).GetPermissions(user.Guild.SystemChannel).ViewChannel)
+                ChannelPermissions permissions = user.Guild.GetUser(Client.CurrentUser.Id).GetPermissions(user.Guild.SystemChannel);
+                if (user.Guild.SystemChannel != null && permissions.SendMessages && permissions.ViewChannel)
                 {
                     if (server.CustomWelcomeMessage != null && server.CustomWelcomeMessage != "")
                     {
@@ -362,11 +363,11 @@ public static class Bot
                 case InteractionCommandError.UnmetPrecondition:
                     if (ctx.Interaction.HasResponded)
                     {
-                        await ctx.Interaction.FollowupAsync($"❌ Something went wrong: {res.ErrorReason}", ephemeral: true);
+                        await ctx.Interaction.FollowupAsync($"❌ Something went wrong:\n- {res.ErrorReason}", ephemeral: true);
                     }
                     else
                     {
-                        await ctx.Interaction.RespondAsync($"❌ Something went wrong: {res.ErrorReason}", ephemeral: true);
+                        await ctx.Interaction.RespondAsync($"❌ Something went wrong:\n- {res.ErrorReason}", ephemeral: true);
                     }
                     break;
                 case InteractionCommandError.UnknownCommand:

@@ -104,6 +104,7 @@ namespace Commands
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.GuildInstall)]
+        [RequireBotPermission(ChannelPermission.ViewChannel)]
         [SlashCommand("tic-tac-toe", "Play a game of Tic Tac Toe.")]
         public async Task TicTacToe([Summary("opponent", "Leave empty to verse an AI.")] SocketUser opponent = null)
         {
@@ -184,6 +185,7 @@ namespace Commands
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.GuildInstall)]
+        [RequireBotPermission(ChannelPermission.ViewChannel)]
         [SlashCommand("trivia", "Play a game of trivia.")]
         public async Task Trivia([Summary("opponent", "Leave empty to play alone.")] SocketUser opponent = null)
         {
@@ -251,6 +253,7 @@ namespace Commands
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.GuildInstall)]
+        [RequireBotPermission(ChannelPermission.ViewChannel)]
         [SlashCommand("rock-paper-scissors", "Play a game of Rock Paper Scissors.")]
         public async Task RPS([Summary("opponent", "Leave empty to verse an AI.")] SocketUser opponent = null)
         {
@@ -461,8 +464,20 @@ namespace Commands
         [SlashCommand("review", "Leave a review for Bob on Top.gg")]
         public async Task Review()
         {
+            var embed = new EmbedBuilder
+            {
+                Title = "<:bob:1161511472791293992> Review Bob on Top.GG",
+                Color = Bot.theme,
+                Footer = new EmbedFooterBuilder
+                {
+                    Text = "Top.gg is not associated with BobTheBot."
+                }
+            };
+
+            var components = new ComponentBuilder().WithButton(label: "Review Bob!", style: ButtonStyle.Link, emote: new Emoji("✍️"), url: "https://top.gg/bot/705680059809398804#reviews");
+
             // Respond
-            await RespondAsync(text: "📝 If you're enjoying BobTheBot, please consider leaving a review on Top.gg!\n[review here](https://top.gg/bot/705680059809398804#reviews)");
+            await RespondAsync(embed: embed.Build(), components: components.Build());
         }
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
@@ -470,8 +485,20 @@ namespace Commands
         [SlashCommand("vote", "Vote for Bob on Top.gg")]
         public async Task Vote()
         {
+            var embed = new EmbedBuilder
+            {
+                Title = "<:bob:1161511472791293992> Upvote Bob on Top.GG",
+                Color = Bot.theme,
+                Footer = new EmbedFooterBuilder
+                {
+                    Text = "Top.gg is not associated with BobTheBot."
+                }
+            };
+
+            var components = new ComponentBuilder().WithButton(label: "Vote for Bob!", style: ButtonStyle.Link, emote: new Emoji("🗳️"), url: "https://top.gg/bot/705680059809398804/vote");
+
             // Respond
-            await RespondAsync(text: "**Top.gg is not associated with BobTheBot and so ads cannot be removed by Bob's creators.**\n\nVote for Bob!\n[vote here](https://top.gg/bot/705680059809398804/vote)");
+            await RespondAsync(embed: embed.Build(), components: components.Build());
         }
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
@@ -491,7 +518,8 @@ namespace Commands
             Color finalColor = Colors.TryGetColor(color);
 
             // Check if Bob has permission to send messages in given channel
-            if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel).SendMessages || !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel).ViewChannel)
+            ChannelPermissions permissions = Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel);
+            if (!Context.Interaction.IsDMInteraction && (!permissions.SendMessages || !permissions.ViewChannel))
             {
                 await RespondAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{Context.Channel.Id}>\n- Try giving Bob the following pemrissions: `View Channel`, `Send Messages`.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
@@ -580,109 +608,38 @@ namespace Commands
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
-        [SlashCommand("help", "Bob will DM you all relevant information for every command.")]
-        public async Task help()
+        [SlashCommand("help", "Bob will share info about every command sorted by category.")]
+        public async Task HelpCommand()
         {
-            await DeferAsync(ephemeral: true);
+            await DeferAsync();
 
-            try
+            var embed = new EmbedBuilder
             {
-                var firstEmbed = new EmbedBuilder
-                {
-                    Title = $"📖 Here is a list of all of my commands.",
-                    Color = Bot.theme,
-                    Description = @"See the [Docs](https://docs.bobthebot.net) for more in depth info.
-**🎲 Randomly Generated (RNG):** [RNG Docs](https://docs.bobthebot.net#rng)
-- `/random color` Get a color with Hex, CMYK, HSL, HSV and RGB codes. [Docs](https://docs.bobthebot.net#random-color)
-- `/random dice-roll [sides]` Roll a die with a specified # of sides. [Docs](https://docs.bobthebot.net#random-dice-roll)
-- `/random coin-toss` Flip a coin. [Docs](https://docs.bobthebot.net#random-coin-toss)
-- `/random quote [prompt]` Get a random quote. [Docs](https://docs.bobthebot.net#random-quote)
-  - `[prompt]`choices: This is optional, use `/quote-prompts` to view all valid prompts.
-- `/random dad-joke` Get a random dad joke. [Docs](https://docs.bobthebot.net#random-dad-joke)
-- `/random fact` Get an outrageous fact. [Docs](https://docs.bobthebot.net#random-fact)
-- `/random 8ball [prompt]` Get an 8 ball response to a prompt. [Docs](https://docs.bobthebot.net#random-8ball)
-- `/random dog` Get a random picture of a dog. [Docs](https://docs.bobthebot.net#random-dog)
-- `/random date [earliestYear] [latestYear]` Get a random date between the inputted years. [Docs](https://docs.bobthebot.net#random-date)
-- `/random advice` Get a random piece of advice. [Docs](https://docs.bobthebot.net#random-advice)
-**🎮 Games:** [Games Docs](https://docs.bobthebot.net#games)
-- `trivia [opponent]` Play a game of trivia with or without someone. [Docs](https://docs.bobthebot.net#trivia)
-- `/tic-tac-toe [opponent]` Play Bob or a user in a game of Tic Tac Toe. [Docs](https://docs.bobthebot.net#tic-tac-toe)
-- `/rock-paper-scissors [opponent]` Play Bob or a user in a game of Rock Paper Scissors. [Docs](https://docs.bobthebot.net#rock-paper-scissors)
-- `/master-mind new-game` Play a game of Master Mind, the rules will shared upon usage. [Docs](https://docs.bobthebot.net#master-mind-new)
-- `/master-mind guess` Make a guess in a game of Master Mind. [Docs](https://docs.bobthebot.net#master-mind-guess)
-**👤 Profiles:** [Profile Docs](https://docs.bobthebot.net#profile)
-- `/profile display [user]` Displays the specified user's profile. [Docs](https://docs.bobthebot.net#profile-display)
-- `/profile set-color [color]` Sets your profile color. [Docs](https://docs.bobthebot.net#profile-set-color)
-- `/profile badge-info [badge]` Shows how to unlock the given badge.
-**🖊️ Quoting:** [Quoting Docs](https://docs.bobthebot.net#quoting)
-- `/quote new [quote] [user] [tag]*3` Formats and shares the quote in designated channel. [Docs](https://docs.bobthebot.net#quote-new)
-- `/quote channel [channel]` Sets the quote channel for the server. [Docs](https://docs.bobthebot.net#quote-channel)
-- `/quote set-max-length [length]` Sets the maximum length of quotes for the server. [Docs](https://docs.bobthebot.net#quote-set-max-length)
-- `/quote set-min-length [length]` Sets the minimum length of quotes for the server. [Docs](https://docs.bobthebot.net#quote-set-min-length)
-**👋 Welcoming:** [Welcome Docs](https://docs.bobthebot.net#welcome)
-- `/welcome toggle [welcome]` Bob will send welcome messages to new server members. [Docs](https://docs.bobthebot.net#welcome-toggle)
-- `/welcome set-message [message]` Set a custom message to welcome new users with. [Docs](https://docs.bobthebot.net#welcome-set-message)
-- `/welcome remove-message` Bob will stop using the custom message to welcome users. [Docs](https://docs.bobthebot.net#welcome-remove-message)
-**🖨️ Auto commands:** [Auto Docs](https://docs.bobthebot.net#auto)
-- `/auto publish-announcements [publish] [channel]` Bob will publish all messages sent in the given channel. [Docs](https://docs.bobthebot.net#auto-publish-announcements)
-- `/auto preview-github [preview]` Bob will preview all valid GitHub links in the server. [Docs](https://docs.bobthebot.net#auto-preview-github)
-- `/auto preview-messages [preview]` Bob will preview all valid Discord message links in the server. [Docs](https://docs.bobthebot.net#auto-preview-messages)"
-                };
+                Title = "📖 All of My Commands.",
+                Description = "Select a category to see info about relevant commands.",
+                Color = Bot.theme
+            };
 
-                var secondEmbed = new EmbedBuilder
-                {
-                    Title = $"",
-                    Color = Bot.theme,
-                    Description = @"**🔒 Encryption commands:** [Encryption Docs](https://docs.bobthebot.net#encrypt)
-- `/encrypt a1z26 [message]` Encrypts your message by swapping letters to their corresponding number. [Docs](https://docs.bobthebot.net#encrypt-a1z26)
-- `/encrypt atbash [message]` Encrypts your message by swapping letters to their opposite position. [Docs](https://docs.bobthebot.net#encrypt-atbash)
-- `/encrypt caesar [message] [shift]` Encrypts your message by shifting the letters the specified amount. [Docs](https://docs.bobthebot.net#encrypt-caesar)
-- `/encrypt morse [message]` Encrypts your message using Morse code. [Docs](https://docs.bobthebot.net#encrypt-morse)
-- `/encrypt vigenere [message] [key]` Encrypts your message using a specified key. [Docs](https://docs.bobthebot.net#encrypt-vigenere)
-**🔓 Decryption commands:** [Decryption Docs](https://docs.bobthebot.net#decrypt)
-- `/decrypt a1z26 [message]` Decrypts your message by swapping letters to their corresponding number [Docs](https://docs.bobthebot.net#decrypt-a1z26).
-- `/decrypt atbash [message]` Decrypts your message by swapping letters to their opposite position [Docs](https://docs.bobthebot.net#decrypt-atbash).
-- `/decrypt caesar [message] [shift]` Decrypts your message by shifting the letters the specified amount [Docs](https://docs.bobthebot.net#decrypt-caesar).
-- `/decrypt morse [message]` Decrypts your message using Morse code [Docs](https://docs.bobthebot.net#decrypt-morse).
-- `/decrypt vigenere [message] [key]` Decrypts your message using a specified key [Docs](https://docs.bobthebot.net#decrypt-vigenere).
-**✨ Other:** [Other Docs](https://docs.bobthebot.net#other)
-- `/fonts [text] [font]` Change your text to a different font. [Docs](https://docs.bobthebot.net#fonts)
-  - `[font]` choices: 𝖒𝖊𝖉𝖎𝖊𝖛𝖆𝖑, 𝓯𝓪𝓷𝓬𝔂, 𝕠𝕦𝕥𝕝𝕚𝕟𝕖𝕕, ɟןıddǝp, s̷l̷̷a̷s̷h̷e̷d̷, and 🄱🄾🅇🄴🄳.
-- `/confess [message] [user] [signoff]` Have Bob DM a user a message. [Docs](https://docs.bobthebot.net#confess)
-- `/announce [title] [description] [color]` Have a fancy embed message sent. [Docs](https://docs.bobthebot.net#announce)
-- `/poll [prompt] [option]*4` Create a poll. [Docs](https://docs.bobthebot.net#poll)
-  - `[option]*4` usage: You must provide 2-4 options. These are essentially the poll's choices.
-- `/ship [user]*2` See how good of a match 2 users are. [Docs](https://docs.bobthebot.net#ship)
-- `/hug [user]*5` Show your friends some love with a hug. [Docs](https://docs.bobthebot.net#hug)
-**🔎 Preview commands:** [Preview Docs](https://docs.bobthebot.net#preview)
-- `/preview code [link]` Preview specific lines of code from a file on GitHub. [Docs](https://docs.bobthebot.net#preview-code)
-- `/preview pull-request [link]` Preview a pull request from GitHub right on Discord. [Docs](https://docs.bobthebot.net#preview-pull-request)
-- `/preview issue [link]` Preview an issue from GitHub right on Discord. [Docs](https://docs.bobthebot.net#preview-issue)
-- `/preview message [link]` Preview a Discord message from any server Bob is in. [Docs](https://docs.bobthebot.net#preview-message)
-**🗄️ Informational / Help:** [Info Docs](https://docs.bobthebot.net#info)
-- `/premium` Ensures Bob knows you have premium! If not you will be given a button to get it! [Docs](https://docs.bobthebot.net#premium)
-- `/new` See the latest updates to Bob. [Docs](https://docs.bobthebot.net#new)
-- `/quote-prompts` See all valid prompts for `/random quote`. [Docs](https://docs.bobthebot.net#quote-prompts)
-- `/ping` Find the client's latency. [Docs](https://docs.bobthebot.net#ping)
-- `/analyze-link` See where a link will take you, and check for rick rolls. [Docs](https://docs.bobthebot.net#analyze-link)
-- `/info` Learn about Bob. [Docs](https://docs.bobthebot.net#info)
-- `/support` Sends an invite to Bob's support Server. [Docs](https://docs.bobthebot.net#support)"
-                };
+            embed.AddField(name: "Categories", value: $"`{Help.CommandGroups.Length}`", inline: true)
+            .AddField(name: "Commands", value: $"`{Help.GetCommandCount()}`", inline: true);
 
-                await Context.User.SendMessageAsync(embed: firstEmbed.Build());
-                await Context.User.SendMessageAsync(embed: secondEmbed.Build());
-                await FollowupAsync(text: $"📪 Check your DMs.", ephemeral: true);
-            }
-            catch
-            {
-                await FollowupAsync(text: $"❌ Bob could not share the command list via DMs.\n- Try opening your DMs (making them open).\n- Or you can simply view the commands list here: [docs.bobthebot.net](<https://bobthebot.net/commands.html>)", ephemeral: true);
-            }
+            await FollowupAsync(embed: embed.Build(), components: Help.GetComponents());
+        }
+
+        [ComponentInteraction("help")]
+        public async Task HelpOptionsHandler()
+        {
+            await DeferAsync();
+
+            SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
+
+            await component.ModifyOriginalResponseAsync(x => { x.Embed = Help.GetCategoryEmbed(int.Parse(component.Data.Values.FirstOrDefault())); });
         }
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("confess", "Bob will send someone a message anonymously")]
-        public async Task confess(string message, SocketUser user, string signoff)
+        public async Task Confess(string message, SocketUser user, string signoff)
         {
             try
             {
