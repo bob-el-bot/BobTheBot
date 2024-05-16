@@ -363,11 +363,11 @@ public static class Bot
                 case InteractionCommandError.UnmetPrecondition:
                     if (ctx.Interaction.HasResponded)
                     {
-                        await ctx.Interaction.FollowupAsync($"❌ Something went wrong: {res.ErrorReason}", ephemeral: true);
+                        await ctx.Interaction.FollowupAsync($"❌ Something went wrong:\n- {res.ErrorReason}", ephemeral: true);
                     }
                     else
                     {
-                        await ctx.Interaction.RespondAsync($"❌ Something went wrong: {res.ErrorReason}", ephemeral: true);
+                        await ctx.Interaction.RespondAsync($"❌ Something went wrong:\n- {res.ErrorReason}", ephemeral: true);
                     }
                     break;
                 case InteractionCommandError.UnknownCommand:
