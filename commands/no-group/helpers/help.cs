@@ -132,7 +132,7 @@ namespace Commands.Helpers
                             new ParameterInfo
                             {
                                 Name = "sides",
-                                Description = "The number of sides you want the dice to have (atleast 0)"
+                                Description = "The number of sides you want the dice to have (atleast **0**)"
                             }
                         }
                     },
@@ -207,7 +207,7 @@ namespace Commands.Helpers
                             {
                                 Name = "earliestYear",
                                 Description =
-                                    "The earliest year you want the date to occur in (atleast 0)"
+                                    "The earliest year you want the date to occur in (atleast **0**)"
                             },
                             new ParameterInfo
                             {
@@ -417,7 +417,7 @@ namespace Commands.Helpers
                     {
                         Name = "set-max-length",
                         InheritGroupName = true,
-                        Description = "Sets the maximum quote length for the server (Discord has a limit of 4096).",
+                        Description = "Sets the maximum quote length for the server (Discord has a limit of **4096**).",
                         Url = "https://docs.bobthebot.net#quote-set-max-length",
                         Parameters = new[]
                         {
@@ -432,7 +432,7 @@ namespace Commands.Helpers
                     {
                         Name = "set-min-length",
                         InheritGroupName = true,
-                        Description = "Sets the minimum quote length for the server (must be atleast 0).",
+                        Description = "Sets the minimum quote length for the server (must be atleast **0**).",
                         Url = "https://docs.bobthebot.net#quote-set-min-length",
                         Parameters = new[]
                         {
