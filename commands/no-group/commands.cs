@@ -608,8 +608,8 @@ namespace Commands
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
-        [SlashCommand("help", "Bob will DM you all relevant information for every command.")]
-        public async Task help()
+        [SlashCommand("help", "Bob will share info about every command sorted by category.")]
+        public async Task HelpCommand()
         {
             await DeferAsync();
 
