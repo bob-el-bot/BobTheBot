@@ -55,7 +55,7 @@ namespace Commands.Helpers
 
             var embed = new EmbedBuilder
             {
-                Title = $"{CommandGroups[index].Emoji} {CommandGroups[index].Title} Commands.",
+                Title = $"{CommandGroups[index].Emoji} {CommandGroups[index].Title} | {CommandGroups[index].Commands.Length} Commands.",
                 Description = description.ToString(),
                 Color = Bot.theme
             };
@@ -89,14 +89,14 @@ namespace Commands.Helpers
             return components.Build();
         }
 
-        private static ButtonBuilder SupportServerButton = new ButtonBuilder
+        private static readonly ButtonBuilder SupportServerButton = new()
         {
             Label = "Support Server",
             Style = ButtonStyle.Link,
             Url = "https://discord.com/invite/HvGMRZD8jQ"
         };
 
-        private static ButtonBuilder DocsButton = new ButtonBuilder
+        private static readonly ButtonBuilder DocsButton = new()
         {
             Label = "Web Docs",
             Style = ButtonStyle.Link,
@@ -105,8 +105,7 @@ namespace Commands.Helpers
 
         public static CommandInfoGroup[] CommandGroups =
         {
-            new CommandInfoGroup
-            {
+            new() {
                 Title = "Randomly Generated (RNG)",
                 Description = "An assortment of commands which respond with random results.",
                 Name = "random",
@@ -226,8 +225,7 @@ namespace Commands.Helpers
                     },
                 }
             },
-            new CommandInfoGroup
-            {
+            new() {
                 Title = "Games",
                 Description = "An assortment of games to play with or without friends.",
                 Emoji = "🎮",
@@ -308,8 +306,7 @@ namespace Commands.Helpers
                     },
                 }
             },
-            new CommandInfoGroup
-            {
+            new() {
                 Title = "Profiles",
                 Name = "profile",
                 Description = "Commands related to user profiles.",
@@ -364,8 +361,7 @@ namespace Commands.Helpers
                     }
                 }
             },
-            new CommandInfoGroup
-            {
+            new() {
                 Title = "Quoting",
                 Name = "quote",
                 Description = "Commands related to quoting.",
@@ -445,8 +441,7 @@ namespace Commands.Helpers
                     }
                 }
             },
-            new CommandInfoGroup
-            {
+            new() {
                 Title = "Welcoming",
                 Name = "welcome",
                 Description = "Commands related to welcoming new users.",
@@ -484,7 +479,7 @@ namespace Commands.Helpers
                             }
                         }
                     },
-					new CommandInfo
+                    new CommandInfo
                     {
                         Name = "remove-message",
                         InheritGroupName = true,
@@ -493,9 +488,8 @@ namespace Commands.Helpers
                     }
                 }
             },
-            new CommandInfoGroup
-            {
-                Title = "Auto Commands",
+            new() {
+                Title = "Auto",
                 Name = "auto",
                 Description = "Commands related to automatic actions.",
                 Emoji = "🖨️",
@@ -555,9 +549,8 @@ namespace Commands.Helpers
                     }
                 }
             },
-            new CommandInfoGroup
-            {
-                Title = "Encryption Commands",
+            new() {
+                Title = "Encryption",
                 Name = "encrypt",
                 Description = "Commands related to encrypting messages.",
                 Emoji = "🔒",
@@ -654,9 +647,8 @@ namespace Commands.Helpers
                     }
                 }
             },
-            new CommandInfoGroup
-            {
-                Title = "Decryption Commands",
+            new() {
+                Title = "Decryption",
                 Name = "decrypt",
                 Description = "Commands related to decrypting messages.",
                 Emoji = "🔓",
@@ -753,8 +745,7 @@ namespace Commands.Helpers
                     }
                 }
             },
-            new CommandInfoGroup
-            {
+            new() {
                 Title = "Other",
                 Description = "Miscellaneous commands.",
                 Emoji = "✨",
@@ -880,9 +871,8 @@ namespace Commands.Helpers
                     }
                 }
             },
-            new CommandInfoGroup
-            {
-                Title = "Preview Commands",
+            new() {
+                Title = "Preview",
                 Name = "preview",
                 Description = "Commands to preview content from various sources.",
                 Emoji = "🔎",
@@ -951,8 +941,7 @@ namespace Commands.Helpers
                     }
                 }
             },
-            new CommandInfoGroup
-            {
+            new() {
                 Title = "Informational / Help",
                 Description = "Commands to get information and help about the bot.",
                 Emoji = "🗄️",
