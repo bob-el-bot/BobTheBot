@@ -570,12 +570,16 @@ namespace Commands
             .AddField(name: ":calendar_spiral: Date Created", value: TimeStamp.FromDateTimeOffset(Bot.Client.CurrentUser.CreatedAt, TimeStamp.Formats.Detailed), inline: false)
             .AddField(name: "📈 Servers", value: $"`{Bot.Client.Guilds.Count:n0}`", inline: true)
             .AddField(name: "🤗 Users", value: $"`{Bot.TotalUsers:n0}`", inline: true)
-            .AddField(name: "🌐 Website", value: "[bobthebot.net](https://bobthebot.net)")
-            .AddField(name: "⚡ Github Repository", value: "[github.com/bob-el-bot/BobTheBot](https://github.com/bob-el-bot/BobTheBot)")
             .AddField(name: "🏗️ Made With", value: "C#, .NET", inline: true)
             .AddField(name: "📡 Hosted With", value: "Raspberry PI 4", inline: true);
 
-            await RespondAsync(embed: embed.Build());
+            var components = new ComponentBuilder();
+
+            components.WithButton(label: "Website", emote: new Emoji("🌐"), style: ButtonStyle.Link, url: "https://bobthebot.net")
+            .WithButton(label: "GitHub", emote: Emote.Parse("<:github:1236245156798402685>"), style: ButtonStyle.Link, url: "https://github.com/bob-el-bot/BobTheBot");
+
+
+            await RespondAsync(embed: embed.Build(), components: components.Build());
         }
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
