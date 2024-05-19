@@ -709,8 +709,11 @@ namespace Commands
         [SlashCommand("support", "Sends an invite to Bob's support Server.")]
         public async Task Support()
         {
+            var components = new ComponentBuilder();
+            components.WithButton(label: "Join Bob's Server!", emote: new Emoji("🏰"), style: ButtonStyle.Link, url: "https://discord.gg/HvGMRZD8jQ");
+
             // Respond
-            await RespondAsync(text: "🏰 Having issues with Bob? [Join Here](https://discord.gg/HvGMRZD8jQ) for help.");
+            await RespondAsync(text: "Whether you're having issues with Bob, wanting to suggest a new idea, or maybe just wanna hang...", components: components.Build());
         }
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
