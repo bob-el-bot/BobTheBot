@@ -55,13 +55,13 @@ namespace Commands.Helpers
         /// <param name="isPlayer1Turn">Indicates if it's Player 1's turn.</param>
         /// <param name="description">Description of the game state.</param>
         /// <returns>An <see cref="EmbedBuilder"/> object representing the embed.</returns>
-        public static EmbedBuilder CreateEmbed(bool isPlayer1Turn, string description)
+        public static Embed CreateEmbed(bool isPlayer1Turn, string description)
         {
             return new EmbedBuilder
             {
                 Color = isPlayer1Turn ? Challenge.Player1Color : Challenge.Player2Color,
                 Description = description
-            };
+            }.Build();
         }
 
         /// <summary>

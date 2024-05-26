@@ -155,8 +155,8 @@ namespace Commands.Helpers
         /// </summary>
         /// <param name="game">The trivia game containing the question.</param>
         /// <param name="title">The title of the embed.</param>
-        /// <returns>An <see cref="EmbedBuilder"/> object representing the question embed.</returns>
-        public static EmbedBuilder CreateQuestionEmbed(Trivia game, string title)
+        /// <returns>An <see cref="Embed"/> object representing the question embed.</returns>
+        public static Embed CreateQuestionEmbed(Trivia game, string title)
         {
             var lastQuestion = game.Questions.Last();
             var description = new StringBuilder()
@@ -175,7 +175,7 @@ namespace Commands.Helpers
             }
             .AddField("Category", lastQuestion.Category, inline: true)
             .AddField("Difficulty", lastQuestion.Difficulty, inline: true)
-            .WithFooter(GetFooter());
+            .WithFooter(GetFooter()).Build();
         }
 
         /// <summary>

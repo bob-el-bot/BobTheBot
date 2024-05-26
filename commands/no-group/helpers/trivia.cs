@@ -50,7 +50,7 @@ namespace Commands.Helpers
             // Get a question
             Questions.Add(await TriviaMethods.GetQuestion());
 
-            await Message.ModifyAsync(x => { x.Content = null; x.Embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention}'s Game of {Title}.").Build(); x.Components = TriviaMethods.GetButtons(Id).Build(); });
+            await Message.ModifyAsync(x => { x.Content = null; x.Embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention}'s Game of {Title}."); x.Components = TriviaMethods.GetButtons(Id).Build(); });
         }
 
         public override async Task StartGame(SocketMessageComponent interaction)
@@ -64,7 +64,7 @@ namespace Commands.Helpers
             // Reset Expiration Time.
             UpdateExpirationTime(TimeSpan.FromMinutes(0.5));
 
-            await interaction.ModifyOriginalResponseAsync(x => { x.Content = null; x.Embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.").Build(); x.Components = TriviaMethods.GetButtons(Id).Build(); });
+            await interaction.ModifyOriginalResponseAsync(x => { x.Content = null; x.Embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}."); x.Components = TriviaMethods.GetButtons(Id).Build(); });
         }
 
         public async Task Answer(bool isPlayer1, string answer, SocketMessageComponent component)
@@ -144,10 +144,7 @@ namespace Commands.Helpers
             // Reset Expiration Time.
             UpdateExpirationTime(TimeSpan.FromMinutes(0.5));
 
-            EmbedBuilder embed;
-            embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.");
-
-            await component.ModifyOriginalResponseAsync(x => { x.Embed = embed.Build(); x.Components = TriviaMethods.GetButtons(Id).Build(); });
+            await component.ModifyOriginalResponseAsync(x => { x.Embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}."); x.Components = TriviaMethods.GetButtons(Id).Build(); });
         }
 
         private async Task NextQuestion(SocketMessageComponent component)
@@ -159,7 +156,7 @@ namespace Commands.Helpers
             // Get a question
             Questions.Add(await TriviaMethods.GetQuestion());
 
-            EmbedBuilder embed;
+            Embed embed;
 
             if (Player2.IsBot)
             {
@@ -173,7 +170,7 @@ namespace Commands.Helpers
                 embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.");
             }
 
-            await component.ModifyOriginalResponseAsync(x => { x.Embed = embed.Build(); x.Components = TriviaMethods.GetButtons(Id).Build(); });
+            await component.ModifyOriginalResponseAsync(x => { x.Embed = embed; x.Components = TriviaMethods.GetButtons(Id).Build(); });
         }
 
         private async Task FinishGame(SocketMessageComponent component)
