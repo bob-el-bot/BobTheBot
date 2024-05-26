@@ -28,7 +28,7 @@ namespace Games
         Ended,
     }
 
-    public class Game
+    public class Game : IDisposable
     {
         public virtual string Title { get; }
         public virtual GameState State { get; set; }
@@ -61,8 +61,11 @@ namespace Games
             lock (lockObject)
             {
                 Expired = null;  // Detach event handlers
+                expirationCancellationTokenSource?.Dispose();
             }
+            GC.SuppressFinalize(this); // Suppress the finalization of this object
         }
+
 
         public void UpdateExpirationTime(TimeSpan expirationTime)
         {
