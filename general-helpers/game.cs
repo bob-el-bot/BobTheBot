@@ -18,6 +18,8 @@ namespace Games
         TicTacToe,
         [ChoiceDisplay("Trivia")]
         Trivia,
+        [ChoiceDisplay("Connect 4")]
+        Connect4,
     }
 
     public enum GameState

@@ -37,6 +37,7 @@ namespace Challenges
         public static Dictionary<ulong, RockPaperScissors> RockPaperScissorsGames { get; } = new();
         public static Dictionary<ulong, TicTacToe> TicTacToeGames { get; } = new();
         public static Dictionary<ulong, Trivia> TriviaGames { get; } = new();
+        public static Dictionary<ulong, Connect4> Connect4Games { get; set; } = new();
         public static Dictionary<ulong, uint?> UserChallenges { get; } = new();
 
         /// <summary>
@@ -119,6 +120,9 @@ namespace Challenges
                 case GameType.Trivia:
                     TriviaGames.Add(game.Id, (Trivia)game);
                     break;
+                case GameType.Connect4:
+                    Connect4Games.Add(game.Id, (Connect4)game);
+                    break;
                 default:
                     break;
             }
@@ -142,6 +146,9 @@ namespace Challenges
                     break;
                 case GameType.Trivia:
                     TriviaGames.Remove(game.Id);
+                    break;
+                case GameType.Connect4:
+                    Connect4Games.Remove(game.Id);
                     break;
                 default:
                     break;

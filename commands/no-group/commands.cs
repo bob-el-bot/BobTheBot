@@ -15,6 +15,7 @@ using Challenges;
 using PremiumInterface;
 using ColorMethods;
 using TimeStamps;
+using Games;
 
 namespace Commands
 {
@@ -327,70 +328,89 @@ namespace Commands
             }
         }
 
-        // [EnabledInDm(false)]
-        // [SlashCommand("connect4", "Play a game of Connect 4.")]
-        // public async Task Connect4([Summary("opponent", "Leave empty to verse an AI.")] SocketUser opponent = null)
-        // {
-        //     if (opponent == null || opponent.IsBot)
-        //     {
-        //         await DeferAsync();
-        //         Connect4 game = new(Context.User, opponent ?? Bot.Client.CurrentUser);
-        //         await game.StartBotGame(Context.Interaction);
-        //     }
-        //     else
-        //     {
-        //         if (!await Challenge.CanChallengeAsync(Context.User.Id, opponent.Id))
-        //         {
-        //             await RespondAsync(text: "❌ You can't challenge them.", ephemeral: true);
-        //         }
-        //         else
-        //         {
-        //             await DeferAsync();
-        //             await Challenge.SendMessage(Context.Interaction, new Connect4(Context.User, opponent));
-        //         }
-        //     }
-        // }
+        [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
+        [IntegrationType(ApplicationIntegrationType.GuildInstall)]
+        [RequireBotPermission(ChannelPermission.ViewChannel)]
+        [SlashCommand("connect4", "Play a game of Connect 4.")]
+        public async Task Connect4([Summary("opponent", "Leave empty to verse an AI.")] SocketUser opponent = null)
+        {
+            if (opponent == null || opponent.IsBot)
+            {
+                await DeferAsync();
+                Connect4 game = new(Context.User, opponent ?? Bot.Client.CurrentUser);
+                await game.StartBotGame(Context.Interaction);
+            }
+            else
+            {
+                (bool, string) canChallenge = await Challenge.CanChallengeAsync(Context.User.Id, opponent.Id);
+                if (!canChallenge.Item1)
+                {
+                    await RespondAsync(text: canChallenge.Item2, ephemeral: true);
+                }
+                else
+                {
+                    await DeferAsync();
+                    await Challenge.SendMessage(Context.Interaction, new Connect4(Context.User, opponent));
+                }
+            }
+        }
 
-        // [ComponentInteraction("connect4:*:*")]
-        // public async Task Connect4ButtonHandler(string column, string Id)
-        // {
-        //     SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
+        [ComponentInteraction("connect4:*:*")]
+        public async Task Connect4ButtonHandler(string column, string Id)
+        {
+            SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
 
-        //     Challenge.Connect4Games.TryGetValue(Convert.ToUInt64(Id), out Connect4 game);
+            Challenge.Connect4Games.TryGetValue(Convert.ToUInt64(Id), out Connect4 game);
 
-        //     if (game == null)
-        //     {
-        //         await component.RespondAsync(text: $"❌ This game no longer exists\n- Use `/connect4` to start a new game.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
-        //     }
-        //     else
-        //     {
-        //         bool isPlayer1 = component.User.Id == game.Player1.Id;
-        //         bool isPlayer2 = component.User.Id == game.Player2.Id;
+            if (game == null)
+            {
+                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use `/connect4` to start a new game.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+            }
+            else
+            {
+                bool isPlayer1 = component.User.Id == game.Player1.Id;
+                bool isPlayer2 = component.User.Id == game.Player2.Id;
 
-        //         if (!isPlayer1 && !isPlayer2)
-        //         {
-        //             await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
-        //         }
-        //         else if (game.player1Answer != null && isPlayer1 || game.player2Answer != null && isPlayer2)
-        //         {
-        //             await component.RespondAsync(text: $"❌ You have already answered.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
-        //         }
-        //         else
-        //         {
-        //             await DeferAsync();
+                if (!isPlayer1 && !isPlayer2)
+                {
+                    await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                }
+                else if (game.IsPlayer1Turn && !isPlayer1 || !game.IsPlayer1Turn && isPlayer1)
+                {
+                    await component.RespondAsync(text: $"❌ It is **not** your turn.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                }
+                else
+                {
+                    await DeferAsync();
 
-        //             // Answer
-        //             if (game.Player2.IsBot)
-        //             {
-        //                 await game.AloneAnswer(answer, component);
-        //             }
-        //             else
-        //             {
-        //                 await game.Answer(isPlayer1, answer, component);
-        //             }
-        //         }
-        //     }
-        // }
+                    if (int.TryParse(column, out int col))
+                    {
+                        // Find the lowest empty row in the selected column
+                        for (int row = 5; row >= 0; row--)
+                        {
+                            if (game.Grid[col - 1, row] == 0)
+                            {
+                                game.Grid[col - 1, row] = isPlayer1 ? 1 : 2;
+                                game.LastMoveColumn = col - 1;
+                                game.LastMoveRow = row;
+
+                                await game.EndTurn(component);
+
+                                return;
+                            }
+                        }
+
+                        // If no empty cells in the selected column
+                        await component.RespondAsync(text: "❌ This column is full.", ephemeral: true);
+                    }
+                    else
+                    {
+                        // Handle the case where the chosen move is not valid or out of bounds
+                        await component.RespondAsync(text: $"❌ Invalid move.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    }
+                }
+            }
+        }
 
         [ComponentInteraction("acceptChallenge:*")]
         public async Task AcceptChallengeButtonHandler(string Id)
