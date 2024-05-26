@@ -21,24 +21,26 @@ namespace Commands.Helpers
             }
         }
 
-        public static ComponentBuilder GetButtons(int[,] grid, ulong Id, bool forfeited = false)
+        public static ComponentBuilder GetButtons(Connect4 game, bool forfeited = false)
         {
             // Prepare Buttons
             var buttons = new ComponentBuilder();
 
+            bool gameOver = GetWinnerOutcome(game.Grid, game.Turns, game.LastMoveColumn, game.LastMoveRow) > 0 || forfeited;
+
             // Top Row
-            buttons.WithButton(label: "2", customId: $"connect4:2:{Id}", style: ButtonStyle.Secondary, disabled: forfeited || (grid[1, 0] != 0));
-            buttons.WithButton(label: "3", customId: $"connect4:3:{Id}", style: ButtonStyle.Secondary, disabled: forfeited || (grid[2, 0] != 0));
-            buttons.WithButton(label: "4", customId: $"connect4:4:{Id}", style: ButtonStyle.Secondary, disabled: forfeited || (grid[3, 0] != 0));
-            buttons.WithButton(label: "5", customId: $"connect4:5:{Id}", style: ButtonStyle.Secondary, disabled: forfeited || (grid[4, 0] != 0));
-            buttons.WithButton(label: "6", customId: $"connect4:6:{Id}", style: ButtonStyle.Secondary, disabled: forfeited || (grid[5, 0] != 0));
+            buttons.WithButton(label: "2", customId: $"connect4:2:{game.Id}", style: ButtonStyle.Secondary, disabled: gameOver || (game.Grid[1, 0] != 0));
+            buttons.WithButton(label: "3", customId: $"connect4:3:{game.Id}", style: ButtonStyle.Secondary, disabled: gameOver || (game.Grid[2, 0] != 0));
+            buttons.WithButton(label: "4", customId: $"connect4:4:{game.Id}", style: ButtonStyle.Secondary, disabled: gameOver || (game.Grid[3, 0] != 0));
+            buttons.WithButton(label: "5", customId: $"connect4:5:{game.Id}", style: ButtonStyle.Secondary, disabled: gameOver || (game.Grid[4, 0] != 0));
+            buttons.WithButton(label: "6", customId: $"connect4:6:{game.Id}", style: ButtonStyle.Secondary, disabled: gameOver || (game.Grid[5, 0] != 0));
 
             // Bottom Row
-            buttons.WithButton(label: "1", customId: $"connect4:1:{Id}", style: ButtonStyle.Secondary, disabled: forfeited || (grid[0, 0] != 0), row: 1);
-            buttons.WithButton(label: "\U0000200E", customId: $"connect4:disabled1:{Id}", style: ButtonStyle.Secondary, disabled: true, row: 1);
-            buttons.WithButton(label: "\U0000200E", customId: $"connect4:disabled2:{Id}", style: ButtonStyle.Secondary, disabled: true, row: 1);
-            buttons.WithButton(label: "\U0000200E", customId: $"connect4:disabled3:{Id}", style: ButtonStyle.Secondary, disabled: true, row: 1);
-            buttons.WithButton(label: "7", customId: $"connect4:7:{Id}", style: ButtonStyle.Secondary, disabled: forfeited || (grid[6, 0] != 0), row: 1);
+            buttons.WithButton(label: "1", customId: $"connect4:1:{game.Id}", style: ButtonStyle.Secondary, disabled: gameOver || (game.Grid[0, 0] != 0), row: 1);
+            buttons.WithButton(label: "\U0000200E", customId: $"connect4:disabled1:{game.Id}", style: ButtonStyle.Secondary, disabled: true, row: 1);
+            buttons.WithButton(label: "\U0000200E", customId: $"connect4:disabled2:{game.Id}", style: ButtonStyle.Secondary, disabled: true, row: 1);
+            buttons.WithButton(label: "\U0000200E", customId: $"connect4:disabled3:{game.Id}", style: ButtonStyle.Secondary, disabled: true, row: 1);
+            buttons.WithButton(label: "7", customId: $"connect4:7:{game.Id}", style: ButtonStyle.Secondary, disabled: gameOver || (game.Grid[6, 0] != 0), row: 1);
 
             return buttons;
         }
@@ -82,17 +84,18 @@ namespace Commands.Helpers
             return result.ToString();
         }
 
-        public static int GetWinner(int[,] grid, int turns, int lastMoveCol, int lastMoveRow)
+        public static int GetWinnerOutcome(int[,] grid, int turns, int lastMoveCol, int lastMoveRow)
         {
-            // Only perform checks if the number of turns is greater than or equal to 7
             if (turns < 7)
             {
                 return 0;
             }
 
-            int rows = grid.GetLength(1);
-            int columns = grid.GetLength(0);
             int player = grid[lastMoveCol, lastMoveRow];
+            if (player == 0)
+            {
+                return 0;
+            }
 
             // Direction vectors for horizontal, vertical, and two diagonals
             int[][] directions = new int[][]
@@ -119,6 +122,14 @@ namespace Commands.Helpers
                 {
                     return player;
                 }
+            }
+
+            // If the grid is full and no winner is found, it's a draw
+            int columns = grid.GetLength(0);
+            int rows = grid.GetLength(1);
+            if (turns == columns * rows)
+            {
+                return -1; // Indicate a draw
             }
 
             // No winner

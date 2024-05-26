@@ -44,7 +44,7 @@ namespace Commands.Helpers
 
             Expired += Challenge.ExpireGame;
 
-            await Message.ModifyAsync(x => { x.Content = null; x.Embed = Connect4Methods.CreateEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn.\n(Ends in {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)})"); x.Components = Connect4Methods.GetButtons(Grid, Id).Build(); });
+            await Message.ModifyAsync(x => { x.Content = null; x.Embed = Connect4Methods.CreateEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn.\n(Ends in {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)})"); x.Components = Connect4Methods.GetButtons(this).Build(); });
 
             if (!IsPlayer1Turn)
             {
@@ -63,7 +63,7 @@ namespace Commands.Helpers
             // Reset Expiration Time.
             UpdateExpirationTime(TimeSpan.FromMinutes(1));
 
-            await interaction.ModifyOriginalResponseAsync(x => { x.Content = null; x.Embed = Connect4Methods.CreateEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn ( Forfeit {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)}).\n{Connect4Methods.GetGrid(Grid)}"); x.Components = Connect4Methods.GetButtons(Grid, Id).Build(); });
+            await interaction.ModifyOriginalResponseAsync(x => { x.Content = null; x.Embed = Connect4Methods.CreateEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn ( Forfeit {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)}).\n{Connect4Methods.GetGrid(Grid)}"); x.Components = Connect4Methods.GetButtons(this).Build(); });
         }
 
         public override async Task EndGameOnTime()
@@ -82,7 +82,7 @@ namespace Commands.Helpers
                     //await Challenge.UpdateUserStats(this, TTTMethods.GetWinner(grid, Turns, IsPlayer1Turn, true));
                 }
 
-                await Message.ModifyAsync(x => { x.Embed = Connect4Methods.CreateEmbed(IsPlayer1Turn, $"{GetFinalTitle(Connect4Methods.GetWinner(Grid, Turns, LastMoveColumn, LastMoveRow), true)}\n{Connect4Methods.GetGrid(Grid)}"); x.Components = Connect4Methods.GetButtons(Grid, Id, true).Build(); });
+                await Message.ModifyAsync(x => { x.Embed = Connect4Methods.CreateEmbed(IsPlayer1Turn, $"{GetFinalTitle(Connect4Methods.GetWinnerOutcome(Grid, Turns, LastMoveColumn, LastMoveRow), true)}\n{Connect4Methods.GetGrid(Grid)}"); x.Components = Connect4Methods.GetButtons(this, true).Build(); });
             }
             catch (Exception)
             {
@@ -185,13 +185,13 @@ namespace Commands.Helpers
             Action<MessageProperties> properties;
 
             // Check if there is a winner or the game is over
-            int winner = Connect4Methods.GetWinner(Grid, Turns, LastMoveColumn, LastMoveRow);
+            int winner = Connect4Methods.GetWinnerOutcome(Grid, Turns, LastMoveColumn, LastMoveRow);
             if (winner > 0)
             {
                 properties = (x) =>
                 {
                     x.Embed = Connect4Methods.CreateEmbed(IsPlayer1Turn, $"{GetFinalTitle(winner)}\n{Connect4Methods.GetGrid(Grid)}");
-                    x.Components = Connect4Methods.GetButtons(Grid, Id).Build();
+                    x.Components = Connect4Methods.GetButtons(this).Build();
                 };
 
                 await FinishGame(component, properties);
@@ -210,7 +210,7 @@ namespace Commands.Helpers
                 properties = (x) =>
                 {
                     x.Embed = Connect4Methods.CreateEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn (Forfeit {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)}).\n{Connect4Methods.GetGrid(Grid)}");
-                    x.Components = Connect4Methods.GetButtons(Grid, Id).Build();
+                    x.Components = Connect4Methods.GetButtons(this).Build();
                 };
 
                 await component.ModifyOriginalResponseAsync(properties);
