@@ -26,7 +26,7 @@ using static Commands.Helpers.MessageReader;
 
 public static class Bot
 {
-    public static readonly DiscordSocketClient Client = new(new DiscordSocketConfig()
+    public static readonly DiscordSocketClient Client = new(new DiscordSocketConfig
     {
         GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers | GatewayIntents.GuildMessages | GatewayIntents.MessageContent,
         AlwaysDownloadUsers = true,
@@ -74,7 +74,7 @@ public static class Bot
     {
         try
         {
-            Service = new(Client, new InteractionServiceConfig()
+            Service = new(Client, new InteractionServiceConfig
             {
                 UseCompiledLambda = true,
                 ThrowOnError = true
@@ -287,8 +287,6 @@ public static class Bot
 
                 if (gitHubLink != null)
                 {
-                    IUserMessage userMessage = (IUserMessage)message;
-
                     switch (gitHubLink.Type)
                     {
                         case GitHubLinkParse.GitHubLinkType.CodeFile:

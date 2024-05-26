@@ -117,8 +117,6 @@ namespace Commands.Helpers
                     IsPlayer1Turn = true;
                 }
 
-                var dateTime = new DateTimeOffset(ExpirationTime).ToUnixTimeSeconds();
-
                 properties = (x) =>
                 {
                     x.Embed = TTTMethods.CreateEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn.\n(Ends in {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)})");

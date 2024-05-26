@@ -84,9 +84,6 @@ namespace Challenges
             game.Id = game.OnePerChannel ? interaction.Channel.Id : msg.Id;
             game.State = GameState.Challenge;
 
-            // Expiration Timer.
-            var dateTime = new DateTimeOffset(game.ExpirationTime).ToUnixTimeSeconds();
-
             // Add to Games List
             AddToSpecificGameList(game);
 
@@ -102,7 +99,7 @@ namespace Challenges
 
             // Start Challenge
             game.Expired += ExpireGame;
-            await game.Message.ModifyAsync(x => { x.Content = $"> ### ⚔️ {game.Player1.Mention} Challenges {game.Player2.Mention} to {game.Title}.\n> Accept or decline {TimeStamp.FromDateTime(game.ExpirationTime, TimeStamp.Formats.Relative)}."; x.Components = components.Build(); });
+            await game.Message.ModifyAsync(x => { x.Content = null; x.Embed = embed.Build(); x.Components = components.Build(); });
         }
 
         /// <summary>
