@@ -23,6 +23,8 @@ namespace Badges
         Winner2 = 1 << 6,
         [ChoiceDisplay("Winner 3")]
         Winner3 = 1 << 7,
+        [ChoiceDisplay("Artist")]
+        Artist = 1 << 8,
     }
 
     public class BadgeInformation
@@ -115,6 +117,16 @@ namespace Badges
                     Emoji = "🏆",
                     Description = "In it to win it.",
                     HowToGet = "Win 30 challenges in a row."
+                }
+            },
+                        {
+                Badges.Artist,
+                new BadgeInformation
+                {
+                    DisplayName = "Artist",
+                    Emoji = "🖼️",
+                    Description = "It's... magnificent.",
+                    HowToGet = "Make fanart and share it on Bob's official server!"
                 }
             },
         };
