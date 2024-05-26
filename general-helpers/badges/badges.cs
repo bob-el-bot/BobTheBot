@@ -119,7 +119,7 @@ namespace Badges
                     HowToGet = "Win 30 challenges in a row."
                 }
             },
-                        {
+            {
                 Badges.Artist,
                 new BadgeInformation
                 {
