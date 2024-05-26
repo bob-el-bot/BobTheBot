@@ -15,8 +15,8 @@ namespace Commands.Helpers
         public const bool onePerChannel = false;
 
         // -1 = null |  0 = rock | 1 = paper | 2 = scissors
-        public int player1Choice = -1;
-        public int player2Choice = -1;
+        public int Player1Choice = -1;
+        public int Player2Choice = -1;
 
         public RockPaperScissors(IUser player1, IUser player2) : base(GameType.RockPaperScissors, onePerChannel, TimeSpan.FromMinutes(5), player1, player2)
         {
@@ -103,7 +103,7 @@ namespace Commands.Helpers
                 }
 
                 string[] options = { "🪨", "📃", "✂️" };
-                await interaction.UpdateAsync(x => { x.Embed = CreateEmbed($"{GetFinalTitle()}\n{options[player1Choice]} **VS** {options[player2Choice]}").Build(); x.Components = null; });
+                await interaction.UpdateAsync(x => { x.Embed = CreateEmbed($"{GetFinalTitle()}\n{options[Player1Choice]} **VS** {options[Player2Choice]}").Build(); x.Components = null; });
             }
             catch (Exception)
             {
@@ -125,11 +125,11 @@ namespace Commands.Helpers
         private Challenge.WinCases GetWinner(bool forfeited = false)
         {
             // All ways for player1 to lose
-            if ((player1Choice == 0 && player2Choice == 1) || (player1Choice == 1 && player2Choice == 2) || (player1Choice == 2 && player2Choice == 0))
+            if ((Player1Choice == 0 && Player2Choice == 1) || (Player1Choice == 1 && Player2Choice == 2) || (Player1Choice == 2 && Player2Choice == 0))
             {
                 return Challenge.WinCases.Player2;
             }
-            else if (player1Choice == player2Choice || forfeited)
+            else if (Player1Choice == Player2Choice || forfeited)
             {
                 return Challenge.WinCases.Tie;
             }
@@ -161,7 +161,7 @@ namespace Commands.Helpers
         private void BotPlay()
         {
             Random random = new();
-            player2Choice = random.Next(0, 3);
+            Player2Choice = random.Next(0, 3);
         }
     }
 }

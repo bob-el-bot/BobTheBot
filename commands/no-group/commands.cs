@@ -299,7 +299,7 @@ namespace Commands
                 {
                     await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
                 }
-                else if ((isPlayer1 && game.player1Choice != -1) || (isPlayer2 && game.player2Choice != -1))
+                else if ((isPlayer1 && game.Player1Choice != -1) || (isPlayer2 && game.Player2Choice != -1))
                 {
                     await component.RespondAsync(text: $"❌ You **cannot** change your choice.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
                 }
@@ -307,14 +307,14 @@ namespace Commands
                 {
                     if (isPlayer1)
                     {
-                        game.player1Choice = choice;
+                        game.Player1Choice = choice;
                     }
                     else if (isPlayer2)
                     {
-                        game.player2Choice = choice;
+                        game.Player2Choice = choice;
                     }
 
-                    if (game.player1Choice != -1 && game.player2Choice != -1)
+                    if (game.Player1Choice != -1 && game.Player2Choice != -1)
                     {
                         await game.FinishGame(component);
                     }
