@@ -22,7 +22,18 @@ namespace ColorMethods
             { "grey", "95A5A6" }, 
             { "gray", "95A5A6" }, 
             { "white", "FFFFFF" }, 
-            { "purple", "8D52FD" } 
+            { "purple", "8D52FD" },
+            { "cyan", "00FFFF" },
+            { "magenta", "FF00FF" },
+            { "brown", "996633" },
+            { "lime", "CCFF66" },
+            { "teal", "008080" },
+            { "navy", "000080" },
+            { "maroon", "800000" },
+            { "olive", "808000" },
+            { "turquoise", "40E0D0" },
+            { "gold", "FFCC00" },
+            { "silver", "C0C0C0" }
         };
 
         /// <summary>
