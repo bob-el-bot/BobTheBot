@@ -80,6 +80,7 @@ namespace Commands.Helpers
 
                     await Challenge.UpdateUserStats(this, TTTMethods.GetWinner(grid, Turns, IsPlayer1Turn, true));
                 }
+                
                 await Message.ModifyAsync(x => { x.Embed = TTTMethods.CreateEmbed(IsPlayer1Turn, GetFinalTitle(true)); x.Components = TTTMethods.GetButtons(grid, Turns, Id, true).Build(); });
             }
             catch (Exception)

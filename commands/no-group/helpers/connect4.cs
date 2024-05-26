@@ -73,7 +73,16 @@ namespace Commands.Helpers
 
             try
             {
-                //await Message.ModifyAsync(x => { x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, GetFinalTitle(TTTMethods.GetWinner(grid, turns), true)).Build(); x.Components = TTTMethods.GetButtons(grid, turns, Id, true).Build(); });
+                // If not a bot match update stats.
+                if (!Player2.IsBot)
+                {
+                    Challenge.DecrementUserChallenges(Player1.Id);
+                    Challenge.DecrementUserChallenges(Player2.Id);
+
+                    //await Challenge.UpdateUserStats(this, TTTMethods.GetWinner(grid, Turns, IsPlayer1Turn, true));
+                }
+
+                await Message.ModifyAsync(x => { x.Embed = Connect4Methods.CreateEmbed(IsPlayer1Turn, $"{GetFinalTitle(Connect4Methods.GetWinner(Grid, Turns, LastMoveColumn, LastMoveRow), true)}\n{Connect4Methods.GetGrid(Grid)}"); x.Components = Connect4Methods.GetButtons(Grid, Id, true).Build(); });
             }
             catch (Exception)
             {
