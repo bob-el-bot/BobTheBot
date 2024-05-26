@@ -64,6 +64,14 @@ namespace Commands.Helpers
             }.Build();
         }
 
+        /// <summary>
+        /// Determines the winner of the game based on the current state.
+        /// </summary>
+        /// <param name="grid">Current state of the game grid.</param>
+        /// <param name="turns">Number of turns taken.</param>
+        /// <param name="isPlayer1Turn">Indicates if it's Player 1's turn.</param>
+        /// <param name="forfeited">Indicates if the game was forfeited.</param>
+        /// <returns>The winner of the game as a <see cref="Challenge.WinCases"/> enum value.</returns>
         public static Challenge.WinCases GetWinner(int[,] grid, int turns, bool isPlayer1Turn, bool forfeited = false)
         {
             int winner = GetWinnerOutcome(grid, turns);
@@ -83,6 +91,17 @@ namespace Commands.Helpers
             }
         }
 
+        /// <summary>
+        /// Determines the outcome of the game.
+        /// </summary>
+        /// <param name="grid">Current state of the game grid.</param>
+        /// <param name="turns">Number of turns taken.</param>
+        /// <returns>
+        /// The winner of the game:
+        /// 0 for no winner,
+        /// 1 for Player 1,
+        /// 2 for Player 2.
+        /// </returns>
         public static int GetWinnerOutcome(int[,] grid, int turns)
         {
             if (turns == -1 || turns >= 3)
@@ -115,7 +134,10 @@ namespace Commands.Helpers
             return 0; // no winner
         }
 
-        // BOT
+        /// <summary>
+        /// Allows the bot to make its move in the Tic Tac Toe game.
+        /// </summary>
+        /// <param name="game">Instance of the TicTacToe class representing the game.</param>
         public static async Task BotPlay(TicTacToe game)
         {
             int[] winningMove = FindWinningMove(game.grid, game.Turns, 2);
