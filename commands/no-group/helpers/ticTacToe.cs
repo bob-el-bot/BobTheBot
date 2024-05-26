@@ -15,8 +15,8 @@ namespace Commands.Helpers
         public const bool onePerChannel = false;
 
         public int[,] grid = new int[3, 3];
-        public bool isPlayer1Turn;
-        public int turns;
+        public bool IsPlayer1Turn;
+        public int Turns;
 
         public TicTacToe(IUser player1, IUser player2) : base(GameType.TicTacToe, onePerChannel, TimeSpan.FromMinutes(5), player1, player2)
         {
@@ -33,7 +33,7 @@ namespace Commands.Helpers
             State = GameState.Active;
 
             // Pick Turn
-            isPlayer1Turn = TTTMethods.DetermineFirstTurn();
+            IsPlayer1Turn = TTTMethods.DetermineFirstTurn();
 
             // Add to Games List
             Challenge.AddToSpecificGameList(this);
@@ -43,9 +43,9 @@ namespace Commands.Helpers
 
             Expired += Challenge.ExpireGame;
 
-            await Message.ModifyAsync(x => { x.Content = null; x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(isPlayer1Turn ? Player1.Mention : Player2.Mention)} turn.\n(Ends in {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)}").Build(); x.Components = TTTMethods.GetButtons(grid, turns, Id).Build(); });
+            await Message.ModifyAsync(x => { x.Content = null; x.Embed = TTTMethods.CreateEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn.\n(Ends in {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)}").Build(); x.Components = TTTMethods.GetButtons(grid, Turns, Id).Build(); });
 
-            if (!isPlayer1Turn)
+            if (!IsPlayer1Turn)
             {
                 await TTTMethods.BotPlay(this);
             }
@@ -57,12 +57,12 @@ namespace Commands.Helpers
             State = GameState.Active;
 
             // Pick Turn
-            isPlayer1Turn = TTTMethods.DetermineFirstTurn();
+            IsPlayer1Turn = TTTMethods.DetermineFirstTurn();
 
             // Reset Expiration Time.
             UpdateExpirationTime(TimeSpan.FromMinutes(1));
 
-            await interaction.ModifyOriginalResponseAsync(x => { x.Content = null; x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(isPlayer1Turn ? Player1.Mention : Player2.Mention)} turn (Forfeit {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)}).").Build(); x.Components = TTTMethods.GetButtons(grid, turns, Id).Build(); });
+            await interaction.ModifyOriginalResponseAsync(x => { x.Content = null; x.Embed = TTTMethods.CreateEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn (Forfeit {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)}).").Build(); x.Components = TTTMethods.GetButtons(grid, Turns, Id).Build(); });
         }
 
         public override async Task EndGameOnTime()
@@ -78,9 +78,9 @@ namespace Commands.Helpers
                     Challenge.DecrementUserChallenges(Player1.Id);
                     Challenge.DecrementUserChallenges(Player2.Id);
 
-                    await Challenge.UpdateUserStats(this, TTTMethods.GetWinner(grid, turns, isPlayer1Turn, true));
+                    await Challenge.UpdateUserStats(this, TTTMethods.GetWinner(grid, Turns, IsPlayer1Turn, true));
                 }
-                await Message.ModifyAsync(x => { x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, GetFinalTitle(true)).Build(); x.Components = TTTMethods.GetButtons(grid, turns, Id, true).Build(); });
+                await Message.ModifyAsync(x => { x.Embed = TTTMethods.CreateEmbed(IsPlayer1Turn, GetFinalTitle(true)).Build(); x.Components = TTTMethods.GetButtons(grid, Turns, Id, true).Build(); });
             }
             catch (Exception)
             {
@@ -90,39 +90,39 @@ namespace Commands.Helpers
 
         public async Task EndBotTurn(SocketMessageComponent component = null)
         {
-            turns++;
+            Turns++;
 
             Action<MessageProperties> properties;
 
             // Check if there is a winner or the game is over
-            int winner = TTTMethods.GetWinnerOutcome(grid, turns);
-            if (winner > 0 || turns >= 9)
+            int winner = TTTMethods.GetWinnerOutcome(grid, Turns);
+            if (winner > 0 || Turns >= 9)
             {
                 properties = (x) =>
                 {
-                    x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, GetFinalTitle()).Build();
-                    x.Components = TTTMethods.GetButtons(grid, turns, Id).Build();
+                    x.Embed = TTTMethods.CreateEmbed(IsPlayer1Turn, GetFinalTitle()).Build();
+                    x.Components = TTTMethods.GetButtons(grid, Turns, Id).Build();
                 };
 
                 await FinishGame(component, properties);
             }
             else // not over
             {
-                if (isPlayer1Turn)
+                if (IsPlayer1Turn)
                 {
-                    isPlayer1Turn = false;
+                    IsPlayer1Turn = false;
                 }
                 else
                 {
-                    isPlayer1Turn = true;
+                    IsPlayer1Turn = true;
                 }
 
                 var dateTime = new DateTimeOffset(ExpirationTime).ToUnixTimeSeconds();
 
                 properties = (x) =>
                 {
-                    x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(isPlayer1Turn ? Player1.Mention : Player2.Mention)} turn.\n(Ends in {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)})").Build();
-                    x.Components = TTTMethods.GetButtons(grid, turns, Id).Build();
+                    x.Embed = TTTMethods.CreateEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn.\n(Ends in {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)})").Build();
+                    x.Components = TTTMethods.GetButtons(grid, Turns, Id).Build();
                 };
 
                 if (component != null)
@@ -134,7 +134,7 @@ namespace Commands.Helpers
                     await Message.ModifyAsync(properties);
                 }
 
-                if (!isPlayer1Turn && winner == 0)
+                if (!IsPlayer1Turn && winner == 0)
                 {
                     await TTTMethods.BotPlay(this);
                 }
@@ -160,7 +160,7 @@ namespace Commands.Helpers
                     Challenge.DecrementUserChallenges(Player1.Id);
                     Challenge.DecrementUserChallenges(Player2.Id);
 
-                    await Challenge.UpdateUserStats(this, TTTMethods.GetWinner(grid, turns, isPlayer1Turn));
+                    await Challenge.UpdateUserStats(this, TTTMethods.GetWinner(grid, Turns, IsPlayer1Turn));
                 }
             }
             catch (Exception)
@@ -174,7 +174,7 @@ namespace Commands.Helpers
 
         public async Task EndTurn(SocketMessageComponent component)
         {
-            turns++;
+            Turns++;
 
             // Reset Expiration Time.
             UpdateExpirationTime(TimeSpan.FromMinutes(1));
@@ -183,32 +183,32 @@ namespace Commands.Helpers
             Action<MessageProperties> properties;
 
             // Check if there is a winner or the game is over
-            int winner = TTTMethods.GetWinnerOutcome(grid, turns);
-            if (winner > 0 || turns >= 9)
+            int winner = TTTMethods.GetWinnerOutcome(grid, Turns);
+            if (winner > 0 || Turns >= 9)
             {
                 properties = (x) =>
                 {
-                    x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, GetFinalTitle()).Build();
-                    x.Components = TTTMethods.GetButtons(grid, turns, Id).Build();
+                    x.Embed = TTTMethods.CreateEmbed(IsPlayer1Turn, GetFinalTitle()).Build();
+                    x.Components = TTTMethods.GetButtons(grid, Turns, Id).Build();
                 };
 
                 await FinishGame(component, properties);
             }
             else // not over
             {
-                if (isPlayer1Turn)
+                if (IsPlayer1Turn)
                 {
-                    isPlayer1Turn = false;
+                    IsPlayer1Turn = false;
                 }
                 else
                 {
-                    isPlayer1Turn = true;
+                    IsPlayer1Turn = true;
                 }
 
                 properties = (x) =>
                 {
-                    x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(isPlayer1Turn ? Player1.Mention : Player2.Mention)} turn (Forfeit {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)}).").Build();
-                    x.Components = TTTMethods.GetButtons(grid, turns, Id).Build();
+                    x.Embed = TTTMethods.CreateEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn (Forfeit {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)}).").Build();
+                    x.Components = TTTMethods.GetButtons(grid, Turns, Id).Build();
                 };
 
                 await component.ModifyOriginalResponseAsync(properties);
@@ -217,14 +217,14 @@ namespace Commands.Helpers
 
         private string GetFinalTitle(bool forfeited = false)
         {
-            Challenge.WinCases winner = TTTMethods.GetWinner(grid, turns, isPlayer1Turn, forfeited);
+            Challenge.WinCases winner = TTTMethods.GetWinner(grid, Turns, IsPlayer1Turn, forfeited);
 
             // All ways for player1 to lose
             if (winner == Challenge.WinCases.Player2)
             {
                 return $"### ⚔️ {Player1.Mention} Was Defeated By {Player2.Mention} in {Title}.";
             }
-            else if (winner == Challenge.WinCases.Tie && turns == 9 || (forfeited && turns == 0)) // draw
+            else if (winner == Challenge.WinCases.Tie && Turns == 9 || (forfeited && Turns == 0)) // draw
             {
                 return $"### ⚔️ {Player1.Mention} Drew {Player2.Mention} in {Title}.";
             }

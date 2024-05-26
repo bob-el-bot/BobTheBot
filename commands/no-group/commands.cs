@@ -149,7 +149,7 @@ namespace Commands
                 {
                     await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
                 }
-                else if (game.isPlayer1Turn && !isPlayer1 || !game.isPlayer1Turn && isPlayer1)
+                else if (game.IsPlayer1Turn && !isPlayer1 || !game.IsPlayer1Turn && isPlayer1)
                 {
                     await component.RespondAsync(text: $"❌ It is **not** your turn.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
                 }
@@ -164,7 +164,7 @@ namespace Commands
                     // Check if the chosen move is valid and within bounds
                     if (game.grid[position[0], position[1]] == 0)
                     {
-                        game.grid[position[0], position[1]] = game.isPlayer1Turn ? 1 : 2;
+                        game.grid[position[0], position[1]] = game.IsPlayer1Turn ? 1 : 2;
                         if (game.Player2.IsBot)
                         {
                             await game.EndBotTurn(component);

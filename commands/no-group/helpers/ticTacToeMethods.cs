@@ -5,44 +5,56 @@ using Discord;
 
 namespace Commands.Helpers
 {
+    /// <summary>
+    /// Provides helper methods for implementing Tic Tac Toe (TTT) game logic.
+    /// </summary>
     public static class TTTMethods
     {
+        private static readonly Random Random = new();
+
+        /// <summary>
+        /// Determines the player who goes first.
+        /// </summary>
+        /// <returns>True if Player 1 goes first, otherwise false.</returns>
         public static bool DetermineFirstTurn()
         {
-            Random random = new();
-            if (random.Next(0, 2) == 1)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return Random.Next(0, 2) == 1;
         }
 
-        public static ComponentBuilder GetButtons(int[,] grid, int turns, ulong Id, bool forfeited = false)
+        /// <summary>
+        /// Generates button components for displaying Tic Tac Toe grid.
+        /// </summary>
+        /// <param name="grid">Current state of the game grid.</param>
+        /// <param name="turns">Number of turns taken.</param>
+        /// <param name="id">Unique identifier for the game.</param>
+        /// <param name="forfeited">Indicates if the game was forfeited.</param>
+        /// <returns>A <see cref="ComponentBuilder"/> object representing the buttons.</returns>
+        public static ComponentBuilder GetButtons(int[,] grid, int turns, ulong id, bool forfeited = false)
         {
-            // Prepare Buttons
             var buttons = new ComponentBuilder();
+            bool gameOver = GetWinnerOutcome(grid, turns) > 0 || turns == 9 || forfeited;
 
-            for (int y = 0; y <= 2; y++)
+            for (int y = 0; y < 3; y++)
             {
-                for (int x = 0; x <= 2; x++)
+                for (int x = 0; x < 3; x++)
                 {
-                    if (grid[x, y] > 0)
-                    {
-                        buttons.WithButton(label: $"{(grid[x, y] == 1 ? "O" : "X")}", customId: $"ttt:{x}-{y}:{Id}", style: grid[x, y] == 1 ? ButtonStyle.Primary : ButtonStyle.Danger, row: y, disabled: true);
-                    }
-                    else
-                    {
-                        buttons.WithButton(label: "\U0000200E", customId: $"ttt:{x}-{y}:{Id}", style: ButtonStyle.Secondary, row: y, disabled: GetWinnerOutcome(grid, turns) > 0 || turns == 9 || forfeited);
-                    }
+                    bool isOccupied = grid[x, y] > 0;
+                    string label = isOccupied ? (grid[x, y] == 1 ? "O" : "X") : "\U0000200E";
+                    var style = isOccupied ? (grid[x, y] == 1 ? ButtonStyle.Primary : ButtonStyle.Danger) : ButtonStyle.Secondary;
+
+                    buttons.WithButton(label, $"ttt:{x}-{y}:{id}", style, row: y, disabled: isOccupied || gameOver);
                 }
             }
 
             return buttons;
         }
 
+        /// <summary>
+        /// Creates an embed for displaying game information.
+        /// </summary>
+        /// <param name="isPlayer1Turn">Indicates if it's Player 1's turn.</param>
+        /// <param name="description">Description of the game state.</param>
+        /// <returns>An <see cref="EmbedBuilder"/> object representing the embed.</returns>
         public static EmbedBuilder CreateEmbed(bool isPlayer1Turn, string description)
         {
             return new EmbedBuilder
@@ -52,69 +64,89 @@ namespace Commands.Helpers
             };
         }
 
+        /// <summary>
+        /// Determines the winner of the game based on the current state.
+        /// </summary>
+        /// <param name="grid">Current state of the game grid.</param>
+        /// <param name="turns">Number of turns taken.</param>
+        /// <param name="isPlayer1Turn">Indicates if it's Player 1's turn.</param>
+        /// <param name="forfeited">Indicates if the game was forfeited.</param>
+        /// <returns>The winner of the game as a <see cref="Challenge.WinCases"/> enum value.</returns>
         public static Challenge.WinCases GetWinner(int[,] grid, int turns, bool isPlayer1Turn, bool forfeited = false)
         {
             int winner = GetWinnerOutcome(grid, turns);
 
-            // All ways for player1 to lose
             if (winner == 2 || (forfeited && isPlayer1Turn))
             {
                 return Challenge.WinCases.Player2;
             }
-            else if (winner == 0 && turns == 9 || (forfeited && turns == 0)) // draw
+            else if (winner == 0 && turns == 9 || (forfeited && turns == 0))
             {
                 return Challenge.WinCases.Tie;
             }
-            else // else player1 won
+            else
             {
                 return Challenge.WinCases.Player1;
             }
         }
 
+
+        /// <summary>
+        /// Determines the outcome of the game.
+        /// </summary>
+        /// <param name="grid">Current state of the game grid.</param>
+        /// <param name="turns">Number of turns taken.</param>
+        /// <returns>
+        /// The winner of the game:
+        /// 0 for no winner,
+        /// 1 for Player 1,
+        /// 2 for Player 2.
+        /// </returns>
         public static int GetWinnerOutcome(int[,] grid, int turns)
         {
-            if (turns == -1 || turns >= 3)
+            if (turns < 3)
             {
-                // Check rows, columns, and diagonals
-                for (int i = 0; i < 3; i++)
-                {
-                    // Check rows and columns
-                    if (grid[i, 0] == grid[i, 1] && grid[i, 1] == grid[i, 2] && grid[i, 0] != 0)
-                    {
-                        return grid[i, 0]; // row 
-                    }
-                    if (grid[0, i] == grid[1, i] && grid[1, i] == grid[2, i] && grid[0, i] != 0)
-                    {
-                        return grid[0, i]; // column 
-                    }
-                }
+                return 0;
+            }
 
-                // Check diagonals
-                if (grid[0, 0] == grid[1, 1] && grid[1, 1] == grid[2, 2] && grid[0, 0] != 0)
+            for (int i = 0; i < 3; i++)
+            {
+                if (grid[i, 0] == grid[i, 1] && grid[i, 1] == grid[i, 2] && grid[i, 0] != 0)
                 {
-                    return grid[0, 0]; //top-left to bottom-right
+                    return grid[i, 0];
                 }
-                if (grid[0, 2] == grid[1, 1] && grid[1, 1] == grid[2, 0] && grid[0, 2] != 0)
+                if (grid[0, i] == grid[1, i] && grid[1, i] == grid[2, i] && grid[0, i] != 0)
                 {
-                    return grid[0, 2]; // top-right to bottom-left
+                    return grid[0, i];
                 }
             }
 
-            return 0; // no winner
+            if (grid[0, 0] == grid[1, 1] && grid[1, 1] == grid[2, 2] && grid[0, 0] != 0)
+            {
+                return grid[0, 0];
+            }
+            if (grid[0, 2] == grid[1, 1] && grid[1, 1] == grid[2, 0] && grid[0, 2] != 0)
+            {
+                return grid[0, 2];
+            }
+
+            return 0;
         }
 
-        // BOT
+        /// <summary>
+        /// Allows the bot to make its move in the Tic Tac Toe game.
+        /// </summary>
+        /// <param name="game">Instance of the TicTacToe class representing the game.</param>
         public static async Task BotPlay(TicTacToe game)
         {
-            int[] winningMove = FindWinningMove(game.grid, game.turns, 2);
-            int[] blockingMove = FindWinningMove(game.grid, game.turns, 1);
+            int[] move = FindWinningMove(game.grid, 2) ??
+                         FindWinningMove(game.grid, 1) ??
+                         GetOptimalMove(game.grid, 2) ??
+                         GetRandomValidMove(game.grid);
 
-            int[] chosenMove = winningMove ?? blockingMove ?? Minimax(game.grid, game.turns, 2) ?? GetRandomValidMove(game.grid);
-
-            // Check if the chosen move is valid and within bounds
-            if (chosenMove[0] >= 0 && chosenMove[0] < 3 && chosenMove[1] >= 0 && chosenMove[1] < 3 && game.grid[chosenMove[0], chosenMove[1]] == 0)
+            if (IsValidMove(game.grid, move))
             {
-                game.grid[chosenMove[0], chosenMove[1]] = 2;
+                game.grid[move[0], move[1]] = 2;
                 await game.EndBotTurn();
             }
             else
@@ -123,7 +155,7 @@ namespace Commands.Helpers
             }
         }
 
-        private static int[] FindWinningMove(int[,] grid, int turns, int player)
+        private static int[] FindWinningMove(int[,] grid, int player)
         {
             for (int i = 0; i < 3; i++)
             {
@@ -133,126 +165,110 @@ namespace Commands.Helpers
                     {
                         grid[i, j] = player;
 
-                        // Check if the move results in a win
-                        if (GetWinnerOutcome(grid, turns) == player)
+                        if (GetWinnerOutcome(grid, -1) == player)
                         {
-                            grid[i, j] = 0; // Reset the move
-                            return new int[] { i, j };
+                            grid[i, j] = 0;
+                            return new[] { i, j };
                         }
 
-                        grid[i, j] = 0; // Reset the move
+                        grid[i, j] = 0;
                     }
                 }
             }
 
-            return null; // No winning move found
+            return null;
         }
 
-        private static int[] Minimax(int[,] currentGrid, int turns, int player)
+        private static int[] GetOptimalMove(int[,] grid, int player)
         {
-            int[] bestMove = new int[] { -1, -1 };
-            int bestScore = (player == 1) ? int.MaxValue : int.MinValue;
+            int bestScore = player == 1 ? int.MaxValue : int.MinValue;
+            int[] bestMove = null;
 
             for (int i = 0; i < 3; i++)
             {
                 for (int j = 0; j < 3; j++)
                 {
-                    if (currentGrid[i, j] == 0)
+                    if (grid[i, j] == 0)
                     {
-                        currentGrid[i, j] = player;
-                        int score = MinimaxScore(currentGrid, turns, 1, player == 1 ? 2 : 1);
-                        currentGrid[i, j] = 0;
+                        grid[i, j] = player;
+                        int score = Minimax(grid, 0, player == 2);
+                        grid[i, j] = 0;
 
-                        if ((player == 1 && score < bestScore) || (player == 2 && score > bestScore))
+                        if ((player == 2 && score > bestScore) || (player == 1 && score < bestScore))
                         {
                             bestScore = score;
-                            bestMove[0] = i;
-                            bestMove[1] = j;
+                            bestMove = new[] { i, j };
                         }
                     }
                 }
-            }
-
-            // Additional check to ensure the selected move is within bounds
-            if (bestMove[0] < 0 || bestMove[0] >= 3 || bestMove[1] < 0 || bestMove[1] >= 3)
-            {
-                return null; // Indicate that no valid move was found
             }
 
             return bestMove;
         }
 
-        private static int MinimaxScore(int[,] grid, int turns, int depth, int player)
+        private static int Minimax(int[,] grid, int depth, bool isMaximizing)
         {
-            int winner = GetWinnerOutcome(grid, turns);
-            if (winner == 1)
+            int winner = GetWinnerOutcome(grid, -1);
+            if (winner != 0)
             {
-                return -1;
+                return winner == 1 ? -1 : 1;
             }
 
-            if (winner == 2)
+            if (isMaximizing)
             {
-                return 1;
-            }
-
-            if (player == 1)
-            {
-                int bestScore = int.MaxValue;
-
+                int maxEval = int.MinValue;
                 for (int i = 0; i < 3; i++)
                 {
                     for (int j = 0; j < 3; j++)
                     {
                         if (grid[i, j] == 0)
                         {
-                            grid[i, j] = player;
-                            int score = MinimaxScore(grid, turns, depth + 1, player == 1 ? 2 : 1);
+                            grid[i, j] = 2;
+                            int eval = Minimax(grid, depth + 1, false);
                             grid[i, j] = 0;
-
-                            bestScore = Math.Min(bestScore, score);
+                            maxEval = Math.Max(maxEval, eval);
                         }
                     }
                 }
-
-                return bestScore;
+                return maxEval;
             }
             else
             {
-                int bestScore = int.MinValue;
-
+                int minEval = int.MaxValue;
                 for (int i = 0; i < 3; i++)
                 {
                     for (int j = 0; j < 3; j++)
                     {
                         if (grid[i, j] == 0)
                         {
-                            grid[i, j] = player;
-                            int score = MinimaxScore(grid, turns, depth + 1, player == 1 ? 2 : 1);
+                            grid[i, j] = 1;
+                            int eval = Minimax(grid, depth + 1, true);
                             grid[i, j] = 0;
-
-                            bestScore = Math.Max(bestScore, score);
+                            minEval = Math.Min(minEval, eval);
                         }
                     }
                 }
-
-                return bestScore;
+                return minEval;
             }
         }
 
-        private static int[] GetRandomValidMove(int[,] currentGrid)
+        private static int[] GetRandomValidMove(int[,] grid)
         {
-            Random random = new();
-
             while (true)
             {
-                int row = random.Next(0, 3);
-                int col = random.Next(0, 3);
+                int row = Random.Next(0, 3);
+                int col = Random.Next(0, 3);
 
-                if (currentGrid[row, col] == 0)
+                if (grid[row, col] == 0)
                 {
-                    return new int[] { row, col };
+                    return new[] { row, col };
                 }
             }
+        }
+
+        private static bool IsValidMove(int[,] grid, int[] move)
+        {
+            return move != null && move[0] >= 0 && move[0] < 3 && move[1] >= 0 && move[1] < 3 && grid[move[0], move[1]] == 0;
         }
     }
 }
