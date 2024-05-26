@@ -17,13 +17,13 @@ namespace Commands.Helpers
         public override string Title { get; } = "Trivia";
         public const bool onePerChannel = false;
 
-        public int player1Points;
-        public string player1Answer;
-        public string player1Chart;
-        public int player2Points;
-        public string player2Answer;
-        public string player2Chart;
-        public List<Question> questions = new();
+        public int Player1Points;
+        public string Player1Answer;
+        public string Player1Chart;
+        public int Player2Points;
+        public string Player2Answer;
+        public string Player2Chart;
+        public List<Question> Questions = new();
 
         public Trivia(IUser player1, IUser player2) : base(GameType.Trivia, onePerChannel, TimeSpan.FromMinutes(5), player1, player2)
         {
@@ -48,7 +48,7 @@ namespace Commands.Helpers
             Expired += Challenge.ExpireGame;
 
             // Get a question
-            questions.Add(await TriviaMethods.GetQuestion());
+            Questions.Add(await TriviaMethods.GetQuestion());
 
             await Message.ModifyAsync(x => { x.Content = null; x.Embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention}'s Game of {Title}.").Build(); x.Components = TriviaMethods.GetButtons(Id).Build(); });
         }
@@ -56,7 +56,7 @@ namespace Commands.Helpers
         public override async Task StartGame(SocketMessageComponent interaction)
         {
             // Get a question
-            questions.Add(await TriviaMethods.GetQuestion());
+            Questions.Add(await TriviaMethods.GetQuestion());
 
             // Set State
             State = GameState.Active;
@@ -72,35 +72,35 @@ namespace Commands.Helpers
             // Set Answer and Update Score.
             if (isPlayer1)
             {
-                player1Answer = answer;
-                if (questions.Last().correctAnswer == player1Answer)
+                Player1Answer = answer;
+                if (Questions.Last().CorrectAnswer == Player1Answer)
                 {
-                    player1Points++;
-                    player1Chart += "🟩";
+                    Player1Points++;
+                    Player1Chart += "🟩";
                 }
                 else
                 {
-                    player1Chart += "🟥";
+                    Player1Chart += "🟥";
                 }
             }
             else
             {
-                player2Answer = answer;
-                if (questions.Last().correctAnswer == player2Answer)
+                Player2Answer = answer;
+                if (Questions.Last().CorrectAnswer == Player2Answer)
                 {
-                    player2Points++;
-                    player2Chart += "🟩";
+                    Player2Points++;
+                    Player2Chart += "🟩";
                 }
                 else
                 {
-                    player2Chart += "🟥";
+                    Player2Chart += "🟥";
                 }
             }
 
             // Both players have answered
-            if (player1Answer != null && player2Answer != null)
+            if (Player1Answer != null && Player2Answer != null)
             {
-                if (questions.Count == TriviaMethods.TotalQuestions)
+                if (Questions.Count == TriviaMethods.TotalQuestions)
                 {
                     await FinishGame(component);
                 }
@@ -118,18 +118,18 @@ namespace Commands.Helpers
         public async Task AloneAnswer(string answer, SocketMessageComponent component)
         {
             // Set Answer and Update Score.
-            player1Answer = answer;
-            if (questions.Last().correctAnswer == player1Answer)
+            Player1Answer = answer;
+            if (Questions.Last().CorrectAnswer == Player1Answer)
             {
-                player1Points++;
-                player1Chart += "🟩";
+                Player1Points++;
+                Player1Chart += "🟩";
             }
             else
             {
-                player1Chart += "🟥";
+                Player1Chart += "🟥";
             }
 
-            if (questions.Count == TriviaMethods.TotalQuestions)
+            if (Questions.Count == TriviaMethods.TotalQuestions)
             {
                 await FinishGame(component);
             }
@@ -153,11 +153,11 @@ namespace Commands.Helpers
         private async Task NextQuestion(SocketMessageComponent component)
         {
             // reset game values
-            player1Answer = null;
-            player2Answer = null;
+            Player1Answer = null;
+            Player2Answer = null;
 
             // Get a question
-            questions.Add(await TriviaMethods.GetQuestion());
+            Questions.Add(await TriviaMethods.GetQuestion());
 
             EmbedBuilder embed;
 

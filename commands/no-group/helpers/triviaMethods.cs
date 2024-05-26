@@ -1,172 +1,189 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection.Metadata;
 using System.Text;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 using Challenges;
 using Discord;
-using Discord.Interactions;
-using TimeStamps;
 using static ApiInteractions.Interface;
+using TimeStamps;
 
 namespace Commands.Helpers
 {
+    /// <summary>
+    /// Represents a trivia question with its details and answers.
+    /// </summary>
     public class Question
     {
-        public string question;
-        public string category;
-        public string difficulty;
-        public string correctAnswer;
-        public string[] answers = new string[4];
+        /// <summary>
+        /// Gets or sets the text of the question.
+        /// </summary>
+        public string QuestionText { get; set; }
+
+        /// <summary>
+        /// Gets or sets the category of the question.
+        /// </summary>
+        public string Category { get; set; }
+
+        /// <summary>
+        /// Gets or sets the difficulty level of the question.
+        /// </summary>
+        public string Difficulty { get; set; }
+
+        /// <summary>
+        /// Gets or sets the correct answer to the question.
+        /// </summary>
+        public string CorrectAnswer { get; set; }
+
+        /// <summary>
+        /// Gets or sets the array of possible answers to the question.
+        /// </summary>
+        public string[] Answers { get; set; } = new string[4];
     }
 
+    /// <summary>
+    /// Provides methods for managing and displaying trivia questions.
+    /// </summary>
     public static class TriviaMethods
     {
-        // API management
+        /// <summary>
+        /// The maximum number of questions to fetch per API request.
+        /// </summary>
         public const int MaxQuestionCount = 50;
-        public const int SecondsPerRequest = 6;
-        private static DateTime lastRequestTime = DateTime.MinValue;
-        private static readonly object lockObject = new();
 
+        /// <summary>
+        /// The minimum interval between API requests in seconds.
+        /// </summary>
+        public const int SecondsPerRequest = 6;
+
+        /// <summary>
+        /// The total number of questions for a game.
+        /// </summary>
         public const int TotalQuestions = 5;
 
+        private static DateTime lastRequestTime = DateTime.MinValue;
+        private static readonly SemaphoreSlim requestSemaphore = new(1, 1);
         private static readonly Random random = new();
-
         private static readonly Queue<Question> questions = new();
 
+        /// <summary>
+        /// Fetches new questions from the trivia API and populates the question queue.
+        /// </summary>
         public static async Task GetNewQuestions()
         {
-            TimeSpan elapsed;
-
-            lock (lockObject)
+            await requestSemaphore.WaitAsync();
+            try
             {
-                elapsed = DateTime.Now - lastRequestTime;
-
-                // If less than 6 seconds have passed, release the lock and wait for the remaining time
+                TimeSpan elapsed = DateTime.Now - lastRequestTime;
                 if (elapsed.TotalSeconds < SecondsPerRequest)
                 {
-                    Monitor.Exit(lockObject);
-                    int remainingMilliseconds = (int)((SecondsPerRequest - elapsed.TotalSeconds) * 1000);
+                    await Task.Delay((int)((SecondsPerRequest - elapsed.TotalSeconds) * 1000));
+                }
 
-                    Task.Delay(remainingMilliseconds).Wait();
+                string content = await GetFromAPI($"https://opentdb.com/api.php?amount={MaxQuestionCount}&type=multiple&encode=base64", AcceptTypes.application_json);
+                lastRequestTime = DateTime.Now;
 
-                    Monitor.Enter(lockObject);
+                var jsonData = JsonNode.Parse(content).AsObject();
+                var results = jsonData["results"].AsArray();
+
+                foreach (var result in results)
+                {
+                    var question = new Question
+                    {
+                        QuestionText = DecodeBase64(result["question"].ToString()),
+                        Difficulty = DecodeBase64(result["difficulty"].ToString()),
+                        Category = DecodeBase64(result["category"].ToString())
+                    };
+
+                    var incorrectAnswers = result["incorrect_answers"].AsArray()
+                        .Select(e => DecodeBase64(e.ToString()))
+                        .ToArray();
+
+                    int correctAnswerIndex = random.Next(4);
+                    question.CorrectAnswer = new[] { "a", "b", "c", "d" }[correctAnswerIndex];
+                    question.Answers[correctAnswerIndex] = DecodeBase64(result["correct_answer"].ToString());
+
+                    for (int i = 0, j = 0; i < 4; i++)
+                    {
+                        if (i != correctAnswerIndex)
+                        {
+                            question.Answers[i] = incorrectAnswers[j++];
+                        }
+                    }
+
+                    questions.Enqueue(question);
                 }
             }
-
-            // Get Questions
-            var content = await GetFromAPI($"https://opentdb.com/api.php?amount={MaxQuestionCount}&type=multiple&encode=base64", AcceptTypes.application_json);
-
-            // Update the last request time after waiting or immediately if no wait was needed
-            lastRequestTime = DateTime.Now;
-
-            // Parse all questions and add to the list.
-            var jsonData = JsonNode.Parse(content).AsObject();
-            var results = jsonData["results"].AsArray();
-
-            foreach (var result in results)
+            finally
             {
-
-                Question question = new()
-                {
-                    question = Encoding.UTF8.GetString(Convert.FromBase64String(result["question"].ToString())),
-                    difficulty = Encoding.UTF8.GetString(Convert.FromBase64String(result["difficulty"].ToString())),
-                    category = Encoding.UTF8.GetString(Convert.FromBase64String(result["category"].ToString())),
-                };
-
-                var incorrectAnswers = result["incorrect_answers"].AsArray().Select(e => Encoding.UTF8.GetString(Convert.FromBase64String(e.ToString()))).ToArray();
-
-                int answerLocation = random.Next(0, 4);
-                int incorrectAnswersIndex = 0;
-                string[] letters = { "a", "b", "c", "d" };
-                for (int i = 0; i < letters.Length; i++)
-                {
-                    if (i == answerLocation)
-                    {
-                        question.correctAnswer = letters[i];
-                        question.answers[i] = Encoding.UTF8.GetString(Convert.FromBase64String(result["correct_answer"].ToString()));
-                    }
-                    else
-                    {
-                        question.answers[i] = incorrectAnswers[incorrectAnswersIndex];
-                        incorrectAnswersIndex++;
-                    }
-                }
-
-                // Add question to Queue
-                questions.Enqueue(question);
+                requestSemaphore.Release();
             }
         }
 
+        /// <summary>
+        /// Retrieves a question from the queue. If the queue is empty, fetches new questions from the API.
+        /// </summary>
+        /// <returns>A <see cref="Question"/> object representing a trivia question.</returns>
         public static async Task<Question> GetQuestion()
         {
-            if (questions.Count > 0)
-            {
-                return questions.Dequeue();
-            }
-            else
+            if (questions.Count == 0)
             {
                 await GetNewQuestions();
-                return questions.Dequeue();
             }
+            return questions.Dequeue();
         }
 
+        /// <summary>
+        /// Formats the text of a question for display.
+        /// </summary>
+        /// <param name="question">The question to format.</param>
+        /// <returns>A formatted string representing the question and its answers.</returns>
         private static string FormatQuestionText(Question question)
         {
-            StringBuilder finalText = new();
-
-            finalText.AppendLine($"**{question.question}**\n");
-
-            string[] letters = { "🇦", "🇧", "🇨", "🇩" };
-            for (int i = 0; i < question.answers.Length; i++)
-            {
-                finalText.AppendLine($"{letters[i]} {question.answers[i]}\n");
-            }
+            var finalText = new StringBuilder()
+                .AppendLine($"**{question.QuestionText}**\n")
+                .AppendJoin('\n', question.Answers.Select((a, i) => $"{new[] { "🇦", "🇧", "🇨", "🇩" }[i]} {a}"))
+                .AppendLine();
 
             return finalText.ToString();
         }
 
+        /// <summary>
+        /// Creates an embed for displaying a trivia question in Discord.
+        /// </summary>
+        /// <param name="game">The trivia game containing the question.</param>
+        /// <param name="title">The title of the embed.</param>
+        /// <returns>An <see cref="EmbedBuilder"/> object representing the question embed.</returns>
         public static EmbedBuilder CreateQuestionEmbed(Trivia game, string title)
         {
-            StringBuilder description = new();
-            description.AppendLine(title);
+            var lastQuestion = game.Questions.Last();
+            var description = new StringBuilder()
+                .AppendLine(title)
+                .AppendLine(game.Questions.Count > 1 ?
+                    $"**{game.Player1.GlobalName}**: {game.Player1Chart} {(!game.Player2.IsBot ? $"**{game.Player2.GlobalName}**: {game.Player2Chart}" : "")}" : "")
+                .AppendLine($"Question: {game.Questions.Count}/{TotalQuestions}\n")
+                .AppendLine(FormatQuestionText(lastQuestion))
+                .AppendLine($"(Ends {TimeStamp.FromDateTime(game.ExpirationTime, TimeStamp.Formats.Relative)}).")
+                .ToString();
 
-            if (game.questions.Count > 1)
-            {
-                description.AppendLine($"**{game.Player1.GlobalName}**: {game.player1Chart} {(!game.Player2.IsBot ? $"**{game.Player2.GlobalName}**: {game.player2Chart}" : "")}");
-            }
-
-            description.AppendLine($"Question: {game.questions.Count}/{TotalQuestions}\n");
-            description.AppendLine(FormatQuestionText(game.questions.Last()));
-
-            if (!game.Player2.IsBot)
-            {
-                description.AppendLine($"({TimeStamp.FromDateTime(game.ExpirationTime, TimeStamp.Formats.Relative)}).");
-            }
-            else
-            {
-                description.AppendLine($"(Ends {TimeStamp.FromDateTime(game.ExpirationTime, TimeStamp.Formats.Relative)}).");
-            }
-
-            var embed = new EmbedBuilder
+            return new EmbedBuilder
             {
                 Color = Challenge.BothPlayersColor,
-                Description = description.ToString()
-            };
-
-            embed.AddField(name: "Category", value: game.questions.Last().category, inline: true).AddField(name: "Difficulty", value: game.questions.Last().difficulty, inline: true);
-
-            embed.Footer = GetFooter();
-
-            return embed;
+                Description = description
+            }
+            .AddField("Category", lastQuestion.Category, inline: true)
+            .AddField("Difficulty", lastQuestion.Difficulty, inline: true)
+            .WithFooter(GetFooter());
         }
 
+        /// <summary>
+        /// Creates an embed for displaying the final results of a trivia game in Discord.
+        /// </summary>
+        /// <param name="game">The trivia game containing the results.</param>
+        /// <param name="forfeited">Indicates whether the game was forfeited.</param>
+        /// <returns>An <see cref="EmbedBuilder"/> object representing the final results embed.</returns>
         public static EmbedBuilder CreateFinalEmbed(Trivia game, bool forfeited = false)
         {
             var embed = new EmbedBuilder
@@ -175,84 +192,85 @@ namespace Commands.Helpers
                 Description = GetFinalTitle(game, forfeited)
             };
 
-            // Show Player Charts
-            embed.AddField(name: game.Player1.GlobalName, value: game.player1Chart ?? "🟥", inline: true);
-
+            embed.AddField(game.Player1.GlobalName, game.Player1Chart ?? "🟥", inline: true);
             if (!game.Player2.IsBot)
             {
-                embed.AddField(name: game.Player2.GlobalName, value: game.player2Chart ?? "🟥", inline: true);
+                embed.AddField(game.Player2.GlobalName, game.Player2Chart ?? "🟥", inline: true);
             }
 
-            // Show Questions with Correct Answers
-            string letters = "abcd";
-            foreach (Question q in game.questions)
+            foreach (var q in game.Questions)
             {
-                embed.AddField(name: q.question, value: q.answers[letters.IndexOf(q.correctAnswer)]);
+                embed.AddField(q.QuestionText, q.Answers["abcd".IndexOf(q.CorrectAnswer)]);
             }
 
             return embed;
         }
 
+        /// <summary>
+        /// Determines the final title to display based on the outcome of the trivia game.
+        /// </summary>
+        /// <param name="game">The trivia game.</param>
+        /// <param name="forfeited">Indicates whether the game was forfeited.</param>
+        /// <returns>A string representing the final title of the game.</returns>
         private static string GetFinalTitle(Trivia game, bool forfeited = false)
         {
-            Challenge.WinCases winner = GetWinner(game, forfeited);
-
-            if (winner == Challenge.WinCases.None)
+            var winner = GetWinner(game, forfeited);
+            return winner switch
             {
-                return $"### ⚔️ {game.Player1.Mention}'s Completed Game of {game.Title}.";  
-            }
-            else
-            {
-                // player1 lost
-                if (winner == Challenge.WinCases.Player2)
-                {
-                    return $"### ⚔️ {game.Player1.Mention} Was Defeated By {game.Player2.Mention} in {game.Title}.";
-                }
-                else if (winner == Challenge.WinCases.Tie) // draw
-                {
-                    return $"### ⚔️ {game.Player1.Mention} Drew {game.Player2.Mention} in {game.Title}.";
-                }
-                else // else player1 won
-                {
-                    return $"### ⚔️ {game.Player1.Mention} Defeated {game.Player2.Mention} in {game.Title}.";
-                }
-            }
+                Challenge.WinCases.Player2 => $"### ⚔️ {game.Player1.Mention} Was Defeated By {game.Player2.Mention} in {game.Title}.",
+                Challenge.WinCases.Tie => $"### ⚔️ {game.Player1.Mention} Drew {game.Player2.Mention} in {game.Title}.",
+                Challenge.WinCases.Player1 => $"### ⚔️ {game.Player1.Mention} Defeated {game.Player2.Mention} in {game.Title}.",
+                _ => $"### ⚔️ {game.Player1.Mention}'s Completed Game of {game.Title}.",
+            };
         }
 
+        /// <summary>
+        /// Determines the winner of the trivia game.
+        /// </summary>
+        /// <param name="game">The trivia game.</param>
+        /// <param name="forfeited">Indicates whether the game was forfeited.</param>
+        /// <returns>A <see cref="Challenge.WinCases"/> value representing the winner of the game.</returns>
         public static Challenge.WinCases GetWinner(Trivia game, bool forfeited = false)
         {
             if (game.Player2.IsBot)
             {
                 return Challenge.WinCases.None;
             }
-            else
+
+            if (forfeited)
             {
-                // All ways for player1 to lose
-                if (game.player1Points < game.player2Points || (forfeited && game.player1Answer == null && game.player1Points < game.player2Points))
-                {
-                    return Challenge.WinCases.Player2;
-                }
-                else if ((forfeited && game.player1Points + game.player2Points == 0) || game.player1Points == game.player2Points) // draw
+                if (game.Player1Points == 0 && game.Player2Points == 0)
                 {
                     return Challenge.WinCases.Tie;
                 }
-                else // else player1 won
+
+                if (game.Player1Answer == null && game.Player1Points < game.Player2Points)
                 {
-                    return Challenge.WinCases.Player1;
+                    return Challenge.WinCases.Player2;
                 }
             }
-        }
 
-        public static EmbedFooterBuilder GetFooter()
-        {
-            var footer = new EmbedFooterBuilder
+            return game.Player1Points switch
             {
-                Text = "Powered by Open Trivia Database (unaffiliated)."
+                var p1 when p1 < game.Player2Points => Challenge.WinCases.Player2,
+                var p1 when p1 == game.Player2Points => Challenge.WinCases.Tie,
+                _ => Challenge.WinCases.Player1
             };
-
-            return footer;
         }
 
+        /// <summary>
+        /// Gets the footer for the embed, indicating the trivia source.
+        /// </summary>
+        /// <returns>An <see cref="EmbedFooterBuilder"/> object representing the footer.</returns>
+        private static EmbedFooterBuilder GetFooter() =>
+            new() { Text = "Powered by Open Trivia Database (unaffiliated)." };
+
+        /// <summary>
+        /// Creates buttons for answering trivia questions in Discord.
+        /// </summary>
+        /// <param name="Id">The ID associated with the buttons.</param>
+        /// <param name="disable">Indicates whether to disable the buttons.</param>
+        /// <returns>A <see cref="ComponentBuilder"/> object representing the buttons.</returns>
         public static ComponentBuilder GetButtons(ulong Id, bool disable = false)
         {
             var buttons = new ComponentBuilder();
@@ -263,5 +281,13 @@ namespace Commands.Helpers
 
             return buttons;
         }
+
+        /// <summary>
+        /// Decodes a Base64-encoded string.
+        /// </summary>
+        /// <param name="encodedText">The Base64-encoded string.</param>
+        /// <returns>The decoded string.</returns>
+        private static string DecodeBase64(string encodedText) =>
+            Encoding.UTF8.GetString(Convert.FromBase64String(encodedText));
     }
 }

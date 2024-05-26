@@ -230,7 +230,7 @@ namespace Commands
                 {
                     await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
                 }
-                else if (game.player1Answer != null && isPlayer1 || game.player2Answer != null && isPlayer2)
+                else if (game.Player1Answer != null && isPlayer1 || game.Player2Answer != null && isPlayer2)
                 {
                     await component.RespondAsync(text: $"❌ You have already answered.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
                 }
