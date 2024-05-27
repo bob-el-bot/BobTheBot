@@ -233,7 +233,12 @@ namespace Challenges
             }.Build();
         }
 
-        
+        /// <summary>
+        /// Generates the title for the final outcome of a game.
+        /// </summary>
+        /// <param name="game">The game instance.</param>
+        /// <param name="winner">The winner of the game.</param>
+        /// <returns>The title for the final outcome.</returns>
         public static string GetFinalTitle(Games.Game game, WinCases winner)
         {
             return winner switch
