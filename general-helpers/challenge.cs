@@ -222,6 +222,9 @@ namespace Challenges
                 case GameType.Trivia:
                     user.TotalTriviaGames++;
                     break;
+                case GameType.Connect4:
+                    user.TotalConnect4Games++;
+                    break;
                 default:
                     break;
             }
@@ -293,6 +296,20 @@ namespace Challenges
                         else if (winner == WinCases.Tie)
                         {
                             user.TriviaWins += 0.5f;
+                        }
+                        break;
+                    case GameType.Connect4:
+                        if (isPlayer1 && winner == WinCases.Player1)
+                        {
+                            user.Connect4Wins++;
+                        }
+                        else if (!isPlayer1 && winner == WinCases.Player2)
+                        {
+                            user.Connect4Wins++;
+                        }
+                        else if (winner == WinCases.Tie)
+                        {
+                            user.Connect4Wins += 0.5f;
                         }
                         break;
                 }
