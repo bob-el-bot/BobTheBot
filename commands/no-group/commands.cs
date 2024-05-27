@@ -472,7 +472,7 @@ namespace Commands
                     var embed = new EmbedBuilder
                     {
                         Color = Challenge.DefaultColor,
-                        Description = $"### ⚔️ {challenge.Player1.Mention} Challenges {challenge.Player2.Mention} to {challenge.Title}.\n{challenge.Player2.Mention} declined."
+                        Description = $"### ⚔️ {challenge.Player1.Mention} Challenged {challenge.Player2.Mention} to {challenge.Title}.\n{challenge.Player2.Mention} declined."
                     };
 
                     var components = new ComponentBuilder().WithButton(label: "⚔️ Accept", customId: $"acceptedChallenge", style: ButtonStyle.Success, disabled: true)

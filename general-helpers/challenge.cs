@@ -92,7 +92,7 @@ namespace Challenges
             var embed = new EmbedBuilder
             {
                 Color = DefaultColor,
-                Description = $"### ⚔️ {game.Player1.Mention} Challenges {game.Player2.Mention} to {game.Title}.\nAccept or decline {TimeStamp.FromDateTime(game.ExpirationTime, TimeStamp.Formats.Relative)}."
+                Description = $"### ⚔️ {game.Player1.Mention} Challenges You to {game.Title}.\nAccept or decline {TimeStamp.FromDateTime(game.ExpirationTime, TimeStamp.Formats.Relative)}."
             };
 
             var components = new ComponentBuilder().WithButton(label: "⚔️ Accept", customId: $"acceptChallenge:{game.Id}", style: ButtonStyle.Success)
@@ -100,7 +100,7 @@ namespace Challenges
 
             // Start Challenge
             game.Expired += ExpireGame;
-            await game.Message.ModifyAsync(x => { x.Content = null; x.Embed = embed.Build(); x.Components = components.Build(); });
+            await game.Message.ModifyAsync(x => { x.Content = game.Player2.Mention; x.Embed = embed.Build(); x.Components = components.Build(); });
         }
 
         /// <summary>
@@ -172,7 +172,7 @@ namespace Challenges
                         var embed = new EmbedBuilder
                         {
                             Color = DefaultColor,
-                            Description = $"### ⚔️ {game.Player1.Mention} Challenges {game.Player2.Mention} to {game.Title}.\n{game.Player2.Mention} did not respond."
+                            Description = $"### ⚔️ {game.Player1.Mention} Challenged {game.Player2.Mention} to {game.Title}.\n{game.Player2.Mention} did not respond."
                         };
 
                         var components = new ComponentBuilder().WithButton(label: "⚔️ Accept", customId: $"acceptedChallenge", style: ButtonStyle.Success, disabled: true)
