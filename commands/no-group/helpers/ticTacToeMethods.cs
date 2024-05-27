@@ -10,17 +10,6 @@ namespace Commands.Helpers
     /// </summary>
     public static class TTTMethods
     {
-        private static readonly Random Random = new();
-
-        /// <summary>
-        /// Determines the player who goes first.
-        /// </summary>
-        /// <returns>True if Player 1 goes first, otherwise false.</returns>
-        public static bool DetermineFirstTurn()
-        {
-            return Random.Next(0, 2) == 1;
-        }
-
         /// <summary>
         /// Generates button components for displaying Tic Tac Toe grid.
         /// </summary>
@@ -47,34 +36,6 @@ namespace Commands.Helpers
             }
 
             return buttons;
-        }
-
-        /// <summary>
-        /// Creates an embed for displaying game information.
-        /// </summary>
-        /// <param name="isPlayer1Turn">Indicates if it's Player 1's turn.</param>
-        /// <param name="description">Description of the game state.</param>
-        /// <returns>An <see cref="EmbedBuilder"/> object representing the embed.</returns>
-        public static Embed CreateEmbed(bool isPlayer1Turn, string description)
-        {
-            return new EmbedBuilder
-            {
-                Color = isPlayer1Turn ? Challenge.Player1Color : Challenge.Player2Color,
-                Description = description
-            }.Build();
-        }
-
-        public static string GetFinalTitle(TicTacToe game, bool forfeited = false)
-        {
-            Challenge.WinCases winner = GetWinner(game.Grid, game.Turns, game.IsPlayer1Turn, forfeited);
-            return winner switch
-            {
-                Challenge.WinCases.Player2 => $"### ⚔️ {game.Player1.Mention} Was Defeated By {game.Player2.Mention} in {game.Title}.",
-                Challenge.WinCases.Tie => $"### ⚔️ {game.Player1.Mention} Drew {game.Player2.Mention} in {game.Title}.",
-                Challenge.WinCases.Player1 => $"### ⚔️ {game.Player1.Mention} Defeated {game.Player2.Mention} in {game.Title}.",
-                Challenge.WinCases.None => $"### ⚔️ {game.Player1.Mention} Drew {game.Player2.Mention} in {game.Title}.",
-                _ => $"### ⚔️ {game.Player1.Mention} Drew {game.Player2.Mention} in {game.Title}.",
-            };
         }
 
         /// <summary>

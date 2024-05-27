@@ -13,23 +13,6 @@ namespace Commands.Helpers
     public static class Connect4Methods
     {
         /// <summary>
-        /// Determines the first turn randomly.
-        /// </summary>
-        /// <returns>True if player 1 starts, false if player 2 starts.</returns>
-        public static bool DetermineFirstTurn()
-        {
-            Random random = new();
-            if (random.Next(0, 2) == 1)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        /// <summary>
         /// Generates buttons for the Connect4 game interface.
         /// </summary>
         /// <param name="game">The Connect4 game instance.</param>
@@ -57,21 +40,6 @@ namespace Commands.Helpers
             buttons.WithButton(label: "7", customId: $"connect4:7:{game.Id}", style: ButtonStyle.Secondary, disabled: gameOver || (game.Grid[6, 0] != 0), row: 1);
 
             return buttons;
-        }
-
-        /// <summary>
-        /// Creates an embed for Connect4 game messages.
-        /// </summary>
-        /// <param name="isPlayer1Turn">Flag indicating if it's player 1's turn.</param>
-        /// <param name="description">Description for the embed.</param>
-        /// <returns>The created embed.</returns>
-        public static Embed CreateEmbed(bool isPlayer1Turn, string description)
-        {
-            return new EmbedBuilder
-            {
-                Color = isPlayer1Turn ? Challenge.Player1Color : Challenge.Player2Color,
-                Description = description
-            }.Build();
         }
 
         /// <summary>
@@ -107,25 +75,6 @@ namespace Commands.Helpers
             result.AppendLine("1️⃣2️⃣3️⃣4️⃣5️⃣6️⃣7️⃣");
 
             return result.ToString();
-        }
-
-        /// <summary>
-        /// Generates the title for the final outcome of the Connect4 game.
-        /// </summary>
-        /// <param name="game">The Connect4 game instance.</param>
-        /// <param name="forfeited">Flag indicating if the game was forfeited.</param>
-        /// <returns>The title for the final outcome.</returns>
-        public static string GetFinalTitle(Connect4 game, bool forfeited = false)
-        {
-            Challenge.WinCases winner = GetWinner(game, forfeited);
-            return winner switch
-            {
-                Challenge.WinCases.Player2 => $"### ⚔️ {game.Player1.Mention} Was Defeated By {game.Player2.Mention} in {game.Title}.",
-                Challenge.WinCases.Tie => $"### ⚔️ {game.Player1.Mention} Drew {game.Player2.Mention} in {game.Title}.",
-                Challenge.WinCases.Player1 => $"### ⚔️ {game.Player1.Mention} Defeated {game.Player2.Mention} in {game.Title}.",
-                Challenge.WinCases.None => $"### ⚔️ {game.Player1.Mention} Drew {game.Player2.Mention} in {game.Title}.",
-                _ => $"### ⚔️ {game.Player1.Mention} Drew {game.Player2.Mention} in {game.Title}.",
-            };
         }
 
         /// <summary>

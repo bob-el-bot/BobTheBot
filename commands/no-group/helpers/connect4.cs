@@ -34,7 +34,7 @@ namespace Commands.Helpers
             State = GameState.Active;
 
             // Pick Turn
-            IsPlayer1Turn = Connect4Methods.DetermineFirstTurn();
+            IsPlayer1Turn = Challenge.DetermineFirstTurn();
 
             // Add to Games List
             Challenge.AddToSpecificGameList(this);
@@ -44,7 +44,7 @@ namespace Commands.Helpers
 
             Expired += Challenge.ExpireGame;
 
-            await Message.ModifyAsync(x => { x.Content = null; x.Embed = Connect4Methods.CreateEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn.\n(Ends in {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)})\n{Connect4Methods.GetGrid(Grid)}"); x.Components = Connect4Methods.GetButtons(this).Build(); });
+            await Message.ModifyAsync(x => { x.Content = null; x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn.\n(Ends in {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)})\n{Connect4Methods.GetGrid(Grid)}"); x.Components = Connect4Methods.GetButtons(this).Build(); });
 
             if (!IsPlayer1Turn)
             {
@@ -58,12 +58,12 @@ namespace Commands.Helpers
             State = GameState.Active;
 
             // Pick Turn
-            IsPlayer1Turn = Connect4Methods.DetermineFirstTurn();
+            IsPlayer1Turn = Challenge.DetermineFirstTurn();
 
             // Reset Expiration Time.
             UpdateExpirationTime(TimeSpan.FromMinutes(1));
 
-            await interaction.ModifyOriginalResponseAsync(x => { x.Content = null; x.Embed = Connect4Methods.CreateEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn ( Forfeit {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)}).\n{Connect4Methods.GetGrid(Grid)}"); x.Components = Connect4Methods.GetButtons(this).Build(); });
+            await interaction.ModifyOriginalResponseAsync(x => { x.Content = null; x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn ( Forfeit {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)}).\n{Connect4Methods.GetGrid(Grid)}"); x.Components = Connect4Methods.GetButtons(this).Build(); });
         }
 
         public override async Task EndGameOnTime()
@@ -82,7 +82,7 @@ namespace Commands.Helpers
                     await Challenge.UpdateUserStats(this, Connect4Methods.GetWinner(this, true));
                 }
 
-                await Message.ModifyAsync(x => { x.Embed = Connect4Methods.CreateEmbed(IsPlayer1Turn, $"{Connect4Methods.GetFinalTitle(this, true)}\n{Connect4Methods.GetGrid(Grid)}"); x.Components = Connect4Methods.GetButtons(this, true).Build(); });
+                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"{Challenge.GetFinalTitle(this, Connect4Methods.GetWinner(this, true), true)}\n{Connect4Methods.GetGrid(Grid)}"); x.Components = Connect4Methods.GetButtons(this, true).Build(); });
             }
             catch (Exception)
             {
@@ -102,7 +102,7 @@ namespace Commands.Helpers
             {
                 properties = (x) =>
                 {
-                    x.Embed = Connect4Methods.CreateEmbed(IsPlayer1Turn, $"{Connect4Methods.GetFinalTitle(this)}\n{Connect4Methods.GetGrid(Grid)}");
+                    x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"{Challenge.GetFinalTitle(this, Connect4Methods.GetWinner(this))}\n{Connect4Methods.GetGrid(Grid)}");
                     x.Components = Connect4Methods.GetButtons(this).Build();
                 };
 
@@ -121,7 +121,7 @@ namespace Commands.Helpers
 
                 properties = (x) =>
                 {
-                    x.Embed = Connect4Methods.CreateEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn.\n(Ends in {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)})\n{Connect4Methods.GetGrid(Grid)}");
+                    x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn.\n(Ends in {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)})\n{Connect4Methods.GetGrid(Grid)}");
                     x.Components = Connect4Methods.GetButtons(this).Build();
                 };
 
@@ -187,7 +187,7 @@ namespace Commands.Helpers
             {
                 properties = (x) =>
                 {
-                    x.Embed = Connect4Methods.CreateEmbed(IsPlayer1Turn, $"{Connect4Methods.GetFinalTitle(this)}\n{Connect4Methods.GetGrid(Grid)}");
+                    x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"{Challenge.GetFinalTitle(this, Connect4Methods.GetWinner(this))}\n{Connect4Methods.GetGrid(Grid)}");
                     x.Components = Connect4Methods.GetButtons(this).Build();
                 };
 
@@ -206,7 +206,7 @@ namespace Commands.Helpers
 
                 properties = (x) =>
                 {
-                    x.Embed = Connect4Methods.CreateEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn (Forfeit {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)}).\n{Connect4Methods.GetGrid(Grid)}");
+                    x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn (Forfeit {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)}).\n{Connect4Methods.GetGrid(Grid)}");
                     x.Components = Connect4Methods.GetButtons(this).Build();
                 };
 

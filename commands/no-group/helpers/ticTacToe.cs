@@ -33,7 +33,7 @@ namespace Commands.Helpers
             State = GameState.Active;
 
             // Pick Turn
-            IsPlayer1Turn = TTTMethods.DetermineFirstTurn();
+            IsPlayer1Turn = Challenge.DetermineFirstTurn();
 
             // Add to Games List
             Challenge.AddToSpecificGameList(this);
@@ -43,7 +43,7 @@ namespace Commands.Helpers
 
             Expired += Challenge.ExpireGame;
 
-            await Message.ModifyAsync(x => { x.Content = null; x.Embed = TTTMethods.CreateEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn.\n(Ends in {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)}"); x.Components = TTTMethods.GetButtons(Grid, Turns, Id).Build(); });
+            await Message.ModifyAsync(x => { x.Content = null; x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn.\n(Ends in {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)}"); x.Components = TTTMethods.GetButtons(Grid, Turns, Id).Build(); });
 
             if (!IsPlayer1Turn)
             {
@@ -57,12 +57,12 @@ namespace Commands.Helpers
             State = GameState.Active;
 
             // Pick Turn
-            IsPlayer1Turn = TTTMethods.DetermineFirstTurn();
+            IsPlayer1Turn = Challenge.DetermineFirstTurn();
 
             // Reset Expiration Time.
             UpdateExpirationTime(TimeSpan.FromMinutes(1));
 
-            await interaction.ModifyOriginalResponseAsync(x => { x.Content = null; x.Embed = TTTMethods.CreateEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn (Forfeit {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)})."); x.Components = TTTMethods.GetButtons(Grid, Turns, Id).Build(); });
+            await interaction.ModifyOriginalResponseAsync(x => { x.Content = null; x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn (Forfeit {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)})."); x.Components = TTTMethods.GetButtons(Grid, Turns, Id).Build(); });
         }
 
         public override async Task EndGameOnTime()
@@ -81,7 +81,7 @@ namespace Commands.Helpers
                     await Challenge.UpdateUserStats(this, TTTMethods.GetWinner(Grid, Turns, IsPlayer1Turn, true));
                 }
 
-                await Message.ModifyAsync(x => { x.Embed = TTTMethods.CreateEmbed(IsPlayer1Turn, TTTMethods.GetFinalTitle(this, true)); x.Components = TTTMethods.GetButtons(Grid, Turns, Id, true).Build(); });
+                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, Challenge.GetFinalTitle(this, TTTMethods.GetWinner(Grid, Turns, IsPlayer1Turn, true), true)); x.Components = TTTMethods.GetButtons(Grid, Turns, Id, true).Build(); });
             }
             catch (Exception)
             {
@@ -101,7 +101,7 @@ namespace Commands.Helpers
             {
                 properties = (x) =>
                 {
-                    x.Embed = TTTMethods.CreateEmbed(IsPlayer1Turn, TTTMethods.GetFinalTitle(this));
+                    x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, Challenge.GetFinalTitle(this, TTTMethods.GetWinner(Grid, Turns, IsPlayer1Turn)));
                     x.Components = TTTMethods.GetButtons(Grid, Turns, Id).Build();
                 };
 
@@ -120,7 +120,7 @@ namespace Commands.Helpers
 
                 properties = (x) =>
                 {
-                    x.Embed = TTTMethods.CreateEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn.\n(Ends in {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)})");
+                    x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn.\n(Ends in {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)})");
                     x.Components = TTTMethods.GetButtons(Grid, Turns, Id).Build();
                 };
 
@@ -187,7 +187,7 @@ namespace Commands.Helpers
             {
                 properties = (x) =>
                 {
-                    x.Embed = TTTMethods.CreateEmbed(IsPlayer1Turn, TTTMethods.GetFinalTitle(this));
+                    x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, Challenge.GetFinalTitle(this, TTTMethods.GetWinner(Grid, Turns, IsPlayer1Turn)));
                     x.Components = TTTMethods.GetButtons(Grid, Turns, Id).Build();
                 };
 
@@ -206,7 +206,7 @@ namespace Commands.Helpers
 
                 properties = (x) =>
                 {
-                    x.Embed = TTTMethods.CreateEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn (Forfeit {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)}).");
+                    x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn (Forfeit {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)}).");
                     x.Components = TTTMethods.GetButtons(Grid, Turns, Id).Build();
                 };
 

@@ -202,6 +202,51 @@ namespace Challenges
         }
 
         /// <summary>
+        /// Determines the first turn randomly.
+        /// </summary>
+        /// <returns>True if player 1 starts, false if player 2 starts.</returns>
+        public static bool DetermineFirstTurn()
+        {
+            Random random = new();
+            if (random.Next(0, 2) == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Creates an embed for Connect4 game messages.
+        /// </summary>
+        /// <param name="isPlayer1Turn">Flag indicating if it's player 1's turn.</param>
+        /// <param name="description">Description for the embed.</param>
+        /// <returns>The created embed.</returns>
+        public static Embed CreateTurnBasedEmbed(bool isPlayer1Turn, string description)
+        {
+            return new EmbedBuilder
+            {
+                Color = isPlayer1Turn ? Player1Color : Player2Color,
+                Description = description
+            }.Build();
+        }
+
+        
+        public static string GetFinalTitle(Games.Game game, WinCases winner, bool forfeited = false)
+        {
+            return winner switch
+            {
+                WinCases.Player2 => $"### ⚔️ {game.Player1.Mention} Was Defeated By {game.Player2.Mention} in {game.Title}.",
+                WinCases.Tie => $"### ⚔️ {game.Player1.Mention} Drew {game.Player2.Mention} in {game.Title}.",
+                WinCases.Player1 => $"### ⚔️ {game.Player1.Mention} Defeated {game.Player2.Mention} in {game.Title}.",
+                WinCases.None => $"### ⚔️ {game.Player1.Mention} Drew {game.Player2.Mention} in {game.Title}.",
+                _ => $"### ⚔️ {game.Player1.Mention} Drew {game.Player2.Mention} in {game.Title}.",
+            };
+        }
+
+        /// <summary>
         /// Updates the specific game-related statistics of a user based on the game type and outcome.
         /// </summary>
         /// <param name="gameType">The type of the game.</param>
