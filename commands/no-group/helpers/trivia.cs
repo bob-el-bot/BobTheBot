@@ -141,17 +141,17 @@ namespace Commands.Helpers
 
         private async Task UpdateQuestion(SocketMessageComponent component)
         {
-            // Reset Expiration Time.
-            UpdateExpirationTime(TimeSpan.FromMinutes(0.5));
-
             await component.ModifyOriginalResponseAsync(x => { x.Embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}."); x.Components = TriviaMethods.GetButtons(Id).Build(); });
         }
 
         private async Task NextQuestion(SocketMessageComponent component)
         {
-            // reset game values
+            // Reset game values
             Player1Answer = null;
             Player2Answer = null;
+
+            // Reset Expiration Time.
+            UpdateExpirationTime(TimeSpan.FromMinutes(0.5));
 
             // Get a question
             Questions.Add(await TriviaMethods.GetQuestion());
