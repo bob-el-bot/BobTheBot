@@ -347,6 +347,22 @@ namespace Commands.Helpers
                     },
                     new CommandInfo
                     {
+                        Name = "connect4",
+                        InheritGroupName = false,
+                        Description = "Play Bob or a user in a game of Connect 4.",
+                        Url = "https://docs.bobthebot.net/#connect4",
+                        Parameters = new[]
+                        {
+                            new ParameterInfo
+                            {
+                                Name = "opponent",
+                                Description =
+                                    "The user you wish to play. Leave empty to play alone."
+                            }
+                        }
+                    },
+                    new CommandInfo
+                    {
                         Name = "tic-tac-toe",
                         InheritGroupName = false,
                         Description = "Play Bob or a user in a game of Tic Tac Toe.",

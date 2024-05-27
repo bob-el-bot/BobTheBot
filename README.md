@@ -44,7 +44,7 @@ Making memories is important and with `/quote new` you can do just that! Bob wil
 Use `/fonts`, to transform your text into something that is *guaranteed* to grab users' attention., or use `/encrypt` to secure your message.
 
 ### 🎮 Play games!
-With multiple games to choose from like `/rock-paper-scissors`, `/tic-tac-toe`, `/trivia`, `/master-mind`, and *only more* on the way, Bob is ready to keep provide your server with the entertainment it *needs* to thrive.
+With multiple games to choose from like `/connect4`, `/tic-tac-toe`, `/trivia`, `/master-mind`, `/rock-paper-scissors` and *only more* on the way, Bob is ready to keep provide your server with the entertainment it *needs* to thrive.
 
 ### 🖨️ Automatically do things!
 With commands like `/auto preview-messages` and `/auto preview-github` you can see the contents of a message, code file, pull request, or issue without ever leaving the channel they were shared in. Plus, you don't need to worry about publishing messages in news channels with `/auto publish-announcements`.
@@ -74,6 +74,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 
 ### 🎮 Game commands:
 - `trivia [opponent]` Play a game of trivia with or without someone.
+- `/connect4` Play Bob or a user in a game of Connect 4.
 - `/tic-tac-toe [opponent]` Play Bob or a user in a game of Tic Tac Toe. 
 - `/rock-paper-scissors [opponent]` Play Bob or a user in a game of Rock Paper Scissors.
 - `/master-mind new-game` Play a game of Master Mind, the rules will shared upon usage.
