@@ -11,13 +11,13 @@ namespace Commands.Helpers
     public class Connect4 : Games.Game
     {
         public override string Title { get; } = "Connect 4";
-        public const bool onePerChannel = false;
+        private static readonly bool onePerChannel = false;
 
-        public int[,] Grid = new int[7, 6];
-        public int LastMoveColumn;
-        public int LastMoveRow;
-        public bool IsPlayer1Turn;
-        public int Turns;
+        public int[,] Grid { get; set; } = new int[7, 6];
+        public int LastMoveColumn { get; set; }
+        public int LastMoveRow { get; set; }
+        public bool IsPlayer1Turn { get; set; }
+        public int Turns { get; set; }
 
         public Connect4(IUser player1, IUser player2) : base(GameType.Connect4, onePerChannel, TimeSpan.FromMinutes(5), player1, player2)
         {

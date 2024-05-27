@@ -12,11 +12,11 @@ namespace Commands.Helpers
     public class RockPaperScissors : Games.Game
     {
         public override string Title { get; } = "Rock Paper Scissors";
-        public const bool onePerChannel = false;
+        private static readonly bool onePerChannel = false;
 
         // -1 = null |  0 = rock | 1 = paper | 2 = scissors
-        public int Player1Choice = -1;
-        public int Player2Choice = -1;
+        public int Player1Choice { get; set; } = -1;
+        public int Player2Choice { get; set; } = -1;
 
         public RockPaperScissors(IUser player1, IUser player2) : base(GameType.RockPaperScissors, onePerChannel, TimeSpan.FromMinutes(5), player1, player2)
         {

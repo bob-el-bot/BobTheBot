@@ -15,15 +15,15 @@ namespace Commands.Helpers
     public class Trivia : Games.Game
     {
         public override string Title { get; } = "Trivia";
-        public const bool onePerChannel = false;
+        private static readonly bool onePerChannel = false;
 
-        public int Player1Points;
-        public string Player1Answer;
-        public string Player1Chart;
-        public int Player2Points;
-        public string Player2Answer;
-        public string Player2Chart;
-        public List<Question> Questions = new();
+        public int Player1Points { get; set; }
+        public string Player1Answer { get; set; }
+        public string Player1Chart { get; set; }
+        public int Player2Points { get; set; }
+        public string Player2Answer { get; set; }
+        public string Player2Chart { get; set; }
+        public List<Question> Questions { get; set; } = new();
 
         public Trivia(IUser player1, IUser player2) : base(GameType.Trivia, onePerChannel, TimeSpan.FromMinutes(5), player1, player2)
         {
@@ -189,7 +189,7 @@ namespace Commands.Helpers
 
             try
             {
-                await component.ModifyOriginalResponseAsync(x => { x.Embed = TriviaMethods.CreateFinalEmbed(this, thumbnailUrl: Challenge.GetFinalThumnnailUrl(Player1, Player2, outcome)).Build(); x.Components = TriviaMethods.GetButtons(Id, true).Build(); });
+                await component.ModifyOriginalResponseAsync(x => { x.Embed = TriviaMethods.CreateFinalEmbed(this, thumbnailUrl: Challenge.GetFinalThumnnailUrl(Player1, Player2, outcome)); x.Components = TriviaMethods.GetButtons(Id, true).Build(); });
             }
             catch (Exception)
             {
@@ -214,7 +214,7 @@ namespace Commands.Helpers
 
             try
             {
-                await Message.ModifyAsync(x => { x.Embed = TriviaMethods.CreateFinalEmbed(this, true, Challenge.GetFinalThumnnailUrl(Player1, Player2, outcome)).Build(); x.Components = TriviaMethods.GetButtons(Id, true).Build(); });
+                await Message.ModifyAsync(x => { x.Embed = TriviaMethods.CreateFinalEmbed(this, true, Challenge.GetFinalThumnnailUrl(Player1, Player2, outcome)); x.Components = TriviaMethods.GetButtons(Id, true).Build(); });
             }
             catch (Exception)
             {

@@ -183,8 +183,8 @@ namespace Commands.Helpers
         /// </summary>
         /// <param name="game">The trivia game containing the results.</param>
         /// <param name="forfeited">Indicates whether the game was forfeited.</param>
-        /// <returns>An <see cref="EmbedBuilder"/> object representing the final results embed.</returns>
-        public static EmbedBuilder CreateFinalEmbed(Trivia game, bool forfeited = false, string thumbnailUrl = "")
+        /// <returns>An <see cref="Embed"/> object representing the final results embed.</returns>
+        public static Embed CreateFinalEmbed(Trivia game, bool forfeited = false, string thumbnailUrl = "")
         {
             var embed = new EmbedBuilder
             {
@@ -204,7 +204,7 @@ namespace Commands.Helpers
                 embed.AddField(q.QuestionText, q.Answers["abcd".IndexOf(q.CorrectAnswer)]);
             }
 
-            return embed;
+            return embed.Build();
         }
 
         /// <summary>

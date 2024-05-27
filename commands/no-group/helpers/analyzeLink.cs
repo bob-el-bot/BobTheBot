@@ -158,7 +158,7 @@ namespace Commands.Helpers
                                 StatusCode = req.StatusCode,
                                 SpecialCase = "Meta-Refresh Redirect",
                                 ContainsCookies = hasCookies,
-                                IsRickRoll = IsRickRoll(link),
+                                IsRickRoll = HasRickRoll(link),
                                 IsRedirect = true,
                                 IsShortened = IsShortenedUrl(link, true)
                             };
@@ -174,7 +174,7 @@ namespace Commands.Helpers
                                 StatusCode = req.StatusCode,
                                 SpecialCase = "JavaScript Redirect",
                                 ContainsCookies = hasCookies,
-                                IsRickRoll = IsRickRoll(link),
+                                IsRickRoll = HasRickRoll(link),
                                 IsRedirect = true,
                                 IsShortened = IsShortenedUrl(link, true)
                             };
@@ -190,7 +190,7 @@ namespace Commands.Helpers
                                 Link = $"{link}",
                                 StatusCode = req.StatusCode,
                                 ContainsCookies = hasCookies,
-                                IsRickRoll = IsRickRoll(link),
+                                IsRickRoll = HasRickRoll(link),
                                 IsRedirect = isRedirect,
                                 IsShortened = IsShortenedUrl(link, isRedirect)
                             };
@@ -206,7 +206,7 @@ namespace Commands.Helpers
                             Link = $"{link}",
                             StatusCode = req.StatusCode,
                             ContainsCookies = hasCookies,
-                            IsRickRoll = IsRickRoll(link),
+                            IsRickRoll = HasRickRoll(link),
                             IsRedirect = isRedirect,
                             IsShortened = IsShortenedUrl(link, isRedirect)
                         };
@@ -248,7 +248,7 @@ namespace Commands.Helpers
             return trail;
         }
 
-        private static bool IsRickRoll(string url)
+        private static bool HasRickRoll(string url)
         {
             return url.Contains("https://www.youtube.com/watch?v=dQw4w9WgXcQ");
         }

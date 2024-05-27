@@ -12,11 +12,11 @@ namespace Commands.Helpers
     public class TicTacToe : Games.Game
     {
         public override string Title { get; } = "Tic Tac Toe";
-        public const bool onePerChannel = false;
+        private static readonly bool onePerChannel = false;
 
-        public int[,] Grid = new int[3, 3];
-        public bool IsPlayer1Turn;
-        public int Turns;
+        public int[,] Grid { get; set; } = new int[3, 3];
+        public bool IsPlayer1Turn { get; set; }
+        public int Turns { get; set; }
 
         public TicTacToe(IUser player1, IUser player2) : base(GameType.TicTacToe, onePerChannel, TimeSpan.FromMinutes(5), player1, player2)
         {
