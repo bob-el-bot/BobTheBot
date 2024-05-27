@@ -7,8 +7,15 @@ using Discord;
 
 namespace Commands.Helpers
 {
+    /// <summary>
+    /// Provides helper methods for implementing Connect 4 game logic.
+    /// </summary>
     public static class Connect4Methods
     {
+        /// <summary>
+        /// Determines the first turn randomly.
+        /// </summary>
+        /// <returns>True if player 1 starts, false if player 2 starts.</returns>
         public static bool DetermineFirstTurn()
         {
             Random random = new();
@@ -22,6 +29,12 @@ namespace Commands.Helpers
             }
         }
 
+        /// <summary>
+        /// Generates buttons for the Connect4 game interface.
+        /// </summary>
+        /// <param name="game">The Connect4 game instance.</param>
+        /// <param name="forfeited">Flag indicating if the game was forfeited.</param>
+        /// <returns>ComponentBuilder containing the buttons.</returns>
         public static ComponentBuilder GetButtons(Connect4 game, bool forfeited = false)
         {
             // Prepare Buttons
@@ -46,6 +59,12 @@ namespace Commands.Helpers
             return buttons;
         }
 
+        /// <summary>
+        /// Creates an embed for Connect4 game messages.
+        /// </summary>
+        /// <param name="isPlayer1Turn">Flag indicating if it's player 1's turn.</param>
+        /// <param name="description">Description for the embed.</param>
+        /// <returns>The created embed.</returns>
         public static Embed CreateEmbed(bool isPlayer1Turn, string description)
         {
             return new EmbedBuilder
@@ -55,6 +74,11 @@ namespace Commands.Helpers
             }.Build();
         }
 
+        /// <summary>
+        /// Generates a string representation of the Connect4 game grid.
+        /// </summary>
+        /// <param name="grid">The Connect4 game grid.</param>
+        /// <returns>String representation of the grid.</returns>
         public static string GetGrid(int[,] grid)
         {
             StringBuilder result = new();
@@ -85,6 +109,12 @@ namespace Commands.Helpers
             return result.ToString();
         }
 
+        /// <summary>
+        /// Generates the title for the final outcome of the Connect4 game.
+        /// </summary>
+        /// <param name="game">The Connect4 game instance.</param>
+        /// <param name="forfeited">Flag indicating if the game was forfeited.</param>
+        /// <returns>The title for the final outcome.</returns>
         public static string GetFinalTitle(Connect4 game, bool forfeited = false)
         {
             Challenge.WinCases winner = GetWinner(game, forfeited);
@@ -98,6 +128,12 @@ namespace Commands.Helpers
             };
         }
 
+        /// <summary>
+        /// Determines the winner of the Connect4 game.
+        /// </summary>
+        /// <param name="game">The Connect4 game instance.</param>
+        /// <param name="forfeited">Flag indicating if the game was forfeited.</param>
+        /// <returns>The winner of the game.</returns>
         public static Challenge.WinCases GetWinner(Connect4 game, bool forfeited = false)
         {
             int winner = GetWinnerOutcome(game.Grid, game.Turns, game.LastMoveColumn, game.LastMoveRow);
@@ -117,6 +153,14 @@ namespace Commands.Helpers
             }
         }
 
+        /// <summary>
+        /// Evaluates the outcome of the Connect4 game.
+        /// </summary>
+        /// <param name="grid">The Connect4 game grid.</param>
+        /// <param name="turns">The number of turns in the game.</param>
+        /// <param name="lastMoveColumn">The column of the last move.</param>
+        /// <param name="lastMoveRow">The row of the last move.</param>
+        /// <returns>The outcome of the game (0 for no winner, 1 for player 1, 2 for player 2).</returns>
         public static int GetWinnerOutcome(int[,] grid, int turns, int lastMoveColumn, int lastMoveRow)
         {
             if (turns < 7) // Minimum turns needed for a win in Connect4 is 7
@@ -190,6 +234,11 @@ namespace Commands.Helpers
             return count;
         }
 
+        /// <summary>
+        /// Performs a bot move in the Connect4 game.
+        /// </summary>
+        /// <param name="game">The Connect4 game instance.</param>
+        /// <returns>Task representing the asynchronous bot move.</returns>
         public static async Task BotPlay(Connect4 game)
         {
             try
