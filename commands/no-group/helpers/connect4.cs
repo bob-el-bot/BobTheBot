@@ -79,7 +79,7 @@ namespace Commands.Helpers
                     Challenge.DecrementUserChallenges(Player1.Id);
                     Challenge.DecrementUserChallenges(Player2.Id);
 
-                    //await Challenge.UpdateUserStats(this, TTTMethods.GetWinner(grid, Turns, IsPlayer1Turn, true));
+                    await Challenge.UpdateUserStats(this, Connect4Methods.GetWinner(this, true));
                 }
 
                 await Message.ModifyAsync(x => { x.Embed = Connect4Methods.CreateEmbed(IsPlayer1Turn, $"{Connect4Methods.GetFinalTitle(this, true)}\n{Connect4Methods.GetGrid(Grid)}"); x.Components = Connect4Methods.GetButtons(this, true).Build(); });
@@ -156,14 +156,13 @@ namespace Commands.Helpers
                     await Message.ModifyAsync(properties);
                 }
 
-                
                 // If not a bot match update stats.
                 if (!Player2.IsBot)
                 {
                     Challenge.DecrementUserChallenges(Player1.Id);
                     Challenge.DecrementUserChallenges(Player2.Id);
 
-                    //await Challenge.UpdateUserStats(this, TTTMethods.GetWinner(grid, Turns, IsPlayer1Turn));
+                    await Challenge.UpdateUserStats(this, Connect4Methods.GetWinner(this));
                 }
             }
             catch (Exception)
