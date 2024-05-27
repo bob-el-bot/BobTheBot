@@ -229,6 +229,13 @@ namespace Challenges
             return CreateEmbed(description, isPlayer1Turn ? Player1Color : Player2Color, thumbnailUrl);
         }
 
+        /// <summary>
+        /// Creates an embed with the specified description, color, and optional thumbnail URL.
+        /// </summary>
+        /// <param name="description">The description text to include in the embed.</param>
+        /// <param name="color">The color of the embed.</param>
+        /// <param name="thumbnailUrl">The optional URL of the thumbnail image to include in the embed. Default is an empty string.</param>
+        /// <returns>An <see cref="Embed"/> object with the specified properties.</returns>
         public static Embed CreateEmbed(string description, Color color, string thumbnailUrl = "")
         {
             return new EmbedBuilder
@@ -268,6 +275,17 @@ namespace Challenges
             }
         }
 
+        /// <summary>
+        /// Generates the final thumbnail URL based on the winning player.
+        /// </summary>
+        /// <param name="player1">The first player involved in the match.</param>
+        /// <param name="player2">The second player involved in the match.</param>
+        /// <param name="winner">The result of the match indicating the winner.</param>
+        /// <returns>
+        /// A string representing the thumbnail URL of the winning player's avatar. 
+        /// If there is a tie, an empty string is returned. 
+        /// If the winner is not specified, an empty string is returned.
+        /// </returns>
         public static string GetFinalThumnnailUrl(IUser player1, IUser player2, WinCases winner)
         {
             return winner switch
