@@ -80,8 +80,8 @@ namespace Commands.Helpers
 
                     await Challenge.UpdateUserStats(this, TTTMethods.GetWinner(grid, Turns, IsPlayer1Turn, true));
                 }
-                
-                await Message.ModifyAsync(x => { x.Embed = TTTMethods.CreateEmbed(IsPlayer1Turn, GetFinalTitle(true)); x.Components = TTTMethods.GetButtons(grid, Turns, Id, true).Build(); });
+
+                await Message.ModifyAsync(x => { x.Embed = TTTMethods.CreateEmbed(IsPlayer1Turn, TTTMethods.GetFinalTitle(this, true)); x.Components = TTTMethods.GetButtons(grid, Turns, Id, true).Build(); });
             }
             catch (Exception)
             {
@@ -101,7 +101,7 @@ namespace Commands.Helpers
             {
                 properties = (x) =>
                 {
-                    x.Embed = TTTMethods.CreateEmbed(IsPlayer1Turn, GetFinalTitle());
+                    x.Embed = TTTMethods.CreateEmbed(IsPlayer1Turn, TTTMethods.GetFinalTitle(this));
                     x.Components = TTTMethods.GetButtons(grid, Turns, Id).Build();
                 };
 
@@ -187,7 +187,7 @@ namespace Commands.Helpers
             {
                 properties = (x) =>
                 {
-                    x.Embed = TTTMethods.CreateEmbed(IsPlayer1Turn, GetFinalTitle());
+                    x.Embed = TTTMethods.CreateEmbed(IsPlayer1Turn, TTTMethods.GetFinalTitle(this));
                     x.Components = TTTMethods.GetButtons(grid, Turns, Id).Build();
                 };
 
@@ -211,25 +211,6 @@ namespace Commands.Helpers
                 };
 
                 await component.ModifyOriginalResponseAsync(properties);
-            }
-        }
-
-        private string GetFinalTitle(bool forfeited = false)
-        {
-            Challenge.WinCases winner = TTTMethods.GetWinner(grid, Turns, IsPlayer1Turn, forfeited);
-
-            // All ways for player1 to lose
-            if (winner == Challenge.WinCases.Player2)
-            {
-                return $"### ⚔️ {Player1.Mention} Was Defeated By {Player2.Mention} in {Title}.";
-            }
-            else if (winner == Challenge.WinCases.Tie && Turns == 9 || (forfeited && Turns == 0)) // draw
-            {
-                return $"### ⚔️ {Player1.Mention} Drew {Player2.Mention} in {Title}.";
-            }
-            else // else player1 won
-            {
-                return $"### ⚔️ {Player1.Mention} Defeated {Player2.Mention} in {Title}.";
             }
         }
     }

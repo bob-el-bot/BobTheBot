@@ -64,6 +64,19 @@ namespace Commands.Helpers
             }.Build();
         }
 
+        public static string GetFinalTitle(TicTacToe game, bool forfeited = false)
+        {
+            Challenge.WinCases winner = GetWinner(game.grid, game.Turns, game.IsPlayer1Turn, forfeited);
+            return winner switch
+            {
+                Challenge.WinCases.Player2 => $"### ⚔️ {game.Player1.Mention} Was Defeated By {game.Player2.Mention} in {game.Title}.",
+                Challenge.WinCases.Tie => $"### ⚔️ {game.Player1.Mention} Drew {game.Player2.Mention} in {game.Title}.",
+                Challenge.WinCases.Player1 => $"### ⚔️ {game.Player1.Mention} Defeated {game.Player2.Mention} in {game.Title}.",
+                Challenge.WinCases.None => $"### ⚔️ {game.Player1.Mention} Drew {game.Player2.Mention} in {game.Title}.",
+                _ => $"### ⚔️ {game.Player1.Mention} Drew {game.Player2.Mention} in {game.Title}.",
+            };
+        }
+
         /// <summary>
         /// Determines the winner of the game based on the current state.
         /// </summary>

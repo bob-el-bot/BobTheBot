@@ -82,7 +82,7 @@ namespace Commands.Helpers
                     //await Challenge.UpdateUserStats(this, TTTMethods.GetWinner(grid, Turns, IsPlayer1Turn, true));
                 }
 
-                await Message.ModifyAsync(x => { x.Embed = Connect4Methods.CreateEmbed(IsPlayer1Turn, $"{GetFinalTitle(Connect4Methods.GetWinnerOutcome(Grid, Turns, LastMoveColumn, LastMoveRow), true)}\n{Connect4Methods.GetGrid(Grid)}"); x.Components = Connect4Methods.GetButtons(this, true).Build(); });
+                await Message.ModifyAsync(x => { x.Embed = Connect4Methods.CreateEmbed(IsPlayer1Turn, $"{Connect4Methods.GetFinalTitle(this, true)}\n{Connect4Methods.GetGrid(Grid)}"); x.Components = Connect4Methods.GetButtons(this, true).Build(); });
             }
             catch (Exception)
             {
@@ -186,11 +186,11 @@ namespace Commands.Helpers
 
             // Check if there is a winner or the game is over
             int winner = Connect4Methods.GetWinnerOutcome(Grid, Turns, LastMoveColumn, LastMoveRow);
-            if (winner > 0)
+            if (winner > 0 || Turns >= 42)
             {
                 properties = (x) =>
                 {
-                    x.Embed = Connect4Methods.CreateEmbed(IsPlayer1Turn, $"{GetFinalTitle(winner)}\n{Connect4Methods.GetGrid(Grid)}");
+                    x.Embed = Connect4Methods.CreateEmbed(IsPlayer1Turn, $"{Connect4Methods.GetFinalTitle(this)}\n{Connect4Methods.GetGrid(Grid)}");
                     x.Components = Connect4Methods.GetButtons(this).Build();
                 };
 
@@ -214,23 +214,6 @@ namespace Commands.Helpers
                 };
 
                 await component.ModifyOriginalResponseAsync(properties);
-            }
-        }
-
-        private string GetFinalTitle(int winner, bool forfeited = false)
-        {
-            // All ways for player1 to lose
-            if (winner == 2 || (forfeited && IsPlayer1Turn))
-            {
-                return $"### ⚔️ {Player1.Mention} Was Defeated By {Player2.Mention} in {Title}.";
-            }
-            else if (winner == 0 && Turns == 9 || (forfeited && Turns == 0)) // draw
-            {
-                return $"### ⚔️ {Player1.Mention} Drew {Player2.Mention} in {Title}.";
-            }
-            else // else player1 won
-            {
-                return $"### ⚔️ {Player1.Mention} Defeated {Player2.Mention} in {Title}.";
             }
         }
     }

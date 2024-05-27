@@ -84,6 +84,38 @@ namespace Commands.Helpers
             return result.ToString();
         }
 
+        public static string GetFinalTitle(Connect4 game, bool forfeited = false)
+        {
+            Challenge.WinCases winner = GetWinner(game, forfeited);
+            return winner switch
+            {
+                Challenge.WinCases.Player2 => $"### ⚔️ {game.Player1.Mention} Was Defeated By {game.Player2.Mention} in {game.Title}.",
+                Challenge.WinCases.Tie => $"### ⚔️ {game.Player1.Mention} Drew {game.Player2.Mention} in {game.Title}.",
+                Challenge.WinCases.Player1 => $"### ⚔️ {game.Player1.Mention} Defeated {game.Player2.Mention} in {game.Title}.",
+                Challenge.WinCases.None => $"### ⚔️ {game.Player1.Mention} Drew {game.Player2.Mention} in {game.Title}.",
+                _ => $"### ⚔️ {game.Player1.Mention} Drew {game.Player2.Mention} in {game.Title}.",
+            };
+        }
+
+        public static Challenge.WinCases GetWinner(Connect4 game, bool forfeited = false)
+        {
+            int winner = GetWinnerOutcome(game.Grid, game.Turns, game.LastMoveColumn, game.LastMoveRow);
+
+            // All ways for player1 to lose
+            if (winner == 2 || (forfeited && game.IsPlayer1Turn))
+            {
+                return Challenge.WinCases.Player2;
+            }
+            else if (winner == -1 && game.Turns == 42 || (forfeited && game.Turns == 0)) // draw
+            {
+                return Challenge.WinCases.Tie;
+            }
+            else // else player1 won
+            {
+                return Challenge.WinCases.Player1;
+            }
+        }
+
         public static int GetWinnerOutcome(int[,] grid, int turns, int lastMoveCol, int lastMoveRow)
         {
             if (turns < 7)
@@ -92,10 +124,6 @@ namespace Commands.Helpers
             }
 
             int player = grid[lastMoveCol, lastMoveRow];
-            if (player == 0)
-            {
-                return 0;
-            }
 
             // Direction vectors for horizontal, vertical, and two diagonals
             int[][] directions = new int[][]

@@ -1,4 +1,3 @@
-// For Discord bot
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
@@ -8,7 +7,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Linq;
 using Database;
-using Commands; // DO NOT REMOVE
+using Commands;
 using System.Net.Http;
 using static Performance.Stats;
 using static ApiInteractions.Interface;
