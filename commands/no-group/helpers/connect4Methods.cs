@@ -120,19 +120,23 @@ namespace Commands.Helpers
         public static int GetWinnerOutcome(int[,] grid, int turns, int lastMoveColumn, int lastMoveRow)
         {
             if (turns < 7) // Minimum turns needed for a win in Connect4 is 7
+            {
                 return 0;
+            }
 
             int player = grid[lastMoveColumn, lastMoveRow];
             if (player == 0)
+            {
                 return 0;
+            }
 
             // Directions: horizontal, vertical, diagonal (bottom-left to top-right), diagonal (top-left to bottom-right)
             int[][] directions = new int[][]
             {
-        new int[] { 1, 0 },   // Horizontal
-        new int[] { 0, 1 },   // Vertical
-        new int[] { 1, 1 },   // Diagonal (bottom-left to top-right)
-        new int[] { 1, -1 }   // Diagonal (top-left to bottom-right)
+                new int[] { 1, 0 },   // Horizontal
+                new int[] { 0, 1 },   // Vertical
+                new int[] { 1, 1 },   // Diagonal (bottom-left to top-right)
+                new int[] { 1, -1 }   // Diagonal (top-left to bottom-right)
             };
 
             foreach (var dir in directions)
@@ -149,14 +153,20 @@ namespace Commands.Helpers
                         int row = lastMoveRow + j * rowDir;
 
                         if (col >= 0 && col < grid.GetLength(0) && row >= 0 && row < grid.GetLength(1) && grid[col, row] == player)
+                        {
                             count++;
+                        }
                         else
+                        {
                             break;
+                        }
                     }
                 }
 
                 if (count >= 4)
+                {
                     return player;
+                }
             }
 
             return 0;
@@ -178,43 +188,6 @@ namespace Commands.Helpers
             }
 
             return count;
-        }
-
-        private static int EvaluateGrid(int[,] grid, int lastMoveColumn, int lastMoveRow)
-        {
-            int score = 0;
-
-            int player = grid[lastMoveColumn, lastMoveRow];
-
-            // Directions: horizontal, vertical, diagonal (bottom-left to top-right), diagonal (top-left to bottom-right)
-            int[][] directions = new int[][]
-            {
-        new int[] { 1, 0 },   // Horizontal
-        new int[] { 0, 1 },   // Vertical
-        new int[] { 1, 1 },   // Diagonal (bottom-left to top-right)
-        new int[] { 1, -1 }   // Diagonal (top-left to bottom-right)
-            };
-
-            foreach (var dir in directions)
-            {
-                int count = 1;
-                for (int i = -1; i <= 1; i += 2) // Check both directions for each axis
-                {
-                    int colDir = dir[0] * i;
-                    int rowDir = dir[1] * i;
-
-                    count += CountConsecutiveTokens(grid, lastMoveColumn, lastMoveRow, colDir, rowDir, player);
-                }
-
-                if (count >= 4)
-                    score += 1000; // Winning condition
-                else if (count == 3)
-                    score += 100; // Potential winning move
-                else if (count == 2)
-                    score += 10; // Creating a fork
-            }
-
-            return player == 2 ? score : -score; // Adjust score based on player
         }
 
         public static async Task BotPlay(Connect4 game)
@@ -256,14 +229,22 @@ namespace Commands.Helpers
         {
             int winner = GetWinnerOutcome(grid, turns, lastMoveColumn, lastMoveRow);
             if (winner == 2)
+            {
                 return (1000 - depth, null); // Favor winning faster
+            }
             if (winner == 1)
+            {
                 return (-1000 + depth, null); // Favor opponent winning slower
+            }
             if (turns == grid.GetLength(0) * grid.GetLength(1))
+            {
                 return (0, null); // Draw
+            }
 
             if (depth == 0)
-                return (EvaluateGrid(grid), null); // Evaluate the current grid state
+            {
+                return (EvaluateGrid(grid, lastMoveColumn, lastMoveRow), null); // Evaluate the current grid state
+            }
 
             int bestScore = isMaximizing ? int.MinValue : int.MaxValue;
             int[] bestMove = null;
@@ -306,55 +287,47 @@ namespace Commands.Helpers
             return (bestScore, bestMove);
         }
 
-        private static int EvaluateGrid(int[,] grid)
-        {
-            int score = 0;
-            for (int col = 0; col < grid.GetLength(0); col++)
-            {
-                for (int row = 0; row < grid.GetLength(1); row++)
-                {
-                    if (grid[col, row] == 2)
-                        score += EvaluatePosition(grid, col, row, 2);
-                    if (grid[col, row] == 1)
-                        score -= EvaluatePosition(grid, col, row, 1);
-                }
-            }
-            return score;
-        }
-
-        private static int EvaluatePosition(int[,] grid, int col, int row, int player)
+        private static int EvaluateGrid(int[,] grid, int lastMoveColumn, int lastMoveRow)
         {
             int score = 0;
 
+            int player = grid[lastMoveColumn, lastMoveRow];
+
+            // Directions: horizontal, vertical, diagonal (bottom-left to top-right), diagonal (top-left to bottom-right)
             int[][] directions = new int[][]
             {
-        new int[] { 1, 0 },   // Horizontal
-        new int[] { 0, 1 },   // Vertical
-        new int[] { 1, 1 },   // Diagonal (bottom-left to top-right)
-        new int[] { 1, -1 }   // Diagonal (top-left to bottom-right)
+                new int[] { 1, 0 },   // Horizontal
+                new int[] { 0, 1 },   // Vertical
+                new int[] { 1, 1 },   // Diagonal (bottom-left to top-right)
+                new int[] { 1, -1 }   // Diagonal (top-left to bottom-right)
             };
 
             foreach (var dir in directions)
             {
                 int count = 1;
-                count += CountConsecutiveTokens(grid, col, row, dir[0], dir[1], player);
-                count += CountConsecutiveTokens(grid, col, row, -dir[0], -dir[1], player);
+                for (int i = -1; i <= 1; i += 2) // Check both directions for each axis
+                {
+                    int colDir = dir[0] * i;
+                    int rowDir = dir[1] * i;
+
+                    count += CountConsecutiveTokens(grid, lastMoveColumn, lastMoveRow, colDir, rowDir, player);
+                }
 
                 if (count >= 4)
                 {
-                    score += 1000;
+                    score += 1000; // Winning condition
                 }
                 else if (count == 3)
                 {
-                    score += 100;
+                    score += 100; // Potential winning move
                 }
                 else if (count == 2)
                 {
-                    score += 10;
+                    score += 10; // Creating a fork
                 }
             }
 
-            return score;
+            return player == 2 ? score : -score; // Adjust score based on player
         }
 
         private static bool IsValidMove(int[,] grid, int col)
