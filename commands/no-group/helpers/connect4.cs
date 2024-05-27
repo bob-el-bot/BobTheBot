@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using Challenges;
-using Database;
 using Discord;
 using Discord.WebSocket;
 using Games;
@@ -9,16 +8,18 @@ using TimeStamps;
 
 namespace Commands.Helpers
 {
-    public class TicTacToe : Games.Game
+    public class Connect4 : Games.Game
     {
-        public override string Title { get; } = "Tic Tac Toe";
+        public override string Title { get; } = "Connect 4";
         private static readonly bool onePerChannel = false;
 
-        public int[,] Grid { get; set; } = new int[3, 3];
+        public int[,] Grid { get; set; } = new int[7, 6];
+        public int LastMoveColumn { get; set; }
+        public int LastMoveRow { get; set; }
         public bool IsPlayer1Turn { get; set; }
         public int Turns { get; set; }
 
-        public TicTacToe(IUser player1, IUser player2) : base(GameType.TicTacToe, onePerChannel, TimeSpan.FromMinutes(5), player1, player2)
+        public Connect4(IUser player1, IUser player2) : base(GameType.Connect4, onePerChannel, TimeSpan.FromMinutes(5), player1, player2)
         {
 
         }
@@ -43,11 +44,11 @@ namespace Commands.Helpers
 
             Expired += Challenge.ExpireGame;
 
-            await Message.ModifyAsync(x => { x.Content = null; x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn.\n(Ends in {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)}"); x.Components = TTTMethods.GetButtons(Grid, Turns, Id).Build(); });
+            await Message.ModifyAsync(x => { x.Content = null; x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn.\n(Ends in {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)})\n{Connect4Methods.GetGrid(Grid)}"); x.Components = Connect4Methods.GetButtons(this).Build(); });
 
             if (!IsPlayer1Turn)
             {
-                await TTTMethods.BotPlay(this);
+                await Connect4Methods.BotPlay(this);
             }
         }
 
@@ -62,14 +63,14 @@ namespace Commands.Helpers
             // Reset Expiration Time.
             UpdateExpirationTime(TimeSpan.FromMinutes(1));
 
-            await interaction.ModifyOriginalResponseAsync(x => { x.Content = null; x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn (Forfeit {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)})."); x.Components = TTTMethods.GetButtons(Grid, Turns, Id).Build(); });
+            await interaction.ModifyOriginalResponseAsync(x => { x.Content = null; x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn ( Forfeit {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)}).\n{Connect4Methods.GetGrid(Grid)}"); x.Components = Connect4Methods.GetButtons(this).Build(); });
         }
 
         public override async Task EndGameOnTime()
         {
             // Set State
             State = GameState.Ended;
-            Challenge.WinCases outcome = TTTMethods.GetWinner(Grid, Turns, IsPlayer1Turn, true);
+            Challenge.WinCases outcome = Connect4Methods.GetWinner(this, true);
 
             try
             {
@@ -82,7 +83,7 @@ namespace Commands.Helpers
                     await Challenge.UpdateUserStats(this, outcome);
                 }
 
-                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, Challenge.CreateFinalTitle(this, outcome), Challenge.GetFinalThumnnailUrl(Player1, Player2, outcome)); x.Components = TTTMethods.GetButtons(Grid, Turns, Id, true).Build(); });
+                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"{Challenge.CreateFinalTitle(this, outcome)}\n{Connect4Methods.GetGrid(Grid)}", Challenge.GetFinalThumnnailUrl(Player1, Player2, outcome)); x.Components = Connect4Methods.GetButtons(this, true).Build(); });
             }
             catch (Exception)
             {
@@ -97,15 +98,15 @@ namespace Commands.Helpers
             Action<MessageProperties> properties;
 
             // Check if there is a winner or the game is over
-            int winner = TTTMethods.GetWinnerOutcome(Grid, Turns);
-            if (winner > 0 || Turns >= 9)
+            int winner = Connect4Methods.GetWinnerOutcome(Grid, Turns, LastMoveColumn, LastMoveRow);
+            if (winner > 0 || Turns >= 42)
             {
-                Challenge.WinCases outcome = TTTMethods.GetWinner(Grid, Turns, IsPlayer1Turn);
+                Challenge.WinCases outcome = Connect4Methods.GetWinner(this);
 
                 properties = (x) =>
                 {
-                    x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, Challenge.CreateFinalTitle(this, outcome), Challenge.GetFinalThumnnailUrl(Player1, Player2, outcome));
-                    x.Components = TTTMethods.GetButtons(Grid, Turns, Id).Build();
+                    x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"{Challenge.CreateFinalTitle(this, outcome)}\n{Connect4Methods.GetGrid(Grid)}", Challenge.GetFinalThumnnailUrl(Player1, Player2, outcome));
+                    x.Components = Connect4Methods.GetButtons(this).Build();
                 };
 
                 await FinishGame(component, properties);
@@ -123,8 +124,8 @@ namespace Commands.Helpers
 
                 properties = (x) =>
                 {
-                    x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn.\n(Ends in {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)})");
-                    x.Components = TTTMethods.GetButtons(Grid, Turns, Id).Build();
+                    x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn.\n(Ends in {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)})\n{Connect4Methods.GetGrid(Grid)}");
+                    x.Components = Connect4Methods.GetButtons(this).Build();
                 };
 
                 if (component != null)
@@ -138,7 +139,7 @@ namespace Commands.Helpers
 
                 if (!IsPlayer1Turn && winner == 0)
                 {
-                    await TTTMethods.BotPlay(this);
+                    await Connect4Methods.BotPlay(this);
                 }
             }
         }
@@ -162,7 +163,7 @@ namespace Commands.Helpers
                     Challenge.DecrementUserChallenges(Player1.Id);
                     Challenge.DecrementUserChallenges(Player2.Id);
 
-                    await Challenge.UpdateUserStats(this, TTTMethods.GetWinner(Grid, Turns, IsPlayer1Turn));
+                    await Challenge.UpdateUserStats(this, Connect4Methods.GetWinner(this));
                 }
             }
             catch (Exception)
@@ -180,20 +181,19 @@ namespace Commands.Helpers
 
             // Reset Expiration Time.
             UpdateExpirationTime(TimeSpan.FromMinutes(1));
-            var dateTime = new DateTimeOffset(ExpirationTime).ToUnixTimeSeconds();
 
             Action<MessageProperties> properties;
 
             // Check if there is a winner or the game is over
-            int winner = TTTMethods.GetWinnerOutcome(Grid, Turns);
-            if (winner > 0 || Turns >= 9)
+            int winner = Connect4Methods.GetWinnerOutcome(Grid, Turns, LastMoveColumn, LastMoveRow);
+            if (winner > 0 || Turns >= 42)
             {
-                Challenge.WinCases outcome = TTTMethods.GetWinner(Grid, Turns, IsPlayer1Turn);
+                Challenge.WinCases outcome = Connect4Methods.GetWinner(this);
 
                 properties = (x) =>
                 {
-                    x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, Challenge.CreateFinalTitle(this, outcome), Challenge.GetFinalThumnnailUrl(Player1, Player2, outcome));
-                    x.Components = TTTMethods.GetButtons(Grid, Turns, Id).Build();
+                    x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"{Challenge.CreateFinalTitle(this, outcome)}\n{Connect4Methods.GetGrid(Grid)}", Challenge.GetFinalThumnnailUrl(Player1, Player2, outcome));
+                    x.Components = Connect4Methods.GetButtons(this).Build();
                 };
 
                 await FinishGame(component, properties);
@@ -211,8 +211,8 @@ namespace Commands.Helpers
 
                 properties = (x) =>
                 {
-                    x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn (Forfeit {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)}).");
-                    x.Components = TTTMethods.GetButtons(Grid, Turns, Id).Build();
+                    x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn (Forfeit {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)}).\n{Connect4Methods.GetGrid(Grid)}");
+                    x.Components = Connect4Methods.GetButtons(this).Build();
                 };
 
                 await component.ModifyOriginalResponseAsync(properties);

@@ -37,6 +37,7 @@ namespace Challenges
         public static Dictionary<ulong, RockPaperScissors> RockPaperScissorsGames { get; } = new();
         public static Dictionary<ulong, TicTacToe> TicTacToeGames { get; } = new();
         public static Dictionary<ulong, Trivia> TriviaGames { get; } = new();
+        public static Dictionary<ulong, Connect4> Connect4Games { get; set; } = new();
         public static Dictionary<ulong, uint?> UserChallenges { get; } = new();
 
         /// <summary>
@@ -84,9 +85,6 @@ namespace Challenges
             game.Id = game.OnePerChannel ? interaction.Channel.Id : msg.Id;
             game.State = GameState.Challenge;
 
-            // Expiration Timer.
-            var dateTime = new DateTimeOffset(game.ExpirationTime).ToUnixTimeSeconds();
-
             // Add to Games List
             AddToSpecificGameList(game);
 
@@ -94,7 +92,7 @@ namespace Challenges
             var embed = new EmbedBuilder
             {
                 Color = DefaultColor,
-                Description = $"### ⚔️ {game.Player1.Mention} Challenges {game.Player2.Mention} to {game.Title}.\nAccept or decline {TimeStamp.FromDateTime(game.ExpirationTime, TimeStamp.Formats.Relative)}."
+                Description = $"### ⚔️ {game.Player1.Mention} Challenges You to {game.Title}.\nAccept or decline {TimeStamp.FromDateTime(game.ExpirationTime, TimeStamp.Formats.Relative)}."
             };
 
             var components = new ComponentBuilder().WithButton(label: "⚔️ Accept", customId: $"acceptChallenge:{game.Id}", style: ButtonStyle.Success)
@@ -102,7 +100,7 @@ namespace Challenges
 
             // Start Challenge
             game.Expired += ExpireGame;
-            await game.Message.ModifyAsync(x => { x.Content = $"> ### ⚔️ {game.Player1.Mention} Challenges {game.Player2.Mention} to {game.Title}.\n> Accept or decline {TimeStamp.FromDateTime(game.ExpirationTime, TimeStamp.Formats.Relative)}."; x.Components = components.Build(); });
+            await game.Message.ModifyAsync(x => { x.Content = game.Player2.Mention; x.Embed = embed.Build(); x.Components = components.Build(); });
         }
 
         /// <summary>
@@ -121,6 +119,9 @@ namespace Challenges
                     break;
                 case GameType.Trivia:
                     TriviaGames.Add(game.Id, (Trivia)game);
+                    break;
+                case GameType.Connect4:
+                    Connect4Games.Add(game.Id, (Connect4)game);
                     break;
                 default:
                     break;
@@ -146,6 +147,9 @@ namespace Challenges
                 case GameType.Trivia:
                     TriviaGames.Remove(game.Id);
                     break;
+                case GameType.Connect4:
+                    Connect4Games.Remove(game.Id);
+                    break;
                 default:
                     break;
             }
@@ -168,7 +172,7 @@ namespace Challenges
                         var embed = new EmbedBuilder
                         {
                             Color = DefaultColor,
-                            Description = $"### ⚔️ {game.Player1.Mention} Challenges {game.Player2.Mention} to {game.Title}.\n{game.Player2.Mention} did not respond."
+                            Description = $"### ⚔️ {game.Player1.Mention} Challenged {game.Player2.Mention} to {game.Title}.\n{game.Player2.Mention} did not respond."
                         };
 
                         var components = new ComponentBuilder().WithButton(label: "⚔️ Accept", customId: $"acceptedChallenge", style: ButtonStyle.Success, disabled: true)
@@ -198,6 +202,102 @@ namespace Challenges
         }
 
         /// <summary>
+        /// Determines the first turn randomly.
+        /// </summary>
+        /// <returns>True if player 1 starts, false if player 2 starts.</returns>
+        public static bool DetermineFirstTurn()
+        {
+            Random random = new();
+            if (random.Next(0, 2) == 1)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Creates an embed for Connect4 game messages.
+        /// </summary>
+        /// <param name="isPlayer1Turn">Flag indicating if it's player 1's turn.</param>
+        /// <param name="description">Description for the embed.</param>
+        /// <returns>The created embed.</returns>
+        public static Embed CreateTurnBasedEmbed(bool isPlayer1Turn, string description, string thumbnailUrl = "")
+        {
+            return CreateEmbed(description, isPlayer1Turn ? Player1Color : Player2Color, thumbnailUrl);
+        }
+
+        /// <summary>
+        /// Creates an embed with the specified description, color, and optional thumbnail URL.
+        /// </summary>
+        /// <param name="description">The description text to include in the embed.</param>
+        /// <param name="color">The color of the embed.</param>
+        /// <param name="thumbnailUrl">The optional URL of the thumbnail image to include in the embed. Default is an empty string.</param>
+        /// <returns>An <see cref="Embed"/> object with the specified properties.</returns>
+        public static Embed CreateEmbed(string description, Color color, string thumbnailUrl = "")
+        {
+            return new EmbedBuilder
+            {
+                Color = color,
+                Description = description,
+                ThumbnailUrl = thumbnailUrl
+            }.Build();
+        }
+
+        /// <summary>
+        /// Generates the title for the final outcome of a game.
+        /// </summary>
+        /// <param name="game">The game instance.</param>
+        /// <param name="winner">The winner of the game.</param>
+        /// <returns>The title for the final outcome.</returns>
+        public static string CreateFinalTitle(Games.Game game, WinCases winner)
+        {
+            switch (winner)
+            {
+                case WinCases.Player2:
+                    return $"### 🏆 {game.Player2.Mention} Wins!\n**against** {game.Player1.Mention}";
+                case WinCases.Tie:
+                    return $"### 🤝 {game.Player1.Mention} Drew {game.Player2.Mention}!";
+                case WinCases.Player1:
+                    return $"### 🏆 {game.Player1.Mention} Wins!\n**against** {game.Player2.Mention}";
+                default:
+                    if (game.Type == GameType.Trivia)
+                    {
+                        var triviaGame = (Trivia)game;
+                        return $"### 💡 {game.Player1.Mention} got {triviaGame.Player1Points}/{TriviaMethods.TotalQuestions}!";
+                    }
+                    else
+                    {
+                        return $"### 🤝 {game.Player1.Mention} Drew {game.Player2.Mention}!";
+                    }
+            }
+        }
+
+        /// <summary>
+        /// Generates the final thumbnail URL based on the winning player.
+        /// </summary>
+        /// <param name="player1">The first player involved in the match.</param>
+        /// <param name="player2">The second player involved in the match.</param>
+        /// <param name="winner">The result of the match indicating the winner.</param>
+        /// <returns>
+        /// A string representing the thumbnail URL of the winning player's avatar. 
+        /// If there is a tie, an empty string is returned. 
+        /// If the winner is not specified, an empty string is returned.
+        /// </returns>
+        public static string GetFinalThumnnailUrl(IUser player1, IUser player2, WinCases winner)
+        {
+            return winner switch
+            {
+                WinCases.Player2 => player2.GetDisplayAvatarUrl(),
+                WinCases.Tie => "",
+                WinCases.Player1 => player1.GetDisplayAvatarUrl(),
+                _ => "",
+            };
+        }
+
+        /// <summary>
         /// Updates the specific game-related statistics of a user based on the game type and outcome.
         /// </summary>
         /// <param name="gameType">The type of the game.</param>
@@ -218,6 +318,9 @@ namespace Challenges
                 case GameType.Trivia:
                     user.TotalTriviaGames++;
                     break;
+                case GameType.Connect4:
+                    user.TotalConnect4Games++;
+                    break;
                 default:
                     break;
             }
@@ -236,62 +339,59 @@ namespace Challenges
         /// <returns>The updated user object.</returns>
         private static User UpdateGameUserStats(User user, WinCases winner, GameType gameType, bool isPlayer1)
         {
-            if (winner == WinCases.Player1 || winner == WinCases.Player2 || winner == WinCases.Tie)
+            // Increment win streak if the user won, otherwise reset it
+            if ((isPlayer1 && winner == WinCases.Player1) || (!isPlayer1 && winner == WinCases.Player2))
             {
-                if ((isPlayer1 && winner == WinCases.Player1) || (!isPlayer1 && winner == WinCases.Player2))
-                {
-                    user.WinStreak++;
-                }
-                else
-                {
-                    user.WinStreak = 0;
-                }
+                user.WinStreak++;
+            }
+            else
+            {
+                user.WinStreak = 0;
+            }
 
-                switch (gameType)
-                {
-                    case GameType.RockPaperScissors:
-                        if (isPlayer1 && winner == WinCases.Player1)
-                        {
-                            user.RockPaperScissorsWins++;
-                        }
-                        else if (!isPlayer1 && winner == WinCases.Player2)
-                        {
-                            user.RockPaperScissorsWins++;
-                        }
-                        else if (winner == WinCases.Tie)
-                        {
-                            user.RockPaperScissorsWins += 0.5f;
-                        }
-                        break;
-                    case GameType.TicTacToe:
-                        if (isPlayer1 && winner == WinCases.Player1)
-                        {
-                            user.TicTacToeWins++;
-                        }
-                        else if (!isPlayer1 && winner == WinCases.Player2)
-                        {
-                            user.TicTacToeWins++;
-                        }
-                        else if (winner == WinCases.Tie)
-                        {
-                            user.TicTacToeWins += 0.5f;
-                        }
-                        break;
-                    case GameType.Trivia:
-                        if (isPlayer1 && winner == WinCases.Player1)
-                        {
-                            user.TriviaWins++;
-                        }
-                        else if (!isPlayer1 && winner == WinCases.Player2)
-                        {
-                            user.TriviaWins++;
-                        }
-                        else if (winner == WinCases.Tie)
-                        {
-                            user.TriviaWins += 0.5f;
-                        }
-                        break;
-                }
+            // Update win counts based on game outcome, including ties
+            switch (gameType)
+            {
+                case GameType.RockPaperScissors:
+                    if ((winner == WinCases.Player1 && isPlayer1) || (winner == WinCases.Player2 && !isPlayer1))
+                    {
+                        user.RockPaperScissorsWins += 1.0f;
+                    }
+                    else if (winner == WinCases.Tie)
+                    {
+                        user.RockPaperScissorsWins += 0.5f;
+                    }
+                    break;
+                case GameType.TicTacToe:
+                    if ((winner == WinCases.Player1 && isPlayer1) || (winner == WinCases.Player2 && !isPlayer1))
+                    {
+                        user.TicTacToeWins += 1.0f;
+                    }
+                    else if (winner == WinCases.Tie)
+                    {
+                        user.TicTacToeWins += 0.5f;
+                    }
+                    break;
+                case GameType.Trivia:
+                    if ((winner == WinCases.Player1 && isPlayer1) || (winner == WinCases.Player2 && !isPlayer1))
+                    {
+                        user.TriviaWins += 1.0f;
+                    }
+                    else if (winner == WinCases.Tie)
+                    {
+                        user.TriviaWins += 0.5f;
+                    }
+                    break;
+                case GameType.Connect4:
+                    if ((winner == WinCases.Player1 && isPlayer1) || (winner == WinCases.Player2 && !isPlayer1))
+                    {
+                        user.Connect4Wins += 1.0f;
+                    }
+                    else if (winner == WinCases.Tie)
+                    {
+                        user.Connect4Wins += 0.5f;
+                    }
+                    break;
             }
 
             return user;
@@ -308,8 +408,8 @@ namespace Challenges
             var userIds = new[] { game.Player1.Id, game.Player2.Id };
             var users = await context.GetUsers(userIds);
 
-            users[0] = UpdateSpecificGameUserStats(game.Type, users[0], winner, true);
-            users[1] = UpdateSpecificGameUserStats(game.Type, users[1], winner, false);
+            users[0] = UpdateSpecificGameUserStats(game.Type, users[0], winner, false);
+            users[1] = UpdateSpecificGameUserStats(game.Type, users[1], winner, true);
 
             users = Badge.CheckGivingUserBadge(users, Badges.Badges.Winner3);
 

@@ -1,4 +1,3 @@
-// For Discord bot
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
@@ -8,7 +7,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Linq;
 using Database;
-using Commands; // DO NOT REMOVE
+using Commands;
 using System.Net.Http;
 using static Performance.Stats;
 using static ApiInteractions.Interface;
@@ -26,7 +25,7 @@ using static Commands.Helpers.MessageReader;
 
 public static class Bot
 {
-    public static readonly DiscordSocketClient Client = new(new DiscordSocketConfig()
+    public static readonly DiscordSocketClient Client = new(new DiscordSocketConfig
     {
         GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers | GatewayIntents.GuildMessages | GatewayIntents.MessageContent,
         AlwaysDownloadUsers = true,
@@ -74,7 +73,7 @@ public static class Bot
     {
         try
         {
-            Service = new(Client, new InteractionServiceConfig()
+            Service = new(Client, new InteractionServiceConfig
             {
                 UseCompiledLambda = true,
                 ThrowOnError = true
@@ -287,8 +286,6 @@ public static class Bot
 
                 if (gitHubLink != null)
                 {
-                    IUserMessage userMessage = (IUserMessage)message;
-
                     switch (gitHubLink.Type)
                     {
                         case GitHubLinkParse.GitHubLinkType.CodeFile:

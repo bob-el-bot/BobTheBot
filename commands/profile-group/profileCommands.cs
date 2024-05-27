@@ -39,6 +39,7 @@ namespace Commands
                 float rpsWinPercent = (float)Math.Round(userToDisplay.TotalRockPaperScissorsGames != 0 ? userToDisplay.RockPaperScissorsWins / userToDisplay.TotalRockPaperScissorsGames * 100 : 0, 2);
                 float tttWinPercent = (float)Math.Round(userToDisplay.TotalTicTacToeGames != 0 ? userToDisplay.TicTacToeWins / userToDisplay.TotalTicTacToeGames * 100 : 0, 2);
                 float triviaWinPercent = (float)Math.Round(userToDisplay.TotalTriviaGames != 0 ? userToDisplay.TriviaWins / userToDisplay.TotalTriviaGames * 100 : 0, 2);
+                float connect4WinPercent = (float)Math.Round(userToDisplay.TotalConnect4Games != 0 ? userToDisplay.Connect4Wins / userToDisplay.TotalConnect4Games * 100 : 0, 2);
 
                 // Check Premium
                 bool hasPremium = Premium.IsValidPremium(userToDisplay.PremiumExpiration);
@@ -60,6 +61,7 @@ namespace Commands
                 embed.AddField(name: $"✂️ Rock Paper Scissors", value: $"Total Wins: `{userToDisplay.RockPaperScissorsWins}`\nTotal Games: `{userToDisplay.TotalRockPaperScissorsGames}`\nWin %: `{rpsWinPercent}%`", inline: true)
                 .AddField(name: $"⭕ Tic Tac Toe", value: $"Total Wins: `{userToDisplay.TicTacToeWins}`\nTotal Games: `{userToDisplay.TotalTicTacToeGames}`\nWin %: `{tttWinPercent}%`", inline: true)
                 .AddField(name: $"❓ Trivia", value: $"Total Wins: `{userToDisplay.TriviaWins}`\nTotal Games: `{userToDisplay.TotalTriviaGames}`\nWin %: `{triviaWinPercent}%`", inline: true)
+                .AddField(name: $"🔵 Connect 4", value: $"Total Wins: `{userToDisplay.Connect4Wins}`\nTotal Games: `{userToDisplay.TotalConnect4Games}`\nWin %: `{connect4WinPercent}%`", inline: true)
                 .AddField(name: $"🏅 Win Streak", value: $"`{userToDisplay.WinStreak}`");
 
                 // Respond

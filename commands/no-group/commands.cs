@@ -15,6 +15,7 @@ using Challenges;
 using PremiumInterface;
 using ColorMethods;
 using TimeStamps;
+using Games;
 
 namespace Commands
 {
@@ -149,7 +150,7 @@ namespace Commands
                 {
                     await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
                 }
-                else if (game.isPlayer1Turn && !isPlayer1 || !game.isPlayer1Turn && isPlayer1)
+                else if (game.IsPlayer1Turn && !isPlayer1 || !game.IsPlayer1Turn && isPlayer1)
                 {
                     await component.RespondAsync(text: $"❌ It is **not** your turn.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
                 }
@@ -162,9 +163,9 @@ namespace Commands
                     int[] position = { Convert.ToInt16(coords[0]), Convert.ToInt16(coords[1]) };
 
                     // Check if the chosen move is valid and within bounds
-                    if (game.grid[position[0], position[1]] == 0)
+                    if (game.Grid[position[0], position[1]] == 0)
                     {
-                        game.grid[position[0], position[1]] = game.isPlayer1Turn ? 1 : 2;
+                        game.Grid[position[0], position[1]] = game.IsPlayer1Turn ? 1 : 2;
                         if (game.Player2.IsBot)
                         {
                             await game.EndBotTurn(component);
@@ -230,7 +231,7 @@ namespace Commands
                 {
                     await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
                 }
-                else if (game.player1Answer != null && isPlayer1 || game.player2Answer != null && isPlayer2)
+                else if (game.Player1Answer != null && isPlayer1 || game.Player2Answer != null && isPlayer2)
                 {
                     await component.RespondAsync(text: $"❌ You have already answered.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
                 }
@@ -299,7 +300,7 @@ namespace Commands
                 {
                     await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
                 }
-                else if ((isPlayer1 && game.player1Choice != -1) || (isPlayer2 && game.player2Choice != -1))
+                else if ((isPlayer1 && game.Player1Choice != -1) || (isPlayer2 && game.Player2Choice != -1))
                 {
                     await component.RespondAsync(text: $"❌ You **cannot** change your choice.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
                 }
@@ -307,14 +308,14 @@ namespace Commands
                 {
                     if (isPlayer1)
                     {
-                        game.player1Choice = choice;
+                        game.Player1Choice = choice;
                     }
                     else if (isPlayer2)
                     {
-                        game.player2Choice = choice;
+                        game.Player2Choice = choice;
                     }
 
-                    if (game.player1Choice != -1 && game.player2Choice != -1)
+                    if (game.Player1Choice != -1 && game.Player2Choice != -1)
                     {
                         await game.FinishGame(component);
                     }
@@ -327,70 +328,96 @@ namespace Commands
             }
         }
 
-        // [EnabledInDm(false)]
-        // [SlashCommand("connect4", "Play a game of Connect 4.")]
-        // public async Task Connect4([Summary("opponent", "Leave empty to verse an AI.")] SocketUser opponent = null)
-        // {
-        //     if (opponent == null || opponent.IsBot)
-        //     {
-        //         await DeferAsync();
-        //         Connect4 game = new(Context.User, opponent ?? Bot.Client.CurrentUser);
-        //         await game.StartBotGame(Context.Interaction);
-        //     }
-        //     else
-        //     {
-        //         if (!await Challenge.CanChallengeAsync(Context.User.Id, opponent.Id))
-        //         {
-        //             await RespondAsync(text: "❌ You can't challenge them.", ephemeral: true);
-        //         }
-        //         else
-        //         {
-        //             await DeferAsync();
-        //             await Challenge.SendMessage(Context.Interaction, new Connect4(Context.User, opponent));
-        //         }
-        //     }
-        // }
+        [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
+        [IntegrationType(ApplicationIntegrationType.GuildInstall)]
+        [RequireBotPermission(ChannelPermission.ViewChannel)]
+        [SlashCommand("connect4", "Play a game of Connect 4.")]
+        public async Task Connect4([Summary("opponent", "Leave empty to verse an AI.")] SocketUser opponent = null)
+        {
+            if (opponent == null || opponent.IsBot)
+            {
+                await DeferAsync();
+                Connect4 game = new(Context.User, opponent ?? Bot.Client.CurrentUser);
+                await game.StartBotGame(Context.Interaction);
+            }
+            else
+            {
+                (bool, string) canChallenge = await Challenge.CanChallengeAsync(Context.User.Id, opponent.Id);
+                if (!canChallenge.Item1)
+                {
+                    await RespondAsync(text: canChallenge.Item2, ephemeral: true);
+                }
+                else
+                {
+                    await DeferAsync();
+                    await Challenge.SendMessage(Context.Interaction, new Connect4(Context.User, opponent));
+                }
+            }
+        }
 
-        // [ComponentInteraction("connect4:*:*")]
-        // public async Task Connect4ButtonHandler(string column, string Id)
-        // {
-        //     SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
+        [ComponentInteraction("connect4:*:*")]
+        public async Task Connect4ButtonHandler(string column, string Id)
+        {
+            SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
 
-        //     Challenge.Connect4Games.TryGetValue(Convert.ToUInt64(Id), out Connect4 game);
+            Challenge.Connect4Games.TryGetValue(Convert.ToUInt64(Id), out Connect4 game);
 
-        //     if (game == null)
-        //     {
-        //         await component.RespondAsync(text: $"❌ This game no longer exists\n- Use `/connect4` to start a new game.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
-        //     }
-        //     else
-        //     {
-        //         bool isPlayer1 = component.User.Id == game.Player1.Id;
-        //         bool isPlayer2 = component.User.Id == game.Player2.Id;
+            if (game == null)
+            {
+                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use `/connect4` to start a new game.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+            }
+            else
+            {
+                bool isPlayer1 = component.User.Id == game.Player1.Id;
+                bool isPlayer2 = component.User.Id == game.Player2.Id;
 
-        //         if (!isPlayer1 && !isPlayer2)
-        //         {
-        //             await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
-        //         }
-        //         else if (game.player1Answer != null && isPlayer1 || game.player2Answer != null && isPlayer2)
-        //         {
-        //             await component.RespondAsync(text: $"❌ You have already answered.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
-        //         }
-        //         else
-        //         {
-        //             await DeferAsync();
+                if (!isPlayer1 && !isPlayer2)
+                {
+                    await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                }
+                else if (game.IsPlayer1Turn && !isPlayer1 || !game.IsPlayer1Turn && isPlayer1)
+                {
+                    await component.RespondAsync(text: $"❌ It is **not** your turn.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                }
+                else
+                {
+                    await DeferAsync();
 
-        //             // Answer
-        //             if (game.Player2.IsBot)
-        //             {
-        //                 await game.AloneAnswer(answer, component);
-        //             }
-        //             else
-        //             {
-        //                 await game.Answer(isPlayer1, answer, component);
-        //             }
-        //         }
-        //     }
-        // }
+                    if (int.TryParse(column, out int col))
+                    {
+                        // Find the lowest empty row in the selected column
+                        for (int row = 5; row >= 0; row--)
+                        {
+                            if (game.Grid[col - 1, row] == 0)
+                            {
+                                game.Grid[col - 1, row] = isPlayer1 ? 1 : 2;
+                                game.LastMoveColumn = col - 1;
+                                game.LastMoveRow = row;
+
+                                if (game.Player2.IsBot)
+                                {
+                                    await game.EndBotTurn(component);
+                                }
+                                else
+                                {
+                                    await game.EndTurn(component);
+                                }
+
+                                return;
+                            }
+                        }
+
+                        // If no empty cells in the selected column
+                        await component.RespondAsync(text: "❌ This column is full.", ephemeral: true);
+                    }
+                    else
+                    {
+                        // Handle the case where the chosen move is not valid or out of bounds
+                        await component.RespondAsync(text: $"❌ Invalid move.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    }
+                }
+            }
+        }
 
         [ComponentInteraction("acceptChallenge:*")]
         public async Task AcceptChallengeButtonHandler(string Id)
@@ -445,7 +472,7 @@ namespace Commands
                     var embed = new EmbedBuilder
                     {
                         Color = Challenge.DefaultColor,
-                        Description = $"### ⚔️ {challenge.Player1.Mention} Challenges {challenge.Player2.Mention} to {challenge.Title}.\n{challenge.Player2.Mention} declined."
+                        Description = $"### ⚔️ {challenge.Player1.Mention} Challenged {challenge.Player2.Mention} to {challenge.Title}.\n{challenge.Player2.Mention} declined."
                     };
 
                     var components = new ComponentBuilder().WithButton(label: "⚔️ Accept", customId: $"acceptedChallenge", style: ButtonStyle.Success, disabled: true)
@@ -570,12 +597,16 @@ namespace Commands
             .AddField(name: ":calendar_spiral: Date Created", value: TimeStamp.FromDateTimeOffset(Bot.Client.CurrentUser.CreatedAt, TimeStamp.Formats.Detailed), inline: false)
             .AddField(name: "📈 Servers", value: $"`{Bot.Client.Guilds.Count:n0}`", inline: true)
             .AddField(name: "🤗 Users", value: $"`{Bot.TotalUsers:n0}`", inline: true)
-            .AddField(name: "🌐 Website", value: "[bobthebot.net](https://bobthebot.net)")
-            .AddField(name: "⚡ Github Repository", value: "[github.com/bob-el-bot/BobTheBot](https://github.com/bob-el-bot/BobTheBot)")
             .AddField(name: "🏗️ Made With", value: "C#, .NET", inline: true)
             .AddField(name: "📡 Hosted With", value: "Raspberry PI 4", inline: true);
 
-            await RespondAsync(embed: embed.Build());
+            var components = new ComponentBuilder();
+
+            components.WithButton(label: "Website", emote: new Emoji("🌐"), style: ButtonStyle.Link, url: "https://bobthebot.net")
+            .WithButton(label: "GitHub", emote: Emote.Parse("<:github:1236245156798402685>"), style: ButtonStyle.Link, url: "https://github.com/bob-el-bot/BobTheBot");
+
+
+            await RespondAsync(embed: embed.Build(), components: components.Build());
         }
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
@@ -598,12 +629,25 @@ namespace Commands
                 Color = Bot.theme
             };
 
-            embed.AddField(name: "🗒️ Creator's Notes", value: "- Added `/preview message` for viewing 💬 messages from Discord message links.\n- Added `/preview pull-request` for viewing information about a GitHub <:pull_request_git:1234992648280866836> pull request.\n- Added `/preview issue` for viewing information about a GitHub <:issue_opened_git:1234993539134259290> issue.\n- Changed `/code preview` to `/preview code`.\n- Added new auto 🔎 preview features for *premium* users. Message links and all GitHub links can now be conveniently auto previewed when sent.\n- Stay 📺 tuned for some awesome updates!", inline: false)
+            embed.AddField(name: "🗒️ Creator's Notes", value: @"- Added `/connect4` to play against a friend or Bob in 🔵 Connect 4.
+- Added `/preview message` for viewing 💬 messages from Discord message links.
+- Added `/preview pull-request` for viewing information about a GitHub <:pull_request_git:1234992648280866836> pull request.
+- Added `/preview issue` for viewing information about a GitHub <:issue_opened_git:1234993539134259290> issue.
+- Buffed the 🪞 appearance of challenges in all aspects!
+- Added the 🖼️ `Artist` badge for fanart makers.
+- Buffed `/support` and `/info` to be more 📡 modern.
+- Changed `/code preview` to `/preview code`.
+- Added new auto 🔎 preview features for *premium* users. Message links and all GitHub links can now be conveniently auto previewed when sent.
+- Added more 🌈 colors to all commands which take colors as an input.
+- Stay 📺 tuned for more awesome updates!", inline: false)
             .AddField(name: "✨ Latest Update", value: commitMessage, inline: true)
-            .AddField(name: ":calendar_spiral: Date", value: TimeStamp.FromString(commitDate, TimeStamp.Formats.Detailed), inline: true)
-            .AddField(name: "🔮 See What's In the Works", value: "[Road Map](https://github.com/orgs/bob-el-bot/projects/4)");
+            .AddField(name: ":calendar_spiral: Date", value: TimeStamp.FromString(commitDate, TimeStamp.Formats.Detailed), inline: true);
 
-            await RespondAsync(embed: embed.Build());
+            var components = new ComponentBuilder();
+
+            components.WithButton(label: "Future Plans", emote: new Emoji("🔮"), style: ButtonStyle.Link, url: "https://github.com/orgs/bob-el-bot/projects/4");
+
+            await RespondAsync(embed: embed.Build(), components: components.Build());
         }
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
@@ -705,8 +749,11 @@ namespace Commands
         [SlashCommand("support", "Sends an invite to Bob's support Server.")]
         public async Task Support()
         {
+            var components = new ComponentBuilder();
+            components.WithButton(label: "Join Bob's Server!", emote: new Emoji("🏰"), style: ButtonStyle.Link, url: "https://discord.gg/HvGMRZD8jQ");
+
             // Respond
-            await RespondAsync(text: "🏰 Having issues with Bob? [Join Here](https://discord.gg/HvGMRZD8jQ) for help.");
+            await RespondAsync(text: "Whether you're having issues with Bob, wanting to suggest a new idea, or maybe just wanna hang...", components: components.Build());
         }
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]

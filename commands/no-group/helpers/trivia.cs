@@ -15,15 +15,15 @@ namespace Commands.Helpers
     public class Trivia : Games.Game
     {
         public override string Title { get; } = "Trivia";
-        public const bool onePerChannel = false;
+        private static readonly bool onePerChannel = false;
 
-        public int player1Points;
-        public string player1Answer;
-        public string player1Chart;
-        public int player2Points;
-        public string player2Answer;
-        public string player2Chart;
-        public List<Question> questions = new();
+        public int Player1Points { get; set; }
+        public string Player1Answer { get; set; }
+        public string Player1Chart { get; set; }
+        public int Player2Points { get; set; }
+        public string Player2Answer { get; set; }
+        public string Player2Chart { get; set; }
+        public List<Question> Questions { get; set; } = new();
 
         public Trivia(IUser player1, IUser player2) : base(GameType.Trivia, onePerChannel, TimeSpan.FromMinutes(5), player1, player2)
         {
@@ -48,15 +48,15 @@ namespace Commands.Helpers
             Expired += Challenge.ExpireGame;
 
             // Get a question
-            questions.Add(await TriviaMethods.GetQuestion());
+            Questions.Add(await TriviaMethods.GetQuestion());
 
-            await Message.ModifyAsync(x => { x.Content = null; x.Embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention}'s Game of {Title}.").Build(); x.Components = TriviaMethods.GetButtons(Id).Build(); });
+            await Message.ModifyAsync(x => { x.Content = null; x.Embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention}'s Game of {Title}."); x.Components = TriviaMethods.GetButtons(Id).Build(); });
         }
 
         public override async Task StartGame(SocketMessageComponent interaction)
         {
             // Get a question
-            questions.Add(await TriviaMethods.GetQuestion());
+            Questions.Add(await TriviaMethods.GetQuestion());
 
             // Set State
             State = GameState.Active;
@@ -64,7 +64,7 @@ namespace Commands.Helpers
             // Reset Expiration Time.
             UpdateExpirationTime(TimeSpan.FromMinutes(0.5));
 
-            await interaction.ModifyOriginalResponseAsync(x => { x.Content = null; x.Embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.").Build(); x.Components = TriviaMethods.GetButtons(Id).Build(); });
+            await interaction.ModifyOriginalResponseAsync(x => { x.Content = null; x.Embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}."); x.Components = TriviaMethods.GetButtons(Id).Build(); });
         }
 
         public async Task Answer(bool isPlayer1, string answer, SocketMessageComponent component)
@@ -72,35 +72,35 @@ namespace Commands.Helpers
             // Set Answer and Update Score.
             if (isPlayer1)
             {
-                player1Answer = answer;
-                if (questions.Last().correctAnswer == player1Answer)
+                Player1Answer = answer;
+                if (Questions.Last().CorrectAnswer == Player1Answer)
                 {
-                    player1Points++;
-                    player1Chart += "🟩";
+                    Player1Points++;
+                    Player1Chart += "🟩";
                 }
                 else
                 {
-                    player1Chart += "🟥";
+                    Player1Chart += "🟥";
                 }
             }
             else
             {
-                player2Answer = answer;
-                if (questions.Last().correctAnswer == player2Answer)
+                Player2Answer = answer;
+                if (Questions.Last().CorrectAnswer == Player2Answer)
                 {
-                    player2Points++;
-                    player2Chart += "🟩";
+                    Player2Points++;
+                    Player2Chart += "🟩";
                 }
                 else
                 {
-                    player2Chart += "🟥";
+                    Player2Chart += "🟥";
                 }
             }
 
             // Both players have answered
-            if (player1Answer != null && player2Answer != null)
+            if (Player1Answer != null && Player2Answer != null)
             {
-                if (questions.Count == TriviaMethods.TotalQuestions)
+                if (Questions.Count == TriviaMethods.TotalQuestions)
                 {
                     await FinishGame(component);
                 }
@@ -118,18 +118,18 @@ namespace Commands.Helpers
         public async Task AloneAnswer(string answer, SocketMessageComponent component)
         {
             // Set Answer and Update Score.
-            player1Answer = answer;
-            if (questions.Last().correctAnswer == player1Answer)
+            Player1Answer = answer;
+            if (Questions.Last().CorrectAnswer == Player1Answer)
             {
-                player1Points++;
-                player1Chart += "🟩";
+                Player1Points++;
+                Player1Chart += "🟩";
             }
             else
             {
-                player1Chart += "🟥";
+                Player1Chart += "🟥";
             }
 
-            if (questions.Count == TriviaMethods.TotalQuestions)
+            if (Questions.Count == TriviaMethods.TotalQuestions)
             {
                 await FinishGame(component);
             }
@@ -141,25 +141,22 @@ namespace Commands.Helpers
 
         private async Task UpdateQuestion(SocketMessageComponent component)
         {
-            // Reset Expiration Time.
-            UpdateExpirationTime(TimeSpan.FromMinutes(0.5));
-
-            EmbedBuilder embed;
-            embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.");
-
-            await component.ModifyOriginalResponseAsync(x => { x.Embed = embed.Build(); x.Components = TriviaMethods.GetButtons(Id).Build(); });
+            await component.ModifyOriginalResponseAsync(x => { x.Embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}."); x.Components = TriviaMethods.GetButtons(Id).Build(); });
         }
 
         private async Task NextQuestion(SocketMessageComponent component)
         {
-            // reset game values
-            player1Answer = null;
-            player2Answer = null;
+            // Reset game values
+            Player1Answer = null;
+            Player2Answer = null;
+
+            // Reset Expiration Time.
+            UpdateExpirationTime(TimeSpan.FromMinutes(0.5));
 
             // Get a question
-            questions.Add(await TriviaMethods.GetQuestion());
+            Questions.Add(await TriviaMethods.GetQuestion());
 
-            EmbedBuilder embed;
+            Embed embed;
 
             if (Player2.IsBot)
             {
@@ -173,12 +170,13 @@ namespace Commands.Helpers
                 embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.");
             }
 
-            await component.ModifyOriginalResponseAsync(x => { x.Embed = embed.Build(); x.Components = TriviaMethods.GetButtons(Id).Build(); });
+            await component.ModifyOriginalResponseAsync(x => { x.Embed = embed; x.Components = TriviaMethods.GetButtons(Id).Build(); });
         }
 
         private async Task FinishGame(SocketMessageComponent component)
         {
             _ = EndGame();
+            Challenge.WinCases outcome = TriviaMethods.GetWinner(this);
 
             // If not a bot match update stats.
             if (!Player2.IsBot)
@@ -186,12 +184,12 @@ namespace Commands.Helpers
                 Challenge.DecrementUserChallenges(Player1.Id);
                 Challenge.DecrementUserChallenges(Player2.Id);
 
-                await Challenge.UpdateUserStats(this, TriviaMethods.GetWinner(this));
+                await Challenge.UpdateUserStats(this, outcome);
             }
 
             try
             {
-                await component.ModifyOriginalResponseAsync(x => { x.Embed = TriviaMethods.CreateFinalEmbed(this).Build(); x.Components = TriviaMethods.GetButtons(Id, true).Build(); });
+                await component.ModifyOriginalResponseAsync(x => { x.Embed = TriviaMethods.CreateFinalEmbed(this, thumbnailUrl: Challenge.GetFinalThumnnailUrl(Player1, Player2, outcome)); x.Components = TriviaMethods.GetButtons(Id, true).Build(); });
             }
             catch (Exception)
             {
@@ -203,6 +201,7 @@ namespace Commands.Helpers
         {
             // Set State
             State = GameState.Ended;
+            Challenge.WinCases outcome = TriviaMethods.GetWinner(this, true);
 
             // If not a bot match update stats.
             if (!Player2.IsBot)
@@ -210,12 +209,12 @@ namespace Commands.Helpers
                 Challenge.DecrementUserChallenges(Player1.Id);
                 Challenge.DecrementUserChallenges(Player2.Id);
 
-                await Challenge.UpdateUserStats(this, TriviaMethods.GetWinner(this, true));
+                await Challenge.UpdateUserStats(this, outcome);
             }
 
             try
             {
-                await Message.ModifyAsync(x => { x.Embed = TriviaMethods.CreateFinalEmbed(this, true).Build(); x.Components = TriviaMethods.GetButtons(Id, true).Build(); });
+                await Message.ModifyAsync(x => { x.Embed = TriviaMethods.CreateFinalEmbed(this, true, Challenge.GetFinalThumnnailUrl(Player1, Player2, outcome)); x.Components = TriviaMethods.GetButtons(Id, true).Build(); });
             }
             catch (Exception)
             {

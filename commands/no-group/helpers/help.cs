@@ -6,33 +6,99 @@ using Discord;
 
 namespace Commands.Helpers
 {
+    /// <summary>
+    /// Represents a group of related commands.
+    /// </summary>
     public class CommandInfoGroup
     {
+        /// <summary>
+        /// Gets or sets the title of the command group.
+        /// </summary>
         public string Title { get; set; }
+
+        /// <summary>
+        /// Gets or sets the name of the command group.
+        /// </summary>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the description of the command group.
+        /// </summary>
         public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the emoji representing the command group.
+        /// </summary>
         public string Emoji { get; set; }
+
+        /// <summary>
+        /// Gets or sets the URL linking to the documentation of the command group.
+        /// </summary>
         public string Url { get; set; }
+
+        /// <summary>
+        /// Gets or sets the array of commands in this group.
+        /// </summary>
         public CommandInfo[] Commands { get; set; }
     }
 
+    /// <summary>
+    /// Represents information about a command.
+    /// </summary>
     public class CommandInfo
     {
+        /// <summary>
+        /// Gets or sets the name of the command.
+        /// </summary>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the command should inherit the group name as a prefix.
+        /// </summary>
         public bool InheritGroupName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the description of the command.
+        /// </summary>
         public string Description { get; set; }
+
+        /// <summary>
+        /// Gets or sets the URL linking to the documentation of the command.
+        /// </summary>
         public string Url { get; set; }
+
+        /// <summary>
+        /// Gets or sets the array of parameters for the command.
+        /// </summary>
         public ParameterInfo[] Parameters { get; set; }
     }
 
+    /// <summary>
+    /// Represents information about a command parameter.
+    /// </summary>
     public class ParameterInfo
     {
+        /// <summary>
+        /// Gets or sets the name of the parameter.
+        /// </summary>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the description of the parameter.
+        /// </summary>
         public string Description { get; set; }
     }
 
+    /// <summary>
+    /// Provides helper methods for generating help information and components.
+    /// </summary>
     public static class Help
     {
+        /// <summary>
+        /// Generates an embed containing information about a command group and its commands.
+        /// </summary>
+        /// <param name="index">The index of the command group in the CommandGroups array.</param>
+        /// <returns>An embed containing the details of the specified command group.</returns>
         public static Embed GetCategoryEmbed(int index)
         {
             StringBuilder description = new();
@@ -63,6 +129,10 @@ namespace Commands.Helpers
             return embed.Build();
         }
 
+        /// <summary>
+        /// Generates a message component containing a select menu for choosing a command group and buttons for support and documentation links.
+        /// </summary>
+        /// <returns>A message component with a select menu and buttons.</returns>
         public static MessageComponent GetComponents()
         {
             var components = new ComponentBuilder();
@@ -84,27 +154,15 @@ namespace Commands.Helpers
 
             components.WithSelectMenu(selectMenu);
             components.WithButton(SupportServerButton)
-            .WithButton(DocsButton);
+                      .WithButton(DocsButton);
 
             return components.Build();
         }
 
-        private static readonly ButtonBuilder SupportServerButton = new()
-        {
-            Label = "Support Server",
-            Style = ButtonStyle.Link,
-            Emote = new Emoji("🏰"),
-            Url = "https://discord.com/invite/HvGMRZD8jQ"
-        };
-
-        private static readonly ButtonBuilder DocsButton = new()
-        {
-            Label = "Web Docs",
-            Style = ButtonStyle.Link,
-            Emote = new Emoji("🌐"),
-            Url = "https://docs.bobthebot.net"
-        };
-
+        /// <summary>
+        /// Counts the total number of commands across all command groups.
+        /// </summary>
+        /// <returns>The total number of commands.</returns>
         public static int GetCommandCount()
         {
             int total = 0;
@@ -119,6 +177,28 @@ namespace Commands.Helpers
 
             return total;
         }
+
+        /// <summary>
+        /// A button linking to the support server.
+        /// </summary>
+        private static readonly ButtonBuilder SupportServerButton = new()
+        {
+            Label = "Support Server",
+            Style = ButtonStyle.Link,
+            Emote = new Emoji("🏰"),
+            Url = "https://discord.com/invite/HvGMRZD8jQ"
+        };
+
+        /// <summary>
+        /// A button linking to the web documentation.
+        /// </summary>
+        private static readonly ButtonBuilder DocsButton = new()
+        {
+            Label = "Web Docs",
+            Style = ButtonStyle.Link,
+            Emote = new Emoji("🌐"),
+            Url = "https://docs.bobthebot.net"
+        };
 
         public static CommandInfoGroup[] CommandGroups =
         {
@@ -255,6 +335,22 @@ namespace Commands.Helpers
                         InheritGroupName = false,
                         Description = "Play a game of trivia with or without someone.",
                         Url = "https://docs.bobthebot.net/#trivia",
+                        Parameters = new[]
+                        {
+                            new ParameterInfo
+                            {
+                                Name = "opponent",
+                                Description =
+                                    "The user you wish to play. Leave empty to play alone."
+                            }
+                        }
+                    },
+                    new CommandInfo
+                    {
+                        Name = "connect4",
+                        InheritGroupName = false,
+                        Description = "Play Bob or a user in a game of Connect 4.",
+                        Url = "https://docs.bobthebot.net/#connect4",
                         Parameters = new[]
                         {
                             new ParameterInfo

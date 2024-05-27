@@ -5,53 +5,47 @@ using Discord;
 
 namespace Commands.Helpers
 {
+    /// <summary>
+    /// Provides helper methods for implementing Tic Tac Toe (TTT) game logic.
+    /// </summary>
     public static class TTTMethods
     {
-        public static bool DetermineFirstTurn()
+        /// <summary>
+        /// Generates button components for displaying Tic Tac Toe grid.
+        /// </summary>
+        /// <param name="grid">Current state of the game grid.</param>
+        /// <param name="turns">Number of turns taken.</param>
+        /// <param name="id">Unique identifier for the game.</param>
+        /// <param name="forfeited">Indicates if the game was forfeited.</param>
+        /// <returns>A <see cref="ComponentBuilder"/> object representing the buttons.</returns>
+        public static ComponentBuilder GetButtons(int[,] grid, int turns, ulong id, bool forfeited = false)
         {
-            Random random = new();
-            if (random.Next(0, 2) == 1)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        public static ComponentBuilder GetButtons(int[,] grid, int turns, ulong Id, bool forfeited = false)
-        {
-            // Prepare Buttons
             var buttons = new ComponentBuilder();
+            bool gameOver = GetWinnerOutcome(grid, turns) > 0 || turns == 9 || forfeited;
 
-            for (int y = 0; y <= 2; y++)
+            for (int y = 0; y < 3; y++)
             {
-                for (int x = 0; x <= 2; x++)
+                for (int x = 0; x < 3; x++)
                 {
-                    if (grid[x, y] > 0)
-                    {
-                        buttons.WithButton(label: $"{(grid[x, y] == 1 ? "O" : "X")}", customId: $"ttt:{x}-{y}:{Id}", style: grid[x, y] == 1 ? ButtonStyle.Primary : ButtonStyle.Danger, row: y, disabled: true);
-                    }
-                    else
-                    {
-                        buttons.WithButton(label: "\U0000200E", customId: $"ttt:{x}-{y}:{Id}", style: ButtonStyle.Secondary, row: y, disabled: GetWinnerOutcome(grid, turns) > 0 || turns == 9 || forfeited);
-                    }
+                    bool isOccupied = grid[x, y] > 0;
+                    string label = isOccupied ? (grid[x, y] == 1 ? "O" : "X") : "\U0000200E";
+                    var style = isOccupied ? (grid[x, y] == 1 ? ButtonStyle.Primary : ButtonStyle.Danger) : ButtonStyle.Secondary;
+
+                    buttons.WithButton(label, $"ttt:{x}-{y}:{id}", style, row: y, disabled: isOccupied || gameOver);
                 }
             }
 
             return buttons;
         }
 
-        public static EmbedBuilder CreateEmbed(bool isPlayer1Turn, string description)
-        {
-            return new EmbedBuilder
-            {
-                Color = isPlayer1Turn ? Challenge.Player1Color : Challenge.Player2Color,
-                Description = description
-            };
-        }
-
+        /// <summary>
+        /// Determines the winner of the game based on the current state.
+        /// </summary>
+        /// <param name="grid">Current state of the game grid.</param>
+        /// <param name="turns">Number of turns taken.</param>
+        /// <param name="isPlayer1Turn">Indicates if it's Player 1's turn.</param>
+        /// <param name="forfeited">Indicates if the game was forfeited.</param>
+        /// <returns>The winner of the game as a <see cref="Challenge.WinCases"/> enum value.</returns>
         public static Challenge.WinCases GetWinner(int[,] grid, int turns, bool isPlayer1Turn, bool forfeited = false)
         {
             int winner = GetWinnerOutcome(grid, turns);
@@ -71,6 +65,17 @@ namespace Commands.Helpers
             }
         }
 
+        /// <summary>
+        /// Determines the outcome of the game.
+        /// </summary>
+        /// <param name="grid">Current state of the game grid.</param>
+        /// <param name="turns">Number of turns taken.</param>
+        /// <returns>
+        /// The winner of the game:
+        /// 0 for no winner,
+        /// 1 for Player 1,
+        /// 2 for Player 2.
+        /// </returns>
         public static int GetWinnerOutcome(int[,] grid, int turns)
         {
             if (turns == -1 || turns >= 3)
@@ -103,18 +108,21 @@ namespace Commands.Helpers
             return 0; // no winner
         }
 
-        // BOT
+        /// <summary>
+        /// Allows the bot to make its move in the Tic Tac Toe game.
+        /// </summary>
+        /// <param name="game">Instance of the TicTacToe class representing the game.</param>
         public static async Task BotPlay(TicTacToe game)
         {
-            int[] winningMove = FindWinningMove(game.grid, game.turns, 2);
-            int[] blockingMove = FindWinningMove(game.grid, game.turns, 1);
+            int[] winningMove = FindWinningMove(game.Grid, game.Turns, 2);
+            int[] blockingMove = FindWinningMove(game.Grid, game.Turns, 1);
 
-            int[] chosenMove = winningMove ?? blockingMove ?? Minimax(game.grid, game.turns, 2) ?? GetRandomValidMove(game.grid);
+            int[] chosenMove = winningMove ?? blockingMove ?? Minimax(game.Grid, game.Turns, 2) ?? GetRandomValidMove(game.Grid);
 
             // Check if the chosen move is valid and within bounds
-            if (chosenMove[0] >= 0 && chosenMove[0] < 3 && chosenMove[1] >= 0 && chosenMove[1] < 3 && game.grid[chosenMove[0], chosenMove[1]] == 0)
+            if (chosenMove[0] >= 0 && chosenMove[0] < 3 && chosenMove[1] >= 0 && chosenMove[1] < 3 && game.Grid[chosenMove[0], chosenMove[1]] == 0)
             {
-                game.grid[chosenMove[0], chosenMove[1]] = 2;
+                game.Grid[chosenMove[0], chosenMove[1]] = 2;
                 await game.EndBotTurn();
             }
             else
@@ -256,3 +264,4 @@ namespace Commands.Helpers
         }
     }
 }
+
