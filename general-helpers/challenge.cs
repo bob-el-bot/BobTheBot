@@ -243,76 +243,59 @@ namespace Challenges
         /// <returns>The updated user object.</returns>
         private static User UpdateGameUserStats(User user, WinCases winner, GameType gameType, bool isPlayer1)
         {
-            if (winner == WinCases.Player1 || winner == WinCases.Player2 || winner == WinCases.Tie)
+            // Increment win streak if the user won, otherwise reset it
+            if ((isPlayer1 && winner == WinCases.Player1) || (!isPlayer1 && winner == WinCases.Player2))
             {
-                if ((isPlayer1 && winner == WinCases.Player1) || (!isPlayer1 && winner == WinCases.Player2))
-                {
-                    user.WinStreak++;
-                }
-                else
-                {
-                    user.WinStreak = 0;
-                }
+                user.WinStreak++;
+            }
+            else
+            {
+                user.WinStreak = 0;
+            }
 
-                switch (gameType)
-                {
-                    case GameType.RockPaperScissors:
-                        if (isPlayer1 && winner == WinCases.Player1)
-                        {
-                            user.RockPaperScissorsWins++;
-                        }
-                        else if (!isPlayer1 && winner == WinCases.Player2)
-                        {
-                            user.RockPaperScissorsWins++;
-                        }
-                        else if (winner == WinCases.Tie)
-                        {
-                            user.RockPaperScissorsWins += 0.5f;
-                        }
-                        break;
-                    case GameType.TicTacToe:
-                        if (isPlayer1 && winner == WinCases.Player1)
-                        {
-                            user.TicTacToeWins++;
-                        }
-                        else if (!isPlayer1 && winner == WinCases.Player2)
-                        {
-                            user.TicTacToeWins++;
-                        }
-                        else if (winner == WinCases.Tie)
-                        {
-                            user.TicTacToeWins += 0.5f;
-                        }
-                        break;
-                    case GameType.Trivia:
-                        if (isPlayer1 && winner == WinCases.Player1)
-                        {
-                            user.TriviaWins++;
-                        }
-                        else if (!isPlayer1 && winner == WinCases.Player2)
-                        {
-                            user.TriviaWins++;
-                        }
-                        else if (winner == WinCases.Tie)
-                        {
-                            user.TriviaWins += 0.5f;
-                        }
-                        break;
-                    case GameType.Connect4:
-                        if (isPlayer1 && winner == WinCases.Player1)
-                        {
-                            user.Connect4Wins++;
-                        }
-                        else if (!isPlayer1 && winner == WinCases.Player2)
-                        {
-                            user.Connect4Wins++;
-                        }
-                        else if (winner == WinCases.Tie)
-                        {
-                            user.Connect4Wins += 0.5f;
-                        }
-                        break;
-                }
+            // Update win counts based on game outcome, including ties
+            switch (gameType)
+            {
+                case GameType.RockPaperScissors:
+                    if ((winner == WinCases.Player1 && isPlayer1) || (winner == WinCases.Player2 && !isPlayer1))
+                    {
+                        user.RockPaperScissorsWins += 1.0f;
+                    }
+                    else if (winner == WinCases.Tie)
+                    {
+                        user.RockPaperScissorsWins += 0.5f;
+                    }
+                    break;
+                case GameType.TicTacToe:
+                    if ((winner == WinCases.Player1 && isPlayer1) || (winner == WinCases.Player2 && !isPlayer1))
+                    {
+                        user.TicTacToeWins += 1.0f;
+                    }
+                    else if (winner == WinCases.Tie)
+                    {
+                        user.TicTacToeWins += 0.5f;
+                    }
+                    break;
+                case GameType.Trivia:
+                    if ((winner == WinCases.Player1 && isPlayer1) || (winner == WinCases.Player2 && !isPlayer1))
+                    {
+                        user.TriviaWins += 1.0f;
+                    }
+                    else if (winner == WinCases.Tie)
+                    {
+                        user.TriviaWins += 0.5f;
+                    }
+                    break;
+                case GameType.Connect4:
+                    if ((winner == WinCases.Player1 && isPlayer1) || (winner == WinCases.Player2 && !isPlayer1))
+                    {
+                        user.Connect4Wins += 1.0f;
+                    }
+                    else if (winner == WinCases.Tie)
+                    {
+                        user.Connect4Wins += 0.5f;
+                    }
+                    break;
             }
 
             return user;
@@ -329,8 +312,8 @@ namespace Challenges
             var userIds = new[] { game.Player1.Id, game.Player2.Id };
             var users = await context.GetUsers(userIds);
 
-            users[0] = UpdateSpecificGameUserStats(game.Type, users[0], winner, true);
-            users[1] = UpdateSpecificGameUserStats(game.Type, users[1], winner, false);
+            users[0] = UpdateSpecificGameUserStats(game.Type, users[0], winner, false);
+            users[1] = UpdateSpecificGameUserStats(game.Type, users[1], winner, true);
 
             users = Badge.CheckGivingUserBadge(users, Badges.Badges.Winner3);
 
