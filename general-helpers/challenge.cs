@@ -224,12 +224,18 @@ namespace Challenges
         /// <param name="isPlayer1Turn">Flag indicating if it's player 1's turn.</param>
         /// <param name="description">Description for the embed.</param>
         /// <returns>The created embed.</returns>
-        public static Embed CreateTurnBasedEmbed(bool isPlayer1Turn, string description)
+        public static Embed CreateTurnBasedEmbed(bool isPlayer1Turn, string description, string thumbnailUrl = "")
+        {
+            return CreateEmbed(description, isPlayer1Turn ? Player1Color : Player2Color, thumbnailUrl);
+        }
+
+        public static Embed CreateEmbed(string description, Color color, string thumbnailUrl = "")
         {
             return new EmbedBuilder
             {
-                Color = isPlayer1Turn ? Player1Color : Player2Color,
-                Description = description
+                Color = color,
+                Description = description,
+                ThumbnailUrl = thumbnailUrl
             }.Build();
         }
 
@@ -239,15 +245,37 @@ namespace Challenges
         /// <param name="game">The game instance.</param>
         /// <param name="winner">The winner of the game.</param>
         /// <returns>The title for the final outcome.</returns>
-        public static string GetFinalTitle(Games.Game game, WinCases winner)
+        public static string CreateFinalTitle(Games.Game game, WinCases winner)
+        {
+            switch (winner)
+            {
+                case WinCases.Player2:
+                    return $"### 🏆 {game.Player2.Mention} Wins!\n**against** {game.Player1.Mention}";
+                case WinCases.Tie:
+                    return $"### 🤝 {game.Player1.Mention} Drew {game.Player2.Mention}!";
+                case WinCases.Player1:
+                    return $"### 🏆 {game.Player1.Mention} Wins!\n**against** {game.Player2.Mention}";
+                default:
+                    if (game.Type == GameType.Trivia)
+                    {
+                        var triviaGame = (Trivia)game;
+                        return $"### 💡 {game.Player1.Mention} got {triviaGame.Player1Points}/{TriviaMethods.TotalQuestions}!";
+                    }
+                    else
+                    {
+                        return $"### 🤝 {game.Player1.Mention} Drew {game.Player2.Mention}!";
+                    }
+            }
+        }
+
+        public static string GetFinalThumnnailUrl(IUser player1, IUser player2, WinCases winner)
         {
             return winner switch
             {
-                WinCases.Player2 => $"### ⚔️ {game.Player1.Mention} Was Defeated By {game.Player2.Mention} in {game.Title}.",
-                WinCases.Tie => $"### ⚔️ {game.Player1.Mention} Drew {game.Player2.Mention} in {game.Title}.",
-                WinCases.Player1 => $"### ⚔️ {game.Player1.Mention} Defeated {game.Player2.Mention} in {game.Title}.",
-                WinCases.None => $"### ⚔️ {game.Player1.Mention} Drew {game.Player2.Mention} in {game.Title}.",
-                _ => $"### ⚔️ {game.Player1.Mention} Drew {game.Player2.Mention} in {game.Title}.",
+                WinCases.Player2 => player2.GetDisplayAvatarUrl(),
+                WinCases.Tie => "",
+                WinCases.Player1 => player1.GetDisplayAvatarUrl(),
+                _ => "",
             };
         }
 

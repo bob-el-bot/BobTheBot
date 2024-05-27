@@ -70,6 +70,7 @@ namespace Commands.Helpers
         {
             // Set State
             State = GameState.Ended;
+            Challenge.WinCases outcome = Connect4Methods.GetWinner(this, true);
 
             try
             {
@@ -79,10 +80,10 @@ namespace Commands.Helpers
                     Challenge.DecrementUserChallenges(Player1.Id);
                     Challenge.DecrementUserChallenges(Player2.Id);
 
-                    await Challenge.UpdateUserStats(this, Connect4Methods.GetWinner(this, true));
+                    await Challenge.UpdateUserStats(this, outcome);
                 }
 
-                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"{Challenge.GetFinalTitle(this, Connect4Methods.GetWinner(this, true))}\n{Connect4Methods.GetGrid(Grid)}"); x.Components = Connect4Methods.GetButtons(this, true).Build(); });
+                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"{Challenge.CreateFinalTitle(this, outcome)}\n{Connect4Methods.GetGrid(Grid)}", Challenge.GetFinalThumnnailUrl(Player1, Player2, outcome)); x.Components = Connect4Methods.GetButtons(this, true).Build(); });
             }
             catch (Exception)
             {
@@ -100,9 +101,11 @@ namespace Commands.Helpers
             int winner = Connect4Methods.GetWinnerOutcome(Grid, Turns, LastMoveColumn, LastMoveRow);
             if (winner > 0 || Turns >= 42)
             {
+                Challenge.WinCases outcome = Connect4Methods.GetWinner(this);
+
                 properties = (x) =>
                 {
-                    x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"{Challenge.GetFinalTitle(this, Connect4Methods.GetWinner(this))}\n{Connect4Methods.GetGrid(Grid)}");
+                    x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"{Challenge.CreateFinalTitle(this, outcome)}\n{Connect4Methods.GetGrid(Grid)}", Challenge.GetFinalThumnnailUrl(Player1, Player2, outcome));
                     x.Components = Connect4Methods.GetButtons(this).Build();
                 };
 
@@ -185,9 +188,11 @@ namespace Commands.Helpers
             int winner = Connect4Methods.GetWinnerOutcome(Grid, Turns, LastMoveColumn, LastMoveRow);
             if (winner > 0 || Turns >= 42)
             {
+                Challenge.WinCases outcome = Connect4Methods.GetWinner(this);
+
                 properties = (x) =>
                 {
-                    x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"{Challenge.GetFinalTitle(this, Connect4Methods.GetWinner(this))}\n{Connect4Methods.GetGrid(Grid)}");
+                    x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"{Challenge.CreateFinalTitle(this, outcome)}\n{Connect4Methods.GetGrid(Grid)}", Challenge.GetFinalThumnnailUrl(Player1, Player2, outcome));
                     x.Components = Connect4Methods.GetButtons(this).Build();
                 };
 

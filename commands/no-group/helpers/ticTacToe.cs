@@ -69,6 +69,7 @@ namespace Commands.Helpers
         {
             // Set State
             State = GameState.Ended;
+            Challenge.WinCases outcome = TTTMethods.GetWinner(Grid, Turns, IsPlayer1Turn, true);
 
             try
             {
@@ -78,10 +79,10 @@ namespace Commands.Helpers
                     Challenge.DecrementUserChallenges(Player1.Id);
                     Challenge.DecrementUserChallenges(Player2.Id);
 
-                    await Challenge.UpdateUserStats(this, TTTMethods.GetWinner(Grid, Turns, IsPlayer1Turn, true));
+                    await Challenge.UpdateUserStats(this, outcome);
                 }
 
-                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, Challenge.GetFinalTitle(this, TTTMethods.GetWinner(Grid, Turns, IsPlayer1Turn, true))); x.Components = TTTMethods.GetButtons(Grid, Turns, Id, true).Build(); });
+                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, Challenge.CreateFinalTitle(this, outcome), Challenge.GetFinalThumnnailUrl(Player1, Player2, outcome)); x.Components = TTTMethods.GetButtons(Grid, Turns, Id, true).Build(); });
             }
             catch (Exception)
             {
@@ -99,9 +100,11 @@ namespace Commands.Helpers
             int winner = TTTMethods.GetWinnerOutcome(Grid, Turns);
             if (winner > 0 || Turns >= 9)
             {
+                Challenge.WinCases outcome = TTTMethods.GetWinner(Grid, Turns, IsPlayer1Turn);
+
                 properties = (x) =>
                 {
-                    x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, Challenge.GetFinalTitle(this, TTTMethods.GetWinner(Grid, Turns, IsPlayer1Turn)));
+                    x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, Challenge.CreateFinalTitle(this, outcome), Challenge.GetFinalThumnnailUrl(Player1, Player2, outcome));
                     x.Components = TTTMethods.GetButtons(Grid, Turns, Id).Build();
                 };
 
@@ -185,9 +188,11 @@ namespace Commands.Helpers
             int winner = TTTMethods.GetWinnerOutcome(Grid, Turns);
             if (winner > 0 || Turns >= 9)
             {
+                Challenge.WinCases outcome = TTTMethods.GetWinner(Grid, Turns, IsPlayer1Turn);
+
                 properties = (x) =>
                 {
-                    x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, Challenge.GetFinalTitle(this, TTTMethods.GetWinner(Grid, Turns, IsPlayer1Turn)));
+                    x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, Challenge.CreateFinalTitle(this, outcome), Challenge.GetFinalThumnnailUrl(Player1, Player2, outcome));
                     x.Components = TTTMethods.GetButtons(Grid, Turns, Id).Build();
                 };
 

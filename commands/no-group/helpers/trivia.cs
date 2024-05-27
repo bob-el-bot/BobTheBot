@@ -176,6 +176,7 @@ namespace Commands.Helpers
         private async Task FinishGame(SocketMessageComponent component)
         {
             _ = EndGame();
+            Challenge.WinCases outcome = TriviaMethods.GetWinner(this);
 
             // If not a bot match update stats.
             if (!Player2.IsBot)
@@ -183,12 +184,12 @@ namespace Commands.Helpers
                 Challenge.DecrementUserChallenges(Player1.Id);
                 Challenge.DecrementUserChallenges(Player2.Id);
 
-                await Challenge.UpdateUserStats(this, TriviaMethods.GetWinner(this));
+                await Challenge.UpdateUserStats(this, outcome);
             }
 
             try
             {
-                await component.ModifyOriginalResponseAsync(x => { x.Embed = TriviaMethods.CreateFinalEmbed(this).Build(); x.Components = TriviaMethods.GetButtons(Id, true).Build(); });
+                await component.ModifyOriginalResponseAsync(x => { x.Embed = TriviaMethods.CreateFinalEmbed(this, thumbnailUrl: Challenge.GetFinalThumnnailUrl(Player1, Player2, outcome)).Build(); x.Components = TriviaMethods.GetButtons(Id, true).Build(); });
             }
             catch (Exception)
             {
@@ -200,6 +201,7 @@ namespace Commands.Helpers
         {
             // Set State
             State = GameState.Ended;
+            Challenge.WinCases outcome = TriviaMethods.GetWinner(this, true);
 
             // If not a bot match update stats.
             if (!Player2.IsBot)
@@ -207,12 +209,12 @@ namespace Commands.Helpers
                 Challenge.DecrementUserChallenges(Player1.Id);
                 Challenge.DecrementUserChallenges(Player2.Id);
 
-                await Challenge.UpdateUserStats(this, TriviaMethods.GetWinner(this, true));
+                await Challenge.UpdateUserStats(this, outcome);
             }
 
             try
             {
-                await Message.ModifyAsync(x => { x.Embed = TriviaMethods.CreateFinalEmbed(this, true).Build(); x.Components = TriviaMethods.GetButtons(Id, true).Build(); });
+                await Message.ModifyAsync(x => { x.Embed = TriviaMethods.CreateFinalEmbed(this, true, Challenge.GetFinalThumnnailUrl(Player1, Player2, outcome)).Build(); x.Components = TriviaMethods.GetButtons(Id, true).Build(); });
             }
             catch (Exception)
             {

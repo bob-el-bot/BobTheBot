@@ -184,12 +184,13 @@ namespace Commands.Helpers
         /// <param name="game">The trivia game containing the results.</param>
         /// <param name="forfeited">Indicates whether the game was forfeited.</param>
         /// <returns>An <see cref="EmbedBuilder"/> object representing the final results embed.</returns>
-        public static EmbedBuilder CreateFinalEmbed(Trivia game, bool forfeited = false)
+        public static EmbedBuilder CreateFinalEmbed(Trivia game, bool forfeited = false, string thumbnailUrl = "")
         {
             var embed = new EmbedBuilder
             {
                 Color = Challenge.BothPlayersColor,
-                Description = GetFinalTitle(game, forfeited)
+                Description = Challenge.CreateFinalTitle(game, GetWinner(game, forfeited)),
+                ThumbnailUrl = thumbnailUrl
             };
 
             embed.AddField(game.Player1.GlobalName, game.Player1Chart ?? "🟥", inline: true);
@@ -204,24 +205,6 @@ namespace Commands.Helpers
             }
 
             return embed;
-        }
-
-        /// <summary>
-        /// Determines the final title to display based on the outcome of the trivia game.
-        /// </summary>
-        /// <param name="game">The trivia game.</param>
-        /// <param name="forfeited">Indicates whether the game was forfeited.</param>
-        /// <returns>A string representing the final title of the game.</returns>
-        private static string GetFinalTitle(Trivia game, bool forfeited = false)
-        {
-            var winner = GetWinner(game, forfeited);
-            return winner switch
-            {
-                Challenge.WinCases.Player2 => $"### ⚔️ {game.Player1.Mention} Was Defeated By {game.Player2.Mention} in {game.Title}.",
-                Challenge.WinCases.Tie => $"### ⚔️ {game.Player1.Mention} Drew {game.Player2.Mention} in {game.Title}.",
-                Challenge.WinCases.Player1 => $"### ⚔️ {game.Player1.Mention} Defeated {game.Player2.Mention} in {game.Title}.",
-                _ => $"### ⚔️ {game.Player1.Mention}'s Completed Game of {game.Title}.",
-            };
         }
 
         /// <summary>

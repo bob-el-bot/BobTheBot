@@ -46,7 +46,7 @@ namespace Commands.Helpers
             .WithButton(label: "📃 Paper", customId: $"rps:1:{Id}", style: ButtonStyle.Secondary)
             .WithButton(label: "✂️ Scissors", customId: $"rps:2:{Id}", style: ButtonStyle.Secondary);
 
-            await Message.ModifyAsync(x => { x.Content = null; x.Embed = CreateEmbed($"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\nChoose {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)}."); x.Components = components.Build(); });
+            await Message.ModifyAsync(x => { x.Content = null; x.Embed = Challenge.CreateEmbed($"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\nChoose {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)}.", Challenge.DefaultColor); x.Components = components.Build(); });
         }
 
         public override async Task StartGame(SocketMessageComponent interaction)
@@ -62,13 +62,14 @@ namespace Commands.Helpers
             .WithButton(label: "📃 Paper", customId: $"rps:1:{Id}", style: ButtonStyle.Secondary)
             .WithButton(label: "✂️ Scissors", customId: $"rps:2:{Id}", style: ButtonStyle.Secondary);
 
-            await interaction.ModifyOriginalResponseAsync(x => { x.Content = null; x.Embed = CreateEmbed($"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\nChoose  {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)}."); x.Components = components.Build(); });
+            await interaction.ModifyOriginalResponseAsync(x => { x.Content = null; x.Embed = Challenge.CreateEmbed($"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\nChoose  {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)}.", Challenge.DefaultColor); x.Components = components.Build(); });
         }
 
         public override async Task EndGameOnTime()
         {
             // Set State
             State = GameState.Ended;
+            Challenge.WinCases outcome = GetWinner(true);
 
             try
             {
@@ -78,10 +79,10 @@ namespace Commands.Helpers
                     Challenge.DecrementUserChallenges(Player1.Id);
                     Challenge.DecrementUserChallenges(Player2.Id);
 
-                    await Challenge.UpdateUserStats(this, GetWinner(true));
+                    await Challenge.UpdateUserStats(this, outcome);
                 }
 
-                await Message.ModifyAsync(x => { x.Embed = CreateEmbed(GetFinalTitle(true)); x.Components = null; });
+                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateEmbed(Challenge.CreateFinalTitle(this, outcome), Challenge.DefaultColor, Challenge.GetFinalThumnnailUrl(Player1, Player2, outcome)); x.Components = null; });
             }
             catch (Exception)
             {
@@ -91,6 +92,8 @@ namespace Commands.Helpers
 
         public async Task FinishGame(SocketMessageComponent interaction)
         {
+            Challenge.WinCases outcome = GetWinner();
+
             try
             {
                 // If not a bot match update stats.
@@ -99,11 +102,11 @@ namespace Commands.Helpers
                     Challenge.DecrementUserChallenges(Player1.Id);
                     Challenge.DecrementUserChallenges(Player2.Id);
 
-                    await Challenge.UpdateUserStats(this, GetWinner());
+                    await Challenge.UpdateUserStats(this, outcome);
                 }
 
                 string[] options = { "🪨", "📃", "✂️" };
-                await interaction.UpdateAsync(x => { x.Embed = CreateEmbed($"{GetFinalTitle()}\n{options[Player1Choice]} **VS** {options[Player2Choice]}"); x.Components = null; });
+                await interaction.UpdateAsync(x => { x.Embed = Challenge.CreateEmbed($"{Challenge.CreateFinalTitle(this, outcome)}\n{options[Player1Choice]} **VS** {options[Player2Choice]}", Challenge.DefaultColor, Challenge.GetFinalThumnnailUrl(Player1, Player2, outcome)); x.Components = null; });
             }
             catch (Exception)
             {
@@ -111,15 +114,6 @@ namespace Commands.Helpers
             }
 
             _ = EndGame();
-        }
-
-        private static Embed CreateEmbed(string description)
-        {
-            return new EmbedBuilder
-            {
-                Color = Challenge.DefaultColor,
-                Description = description
-            }.Build();
         }
 
         private Challenge.WinCases GetWinner(bool forfeited = false)
@@ -136,25 +130,6 @@ namespace Commands.Helpers
             else // else player1 won
             {
                 return Challenge.WinCases.Player1;
-            }
-        }
-
-        private string GetFinalTitle(bool forfeited = false)
-        {
-            Challenge.WinCases winner = GetWinner(forfeited);
-
-            // All ways for player1 to lose
-            if (winner == Challenge.WinCases.Player2)
-            {
-                return $"### ⚔️ {Player1.Mention} Was Defeated By {Player2.Mention} in {Title}.";
-            }
-            else if (winner == Challenge.WinCases.Tie) // draw
-            {
-                return $"### ⚔️ {Player1.Mention} Drew {Player2.Mention} in {Title}.";
-            }
-            else // else player1 won
-            {
-                return $"### ⚔️ {Player1.Mention} Defeated {Player2.Mention} in {Title}.";
             }
         }
 
