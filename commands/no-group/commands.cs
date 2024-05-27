@@ -163,9 +163,9 @@ namespace Commands
                     int[] position = { Convert.ToInt16(coords[0]), Convert.ToInt16(coords[1]) };
 
                     // Check if the chosen move is valid and within bounds
-                    if (game.grid[position[0], position[1]] == 0)
+                    if (game.Grid[position[0], position[1]] == 0)
                     {
-                        game.grid[position[0], position[1]] = game.IsPlayer1Turn ? 1 : 2;
+                        game.Grid[position[0], position[1]] = game.IsPlayer1Turn ? 1 : 2;
                         if (game.Player2.IsBot)
                         {
                             await game.EndBotTurn(component);
@@ -394,7 +394,14 @@ namespace Commands
                                 game.LastMoveColumn = col - 1;
                                 game.LastMoveRow = row;
 
-                                await game.EndTurn(component);
+                                if (game.Player2.IsBot)
+                                {
+                                    await game.EndBotTurn(component);
+                                }
+                                else
+                                {
+                                    await game.EndTurn(component);
+                                }
 
                                 return;
                             }

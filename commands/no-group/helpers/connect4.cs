@@ -44,11 +44,11 @@ namespace Commands.Helpers
 
             Expired += Challenge.ExpireGame;
 
-            await Message.ModifyAsync(x => { x.Content = null; x.Embed = Connect4Methods.CreateEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn.\n(Ends in {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)})"); x.Components = Connect4Methods.GetButtons(this).Build(); });
+            await Message.ModifyAsync(x => { x.Content = null; x.Embed = Connect4Methods.CreateEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn.\n(Ends in {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)})\n{Connect4Methods.GetGrid(Grid)}"); x.Components = Connect4Methods.GetButtons(this).Build(); });
 
             if (!IsPlayer1Turn)
             {
-                //await TTTMethods.BotPlay(this);
+                await Connect4Methods.BotPlay(this);
             }
         }
 
@@ -96,51 +96,49 @@ namespace Commands.Helpers
 
             Action<MessageProperties> properties;
 
-            // // Check if there is a winner or the game is over
-            // int winner = TTTMethods.GetWinner(grid, turns);
-            // if (winner > 0 || turns >= 9)
-            // {
-            //     properties = (x) =>
-            //     {
-            //         x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, GetFinalTitle(winner)).Build();
-            //         x.Components = TTTMethods.GetButtons(grid, turns, Id).Build();
-            //     };
+            // Check if there is a winner or the game is over
+            int winner = Connect4Methods.GetWinnerOutcome(Grid, Turns, LastMoveColumn, LastMoveRow);
+            if (winner > 0 || Turns >= 42)
+            {
+                properties = (x) =>
+                {
+                    x.Embed = Connect4Methods.CreateEmbed(IsPlayer1Turn, $"{Connect4Methods.GetFinalTitle(this)}\n{Connect4Methods.GetGrid(Grid)}");
+                    x.Components = Connect4Methods.GetButtons(this).Build();
+                };
 
-            //     await FinishGame(component, properties);
-            // }
-            // else // not over
-            // {
-            //     if (isPlayer1Turn)
-            //     {
-            //         isPlayer1Turn = false;
-            //     }
-            //     else
-            //     {
-            //         isPlayer1Turn = true;
-            //     }
+                await FinishGame(component, properties);
+            }
+            else // not over
+            {
+                if (IsPlayer1Turn)
+                {
+                    IsPlayer1Turn = false;
+                }
+                else
+                {
+                    IsPlayer1Turn = true;
+                }
 
-            //     var dateTime = new DateTimeOffset(ExpirationTime).ToUnixTimeSeconds();
+                properties = (x) =>
+                {
+                    x.Embed = Connect4Methods.CreateEmbed(IsPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(IsPlayer1Turn ? Player1.Mention : Player2.Mention)} turn.\n(Ends in {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)})\n{Connect4Methods.GetGrid(Grid)}");
+                    x.Components = Connect4Methods.GetButtons(this).Build();
+                };
 
-            //     properties = (x) =>
-            //     {
-            //         x.Embed = TTTMethods.CreateEmbed(isPlayer1Turn, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\n{(isPlayer1Turn ? Player1.Mention : Player2.Mention)} turn.\n(Ends in <t:{dateTime}:R>)").Build();
-            //         x.Components = TTTMethods.GetButtons(grid, turns, Id).Build();
-            //     };
+                if (component != null)
+                {
+                    await component.ModifyOriginalResponseAsync(properties);
+                }
+                else
+                {
+                    await Message.ModifyAsync(properties);
+                }
 
-            //     if (component != null)
-            //     {
-            //         await component.ModifyOriginalResponseAsync(properties);
-            //     }
-            //     else
-            //     {
-            //         await Message.ModifyAsync(properties);
-            //     }
-
-            //     if (!isPlayer1Turn && winner == 0)
-            //     {
-            //         await TTTMethods.BotPlay(this);
-            //     }
-            // }
+                if (!IsPlayer1Turn && winner == 0)
+                {
+                    await Connect4Methods.BotPlay(this);
+                }
+            }
         }
 
         private async Task FinishGame(SocketMessageComponent interaction, Action<MessageProperties> properties)

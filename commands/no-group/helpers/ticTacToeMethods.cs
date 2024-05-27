@@ -66,7 +66,7 @@ namespace Commands.Helpers
 
         public static string GetFinalTitle(TicTacToe game, bool forfeited = false)
         {
-            Challenge.WinCases winner = GetWinner(game.grid, game.Turns, game.IsPlayer1Turn, forfeited);
+            Challenge.WinCases winner = GetWinner(game.Grid, game.Turns, game.IsPlayer1Turn, forfeited);
             return winner switch
             {
                 Challenge.WinCases.Player2 => $"### ⚔️ {game.Player1.Mention} Was Defeated By {game.Player2.Mention} in {game.Title}.",
@@ -153,15 +153,15 @@ namespace Commands.Helpers
         /// <param name="game">Instance of the TicTacToe class representing the game.</param>
         public static async Task BotPlay(TicTacToe game)
         {
-            int[] winningMove = FindWinningMove(game.grid, game.Turns, 2);
-            int[] blockingMove = FindWinningMove(game.grid, game.Turns, 1);
+            int[] winningMove = FindWinningMove(game.Grid, game.Turns, 2);
+            int[] blockingMove = FindWinningMove(game.Grid, game.Turns, 1);
 
-            int[] chosenMove = winningMove ?? blockingMove ?? Minimax(game.grid, game.Turns, 2) ?? GetRandomValidMove(game.grid);
+            int[] chosenMove = winningMove ?? blockingMove ?? Minimax(game.Grid, game.Turns, 2) ?? GetRandomValidMove(game.Grid);
 
             // Check if the chosen move is valid and within bounds
-            if (chosenMove[0] >= 0 && chosenMove[0] < 3 && chosenMove[1] >= 0 && chosenMove[1] < 3 && game.grid[chosenMove[0], chosenMove[1]] == 0)
+            if (chosenMove[0] >= 0 && chosenMove[0] < 3 && chosenMove[1] >= 0 && chosenMove[1] < 3 && game.Grid[chosenMove[0], chosenMove[1]] == 0)
             {
-                game.grid[chosenMove[0], chosenMove[1]] = 2;
+                game.Grid[chosenMove[0], chosenMove[1]] = 2;
                 await game.EndBotTurn();
             }
             else
