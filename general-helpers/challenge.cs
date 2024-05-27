@@ -234,7 +234,7 @@ namespace Challenges
         }
 
         
-        public static string GetFinalTitle(Games.Game game, WinCases winner, bool forfeited = false)
+        public static string GetFinalTitle(Games.Game game, WinCases winner)
         {
             return winner switch
             {

@@ -81,7 +81,7 @@ namespace Commands.Helpers
                     await Challenge.UpdateUserStats(this, TTTMethods.GetWinner(Grid, Turns, IsPlayer1Turn, true));
                 }
 
-                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, Challenge.GetFinalTitle(this, TTTMethods.GetWinner(Grid, Turns, IsPlayer1Turn, true), true)); x.Components = TTTMethods.GetButtons(Grid, Turns, Id, true).Build(); });
+                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, Challenge.GetFinalTitle(this, TTTMethods.GetWinner(Grid, Turns, IsPlayer1Turn, true))); x.Components = TTTMethods.GetButtons(Grid, Turns, Id, true).Build(); });
             }
             catch (Exception)
             {

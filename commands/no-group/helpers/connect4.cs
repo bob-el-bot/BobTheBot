@@ -82,7 +82,7 @@ namespace Commands.Helpers
                     await Challenge.UpdateUserStats(this, Connect4Methods.GetWinner(this, true));
                 }
 
-                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"{Challenge.GetFinalTitle(this, Connect4Methods.GetWinner(this, true), true)}\n{Connect4Methods.GetGrid(Grid)}"); x.Components = Connect4Methods.GetButtons(this, true).Build(); });
+                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"{Challenge.GetFinalTitle(this, Connect4Methods.GetWinner(this, true))}\n{Connect4Methods.GetGrid(Grid)}"); x.Components = Connect4Methods.GetButtons(this, true).Build(); });
             }
             catch (Exception)
             {
