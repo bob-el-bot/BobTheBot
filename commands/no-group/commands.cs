@@ -15,7 +15,7 @@ using Challenges;
 using PremiumInterface;
 using ColorMethods;
 using TimeStamps;
-using Games;
+using Moderation;
 
 namespace Commands
 {
@@ -682,28 +682,73 @@ namespace Commands
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
-        [SlashCommand("confess", "Bob will send someone a message anonymously")]
+        [SlashCommand("confess", "Bob will send someone a message anonymously (saying inappropriate things will result in punishment)")]
         public async Task Confess(string message, SocketUser user, string signoff)
         {
+            if (user.IsBot)
+            {
+                await RespondAsync(text: "❌ Sorry, but no sending messages to bots.", ephemeral: true);
+                return;
+            }
+
+            if (message.Length + 3 + signoff.Length > 2000) // 2000 is max characters in a message.
+            {
+                await FollowupAsync($"❌ The message *cannot* be delivered because it contains **{message.Length + 3 + signoff.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **2000** characters.", ephemeral: true);
+                return;
+            }
+
+            await DeferAsync(ephemeral: true);
+
             try
             {
-                if (user.IsBot)
+                // Check for blacklisted words
+                FilterResult filterResult = ConfessFiltering.ContainsBannedWords(message);
+
+                if (filterResult.BlacklistMatches.Count > 0)
                 {
-                    await RespondAsync(text: "❌ Sorry, but no sending messages to bots.", ephemeral: true);
+                    using var context = new BobEntities();
+                    var bannedUser = await context.GetUserFromBlackList(Context.User.Id);
+
+                    // Check if user has a previous ban for offensive words
+                    if (await BlackList.IsBlacklisted(Context.User.Id))
+                    {
+                        bannedUser = await BlackList.StepBanUser(Context.User.Id, $"Sending a message with `/confess` that contained: {ConfessFiltering.FormatBannedWords(filterResult.BlacklistMatches)}", Bot.Client);
+
+                        await FollowupAsync(text: $"❌ Your message contains blacklisted words and you are **already banned**. Your punishment has **increased**.\n- You will be able to use `/confess` again {TimeStamp.FromDateTime((DateTime)bannedUser.Expiration, TimeStamp.Formats.Relative)}.\n**Reason(s):**\n-{bannedUser.Reason}\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
+                    }
+                    else
+                    {
+                        bannedUser = await BlackList.BlackListUser(bannedUser, Context.User.Id, $"Sending a message with `/confess` that contained: {ConfessFiltering.FormatBannedWords(filterResult.BlacklistMatches)}", BlackList.Punishment.FiveMinutes, Bot.Client);
+
+                        await FollowupAsync(text: $"❌ Your message contains blacklisted words. You have been temporarily banned.\n- You will be able to use `/confess` again {TimeStamp.FromDateTime((DateTime)bannedUser.Expiration, TimeStamp.Formats.Relative)}.\n**Reason(s):**\n-{bannedUser.Reason}\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
+                    }
+
+                    return;
                 }
-                else if (message.Length + 3 + signoff.Length > 2000) // 2000 is max characters in a message.
+
+                if (await BlackList.IsBlacklisted(Context.User.Id))
                 {
-                    await RespondAsync($"❌ The message *cannot* be delivered because it contains **{message.Length + 3 + signoff.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **2000** characters.", ephemeral: true);
+                    using var context = new BobEntities();
+                    var bannedUser = await context.GetUserFromBlackList(Context.User.Id);
+
+                    await FollowupAsync(text: $"❌ You are banned from using `/confess`\n{bannedUser.FormatAsString()}\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
+                    return;
                 }
-                else
+
+                string formattedMessage = $"{message} - {signoff}";
+
+                if (filterResult.WordsToCensor.Count > 0)
                 {
-                    await user.SendMessageAsync($"{message} - {signoff}");
-                    await RespondAsync(text: $"✉️ Your message has been sent!\nMessage: **{message} - {signoff}** was sent to **{user.Username}**", ephemeral: true);
+                    formattedMessage = ConfessFiltering.MarkSpoilers(formattedMessage, filterResult.WordsToCensor);
                 }
+
+                await user.SendMessageAsync(formattedMessage);
+                await FollowupAsync(text: $"✉️ Your message has been sent!\nMessage: **{message} - {signoff}** was sent to **{user.Username}**", ephemeral: true);
             }
-            catch
+            catch (Exception ex)
             {
-                await RespondAsync(text: $"❌ Bob could not DM {user.Mention}.\n- You could try again, but this probably means their DMs are closed which Bob cannot change.", ephemeral: true);
+                Console.WriteLine(ex);
+                await FollowupAsync(text: $"❌ Bob could not DM {user.Mention}.\n- You could try again, but this probably means their DMs are closed which Bob cannot change.", ephemeral: true);
             }
         }
 
