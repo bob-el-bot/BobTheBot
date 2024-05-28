@@ -50,7 +50,26 @@ namespace TimeStamps
         /// <returns>The generated timestamp string.</returns>
         public static string FromDateTime(DateTime dateTime, Formats format)
         {
-            return $"<t:{new DateTimeOffset(dateTime).ToUnixTimeSeconds()}:{(char)format}>";
+            // Convert to UTC if necessary
+            if (dateTime.Kind != DateTimeKind.Utc)
+            {
+                dateTime = dateTime.ToUniversalTime();
+            }
+
+            // Ensure the dateTime is within the range supported by DateTimeOffset
+            if (dateTime < DateTimeOffset.MinValue.UtcDateTime)
+            {
+                dateTime = DateTimeOffset.MinValue.UtcDateTime;
+            }
+            else if (dateTime > DateTimeOffset.MaxValue.UtcDateTime)
+            {
+                dateTime = DateTimeOffset.MaxValue.UtcDateTime;
+            }
+
+            // Create a DateTimeOffset with the validated dateTime
+            var dateTimeOffset = new DateTimeOffset(dateTime, TimeSpan.Zero);
+
+            return $"<t:{dateTimeOffset.ToUnixTimeSeconds()}:{(char)format}>";
         }
 
         /// <summary>
@@ -72,7 +91,28 @@ namespace TimeStamps
         /// <returns>The generated timestamp string.</returns>
         public static string FromString(string dateTime, Formats format)
         {
-            return $"<t:{new DateTimeOffset(DateTime.Parse(dateTime)).ToUnixTimeSeconds()}:{(char)format}>";
+            var parsedDateTime = DateTime.Parse(dateTime);
+
+            // Convert to UTC if necessary
+            if (parsedDateTime.Kind != DateTimeKind.Utc)
+            {
+                parsedDateTime = parsedDateTime.ToUniversalTime();
+            }
+
+            // Ensure the parsedDateTime is within the range supported by DateTimeOffset
+            if (parsedDateTime < DateTimeOffset.MinValue.UtcDateTime)
+            {
+                parsedDateTime = DateTimeOffset.MinValue.UtcDateTime;
+            }
+            else if (parsedDateTime > DateTimeOffset.MaxValue.UtcDateTime)
+            {
+                parsedDateTime = DateTimeOffset.MaxValue.UtcDateTime;
+            }
+
+            // Create a DateTimeOffset with the validated parsedDateTime
+            var dateTimeOffset = new DateTimeOffset(parsedDateTime, TimeSpan.Zero);
+
+            return $"<t:{dateTimeOffset.ToUnixTimeSeconds()}:{(char)format}>";
         }
     }
 }
