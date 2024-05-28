@@ -10,6 +10,7 @@ using Discord.Interactions;
 using Discord.Rest;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
+using Moderation;
 
 namespace Commands
 {
@@ -301,6 +302,174 @@ namespace Commands
                     dbServer = await context.GetServer(parsedId);
 
                     await FollowupAsync(text: $"✅ `Showing Server: {discordServer.Name}, {discordServer.Id}`\n```cs\nCustom Welcome Message: {dbServer.CustomWelcomeMessage}\nWelcome: {dbServer.Welcome}\nQuote Channel ID: {dbServer.QuoteChannelId}\nMax Quote Length: {dbServer.MaxQuoteLength}\nMin Quote Length: {dbServer.MinQuoteLength}```");
+                }
+            }
+
+            [SlashCommand("get-user-from-black-list", "Gets the UserBlackList object with the given ID.")]
+            public async Task GetUserFromBlackList(IUser user = null, string userId = null)
+            {
+                await DeferAsync();
+
+                bool conversionResult = ulong.TryParse(userId, out ulong parsedId);
+                if (user == null && userId == null)
+                {
+                    await FollowupAsync(text: $"❌ You **must** specify a `user` **or** a `userId`.");
+                    return;
+                }
+
+                IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
+
+                if (user != null && conversionResult != false && user.Id != parsedId)
+                {
+                    await FollowupAsync(text: $"❌ The given `user` **and** `userId` must have matching IDs.");
+                }
+                else if (discordUser == null)
+                {
+                    await FollowupAsync(text: $"❌ The given `userId` is not valid.");
+                }
+                else
+                {
+                    BlackListUser dbUser;
+                    using var context = new BobEntities();
+                    dbUser = await context.GetUserFromBlackList(user == null ? parsedId : user.Id);
+
+                    if (dbUser != null)
+                    {
+                        await FollowupAsync(text: $"✅ `Showing Blacklisted User: {discordUser.GlobalName}, {discordUser.Id}`\n{UserDebugging.GetUserPropertyString(dbUser)}");
+                    }
+                    else
+                    {
+                        await FollowupAsync(text: $"❌ The given `user` could not be found in the Database.");
+                    }
+                }
+            }
+
+            [SlashCommand("remove-user-from-black-list", "Removes the UserBlackList object with the given ID from the database.")]
+            public async Task RemoveUserFromBlackList(IUser user = null, string userId = null)
+            {
+                await DeferAsync();
+
+                bool conversionResult = ulong.TryParse(userId, out ulong parsedId);
+                if (user == null && userId == null)
+                {
+                    await FollowupAsync(text: $"❌ You **must** specify a `user` **or** a `userId`.");
+                    return;
+                }
+
+                IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
+
+                if (user != null && conversionResult != false && user.Id != parsedId)
+                {
+                    await FollowupAsync(text: $"❌ The given `user` **and** `userId` must have matching IDs.");
+                }
+                else if (discordUser == null)
+                {
+                    await FollowupAsync(text: $"❌ The given `userId` is not valid.");
+                }
+                else
+                {
+                    BlackListUser dbUser;
+                    using var context = new BobEntities();
+                    dbUser = await context.GetUserFromBlackList(user == null ? parsedId : user.Id);
+
+                    if (dbUser != null)
+                    {
+                        await context.RemoveUserFromBlackList(dbUser);
+                        await FollowupAsync(text: $"✅ Deleted User {discordUser.GlobalName} `{discordUser.Id}`.");
+                    }
+                    else
+                    {
+                        await FollowupAsync(text: $"❌ The given `user` could not be found in the Database.");
+                    }
+                }
+            }
+
+            [SlashCommand("update-user-from-black-list", "Updates the UserBlackList object with the given ID.")]
+            public async Task UpdateUserFromBlackList(BlackList.Punishment punishment, string reason = "", IUser user = null, string userId = null)
+            {
+                await DeferAsync();
+
+                bool conversionResult = ulong.TryParse(userId, out ulong parsedId);
+                if (user == null && userId == null)
+                {
+                    await FollowupAsync(text: $"❌ You **must** specify a `user` **or** a `userId`.");
+                    return;
+                }
+
+                IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
+
+                if (user != null && conversionResult != false && user.Id != parsedId)
+                {
+                    await FollowupAsync(text: $"❌ The given `user` **and** `userId` must have matching IDs.");
+                }
+                else if (discordUser == null)
+                {
+                    await FollowupAsync(text: $"❌ The given `userId` is not valid.");
+                }
+                else
+                {
+                    BlackListUser dbUser;
+                    using var context = new BobEntities();
+                    dbUser = await context.GetUserFromBlackList(user == null ? parsedId : user.Id);
+
+                    if (dbUser != null)
+                    {
+                        var updatedExpiration = BlackList.GetExpiration(punishment);
+                        if (dbUser.Expiration != updatedExpiration || (reason != "" && dbUser.Reason != reason))
+                        {
+                            dbUser.Expiration = updatedExpiration;
+                            dbUser.Reason = reason;
+                            await context.UpdateUserFromBlackList(dbUser);
+                        }
+
+                        await FollowupAsync(text: $"✅ `Showing Blacklisted User: {discordUser.GlobalName}, {discordUser.Id}`\n{UserDebugging.GetUserPropertyString(dbUser)}");
+                    }
+                    else
+                    {
+                        await FollowupAsync(text: $"❌ The given `user` could not be found in the Database.");
+                    }
+                }
+            }
+
+            [SlashCommand("add-user-to-black-list", "Blacklists the user with the given ID.")]
+            public async Task AddUsertoBlackList(BlackList.Punishment punishment, string reason, IUser user = null, string userId = null)
+            {
+                await DeferAsync();
+
+                bool conversionResult = ulong.TryParse(userId, out ulong parsedId);
+                if (user == null && userId == null)
+                {
+                    await FollowupAsync(text: $"❌ You **must** specify a `user` **or** a `userId`.");
+                    return;
+                }
+
+                IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
+
+                if (user != null && conversionResult != false && user.Id != parsedId)
+                {
+                    await FollowupAsync(text: $"❌ The given `user` **and** `userId` must have matching IDs.");
+                }
+                else if (discordUser == null)
+                {
+                    await FollowupAsync(text: $"❌ The given `userId` is not valid.");
+                }
+                else
+                {
+                    BlackListUser dbUser;
+                    using var context = new BobEntities();
+                    dbUser = await context.GetUserFromBlackList(user == null ? parsedId : user.Id);
+
+                    if (dbUser == null)
+                    {
+                        dbUser = new();
+                        var updatedExpiration = BlackList.GetExpiration(punishment);
+                        dbUser.Id = discordUser.Id;
+                        dbUser.Expiration = updatedExpiration;
+                        dbUser.Reason = reason;
+                        await context.AddUserToBlackList(dbUser);
+                    }
+
+                    await FollowupAsync(text: $"✅ `Showing Blacklisted User: {discordUser.GlobalName}, {discordUser.Id}`\n{UserDebugging.GetUserPropertyString(dbUser)}");
                 }
             }
         }

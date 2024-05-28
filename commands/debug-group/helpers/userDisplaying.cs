@@ -42,5 +42,24 @@ namespace Commands.Helpers
 
             return stringBuilder.ToString();
         }
+
+        public static string GetUserPropertyString(BlackListUser user)
+        {
+            StringBuilder stringBuilder = new();
+            PropertyInfo[] properties = typeof(BlackListUser).GetProperties(BindingFlags.Instance | BindingFlags.Public);
+
+            stringBuilder.AppendLine("```cs\n");
+
+            foreach (var property in properties)
+            {
+                string propertyName = property.Name;
+
+                stringBuilder.AppendLine($"{propertyName}: {property.GetValue(user)}");
+            }
+
+            stringBuilder.AppendLine("```");
+
+            return stringBuilder.ToString();
+        }
     }
 }
