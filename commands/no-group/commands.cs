@@ -702,19 +702,17 @@ namespace Commands
                 {
                     using var context = new BobEntities();
                     var bannedUser = await context.GetUserFromBlackList(Context.User.Id);
+                    string reason = $"Sending a message with `/confess` that contained: {ConfessFiltering.FormatBannedWords(filterResult.BlacklistMatches)}";
 
-                    // Check if user has a previous ban for offensive words
                     if (await BlackList.IsBlacklisted(Context.User.Id))
                     {
-                        bannedUser = await BlackList.StepBanUser(Context.User.Id, $"Sending a message with `/confess` that contained: {ConfessFiltering.FormatBannedWords(filterResult.BlacklistMatches)}");
-
-                        await FollowupAsync(text: $"❌ Your message contains blacklisted words and you are **already banned**. Your punishment has **increased**.\n- You will be able to use `/confess` again {TimeStamp.FromDateTime((DateTime)bannedUser.Expiration, TimeStamp.Formats.Relative)}.\n**Reason(s):**\n{bannedUser.Reason}\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
+                        bannedUser = await BlackList.StepBanUser(Context.User.Id, reason);
+                        await FollowupAsync($"❌ Your message contains blacklisted words and you are **already banned**. Your punishment has **increased**.\n- You will be able to use `/confess` again {TimeStamp.FromDateTime((DateTime)bannedUser.Expiration, TimeStamp.Formats.Relative)}.\n**Reason(s):**\n{bannedUser.Reason}\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
                     }
                     else
                     {
-                        bannedUser = await BlackList.BlackListUser(bannedUser, Context.User.Id, $"Sending a message with `/confess` that contained: {ConfessFiltering.FormatBannedWords(filterResult.BlacklistMatches)}", BlackList.Punishment.FiveMinutes);
-
-                        await FollowupAsync(text: $"❌ Your message contains blacklisted words. You have been temporarily banned.\n- You will be able to use `/confess` again {TimeStamp.FromDateTime((DateTime)bannedUser.Expiration, TimeStamp.Formats.Relative)}.\n**Reason(s):**\n{bannedUser.Reason}\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
+                        bannedUser = await BlackList.BlackListUser(bannedUser, Context.User.Id, reason, BlackList.Punishment.FiveMinutes);
+                        await FollowupAsync($"❌ Your message contains blacklisted words. You have been temporarily banned.\n- You will be able to use `/confess` again {TimeStamp.FromDateTime((DateTime)bannedUser.Expiration, TimeStamp.Formats.Relative)}.\n**Reason(s):**\n{bannedUser.Reason}\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
                     }
 
                     return;
@@ -724,8 +722,7 @@ namespace Commands
                 {
                     using var context = new BobEntities();
                     var bannedUser = await context.GetUserFromBlackList(Context.User.Id);
-
-                    await FollowupAsync(text: $"❌ You are banned from using `/confess`\n{bannedUser.FormatAsString()}\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
+                    await FollowupAsync($"❌ You are banned from using `/confess`\n{bannedUser.FormatAsString()}\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
                     return;
                 }
 
@@ -736,40 +733,35 @@ namespace Commands
                     formattedMessage = ConfessFiltering.MarkSpoilers(formattedMessage, filterResult.WordsToCensor);
                 }
 
-                if (formattedMessage.Length > 2000) // 2000 is max characters in a message.
+                if (formattedMessage.Length > 2000)
                 {
                     await FollowupAsync($"❌ The message *cannot* be delivered because it contains **{formattedMessage.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **2000** characters.", ephemeral: true);
                     return;
                 }
 
-                ComponentBuilder components = new();
-                components.WithButton(label: "Report Message", customId: $"reportMessage:{message}", ButtonStyle.Secondary, emote: Emoji.Parse("⚠️"));
+                ComponentBuilder components = new ComponentBuilder()
+                    .WithButton(label: "Report Message", customId: $"reportMessage:{message}", ButtonStyle.Secondary, emote: Emoji.Parse("⚠️"));
 
                 if (ConfessFiltering.ContainsLink(formattedMessage))
                 {
                     string linkWarning = "\n⚠️ **Make sure you trust links before clicking them.**";
-
                     if (formattedMessage.Length + linkWarning.Length < 2000)
                     {
-                        await user.SendMessageAsync(text: formattedMessage + linkWarning, components: components.Build());
+                        formattedMessage += linkWarning;
                     }
-                    else
-                    {
-                        await user.SendMessageAsync(text: formattedMessage, components: components.Build());
-                        await user.SendMessageAsync(linkWarning[2..]);
-                    }
+                    await user.SendMessageAsync(text: formattedMessage, components: components.Build());
                 }
                 else
                 {
                     await user.SendMessageAsync(text: formattedMessage, components: components.Build());
                 }
 
-                await FollowupAsync(text: $"✉️ Sent!\n**Message:** {message} - {signoff}\n**To:** **{user.Mention}**", ephemeral: true);
+                await FollowupAsync($"✉️ Sent!\n**Message:** {message} - {signoff}\n**To:** **{user.Mention}**", ephemeral: true);
             }
             catch (Exception ex)
             {
                 Console.WriteLine(ex);
-                await FollowupAsync(text: $"❌ Bob could **not** DM {user.Mention}.\n- You could try again, but this *probably* means their DMs are closed which Bob cannot change.", ephemeral: true);
+                await FollowupAsync($"❌ Bob could **not** DM {user.Mention}.\n- You could try again, but this *probably* means their DMs are closed which Bob cannot change.", ephemeral: true);
             }
         }
 
