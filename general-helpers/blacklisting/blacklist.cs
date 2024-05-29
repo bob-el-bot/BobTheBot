@@ -70,7 +70,7 @@ namespace Moderation
 
         public static async Task NotifyUserReport(ulong id, string message)
         {
-            if (Bot.Client.GetChannel(AutoModerationChannelId) is IMessageChannel channel)
+            if (Bot.Client.GetChannel(ReportChannelId) is IMessageChannel channel)
             {
                 ComponentBuilder components = new();
 
@@ -101,7 +101,7 @@ namespace Moderation
 
         public static async Task NotifyMessageReport(string message)
         {
-            if (Bot.Client.GetChannel(AutoModerationChannelId) is IMessageChannel channel)
+            if (Bot.Client.GetChannel(ReportChannelId) is IMessageChannel channel)
             {
                 await channel.SendMessageAsync($"`Message was reported.`\n**Message:**\n```{message}```\n<@&1111721827807543367>");
             }
