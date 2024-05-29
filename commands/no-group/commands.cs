@@ -742,25 +742,26 @@ namespace Commands
                     return;
                 }
 
+                ComponentBuilder components = new();
+                components.WithButton(label: "Report Message", customId: $"reportMessage:{message}", ButtonStyle.Secondary, emote: Emoji.Parse("⚠️"));
+
                 if (ConfessFiltering.ContainsLink(formattedMessage))
                 {
                     string linkWarning = "\n⚠️ **Make sure you trust links before clicking them.**";
 
                     if (formattedMessage.Length + linkWarning.Length < 2000)
                     {
-                        await user.SendMessageAsync(formattedMessage + linkWarning);
+                        await user.SendMessageAsync(text: formattedMessage + linkWarning, components: components.Build());
                     }
                     else
                     {
-                        await user.SendMessageAsync(formattedMessage);
+                        await user.SendMessageAsync(text: formattedMessage, components: components.Build());
                         await user.SendMessageAsync(linkWarning[2..]);
                     }
                 }
                 else
                 {
-                    ComponentBuilder components = new();
-                    components.WithButton(label: "Report Message", customId: $"reportMessage:{message}", ButtonStyle.Danger, emote: Emoji.Parse("⚠️"));
-                    await user.SendMessageAsync(text: formattedMessage, components: components.Build() );
+                    await user.SendMessageAsync(text: formattedMessage, components: components.Build());
                 }
 
                 await FollowupAsync(text: $"✉️ Sent!\n**Message:** {message} - {signoff}\n**To:** **{user.Mention}**", ephemeral: true);

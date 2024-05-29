@@ -152,13 +152,15 @@ namespace Moderation
                 };
 
                 await context.AddUserToBlackList(user);
+                
+                await NotifyBan(user.Id, reason, duration);
             }
             else
             {
                 if (duration != Punishment.Permanent)
                 {
                     user.Expiration = GetExpiration(duration);
-                    user.Reason = $"{user.Reason}\n {reason}";
+                    user.Reason = $"{user.Reason}\n{reason}";
                     await context.UpdateUserFromBlackList(user);
 
                     await NotifyBan(user.Id, reason, duration);
