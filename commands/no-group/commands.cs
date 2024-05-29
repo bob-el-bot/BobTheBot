@@ -706,13 +706,13 @@ namespace Commands
                     // Check if user has a previous ban for offensive words
                     if (await BlackList.IsBlacklisted(Context.User.Id))
                     {
-                        bannedUser = await BlackList.StepBanUser(Context.User.Id, $"Sending a message with `/confess` that contained: {ConfessFiltering.FormatBannedWords(filterResult.BlacklistMatches)}", Bot.Client);
+                        bannedUser = await BlackList.StepBanUser(Context.User.Id, $"Sending a message with `/confess` that contained: {ConfessFiltering.FormatBannedWords(filterResult.BlacklistMatches)}");
 
                         await FollowupAsync(text: $"❌ Your message contains blacklisted words and you are **already banned**. Your punishment has **increased**.\n- You will be able to use `/confess` again {TimeStamp.FromDateTime((DateTime)bannedUser.Expiration, TimeStamp.Formats.Relative)}.\n**Reason(s):**\n{bannedUser.Reason}\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
                     }
                     else
                     {
-                        bannedUser = await BlackList.BlackListUser(bannedUser, Context.User.Id, $"Sending a message with `/confess` that contained: {ConfessFiltering.FormatBannedWords(filterResult.BlacklistMatches)}", BlackList.Punishment.FiveMinutes, Bot.Client);
+                        bannedUser = await BlackList.BlackListUser(bannedUser, Context.User.Id, $"Sending a message with `/confess` that contained: {ConfessFiltering.FormatBannedWords(filterResult.BlacklistMatches)}", BlackList.Punishment.FiveMinutes);
 
                         await FollowupAsync(text: $"❌ Your message contains blacklisted words. You have been temporarily banned.\n- You will be able to use `/confess` again {TimeStamp.FromDateTime((DateTime)bannedUser.Expiration, TimeStamp.Formats.Relative)}.\n**Reason(s):**\n{bannedUser.Reason}\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
                     }

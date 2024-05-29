@@ -24,7 +24,7 @@ namespace Moderation
             Permanent
         }
 
-        public static async Task<BlackListUser> StepBanUser(ulong id, string reason, DiscordSocketClient client)
+        public static async Task<BlackListUser> StepBanUser(ulong id, string reason)
         {
             using var context = new BobEntities();
             var user = await context.GetUserFromBlackList(id);
@@ -36,13 +36,13 @@ namespace Moderation
                 nextPunishment = GetNextPunishment(user.Expiration);
             }
 
-            return await BlackListUser(user, id, reason, nextPunishment, client);
+            return await BlackListUser(user, id, reason, nextPunishment);
         }
 
-        private static async Task NotifyBan(ulong id, string reason, Punishment punishment, DiscordSocketClient client)
+        private static async Task NotifyBan(ulong id, string reason, Punishment punishment)
         {
 
-            if (client.GetChannel(AutoModerationChannelId) is IMessageChannel channel)
+            if (Bot.Client.GetChannel(AutoModerationChannelId) is IMessageChannel channel)
             {
                 string message;
                 ComponentBuilder components = new();
@@ -63,9 +63,9 @@ namespace Moderation
             }
         }
 
-        private static async Task NotifyPermanentBan(ulong id, string reason, DiscordSocketClient client)
+        private static async Task NotifyPermanentBan(ulong id, string reason)
         {
-            await NotifyBan(id, reason, Punishment.Permanent, client);
+            await NotifyBan(id, reason, Punishment.Permanent);
         }
 
         public static async Task NotifyUserReport(ulong id, string message)
@@ -138,7 +138,7 @@ namespace Moderation
             return Punishment.Permanent;
         }
 
-        public static async Task<BlackListUser> BlackListUser(BlackListUser user, ulong id, string reason, Punishment duration, DiscordSocketClient client)
+        public static async Task<BlackListUser> BlackListUser(BlackListUser user, ulong id, string reason, Punishment duration)
         {
             using var context = new BobEntities();
 
@@ -161,7 +161,7 @@ namespace Moderation
                     user.Reason = $"{user.Reason}\n {reason}";
                     await context.UpdateUserFromBlackList(user);
 
-                    await NotifyBan(user.Id, reason, duration, client);
+                    await NotifyBan(user.Id, reason, duration);
                 }
                 else
                 {
@@ -170,7 +170,7 @@ namespace Moderation
                         user.Expiration = GetExpiration(Punishment.OneMonth);
                         await context.UpdateUserFromBlackList(user);
 
-                        await NotifyPermanentBan(user.Id, reason, client);
+                        await NotifyPermanentBan(user.Id, reason);
                     }
                 }
             }
