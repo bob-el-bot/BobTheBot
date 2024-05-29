@@ -758,7 +758,9 @@ namespace Commands
                 }
                 else
                 {
-                    await user.SendMessageAsync(formattedMessage);
+                    ComponentBuilder components = new();
+                    components.WithButton(label: "Report Message", customId: $"reportMessage:{message}", ButtonStyle.Danger, emote: Emoji.Parse("⚠️"));
+                    await user.SendMessageAsync(text: formattedMessage, components: components.Build() );
                 }
 
                 await FollowupAsync(text: $"✉️ Sent!\n**Message:** {message} - {signoff}\n**To:** **{user.Mention}**", ephemeral: true);

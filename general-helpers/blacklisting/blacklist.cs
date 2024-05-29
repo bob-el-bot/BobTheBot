@@ -5,12 +5,14 @@ using Database;
 using Database.Types;
 using Discord;
 using Discord.WebSocket;
+using Microsoft.Extensions.Options;
 
 namespace Moderation
 {
     public static class BlackList
     {
-        private static readonly ulong ModerationChannelId = 1244738682825478185;
+        private static readonly ulong AutoModerationChannelId = 1244738682825478185;
+        private static readonly ulong ReportChannelId = 1245179479123562507;
 
         public enum Punishment
         {
@@ -39,7 +41,8 @@ namespace Moderation
 
         private static async Task NotifyBan(ulong id, string reason, Punishment punishment, DiscordSocketClient client)
         {
-            if (client.GetChannel(ModerationChannelId) is IMessageChannel channel)
+
+            if (client.GetChannel(AutoModerationChannelId) is IMessageChannel channel)
             {
                 string message;
                 ComponentBuilder components = new();
@@ -63,6 +66,45 @@ namespace Moderation
         private static async Task NotifyPermanentBan(ulong id, string reason, DiscordSocketClient client)
         {
             await NotifyBan(id, reason, Punishment.Permanent, client);
+        }
+
+        public static async Task NotifyUserReport(ulong id, string message)
+        {
+            if (Bot.Client.GetChannel(AutoModerationChannelId) is IMessageChannel channel)
+            {
+                ComponentBuilder components = new();
+
+                var selectMenu = new SelectMenuBuilder
+                {
+                    MinValues = 1,
+                    MaxValues = 1,
+                    CustomId = $"banUser:{id}:{message}",
+                    Placeholder = "Punish for...",
+                };
+
+                foreach (var time in Enum.GetValues(typeof(Punishment)))
+                {
+                    selectMenu.AddOption(new SelectMenuOptionBuilder
+                    {
+                        Label = time.ToString(),
+                        Value = ((int)time).ToString()
+                    });
+                }
+
+                components.WithSelectMenu(selectMenu);
+
+                message = $"`User {id} was reported.`\n**Message:**\n```{message}```\n<@&1111721827807543367>";
+
+                await channel.SendMessageAsync(message, components: components.Build());
+            }
+        }
+
+        public static async Task NotifyMessageReport(string message)
+        {
+            if (Bot.Client.GetChannel(AutoModerationChannelId) is IMessageChannel channel)
+            {
+                await channel.SendMessageAsync($"`Message was reported.`\n**Message:**\n```{message}```\n<@&1111721827807543367>");
+            }
         }
 
         private static Punishment GetNextPunishment(DateTime? expiration)
