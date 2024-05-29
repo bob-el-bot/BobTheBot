@@ -13,15 +13,30 @@ namespace Commands.Helpers
 
     public static class ConfessFiltering
     {
+        public static bool ContainsLink(string message)
+        {
+            if (string.IsNullOrWhiteSpace(message))
+            {
+                return false;
+            }
+
+            // Regular expression pattern to match URLs
+            string pattern = @"((http|https|ftp|ftps)\://)?([a-zA-Z0-9\.-]+)\.([a-zA-Z]{2,})([a-zA-Z0-9\.\&\?\:\%\=\#\/\-]*)";
+            Regex regex = new(pattern, RegexOptions.IgnoreCase);
+
+            // Return true if the message contains a match, otherwise false
+            return regex.IsMatch(message);
+        }
+
         public static FilterResult ContainsBannedWords(string message)
         {
-            List<string> foundWords = new List<string>();
-            List<string> wordsToMarkSpoilers = new List<string>();
+            List<string> foundWords = new();
+            List<string> wordsToMarkSpoilers = new();
 
             // Check against the main list of banned words
             foreach (string bannedWord in BannedWords)
             {
-                if (message.IndexOf(bannedWord, StringComparison.OrdinalIgnoreCase) >= 0)
+                if (message.Contains(bannedWord, StringComparison.OrdinalIgnoreCase))
                 {
                     foundWords.Add(bannedWord);
 
@@ -70,7 +85,7 @@ namespace Commands.Helpers
             return message;
         }
 
-        private static HashSet<string> WordsToCensor = new HashSet<string>
+        private static readonly HashSet<string> WordsToCensor = new()
         {
             "5hit",
             "a_s_s",
@@ -78,6 +93,7 @@ namespace Commands.Helpers
             "ar5e",
             "arse",
             "ass",
+            "a$$",
             "ass fuck",
             "ass hole",
             "ass-hat",
@@ -99,13 +115,14 @@ namespace Commands.Helpers
             "f.u.c.k",
             "f_u_c_k",
             "fuck",
+            "fuckyou",
+            "fuck you",
             "fuc",
             "fuk",
             "f-u-c-k",
             "fucker",
             "fucking",
             "fuck off",
-            "fuck you",
             "fuck me",
             "gassy ass",
             "he11",
@@ -126,8 +143,14 @@ namespace Commands.Helpers
             "son-of-a-bitch"
         };
 
-        private static readonly HashSet<string> BannedWords = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        private static readonly HashSet<string> BannedWords = new(StringComparer.OrdinalIgnoreCase)
         {
+                  "fuckyou",
+                  "bitch ass",
+                  "bitch a55",
+                  "b1tcha55",
+                  "bitcha55",
+                  "b1tchass",
                   "2 girls 1 cup",
                   "2 girls one cup",
                   "2g1c",
@@ -1076,8 +1099,6 @@ namespace Commands.Helpers
                   "lemon party",
                   "LEN",
                   "leper",
-                  "lesbian",
-                  "lesbians",
                   "lesbo",
                   "lesbos",
                   "lez",

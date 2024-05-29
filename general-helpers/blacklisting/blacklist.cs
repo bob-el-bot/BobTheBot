@@ -48,7 +48,7 @@ namespace Moderation
 
                 if (punishment != Punishment.Permanent)
                 {
-                    message = $"`User: {id} has been banned for {punishment}`\n***Reason(s):***\n```{reason}```";
+                    message = $"`User: {id} has been banned for {punishment}`\n**Reason(s):**\n```{reason}```";
                 }
                 else
                 {
@@ -116,7 +116,7 @@ namespace Moderation
                 if (duration != Punishment.Permanent)
                 {
                     user.Expiration = GetExpiration(duration);
-                    user.Reason = $"{user.Reason}\n{reason}";
+                    user.Reason = $"{user.Reason}\n {reason}";
                     await context.UpdateUserFromBlackList(user);
 
                     await NotifyBan(user.Id, reason, duration, client);

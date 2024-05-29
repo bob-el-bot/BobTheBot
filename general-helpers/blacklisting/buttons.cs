@@ -38,7 +38,7 @@ namespace Moderation
         }
 
         [ComponentInteraction("removeBan:*")]
-        public async Task removeBanButtonHandler(string Id)
+        public async Task RemoveBanButtonHandler(string Id)
         {
             await DeferAsync();
 
