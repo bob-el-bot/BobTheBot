@@ -70,14 +70,16 @@ namespace Moderation
             await Context.Interaction.ModifyOriginalResponseAsync(x => { x.Content = "✅ User has been reported and will be punished accordingly."; x.Components = null; });
         }
 
-        [ComponentInteraction("reportMessage:*")]
-        public async Task ReportUserButtonHandler(string message)
+        [ComponentInteraction("reportMessage:*:*")]
+        public async Task ReportMessageButtonHandler(string dmChannelId, string messageId)
         {
             await DeferAsync();
-
+            
+            var parsedMessageId = Convert.ToUInt64(messageId);
+            var parsedChannelId = Convert.ToUInt64(dmChannelId);
             SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
 
-            await BlackList.NotifyMessageReport(message);
+            await BlackList.NotifyMessageReport(parsedChannelId, parsedMessageId);
 
             await Context.Interaction.ModifyOriginalResponseAsync(x => { x.Content = "✅ Message has been reported and will be reviewed.\n- If the message contains content which violates our terms of service our blacklist will be updated accordingly.\n- If you are hoping for the offending user to be punished, the infrastructure needed is currently in the works. We apologize for the inconvenience."; x.Components = null; });
         }

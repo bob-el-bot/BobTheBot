@@ -50,11 +50,7 @@ namespace TimeStamps
         /// <returns>The generated timestamp string.</returns>
         public static string FromDateTime(DateTime dateTime, Formats format)
         {
-            // Convert to UTC if necessary
-            if (dateTime.Kind != DateTimeKind.Utc)
-            {
-                dateTime = dateTime.ToUniversalTime();
-            }
+            dateTime = dateTime.ToUniversalTime();
 
             // Ensure the dateTime is within the range supported by DateTimeOffset
             if (dateTime < DateTimeOffset.MinValue.UtcDateTime)

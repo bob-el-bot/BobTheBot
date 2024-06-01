@@ -687,7 +687,7 @@ namespace Commands
         {
             if (user.IsBot)
             {
-                await RespondAsync(text: "❌ Sorry, but no sending messages to bots.", ephemeral: true);
+                await RespondAsync("❌ Sorry, but no sending messages to bots.", ephemeral: true);
                 return;
             }
 
@@ -695,16 +695,17 @@ namespace Commands
 
             try
             {
+                using var context = new BobEntities();
+
                 // Check for blacklisted words
-                FilterResult filterResult = ConfessFiltering.ContainsBannedWords(message);
+                var filterResult = ConfessFiltering.ContainsBannedWords(message);
+                bool isUserBlacklisted = await BlackList.IsBlacklisted(Context.User.Id);
 
                 if (filterResult.BlacklistMatches.Count > 0)
                 {
-                    using var context = new BobEntities();
                     var bannedUser = await context.GetUserFromBlackList(Context.User.Id);
                     string reason = $"Sending a message with `/confess` that contained: {ConfessFiltering.FormatBannedWords(filterResult.BlacklistMatches)}";
-
-                    if (await BlackList.IsBlacklisted(Context.User.Id))
+                    if (isUserBlacklisted)
                     {
                         bannedUser = await BlackList.StepBanUser(Context.User.Id, reason);
                         await FollowupAsync($"❌ Your message contains blacklisted words and you are **already banned**. Your punishment has **increased**.\n- You will be able to use `/confess` again {TimeStamp.FromDateTime((DateTime)bannedUser.Expiration, TimeStamp.Formats.Relative)}.\n**Reason(s):**\n{bannedUser.Reason}\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
@@ -714,19 +715,17 @@ namespace Commands
                         bannedUser = await BlackList.BlackListUser(bannedUser, Context.User.Id, reason, BlackList.Punishment.FiveMinutes);
                         await FollowupAsync($"❌ Your message contains blacklisted words. You have been temporarily banned.\n- You will be able to use `/confess` again {TimeStamp.FromDateTime((DateTime)bannedUser.Expiration, TimeStamp.Formats.Relative)}.\n**Reason(s):**\n{bannedUser.Reason}\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
                     }
-
                     return;
                 }
 
-                if (await BlackList.IsBlacklisted(Context.User.Id))
+                if (isUserBlacklisted)
                 {
-                    using var context = new BobEntities();
                     var bannedUser = await context.GetUserFromBlackList(Context.User.Id);
                     await FollowupAsync($"❌ You are banned from using `/confess`\n{bannedUser.FormatAsString()}\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
                     return;
                 }
 
-                string formattedMessage = $"**Someone sent you a message:**\n{message} - {signoff}";
+                string formattedMessage = $"{ConfessFiltering.notificationMessage}\n{message} - {signoff}";
 
                 if (filterResult.WordsToCensor.Count > 0)
                 {
@@ -739,23 +738,29 @@ namespace Commands
                     return;
                 }
 
-                ComponentBuilder components = new ComponentBuilder()
-                    .WithButton(label: "Report Message", customId: $"reportMessage:{message}", ButtonStyle.Secondary, emote: Emoji.Parse("⚠️"));
+                ComponentBuilder components = new();
+                ButtonBuilder reportMessageButton = new()
+                {
+                    Label = "Report Message",
+                    Style = ButtonStyle.Secondary,
+                    Emote = Emoji.Parse("⚠️")
+                };
+
+                var finalMessage = formattedMessage;
 
                 if (ConfessFiltering.ContainsLink(formattedMessage))
                 {
-                    string linkWarning = "\n⚠️ **Make sure you trust links before clicking them.**";
-                    if (formattedMessage.Length + linkWarning.Length < 2000)
+                    if (formattedMessage.Length + ConfessFiltering.linkWarningMessage.Length < 2000)
                     {
-                        formattedMessage += linkWarning;
+                        finalMessage += ConfessFiltering.linkWarningMessage;
                     }
-                    await user.SendMessageAsync(text: formattedMessage, components: components.Build());
-                }
-                else
-                {
-                    await user.SendMessageAsync(text: formattedMessage, components: components.Build());
                 }
 
+                var sentMessage = await user.SendMessageAsync(text: finalMessage);
+                reportMessageButton.CustomId = $"reportMessage:{sentMessage.Channel.Id}:{sentMessage.Id}";
+                components.WithButton(reportMessageButton);
+
+                await sentMessage.ModifyAsync(x => x.Components = components.Build());
                 await FollowupAsync($"✉️ Sent!\n**Message:** {message} - {signoff}\n**To:** **{user.Mention}**", ephemeral: true);
             }
             catch (Exception ex)

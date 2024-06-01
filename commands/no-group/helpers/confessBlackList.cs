@@ -5,46 +5,72 @@ using System.Text.RegularExpressions;
 
 namespace Commands.Helpers
 {
+    /// <summary>
+    /// Represents the result of filtering a message for banned words.
+    /// </summary>
     public class FilterResult
     {
+        /// <summary>
+        /// Gets or sets the list of words that matched the blacklist.
+        /// </summary>
         public List<string> BlacklistMatches { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of words that need to be marked as spoilers.
+        /// </summary>
         public List<string> WordsToCensor { get; set; }
     }
 
+    /// <summary>
+    /// Provides methods for filtering messages for banned words and other criteria.
+    /// </summary>
     public static class ConfessFiltering
     {
+        /// <summary>
+        /// Warning message to be appended when a link is detected in the message.
+        /// </summary>
+        public static readonly string linkWarningMessage = "⚠️ **Make sure you trust links before clicking them.**";
+        /// <summary>
+        /// Notification message prefix to be added to anonymous messages.
+        /// </summary>
+        public static readonly string notificationMessage = "**Someone sent you a message:**";
+
+        private static readonly Regex UrlRegex = new(
+            @"((http|https|ftp|ftps)\://)?([a-zA-Z0-9\.-]+)\.([a-zA-Z]{2,})([a-zA-Z0-9\.\&\?\:\%\=\#\/\-]*)",
+            RegexOptions.IgnoreCase | RegexOptions.Compiled
+        );
+
+        /// <summary>
+        /// Determines whether the specified message contains a link.
+        /// </summary>
+        /// <param name="message">The message to check.</param>
+        /// <returns><c>true</c> if the message contains a link; otherwise, <c>false</c>.</returns>
         public static bool ContainsLink(string message)
         {
-            if (string.IsNullOrWhiteSpace(message))
-            {
-                return false;
-            }
-
-            // Regular expression pattern to match URLs
-            string pattern = @"((http|https|ftp|ftps)\://)?([a-zA-Z0-9\.-]+)\.([a-zA-Z]{2,})([a-zA-Z0-9\.\&\?\:\%\=\#\/\-]*)";
-            Regex regex = new(pattern, RegexOptions.IgnoreCase);
-
-            // Return true if the message contains a match, otherwise false
-            return regex.IsMatch(message);
+            return !string.IsNullOrWhiteSpace(message) && UrlRegex.IsMatch(message);
         }
 
+        /// <summary>
+        /// Checks a message for banned words and returns the results.
+        /// </summary>
+        /// <param name="message">The message to check.</param>
+        /// <returns>A <see cref="FilterResult"/> containing the lists of blacklisted words and words to censor.</returns>
         public static FilterResult ContainsBannedWords(string message)
         {
             List<string> foundWords = new();
             List<string> wordsToMarkSpoilers = new();
 
-            // Check against the main list of banned words
-            foreach (string bannedWord in BannedWords)
+            foreach (string word in message.Split(' ', StringSplitOptions.RemoveEmptyEntries))
             {
-                if (message.Contains(bannedWord, StringComparison.OrdinalIgnoreCase))
+                if (BannedWords.Contains(word))
                 {
-                    foundWords.Add(bannedWord);
-
-                    // Check if the banned word is in WordsToCensor
-                    if (WordsToCensor.Contains(bannedWord))
+                    if (WordsToCensor.Contains(word))
                     {
-                        wordsToMarkSpoilers.Add(bannedWord);
-                        foundWords.Remove(bannedWord); // Remove from the foundWords list
+                        wordsToMarkSpoilers.Add(word);
+                    }
+                    else
+                    {
+                        foundWords.Add(word);
                     }
                 }
             }
@@ -56,36 +82,40 @@ namespace Commands.Helpers
             };
         }
 
+        /// <summary>
+        /// Formats a list of words into a comma-separated string.
+        /// </summary>
+        /// <param name="words">The list of words to format.</param>
+        /// <returns>A comma-separated string of words.</returns>
         public static string FormatBannedWords(List<string> words)
         {
-            StringBuilder formattedText = new();
-
-            foreach (var word in words)
+            if (words == null || words.Count == 0)
             {
-                formattedText.Append($"{word}, ");
+                return string.Empty;
             }
 
-            return formattedText.ToString();
+            return string.Join(", ", words);
         }
 
+        /// <summary>
+        /// Marks specified words in a message as spoilers.
+        /// </summary>
+        /// <param name="message">The message to process.</param>
+        /// <param name="wordsToCensor">The list of words to mark as spoilers.</param>
+        /// <returns>The message with specified words marked as spoilers.</returns>
         public static string MarkSpoilers(string message, List<string> wordsToCensor)
         {
             foreach (string word in wordsToCensor)
             {
-                // Escape special characters in the word for Regex
                 string escapedWord = Regex.Escape(word);
-
-                // Create a regex pattern to match the word
                 string pattern = $@"\b({escapedWord})\b";
-
-                // Replace all occurrences of the word with the word wrapped in double pipes
-                message = Regex.Replace(message, pattern, "||$1||", RegexOptions.IgnoreCase);
+                message = Regex.Replace(message, pattern, "||$1||", RegexOptions.IgnoreCase | RegexOptions.Compiled);
             }
 
             return message;
         }
 
-        private static readonly HashSet<string> WordsToCensor = new()
+        private static readonly HashSet<string> WordsToCensor = new(StringComparer.OrdinalIgnoreCase)
         {
             "5hit",
             "a_s_s",

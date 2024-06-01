@@ -26,7 +26,14 @@ namespace Database.Types
         {
             StringBuilder sb = new();
 
-            sb.AppendLine($"**Expiration:**\n{(Expiration.HasValue && Expiration != DateTime.MaxValue ? TimeStamp.FromDateTime((DateTime)Expiration, TimeStamp.Formats.Relative) : "Never | Permanent")}");
+            // Ensure Expiration is in UTC
+            DateTime? expirationUtc = Expiration?.ToUniversalTime();
+
+            string expirationString = expirationUtc.HasValue && expirationUtc != DateTime.MaxValue
+                ? TimeStamp.FromDateTime((DateTime)expirationUtc, TimeStamp.Formats.Relative)
+                : "Never | Permanent";
+
+            sb.AppendLine($"**Expiration:**\n{expirationString}");
             sb.AppendLine($"**Reason(s):**\n{Reason}");
 
             return sb.ToString();
