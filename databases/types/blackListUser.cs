@@ -27,7 +27,7 @@ namespace Database.Types
             StringBuilder sb = new();
 
             // Ensure Expiration is in UTC
-            DateTime? expirationUtc = Expiration?.ToUniversalTime();
+            DateTime? expirationUtc = Expiration;
 
             string expirationString = expirationUtc.HasValue && expirationUtc != DateTime.MaxValue
                 ? TimeStamp.FromDateTime((DateTime)expirationUtc, TimeStamp.Formats.Relative)

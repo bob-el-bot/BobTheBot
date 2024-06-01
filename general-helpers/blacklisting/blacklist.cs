@@ -149,12 +149,12 @@ namespace Moderation
         /// <returns>The next level of punishment.</returns>
         private static Punishment GetNextPunishment(DateTime? expiration)
         {
-            if (expiration == null || expiration > DateTime.UtcNow.AddMonths(1))
+            if (expiration == null || expiration > DateTime.Now.AddMonths(1))
             {
                 return Punishment.Permanent;
             }
 
-            var remainingTime = expiration - DateTime.UtcNow;
+            var remainingTime = expiration - DateTime.Now;
             if (remainingTime <= TimeSpan.FromMinutes(5))
             {
                 return Punishment.OneHour;
@@ -249,7 +249,7 @@ namespace Moderation
 
             if (user != null)
             {
-                if (user.Expiration == null || user.Expiration > DateTime.UtcNow)
+                if (user.Expiration == null || user.Expiration > DateTime.Now)
                 {
                     return true;
                 }
@@ -273,7 +273,7 @@ namespace Moderation
                 return Punishment.Permanent;
             }
 
-            TimeSpan timeUntilExpiration = expiration.Value - DateTime.UtcNow;
+            TimeSpan timeUntilExpiration = expiration.Value - DateTime.Now;
 
             if (timeUntilExpiration <= TimeSpan.FromMinutes(5))
             {
@@ -310,11 +310,11 @@ namespace Moderation
         {
             return duration switch
             {
-                Punishment.FiveMinutes => DateTime.UtcNow.AddMinutes(5),
-                Punishment.OneHour => DateTime.UtcNow.AddHours(1),
-                Punishment.OneDay => DateTime.UtcNow.AddDays(1),
-                Punishment.OneWeek => DateTime.UtcNow.AddDays(7),
-                Punishment.OneMonth => DateTime.UtcNow.AddMonths(1),
+                Punishment.FiveMinutes => DateTime.Now.AddMinutes(5),
+                Punishment.OneHour => DateTime.Now.AddHours(1),
+                Punishment.OneDay => DateTime.Now.AddDays(1),
+                Punishment.OneWeek => DateTime.Now.AddDays(7),
+                Punishment.OneMonth => DateTime.Now.AddMonths(1),
                 Punishment.Permanent => DateTime.MaxValue,
                 _ => throw new ArgumentOutOfRangeException(nameof(duration), duration, null)
             };
