@@ -112,7 +112,7 @@ namespace Moderation
 
             await Context.Interaction.ModifyOriginalResponseAsync(x =>
             {
-                x.Content = "✅ Your DMs will now appear closed to people using `/confess`.";
+                x.Content = "✅ Your DMs will now appear closed to people using `/confess`.\n- You can use `/profile confessions-toggle` to configure this whenever.";
                 x.Components = null;
             });
         }

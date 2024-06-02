@@ -82,6 +82,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 
 ### 👤 Profile Commands
 - `/profile display [user]` Displays the specified user's profile.
+- `/profile confessions-toggle [open]` Configure if you want to receive messages sent with `/confess`.
 - `/profile set-color [color]` Sets your profile color.
 - `/profile badge-info [badge]` Shows how to unlock the given badge.
 

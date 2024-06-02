@@ -444,6 +444,21 @@ namespace Commands.Helpers
                     },
                     new CommandInfo
                     {
+                        Name = "confessions-toggle",
+                        InheritGroupName = true,
+                        Description = "Configure if you want to receive messages sent with `/confess`.",
+                        Url = "https://docs.bobthebot.net#profile-confessions-toggle",
+                        Parameters = new[]
+                        {
+                            new ParameterInfo
+                            {
+                                Name = "open",
+                                Description = "Enable or disable receiving messages sent via `/confess`. Choose from: True, False."
+                            }
+                        }
+                    },
+                    new CommandInfo
+                    {
                         Name = "set-color",
                         InheritGroupName = true,
                         Description = "Sets your profile color.",
