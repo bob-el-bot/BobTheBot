@@ -725,6 +725,13 @@ namespace Commands
                     return;
                 }
 
+                var dbUser = await context.GetUser(user.Id);
+                if (dbUser.ConfessionsOff)
+                {
+                    await FollowupAsync($"❌ Bob could **not** DM {user.Mention}.\n- You could try again, but this *probably* means their DMs are closed which Bob cannot change.", ephemeral: true);
+                    return;
+                }
+
                 string formattedMessage = $"{ConfessFiltering.notificationMessage}\n{message} - {signoff}";
 
                 if (filterResult.WordsToCensor.Count > 0)
