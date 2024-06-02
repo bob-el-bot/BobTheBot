@@ -129,6 +129,7 @@ namespace Commands
                 using var context = new BobEntities();
                 ulong entryCount = await context.GetTotalEntries();
                 int userEntriesCount = await context.User.CountAsync();
+                int blackListEntriesCount = await context.BlackListUser.CountAsync();
                 int serverEntriesCount = await context.Server.CountAsync();
                 int newsChannelEntriesCount = await context.NewsChannel.CountAsync();
                 double size = await context.GetDatabaseSizeBytes();
@@ -141,6 +142,7 @@ namespace Commands
 
                 embed.AddField(name: "Total Entries", value: $"`{entryCount}`", inline: true)
                     .AddField(name: "User Entries", value: $"`{userEntriesCount}`", inline: true)
+                    .AddField(name: "BlackListUser Entries", value: $"`{blackListEntriesCount}`", inline: true)
                     .AddField(name: "Server Entries", value: $"`{serverEntriesCount}`", inline: true)
                     .AddField(name: "NewsChannel Entries", value: $"`{newsChannelEntriesCount}`", inline: true)
                     .AddField(name: "Size (Bytes)", value: $"`{size}`", inline: true)
@@ -449,7 +451,8 @@ namespace Commands
                 }
                 else
                 {
-                    BlackListUser dbUser = new() {
+                    BlackListUser dbUser = new()
+                    {
                         Id = discordUser.Id,
                         Expiration = BlackList.GetExpiration(punishment),
                         Reason = reason
