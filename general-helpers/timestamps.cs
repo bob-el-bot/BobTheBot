@@ -50,8 +50,6 @@ namespace TimeStamps
         /// <returns>The generated timestamp string.</returns>
         public static string FromDateTime(DateTime dateTime, Formats format)
         {
-            Console.WriteLine(dateTime);
-
             // Ensure the dateTime is within the range supported by DateTimeOffset
             if (dateTime < DateTimeOffset.MinValue.UtcDateTime)
             {
@@ -62,12 +60,8 @@ namespace TimeStamps
                 dateTime = DateTimeOffset.MaxValue.UtcDateTime;
             }
 
-            Console.WriteLine(dateTime);
-
             // Create a DateTimeOffset with the validated dateTime
             var dateTimeOffset = new DateTimeOffset(dateTime);
-
-            Console.WriteLine(dateTimeOffset);
 
             // Return the formatted timestamp string
             return $"<t:{dateTimeOffset.ToUniversalTime().ToUnixTimeSeconds()}:{(char)format}>";

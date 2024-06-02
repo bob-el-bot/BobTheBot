@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Database;
+using Database.Types;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
@@ -17,9 +18,11 @@ namespace Moderation
 
             var userId = Convert.ToUInt64(id);
             SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
+            
+            var user = await BlackList.GetUser(userId);
 
-            using var context = new BobEntities();
-            var user = await context.GetUserFromBlackList(userId);
+            var punishment = (BlackList.Punishment)int.Parse(component.Data.Values.FirstOrDefault());
+            var expiration = BlackList.GetExpiration(punishment);
 
             if (user == null)
             {
@@ -27,18 +30,16 @@ namespace Moderation
                 {
                     Id = userId,
                     Reason = reason,
-                    Expiration = BlackList.GetExpiration((BlackList.Punishment)int.Parse(component.Data.Values.FirstOrDefault()))
+                    Expiration = expiration
                 };
-
-                await context.AddUserToBlackList(user);
             }
             else
             {
-                user.Reason = reason;
-                user.Expiration = BlackList.GetExpiration((BlackList.Punishment)int.Parse(component.Data.Values.FirstOrDefault()));
-
-                await context.UpdateUserFromBlackList(user);
+                user.Reason = $"{user.Reason}\n{reason}";
+                user.Expiration = expiration;
             }
+
+            await BlackList.UpdateUser(user);
 
             string newInfo = $"✅ **Banned:**\n {user}";
             string response = $"{component.Message.Content}\n{newInfo}";
@@ -67,21 +68,29 @@ namespace Moderation
 
             await BlackList.NotifyUserReport(userId, message);
 
-            await Context.Interaction.ModifyOriginalResponseAsync(x => { x.Content = "✅ User has been reported and will be punished accordingly."; x.Components = null; });
+            await Context.Interaction.ModifyOriginalResponseAsync(x =>
+            {
+                x.Content = "✅ User has been reported and will be punished accordingly.";
+                x.Components = null;
+            });
         }
 
         [ComponentInteraction("reportMessage:*:*")]
         public async Task ReportMessageButtonHandler(string dmChannelId, string messageId)
         {
             await DeferAsync();
-            
+
             var parsedMessageId = Convert.ToUInt64(messageId);
             var parsedChannelId = Convert.ToUInt64(dmChannelId);
             SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
 
             await BlackList.NotifyMessageReport(parsedChannelId, parsedMessageId);
 
-            await Context.Interaction.ModifyOriginalResponseAsync(x => { x.Content = "✅ Message has been reported and will be reviewed.\n- If the message contains content which violates our terms of service our blacklist will be updated accordingly.\n- If you are hoping for the offending user to be punished, the infrastructure needed is currently in the works. We apologize for the inconvenience."; x.Components = null; });
+            await Context.Interaction.ModifyOriginalResponseAsync(x =>
+            {
+                x.Content = "✅ Message has been reported and will be reviewed.\n- If the message contains content which violates our terms of service our blacklist will be updated accordingly.\n- If you are hoping for the offending user to be punished, the infrastructure needed is currently in the works. We apologize for the inconvenience.";
+                x.Components = null;
+            });
         }
 
         [ComponentInteraction("listBanDetails:*")]
@@ -92,8 +101,7 @@ namespace Moderation
             var userId = Convert.ToUInt64(id);
             SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
 
-            using var context = new BobEntities();
-            var user = await context.GetUserFromBlackList(userId);
+            var user = await BlackList.GetUser(userId);
 
             string newInfo = user != null ? $"✅ {user.FormatAsString()}" : "❌ This user is no longer on the blacklist.";
             string response = $"{component.Message.Content}\n{newInfo}";
@@ -120,20 +128,9 @@ namespace Moderation
             var userId = Convert.ToUInt64(id);
             SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
 
-            using var context = new BobEntities();
-            var user = await context.GetUserFromBlackList(userId);
+            await BlackList.RemoveUser(userId);
 
-            string newInfo;
-            if (user != null)
-            {
-                await context.RemoveUserFromBlackList(user);
-
-                newInfo = "✅ This user has been unbanned.";
-            }
-            else
-            {
-                newInfo = "✅ This user was not on the blacklist.";
-            }
+            string newInfo = "✅ This user has been unbanned.";
 
             string response = $"{component.Message.Content}\n{newInfo}";
 
@@ -148,27 +145,30 @@ namespace Moderation
                 }
             }
 
-            await Context.Interaction.ModifyOriginalResponseAsync(x => { x.Content = response; x.Components = null; });
+            await Context.Interaction.ModifyOriginalResponseAsync(x =>
+            {
+                x.Content = response;
+                x.Components = null;
+            });
         }
 
         [ComponentInteraction("permanentlyBan:*")]
-        public async Task PermanentlyBanButtonHandler(string Id)
+        public async Task PermanentlyBanButtonHandler(string id)
         {
             await DeferAsync();
 
-            var userId = Convert.ToUInt64(Id);
+            var userId = Convert.ToUInt64(id);
             SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
 
-            using var context = new BobEntities();
-            var user = await context.GetUserFromBlackList(userId);
+            var user = await BlackList.GetUser(userId);
 
             string newInfo;
             if (user != null)
             {
                 user.Expiration = DateTime.MaxValue;
-                await context.UpdateUserFromBlackList(user);
+                await BlackList.UpdateUser(user);
 
-                newInfo = "✅ This user has been **permanantly banned**.";
+                newInfo = "✅ This user has been **permanently banned**.";
             }
             else
             {
@@ -188,7 +188,11 @@ namespace Moderation
                 }
             }
 
-            await Context.Interaction.ModifyOriginalResponseAsync(x => { x.Content = response; x.Components = null; });
+            await Context.Interaction.ModifyOriginalResponseAsync(x =>
+            {
+                x.Content = response;
+                x.Components = null;
+            });
         }
     }
 }

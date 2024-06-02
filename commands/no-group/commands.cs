@@ -752,7 +752,7 @@ namespace Commands
                 {
                     if (formattedMessage.Length + ConfessFiltering.linkWarningMessage.Length < 2000)
                     {
-                        finalMessage += ConfessFiltering.linkWarningMessage;
+                        finalMessage += "\n" + ConfessFiltering.linkWarningMessage;
                     }
                 }
 

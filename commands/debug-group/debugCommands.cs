@@ -329,9 +329,7 @@ namespace Commands
                 }
                 else
                 {
-                    BlackListUser dbUser;
-                    using var context = new BobEntities();
-                    dbUser = await context.GetUserFromBlackList(user == null ? parsedId : user.Id);
+                    BlackListUser dbUser = await BlackList.GetUser(discordUser.Id);
 
                     if (dbUser != null)
                     {
@@ -368,13 +366,11 @@ namespace Commands
                 }
                 else
                 {
-                    BlackListUser dbUser;
-                    using var context = new BobEntities();
-                    dbUser = await context.GetUserFromBlackList(user == null ? parsedId : user.Id);
+                    BlackListUser dbUser = await BlackList.GetUser(discordUser.Id);
 
                     if (dbUser != null)
                     {
-                        await context.RemoveUserFromBlackList(dbUser);
+                        await BlackList.RemoveUser(dbUser);
                         await FollowupAsync(text: $"✅ Deleted User {discordUser.GlobalName} `{discordUser.Id}`.");
                     }
                     else
@@ -408,9 +404,7 @@ namespace Commands
                 }
                 else
                 {
-                    BlackListUser dbUser;
-                    using var context = new BobEntities();
-                    dbUser = await context.GetUserFromBlackList(user == null ? parsedId : user.Id);
+                    BlackListUser dbUser = await BlackList.GetUser(discordUser.Id);
 
                     if (dbUser != null)
                     {
@@ -419,7 +413,7 @@ namespace Commands
                         {
                             dbUser.Expiration = updatedExpiration;
                             dbUser.Reason = reason;
-                            await context.UpdateUserFromBlackList(dbUser);
+                            await BlackList.UpdateUser(dbUser);
                         }
 
                         await FollowupAsync(text: $"✅ `Showing Blacklisted User: {discordUser.GlobalName}, {discordUser.Id}`\n{UserDebugging.GetUserPropertyString(dbUser)}");
@@ -455,19 +449,13 @@ namespace Commands
                 }
                 else
                 {
-                    BlackListUser dbUser;
-                    using var context = new BobEntities();
-                    dbUser = await context.GetUserFromBlackList(user == null ? parsedId : user.Id);
+                    BlackListUser dbUser = new() {
+                        Id = discordUser.Id,
+                        Expiration = BlackList.GetExpiration(punishment),
+                        Reason = reason
+                    };
 
-                    if (dbUser == null)
-                    {
-                        dbUser = new();
-                        var updatedExpiration = BlackList.GetExpiration(punishment);
-                        dbUser.Id = discordUser.Id;
-                        dbUser.Expiration = updatedExpiration;
-                        dbUser.Reason = reason;
-                        await context.AddUserToBlackList(dbUser);
-                    }
+                    await BlackList.UpdateUser(dbUser);
 
                     await FollowupAsync(text: $"✅ `Showing Blacklisted User: {discordUser.GlobalName}, {discordUser.Id}`\n{UserDebugging.GetUserPropertyString(dbUser)}");
                 }

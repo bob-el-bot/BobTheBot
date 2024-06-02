@@ -1,26 +1,22 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Commands.Helpers;
 using Database;
 using Database.Types;
 using Discord;
 using Discord.WebSocket;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Moderation
 {
-    /// <summary>
-    /// Provides functionality for managing the blacklist of users and applying punishments.
-    /// </summary>
     public static class BlackList
     {
         private static readonly ulong AutoModerationChannelId = 1244738682825478185;
         private static readonly ulong ReportChannelId = 1245179479123562507;
+        private static readonly MemoryCache Cache = new(new MemoryCacheOptions());
 
-        /// <summary>
-        /// Defines the different types of punishments that can be applied to users.
-        /// </summary>
         public enum Punishment
         {
             FiveMinutes,
@@ -32,49 +28,42 @@ namespace Moderation
         }
 
         /// <summary>
-        /// Increases the punishment for a user step by step.
+        /// Attempts to apply a temporary ban to a user.
         /// </summary>
         /// <param name="id">The ID of the user to ban.</param>
         /// <param name="reason">The reason for the ban.</param>
-        /// <returns>A task representing the asynchronous operation, with a <see cref="BlackListUser"/> result.</returns>
+        /// <returns>The blacklisted user object.</returns>
         public static async Task<BlackListUser> StepBanUser(ulong id, string reason)
         {
-            using var context = new BobEntities();
-            var user = await context.GetUserFromBlackList(id);
+            var user = await GetUser(id);
 
-            Punishment nextPunishment = Punishment.FiveMinutes;
-
-            if (user != null)
-            {
-                nextPunishment = GetNextPunishment(user.Expiration);
-            }
+            Punishment nextPunishment = user != null ? GetNextPunishment(user.Expiration) : Punishment.FiveMinutes;
 
             return await BlackListUser(user, id, reason, nextPunishment);
         }
 
         /// <summary>
-        /// Notifies the AutoModeration channel about a user's ban.
+        /// Notifies about a user being banned.
         /// </summary>
-        /// <param name="id">The ID of the user being banned.</param>
+        /// <param name="id">The ID of the banned user.</param>
         /// <param name="reason">The reason for the ban.</param>
-        /// <param name="punishment">The type of punishment applied.</param>
+        /// <param name="punishment">The punishment duration.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         private static async Task NotifyBan(ulong id, string reason, Punishment punishment)
         {
             if (Bot.Client.GetChannel(AutoModerationChannelId) is IMessageChannel channel)
             {
-                string message;
-                ComponentBuilder components = new();
-                components.WithButton(label: "See Details", customId: $"listBanDetails:{id}", style: ButtonStyle.Primary, emote: Emoji.Parse("🔎"));
-                components.WithButton(label: "Remove Ban", customId: $"removeBan:{id}", style: ButtonStyle.Success, emote: Emoji.Parse("⚖️"));
+                var message = punishment != Punishment.Permanent
+                    ? $"`User: {id} has been banned for {punishment}`\n**Reason(s):**\n```{reason}```"
+                    : $"`User {id} is recommended for a permanent ban`\n**Reason(s):**\n```{reason}```\n<@&1111721827807543367>";
 
-                if (punishment != Punishment.Permanent)
-                {
-                    message = $"`User: {id} has been banned for {punishment}`\n**Reason(s):**\n```{reason}```";
-                }
-                else
+                var components = new ComponentBuilder()
+                    .WithButton(label: "See Details", customId: $"listBanDetails:{id}", style: ButtonStyle.Primary, emote: Emoji.Parse("🔎"))
+                    .WithButton(label: "Remove Ban", customId: $"removeBan:{id}", style: ButtonStyle.Success, emote: Emoji.Parse("⚖️"));
+
+                if (punishment == Punishment.Permanent)
                 {
                     components.WithButton(label: "Permanently Ban", customId: $"permanentlyBan:{id}", style: ButtonStyle.Danger, emote: Emoji.Parse("⛓️"));
-                    message = $"`User {id} is recommended for a permanent ban`\n**Reason(s):**\n```{reason}```\n<@&1111721827807543367>";
                 }
 
                 await channel.SendMessageAsync(message, components: components.Build());
@@ -82,26 +71,15 @@ namespace Moderation
         }
 
         /// <summary>
-        /// Notifies the AutoModeration channel about a user's permanent ban.
+        /// Notifies about a user being reported.
         /// </summary>
-        /// <param name="id">The ID of the user being permanently banned.</param>
-        /// <param name="reason">The reason for the ban.</param>
-        private static async Task NotifyPermanentBan(ulong id, string reason)
-        {
-            await NotifyBan(id, reason, Punishment.Permanent);
-        }
-
-        /// <summary>
-        /// Notifies the Report channel about a user report.
-        /// </summary>
-        /// <param name="id">The ID of the user being reported.</param>
+        /// <param name="id">The ID of the reported user.</param>
         /// <param name="message">The report message.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public static async Task NotifyUserReport(ulong id, string message)
         {
             if (Bot.Client.GetChannel(ReportChannelId) is IMessageChannel channel)
             {
-                ComponentBuilder components = new();
-
                 var selectMenu = new SelectMenuBuilder
                 {
                     MinValues = 1,
@@ -119,34 +97,31 @@ namespace Moderation
                     });
                 }
 
-                components.WithSelectMenu(selectMenu);
-
-                message = $"`User {id} was reported.`\n**Message:**\n```{message}```\n<@&1111721827807543367>";
-
-                await channel.SendMessageAsync(message, components: components.Build());
+                var components = new ComponentBuilder().WithSelectMenu(selectMenu);
+                await channel.SendMessageAsync($"`User {id} was reported.`\n**Message:**\n```{message}```\n<@&1111721827807543367>", components: components.Build());
             }
         }
 
         /// <summary>
-        /// Notifies the Report channel about a message report.
+        /// Notifies about a message being reported.
         /// </summary>
-        /// <param name="dmChannelId">The ID of the DM channel containing the reported message.</param>
+        /// <param name="dmChannelId">The ID of the direct message channel where the reported message is.</param>
         /// <param name="messageId">The ID of the reported message.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public static async Task NotifyMessageReport(ulong dmChannelId, ulong messageId)
         {
             if (Bot.Client.GetChannel(ReportChannelId) is IMessageChannel channel)
             {
                 var message = await Bot.Client.GetDMChannelAsync(dmChannelId).Result.GetMessageAsync(messageId);
-
                 await channel.SendMessageAsync($"`Message was reported.`\n```{message.Content.Replace(ConfessFiltering.linkWarningMessage, "").Replace(ConfessFiltering.notificationMessage, "")}```\n<@&1111721827807543367>");
             }
         }
 
         /// <summary>
-        /// Determines the next punishment level based on the current expiration date.
+        /// Determines the next punishment based on the expiration date.
         /// </summary>
         /// <param name="expiration">The expiration date of the current punishment.</param>
-        /// <returns>The next level of punishment.</returns>
+        /// <returns>The next punishment.</returns>
         private static Punishment GetNextPunishment(DateTime? expiration)
         {
             if (expiration == null || expiration > DateTime.Now.AddMonths(1))
@@ -155,6 +130,7 @@ namespace Moderation
             }
 
             var remainingTime = expiration - DateTime.Now;
+
             if (remainingTime <= TimeSpan.FromMinutes(5))
             {
                 return Punishment.OneHour;
@@ -179,16 +155,16 @@ namespace Moderation
         }
 
         /// <summary>
-        /// Blacklists a user and applies the specified punishment.
+        /// Adds a user to the blacklist or updates existing user information.
         /// </summary>
-        /// <param name="user">The user to be blacklisted.</param>
-        /// <param name="id">The ID of the user to be blacklisted.</param>
-        /// <param name="reason">The reason for blacklisting the user.</param>
+        /// <param name="user">The user to be blacklisted or updated.</param>
+        /// <param name="id">The ID of the user.</param>
+        /// <param name="reason">The reason for blacklisting.</param>
         /// <param name="duration">The duration of the punishment.</param>
-        /// <returns>A task representing the asynchronous operation, with a <see cref="BlackListUser"/> result.</returns>
+        /// <returns>The blacklisted user object.</returns>
         public static async Task<BlackListUser> BlackListUser(BlackListUser user, ulong id, string reason, Punishment duration)
         {
-            using var context = new BobEntities();
+            DateTime? expiration = GetExpiration(duration);
 
             if (user == null)
             {
@@ -196,56 +172,30 @@ namespace Moderation
                 {
                     Id = id,
                     Reason = reason,
-                    Expiration = GetExpiration(duration)
+                    Expiration = expiration
                 };
-
-                await context.AddUserToBlackList(user);
-                await NotifyBan(user.Id, reason, duration);
             }
             else
             {
-                if (duration != Punishment.Permanent)
-                {
-                    user.Expiration = GetExpiration(duration);
-                    user.Reason = $"{user.Reason}\n{reason}";
-                    await context.UpdateUserFromBlackList(user);
-                    await NotifyBan(user.Id, reason, duration);
-                }
-                else
-                {
-                    if (GetPunishmentFromExpiration(user.Expiration) != Punishment.Permanent)
-                    {
-                        user.Expiration = GetExpiration(Punishment.OneMonth);
-                        await context.UpdateUserFromBlackList(user);
-                        await NotifyPermanentBan(user.Id, reason);
-                    }
-                }
+                user.Reason = $"{user.Reason}\n{reason}";
+                user.Expiration = duration != Punishment.Permanent ? expiration : GetExpiration(Punishment.OneMonth);
             }
+
+            await UpdateUser(user);
+
+            await NotifyBan(user.Id, reason, duration != Punishment.Permanent ? duration : Punishment.Permanent);
 
             return user;
         }
 
         /// <summary>
-        /// Removes a user from the blacklist.
-        /// </summary>
-        /// <param name="id">The ID of the user to be removed from the blacklist.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        public static async Task UnblacklistUser(ulong id)
-        {
-            using var context = new BobEntities();
-            var user = await context.GetUserFromBlackList(id);
-            await context.RemoveUserFromBlackList(user);
-        }
-
-        /// <summary>
-        /// Checks if a user is blacklisted.
+        /// Checks if a user is currently blacklisted.
         /// </summary>
         /// <param name="id">The ID of the user to check.</param>
-        /// <returns>A task representing the asynchronous operation, with a result of <c>true</c> if the user is blacklisted; otherwise, <c>false</c>.</returns>
+        /// <returns>True if the user is blacklisted; otherwise, false.</returns>
         public static async Task<bool> IsBlacklisted(ulong id)
         {
-            using var context = new BobEntities();
-            var user = await context.GetUserFromBlackList(id);
+            var user = await GetUser(id);
 
             if (user != null)
             {
@@ -254,58 +204,17 @@ namespace Moderation
                     return true;
                 }
 
-                // If the user's blacklist duration has expired, remove them from the database and cache
-                await UnblacklistUser(id);
+                await RemoveUser(id);
             }
 
             return false;
         }
 
         /// <summary>
-        /// Gets the punishment level based on the expiration date.
-        /// </summary>
-        /// <param name="expiration">The expiration date of the current punishment.</param>
-        /// <returns>The current level of punishment.</returns>
-        private static Punishment GetPunishmentFromExpiration(DateTime? expiration)
-        {
-            if (expiration == null)
-            {
-                return Punishment.Permanent;
-            }
-
-            TimeSpan timeUntilExpiration = expiration.Value - DateTime.Now;
-
-            if (timeUntilExpiration <= TimeSpan.FromMinutes(5))
-            {
-                return Punishment.FiveMinutes;
-            }
-            else if (timeUntilExpiration <= TimeSpan.FromHours(1))
-            {
-                return Punishment.OneHour;
-            }
-            else if (timeUntilExpiration <= TimeSpan.FromDays(1))
-            {
-                return Punishment.OneDay;
-            }
-            else if (timeUntilExpiration <= TimeSpan.FromDays(7))
-            {
-                return Punishment.OneWeek;
-            }
-            else if (timeUntilExpiration <= TimeSpan.FromDays(31))
-            {
-                return Punishment.OneMonth;
-            }
-            else
-            {
-                return Punishment.Permanent;
-            }
-        }
-
-        /// <summary>
         /// Gets the expiration date based on the duration of the punishment.
         /// </summary>
         /// <param name="duration">The duration of the punishment.</param>
-        /// <returns>The expiration date of the punishment.</returns>
+        /// <returns>The expiration date.</returns>
         public static DateTime? GetExpiration(Punishment duration)
         {
             return duration switch
@@ -318,6 +227,91 @@ namespace Moderation
                 Punishment.Permanent => DateTime.MaxValue,
                 _ => throw new ArgumentOutOfRangeException(nameof(duration), duration, null)
             };
+        }
+
+        /// <summary>
+        /// Gets the details of a user from the blacklist.
+        /// </summary>
+        /// <param name="id">The ID of the user.</param>
+        /// <returns>A task representing the asynchronous operation, returning the blacklisted user if found; otherwise, null.</returns>
+        public static async Task<BlackListUser> GetUser(ulong id)
+        {
+            if (Cache.TryGetValue(id, out BlackListUser cachedUser))
+            {
+                return cachedUser;
+            }
+
+            using var context = new BobEntities();
+            var user = await context.GetUserFromBlackList(id);
+
+            if (user != null)
+            {
+                Cache.Set(id, user, new MemoryCacheEntryOptions { AbsoluteExpiration = user.Expiration });
+            }
+
+            return user;
+        }
+
+        /// <summary>
+        /// Removes a user from the blacklist.
+        /// </summary>
+        /// <param name="user">The user to remove from the blacklist.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public static async Task RemoveUser(BlackListUser user)
+        {
+            using var context = new BobEntities();
+            await context.RemoveUserFromBlackList(user);
+
+            RemoveFromCache(user.Id);
+        }
+
+        /// <summary>
+        /// Removes a user from the blacklist by their ID.
+        /// </summary>
+        /// <param name="id">The ID of the user to remove from the blacklist.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public static async Task RemoveUser(ulong id)
+        {
+            var user = await GetUser(id);
+            if (user != null)
+            {
+                using var context = new BobEntities();
+                await context.RemoveUserFromBlackList(user);
+            }
+
+            RemoveFromCache(id);
+        }
+
+        /// <summary>
+        /// Updates the information of a blacklisted user.
+        /// </summary>
+        /// <param name="user">The updated user information.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public static async Task UpdateUser(BlackListUser user)
+        {
+            var dbUser = await GetUser(user.Id);
+            if (dbUser == null)
+            {
+                using var context = new BobEntities();
+                await context.AddUserToBlackList(user);
+            }
+            else
+            {
+                using var context = new BobEntities();
+                await context.UpdateUserFromBlackList(user);           
+            }
+
+            UpdateCache(user);
+        }
+
+        private static void RemoveFromCache(ulong id)
+        {
+            Cache.Remove(id);
+        }
+
+        private static void UpdateCache(BlackListUser user)
+        {
+            Cache.Set(user.Id, user, new MemoryCacheEntryOptions { AbsoluteExpiration = user.Expiration });
         }
     }
 }
