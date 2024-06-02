@@ -459,6 +459,13 @@ namespace Commands.Helpers
                     },
                     new CommandInfo
                     {
+                        Name = "punishments",
+                        InheritGroupName = true,
+                        Description = "See all active punishments on your account.",
+                        Url = "https://docs.bobthebot.net#profile-punishments"
+                    },
+                    new CommandInfo
+                    {
                         Name = "set-color",
                         InheritGroupName = true,
                         Description = "Sets your profile color.",

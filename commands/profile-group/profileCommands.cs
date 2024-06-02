@@ -10,6 +10,7 @@ using Discord.WebSocket;
 using PremiumInterface;
 using BadgeInterface;
 using System.Runtime.InteropServices;
+using Moderation;
 
 namespace Commands
 {
@@ -93,6 +94,24 @@ namespace Commands
             else
             {
                 await FollowupAsync(text: "✅ Your DMs will now appear closed to people using `/confess`.", ephemeral: true);
+            }
+        }
+
+        [SlashCommand("punishments", "See all active punishments on your account.")]
+        public async Task ViewPunishments()
+        {
+            await DeferAsync(ephemeral: true);
+
+            BlackListUser user;
+            user = await BlackList.GetUser(Context.User.Id);
+
+            if (user == null)
+            {
+                await FollowupAsync(text: "✅ Your record is currently all clean!", ephemeral: true);
+            }
+            else
+            {
+                await FollowupAsync(text: $"❌ You are currently being punished.\n{user.FormatAsString()}", ephemeral: true);
             }
         }
 
