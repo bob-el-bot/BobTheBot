@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Database.Types
 {
@@ -12,6 +11,7 @@ namespace Database.Types
         public DateTimeOffset PremiumExpiration { get; set; }
         // Profile
         public string ProfileColor { get; set; }
+        public bool ConfessionsOff { get; set; }
         // Badges
         public ulong EarnedBadges { get; set; }
         // Stats

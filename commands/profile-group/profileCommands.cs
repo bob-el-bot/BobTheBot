@@ -10,6 +10,7 @@ using Discord.WebSocket;
 using PremiumInterface;
 using BadgeInterface;
 using System.Runtime.InteropServices;
+using Moderation;
 
 namespace Commands
 {
@@ -69,6 +70,51 @@ namespace Commands
             }
         }
 
+        [SlashCommand("confessions-toggle", "Enable or disable your DMs for /confess messages sent to you.")]
+        public async Task ConfessionsToggle([Summary("open", "If checked (true), Bob will allow users to use send messages to you with /confess.")] bool open)
+        {
+            await DeferAsync(ephemeral: true);
+
+            User user;
+            using (var context = new BobEntities())
+            {
+                user = await context.GetUser(Context.User.Id);
+
+                if (user.ConfessionsOff == open)
+                {
+                    user.ConfessionsOff = !open;
+                    await context.UpdateUser(user);
+                }
+            }
+
+            if (open)
+            {
+                await FollowupAsync(text: "✅ Your DMs are now open to people using `/confess`.", ephemeral: true);
+            }
+            else
+            {
+                await FollowupAsync(text: "✅ Your DMs will now appear closed to people using `/confess`.", ephemeral: true);
+            }
+        }
+
+        [SlashCommand("punishments", "See all active punishments on your account.")]
+        public async Task ViewPunishments()
+        {
+            await DeferAsync(ephemeral: true);
+
+            BlackListUser user;
+            user = await BlackList.GetUser(Context.User.Id);
+
+            if (user == null)
+            {
+                await FollowupAsync(text: "✅ Your record is currently all clean!", ephemeral: true);
+            }
+            else
+            {
+                await FollowupAsync(text: $"❌ You are currently being punished.\n{user.FormatAsString()}", ephemeral: true);
+            }
+        }
+
         [SlashCommand("set-color", "Set your profile's embed color.")]
         public async Task SetColor([Summary("color", "A color name (purple), or valid hex code (#8D52FD).")] string color)
         {
@@ -116,7 +162,8 @@ namespace Commands
             var embed = new EmbedBuilder
             {
                 Color = Bot.theme,
-                Footer = new EmbedFooterBuilder {
+                Footer = new EmbedFooterBuilder
+                {
                     Text = "Have a badge idea? Let us know in Bob's official server."
                 }
             };

@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
+using Moderation;
 
 namespace Database
 {
@@ -17,6 +18,7 @@ namespace Database
         public virtual DbSet<Server> Server { get; set; }
         public virtual DbSet<User> User { get; set; }
         public virtual DbSet<NewsChannel> NewsChannel { get; set; }
+        public virtual DbSet<BlackListUser> BlackListUser { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -222,6 +224,48 @@ namespace Database
         public async Task AddNewsChannel(NewsChannel newsChannel)
         {
             await NewsChannel.AddAsync(newsChannel);
+            await SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Retrieves a blacklisted user by their unique identifier asynchronously.
+        /// </summary>
+        /// <param name="id">The unique identifier of the blacklisted user to retrieve.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation. The task result contains the retrieved <see cref="BlackListUser"/>.
+        /// </returns>
+        public async Task<BlackListUser> GetUserFromBlackList(ulong id)
+        {
+            return await BlackListUser.FindAsync(keyValues: id);
+        }
+
+        /// <summary>
+        /// Updates a blacklisted user asynchronously.
+        /// </summary>
+        /// <param name="user">The blacklisted user to update.</param>
+        public async Task UpdateUserFromBlackList(BlackListUser user)
+        {
+            BlackListUser.Update(user);
+            await SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Removes a user from the blacklist asynchronously.
+        /// </summary>
+        /// <param name="user">The blacklisted user to be removed.</param>
+        public async Task RemoveUserFromBlackList(BlackListUser user)
+        {
+            BlackListUser.Remove(user);
+            await SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Adds a user to the blacklist asynchronously.
+        /// </summary>
+        /// <param name="user">The blacklisted user to be added.</param>
+        public async Task AddUserToBlackList(BlackListUser user)
+        {
+            await BlackListUser.AddAsync(user);
             await SaveChangesAsync();
         }
     }

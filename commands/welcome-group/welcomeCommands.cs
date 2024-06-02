@@ -41,8 +41,12 @@ namespace Commands
                 using (var context = new BobEntities())
                 {
                     server = await context.GetServer(Context.Guild.Id);
-                    server.Welcome = welcome;
-                    await context.UpdateServer(server);
+
+                    if (server.Welcome != welcome)
+                    {
+                        server.Welcome = welcome;
+                        await context.UpdateServer(server);
+                    }
                 }
 
                 if (welcome)

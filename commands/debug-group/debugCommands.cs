@@ -10,6 +10,7 @@ using Discord.Interactions;
 using Discord.Rest;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
+using Moderation;
 
 namespace Commands
 {
@@ -128,6 +129,7 @@ namespace Commands
                 using var context = new BobEntities();
                 ulong entryCount = await context.GetTotalEntries();
                 int userEntriesCount = await context.User.CountAsync();
+                int blackListEntriesCount = await context.BlackListUser.CountAsync();
                 int serverEntriesCount = await context.Server.CountAsync();
                 int newsChannelEntriesCount = await context.NewsChannel.CountAsync();
                 double size = await context.GetDatabaseSizeBytes();
@@ -140,6 +142,7 @@ namespace Commands
 
                 embed.AddField(name: "Total Entries", value: $"`{entryCount}`", inline: true)
                     .AddField(name: "User Entries", value: $"`{userEntriesCount}`", inline: true)
+                    .AddField(name: "BlackListUser Entries", value: $"`{blackListEntriesCount}`", inline: true)
                     .AddField(name: "Server Entries", value: $"`{serverEntriesCount}`", inline: true)
                     .AddField(name: "NewsChannel Entries", value: $"`{newsChannelEntriesCount}`", inline: true)
                     .AddField(name: "Size (Bytes)", value: $"`{size}`", inline: true)
@@ -301,6 +304,163 @@ namespace Commands
                     dbServer = await context.GetServer(parsedId);
 
                     await FollowupAsync(text: $"✅ `Showing Server: {discordServer.Name}, {discordServer.Id}`\n```cs\nCustom Welcome Message: {dbServer.CustomWelcomeMessage}\nWelcome: {dbServer.Welcome}\nQuote Channel ID: {dbServer.QuoteChannelId}\nMax Quote Length: {dbServer.MaxQuoteLength}\nMin Quote Length: {dbServer.MinQuoteLength}```");
+                }
+            }
+
+            [SlashCommand("get-user-from-black-list", "Gets the UserBlackList object with the given ID.")]
+            public async Task GetUserFromBlackList(IUser user = null, string userId = null)
+            {
+                await DeferAsync();
+
+                bool conversionResult = ulong.TryParse(userId, out ulong parsedId);
+                if (user == null && userId == null)
+                {
+                    await FollowupAsync(text: $"❌ You **must** specify a `user` **or** a `userId`.");
+                    return;
+                }
+
+                IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
+
+                if (user != null && conversionResult != false && user.Id != parsedId)
+                {
+                    await FollowupAsync(text: $"❌ The given `user` **and** `userId` must have matching IDs.");
+                }
+                else if (discordUser == null)
+                {
+                    await FollowupAsync(text: $"❌ The given `userId` is not valid.");
+                }
+                else
+                {
+                    BlackListUser dbUser = await BlackList.GetUser(discordUser.Id);
+
+                    if (dbUser != null)
+                    {
+                        await FollowupAsync(text: $"✅ `Showing Blacklisted User: {discordUser.GlobalName}, {discordUser.Id}`\n{UserDebugging.GetUserPropertyString(dbUser)}");
+                    }
+                    else
+                    {
+                        await FollowupAsync(text: $"❌ The given `user` could not be found in the Database.");
+                    }
+                }
+            }
+
+            [SlashCommand("remove-user-from-black-list", "Removes the UserBlackList object with the given ID from the database.")]
+            public async Task RemoveUserFromBlackList(IUser user = null, string userId = null)
+            {
+                await DeferAsync();
+
+                bool conversionResult = ulong.TryParse(userId, out ulong parsedId);
+                if (user == null && userId == null)
+                {
+                    await FollowupAsync(text: $"❌ You **must** specify a `user` **or** a `userId`.");
+                    return;
+                }
+
+                IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
+
+                if (user != null && conversionResult != false && user.Id != parsedId)
+                {
+                    await FollowupAsync(text: $"❌ The given `user` **and** `userId` must have matching IDs.");
+                }
+                else if (discordUser == null)
+                {
+                    await FollowupAsync(text: $"❌ The given `userId` is not valid.");
+                }
+                else
+                {
+                    BlackListUser dbUser = await BlackList.GetUser(discordUser.Id);
+
+                    if (dbUser != null)
+                    {
+                        await BlackList.RemoveUser(dbUser);
+                        await FollowupAsync(text: $"✅ Deleted User {discordUser.GlobalName} `{discordUser.Id}`.");
+                    }
+                    else
+                    {
+                        await FollowupAsync(text: $"❌ The given `user` could not be found in the Database.");
+                    }
+                }
+            }
+
+            [SlashCommand("update-user-from-black-list", "Updates the UserBlackList object with the given ID.")]
+            public async Task UpdateUserFromBlackList(BlackList.Punishment punishment, string reason = "", IUser user = null, string userId = null)
+            {
+                await DeferAsync();
+
+                bool conversionResult = ulong.TryParse(userId, out ulong parsedId);
+                if (user == null && userId == null)
+                {
+                    await FollowupAsync(text: $"❌ You **must** specify a `user` **or** a `userId`.");
+                    return;
+                }
+
+                IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
+
+                if (user != null && conversionResult != false && user.Id != parsedId)
+                {
+                    await FollowupAsync(text: $"❌ The given `user` **and** `userId` must have matching IDs.");
+                }
+                else if (discordUser == null)
+                {
+                    await FollowupAsync(text: $"❌ The given `userId` is not valid.");
+                }
+                else
+                {
+                    BlackListUser dbUser = await BlackList.GetUser(discordUser.Id);
+
+                    if (dbUser != null)
+                    {
+                        var updatedExpiration = BlackList.GetExpiration(punishment);
+                        if (dbUser.Expiration != updatedExpiration || (reason != "" && dbUser.Reason != reason))
+                        {
+                            dbUser.Expiration = updatedExpiration;
+                            dbUser.Reason = reason;
+                            await BlackList.UpdateUser(dbUser);
+                        }
+
+                        await FollowupAsync(text: $"✅ `Showing Blacklisted User: {discordUser.GlobalName}, {discordUser.Id}`\n{UserDebugging.GetUserPropertyString(dbUser)}");
+                    }
+                    else
+                    {
+                        await FollowupAsync(text: $"❌ The given `user` could not be found in the Database.");
+                    }
+                }
+            }
+
+            [SlashCommand("add-user-to-black-list", "Blacklists the user with the given ID.")]
+            public async Task AddUsertoBlackList(BlackList.Punishment punishment, string reason, IUser user = null, string userId = null)
+            {
+                await DeferAsync();
+
+                bool conversionResult = ulong.TryParse(userId, out ulong parsedId);
+                if (user == null && userId == null)
+                {
+                    await FollowupAsync(text: $"❌ You **must** specify a `user` **or** a `userId`.");
+                    return;
+                }
+
+                IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
+
+                if (user != null && conversionResult != false && user.Id != parsedId)
+                {
+                    await FollowupAsync(text: $"❌ The given `user` **and** `userId` must have matching IDs.");
+                }
+                else if (discordUser == null)
+                {
+                    await FollowupAsync(text: $"❌ The given `userId` is not valid.");
+                }
+                else
+                {
+                    BlackListUser dbUser = new()
+                    {
+                        Id = discordUser.Id,
+                        Expiration = BlackList.GetExpiration(punishment),
+                        Reason = reason
+                    };
+
+                    await BlackList.UpdateUser(dbUser);
+
+                    await FollowupAsync(text: $"✅ `Showing Blacklisted User: {discordUser.GlobalName}, {discordUser.Id}`\n{UserDebugging.GetUserPropertyString(dbUser)}");
                 }
             }
         }
