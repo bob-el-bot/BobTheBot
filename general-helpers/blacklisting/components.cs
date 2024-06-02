@@ -18,7 +18,7 @@ namespace Moderation
 
             var userId = Convert.ToUInt64(id);
             SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
-            
+
             var user = await BlackList.GetUser(userId);
 
             var punishment = (BlackList.Punishment)int.Parse(component.Data.Values.FirstOrDefault());
@@ -89,6 +89,30 @@ namespace Moderation
             await Context.Interaction.ModifyOriginalResponseAsync(x =>
             {
                 x.Content = "✅ Message has been reported and will be reviewed.\n- If the message contains content which violates our terms of service our blacklist will be updated accordingly.\n- If you are hoping for the offending user to be punished, the infrastructure needed is currently in the works. We apologize for the inconvenience.";
+                x.Components = null;
+            });
+        }
+
+        [ComponentInteraction("disableConfessions:*")]
+        public async Task DisableConfessionsButtonHandler(string id)
+        {
+            await DeferAsync();
+
+            var userId = Convert.ToUInt64(id);
+            SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
+
+            using var context = new BobEntities();
+            var dbUser = await context.GetUser(userId); 
+            
+            if (dbUser.ConfessionsOff == false)
+            {
+                dbUser.ConfessionsOff = true;
+                await context.UpdateUser(dbUser);
+            }
+
+            await Context.Interaction.ModifyOriginalResponseAsync(x =>
+            {
+                x.Content = "✅ Your DMs will now appear closed to people using `/confess`.";
                 x.Components = null;
             });
         }

@@ -745,7 +745,8 @@ namespace Commands
                     return;
                 }
 
-                ComponentBuilder components = new();
+                var components = new ComponentBuilder()
+                    .WithButton(label: "Disable Confessions", customId: $"disableConfessions:{user.Id}", style: ButtonStyle.Secondary, emote: Emoji.Parse("🚫"));
                 ButtonBuilder reportMessageButton = new()
                 {
                     Label = "Report Message",
