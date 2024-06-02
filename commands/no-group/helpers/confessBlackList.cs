@@ -175,6 +175,16 @@ namespace Commands.Helpers
 
         private static readonly HashSet<string> BannedWords = new(StringComparer.OrdinalIgnoreCase)
         {
+                  "kys",
+                  "ky$",
+                  "kill yourself",
+                  "k!ll yourself",
+                  "kill your self",
+                  "kill your $elf",
+                  "commit suicide",
+                  "comm!t $u!c!de",
+                  "commit $uicide",
+                  "comm1t su1c1de",
                   "fuckyou",
                   "bitch ass",
                   "bitch a55",

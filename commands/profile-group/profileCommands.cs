@@ -72,7 +72,6 @@ namespace Commands
         [SlashCommand("confessions-toggle", "Enable or disable your DMs for /confess messages sent to you.")]
         public async Task ConfessionsToggle([Summary("open", "If checked (true), Bob will allow users to use send messages to you with /confess.")] bool open)
         {
-
             await DeferAsync(ephemeral: true);
 
             User user;
