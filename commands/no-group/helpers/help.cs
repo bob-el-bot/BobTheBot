@@ -1090,6 +1090,59 @@ namespace Commands.Helpers
                     }
                 }
             },
+                        new() {
+                Title = "Auto Moderation",
+                Name = "automod",
+                Description = "Commands related to auto moderation.",
+                Emoji = "⚖️",
+                Url = "https://docs.bobthebot.net#automod",
+                Commands = new[]
+                {
+                    new CommandInfo
+                    {
+                        Name = "phone-numbers",
+                        InheritGroupName = true,
+                        Description = "Add phone number auto moderation. Prevent phone numbers from being sent in this server.",
+                        Url = "https://docs.bobthebot.net#automod-phone-numbers",
+                        Parameters = new[]
+                        {
+                            new ParameterInfo
+                            {
+                                Name = "strict",
+                                Description = "If checked (true) numbers like 1234567890 will be blocked. Otherwise only formatted phone numbers will be."
+                            }
+                        }
+                    },
+                    new CommandInfo
+                    {
+                        Name = "links",
+                        InheritGroupName = true,
+                        Description = "Add link auto moderation. Prevent links from being sent in this server.",
+                        Url = "https://docs.bobthebot.net#automod-links",
+                    },
+                    new CommandInfo
+                    {
+                        Name = "zalgo-text",
+                        InheritGroupName = true,
+                        Description = "Add zalgo-text auto moderation. Prevent glitchy text from being sent in this server.",
+                        Url = "https://docs.bobthebot.net#automod-zalgo-text",
+                    },
+                    new CommandInfo
+                    {
+                        Name = "bad-words",
+                        InheritGroupName = true,
+                        Description = "Add bad word auto moderation. Prevent bad words from being sent in this server.",
+                        Url = "https://docs.bobthebot.net#automod-bad-words",
+                    },
+                    new CommandInfo
+                    {
+                        Name = "invite-links",
+                        InheritGroupName = true,
+                        Description = "Add invite link auto moderation. Prevent invites from being sent in this server.",
+                        Url = "https://docs.bobthebot.net#automod-links-invite-links",
+                    },
+                }
+            },
             new() {
                 Title = "Informational / Help",
                 Description = "Commands to get information and help about the bot.",
