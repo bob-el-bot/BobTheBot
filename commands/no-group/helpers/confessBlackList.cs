@@ -173,7 +173,7 @@ namespace Commands.Helpers
             "son-of-a-bitch"
         };
 
-        private static readonly HashSet<string> BannedWords = new(StringComparer.OrdinalIgnoreCase)
+        public static readonly HashSet<string> BannedWords = new(StringComparer.OrdinalIgnoreCase)
         {
                   
                   "kys",
