@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Commands.Helpers;
@@ -9,6 +8,8 @@ namespace Commands
 {
     [CommandContextType(InteractionContextType.Guild)]
     [IntegrationType(ApplicationIntegrationType.GuildInstall)]
+    [RequireBotPermission(GuildPermission.ManageGuild)]
+    [DefaultMemberPermissions(GuildPermission.ManageGuild)]
     [Group("automod", "All commands relevant to automod features.")]
     public class AutomodGroup : InteractionModuleBase<SocketInteractionContext>
     {
@@ -130,7 +131,7 @@ namespace Commands
 
             await Context.Guild.CreateAutoModRuleAsync(rules);
             await Context.Guild.CreateAutoModRuleAsync(rulesContinued);
-            await FollowupAsync(text: $"✅Bad words are now prohibited in your server.", ephemeral: true);
+            await FollowupAsync(text: $"✅ Bad words are now prohibited in your server.", ephemeral: true);
         }
         
         [SlashCommand("invite-links", "Add invite link auto moderation. Prevent invites from being sent in this server.")]
