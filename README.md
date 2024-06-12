@@ -135,6 +135,13 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/auto preview-github [preview]` Bob will preview all valid GitHub links in the server.
 - `/auto preview-messages [preview]` Bob will preview all valid Discord message links in the server.
 
+### Automod commands:
+- `/automod phone-numbers [strict]` Add phone number auto moderation. Prevent phone numbers from being sent in this server.
+- `/automod links` Add link auto moderation. Prevent links from being sent in this server.
+- `/automod zalgo-text` Add zalgo-text auto moderation. Prevent glitchy text from being sent in this server.
+- `/automod bad-words` Add bad word auto moderation. Prevent bad words from being sent in this server.
+- `/automod invite-links` Add invite link auto moderation. Prevent invites from being sent in this server.
+
 ### 🗄️ Informational / help commands:
 - `/premium` Ensures Bob knows you have premium! If not you will be given a button to get it!
 - `/help` Get DMed information for *all* commands.
