@@ -698,15 +698,15 @@ namespace Commands
                 using var context = new BobEntities();
 
                 // Check for blacklisted words
-                var filterResult = ConfessFiltering.ContainsBannedWords(message);
+                var filterResult = ConfessFiltering.ContainsBannedWords($"{message} {signoff}");
                 bool isUserBlacklisted = await BlackList.IsBlacklisted(Context.User.Id);
 
                 if (filterResult.BlacklistMatches.Count > 0)
                 {
                     var bannedUser = await context.GetUserFromBlackList(Context.User.Id);
                     string reason = $"Sending a message with `/confess` that contained: {ConfessFiltering.FormatBannedWords(filterResult.BlacklistMatches)}";
-                   
-                   if (isUserBlacklisted)
+
+                    if (isUserBlacklisted)
                     {
                         bannedUser = await BlackList.StepBanUser(Context.User.Id, reason);
                         await FollowupAsync($"❌ Your message contains blacklisted words and you are **already banned**. Your punishment has **increased**.\n- You will be able to use `/confess` again {TimeStamp.FromDateTime((DateTime)bannedUser.Expiration, TimeStamp.Formats.Relative)}.\n**Reason(s):**\n{bannedUser.Reason}\n- Use `/profile punishments` to check your punishment status.\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
