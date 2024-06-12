@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Commands.Helpers;
 using Discord;
 using Discord.Interactions;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Commands
 {
@@ -133,7 +132,6 @@ namespace Commands
             await Context.Guild.CreateAutoModRuleAsync(rulesContinued);
             await FollowupAsync(text: $"✅Bad words are now prohibited in your server.", ephemeral: true);
         }
-
         
         [SlashCommand("invite-links", "Add invite link auto moderation. Prevent invites from being sent in this server.")]
         public async Task AutoModInvites()
