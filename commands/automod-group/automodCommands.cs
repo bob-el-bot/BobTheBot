@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Commands.Helpers;
@@ -17,6 +18,12 @@ namespace Commands
         public async Task AutoModLinks()
         {
             await DeferAsync(ephemeral: true);
+
+            if (!await Automod.canBeAdded(Context.Guild, 1))
+            {
+                await FollowupAsync(text: $"❌ Links {Automod.keyWordTiggersMessage}", ephemeral: true);
+                return;
+            }
 
             var actionProperties = new AutoModRuleActionProperties
             {
@@ -42,6 +49,12 @@ namespace Commands
         public async Task AutoModPhoneNumbers([Summary("strict", "If checked (true) numbers like 1234567890 will be blocked.")] bool strict)
         {
             await DeferAsync(ephemeral: true);
+
+            if (!await Automod.canBeAdded(Context.Guild, 1))
+            {
+                await FollowupAsync(text: $"❌ Phone number {Automod.keyWordTiggersMessage}", ephemeral: true);
+                return;
+            }
 
             var actionProperties = new AutoModRuleActionProperties
             {
@@ -78,6 +91,12 @@ namespace Commands
         {
             await DeferAsync(ephemeral: true);
 
+            if (!await Automod.canBeAdded(Context.Guild, 1))
+            {
+                await FollowupAsync(text: $"❌ Zalgo text (glitchy text) {Automod.keyWordTiggersMessage}", ephemeral: true);
+                return;
+            }
+
             var actionProperties = new AutoModRuleActionProperties
             {
                 CustomMessage = $"Glitchy text is prohibited in this server.",
@@ -102,6 +121,12 @@ namespace Commands
         public async Task AutoModBadWords()
         {
             await DeferAsync(ephemeral: true);
+
+            if (!await Automod.canBeAdded(Context.Guild, 2))
+            {
+                await FollowupAsync(text: $"❌ Bad word {Automod.keyWordTiggersMessage}\n- Note, that this command adds two new rules due to how many words it checks for.", ephemeral: true);
+                return;
+            }
 
             var actionProperties = new AutoModRuleActionProperties
             {
@@ -138,6 +163,12 @@ namespace Commands
         public async Task AutoModInvites()
         {
             await DeferAsync(ephemeral: true);
+
+            if (!await Automod.canBeAdded(Context.Guild, 1))
+            {
+                await FollowupAsync(text: $"❌ Invite link {Automod.keyWordTiggersMessage}", ephemeral: true);
+                return;
+            }
 
             var actionProperties = new AutoModRuleActionProperties
             {
