@@ -27,7 +27,7 @@ public static class Bot
 {
     public static readonly DiscordSocketClient Client = new(new DiscordSocketConfig
     {
-        GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers | GatewayIntents.GuildMessages | GatewayIntents.MessageContent,
+        GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers | GatewayIntents.GuildMessages | GatewayIntents.MessageContent | GatewayIntents.AutoModerationConfiguration,
         AlwaysDownloadUsers = true,
     });
 
