@@ -33,7 +33,7 @@ public static class Bot
 
     private static InteractionService Service;
 
-    private static readonly string Token = "${{ TOKEN }}";
+    private static readonly string Token = Environment.GetEnvironmentVariable("DISCORD_TOKEN");
 
     // Purple (normal) Theme: 9261821 | Orange (halloween) Theme: 16760153
     public static readonly Color theme = new(9261821);
