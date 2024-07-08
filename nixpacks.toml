@@ -1,0 +1,2 @@
+[phases.setup]
+    aptPkgs = ['...', 'libharfbuzz0b', 'libfontconfig1', 'libfreetype6', 'libgl1-mesa-dev', 'libglu1-mesa']
