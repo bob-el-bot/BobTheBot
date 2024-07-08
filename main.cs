@@ -93,17 +93,17 @@ public static class Bot
             Client.InteractionCreated += InteractionCreated;
             Service.SlashCommandExecuted += SlashCommandResulted;
 
-            // _ = Task.Run(() =>
-            // {
-            //     // Determine the user count
-            //     // Throwaway as to not block Gateway Tasks.
-            //     foreach (var guild in Client.Guilds)
-            //     {
-            //         TotalUsers += guild.MemberCount;
-            //     }
+            _ = Task.Run(() =>
+            {
+                // Determine the user count
+                // Throwaway as to not block Gateway Tasks.
+                foreach (var guild in Client.Guilds)
+                {
+                    TotalUsers += guild.MemberCount;
+                }
 
-            //     TotalUsers -= (Token == "${{TEST_TOKEN}}") ? 0 : 10000;
-            //     Console.WriteLine($"Total Users: {TotalUsers}");
+                TotalUsers -= (Token != Environment.GetEnvironmentVariable("DISCORD_TOKEN")) ? 0 : 20000;
+                Console.WriteLine($"Total Users: {TotalUsers}");
 
             //     // Update third party stats
             //     // Throwaway as to not block Gateway Tasks.
@@ -121,7 +121,7 @@ public static class Bot
             //     {
             //         Console.WriteLine("Third party stats NOT updated because test bot is in use.");
             //     }
-            // });
+            });
 
             var cpuUsage = await GetCpuUsageForProcess();
             Console.WriteLine("CPU at Ready: " + cpuUsage.ToString() + "%");
