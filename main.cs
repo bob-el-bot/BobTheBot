@@ -63,8 +63,8 @@ public static class Bot
 
         await Client.LoginAsync(TokenType.Bot, Token);
         await Client.StartAsync();
-
-        while (Console.In.Peek() != -1);
+        
+        await Task.Delay(-1);
     }
 
     public static int TotalUsers { get; set; }
