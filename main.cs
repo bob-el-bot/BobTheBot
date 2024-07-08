@@ -64,13 +64,7 @@ public static class Bot
         await Client.LoginAsync(TokenType.Bot, Token);
         await Client.StartAsync();
 
-        do
-        {
-            while (!Console.KeyAvailable)
-            {
-                // Do something
-            }
-        } while (Console.ReadKey(true).Key != ConsoleKey.Escape);
+        while (Console.In.Peek() != -1);
     }
 
     public static int TotalUsers { get; set; }
