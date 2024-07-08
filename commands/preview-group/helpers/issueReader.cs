@@ -22,7 +22,7 @@ namespace Commands.Helpers
         public static async Task<Embed> GetPreview(IssueInfo issueInfo)
         {
             // Send Request
-            string content = await GetFromAPI(issueInfo.GetApiUrl(), AcceptTypes.application_json, "${{TEST_TOKEN}}");
+            string content = await GetFromAPI(issueInfo.GetApiUrl(), AcceptTypes.application_json, Environment.GetEnvironmentVariable("GITHUB_TOKEN"));
 
             // Parse Content
             JsonObject jsonData = JsonNode.Parse(content).AsObject();
