@@ -3,29 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Database.Types;
-using Discord;
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
-using Moderation;
 
 namespace Database
 {
     public class BobEntities : DbContext
     {
-        public virtual DbSet<Server> Server { get; set; }
-        public virtual DbSet<User> User { get; set; }
-        public virtual DbSet<NewsChannel> NewsChannel { get; set; }
-        public virtual DbSet<BlackListUser> BlackListUser { get; set; }
+        // DbSet properties for your entities
+        public virtual DbSet<Server> Servers { get; set; }
+        public virtual DbSet<User> Users { get; set; }
+        public virtual DbSet<NewsChannel> NewsChannels { get; set; }
+        public virtual DbSet<BlackListUser> BlackListUsers { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            var connectionStringBuilder = new SqliteConnectionStringBuilder { DataSource = "bob.db" };
-            var connectionString = connectionStringBuilder.ToString();
-            var connection = new SqliteConnection(connectionString);
-            optionsBuilder.UseSqlite(connection);
+            // Use PostgreSQL connection
+            optionsBuilder.UseNpgsql(Environment.GetEnvironmentVariable("DATABASE_URL"));
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -84,7 +77,7 @@ namespace Database
         /// </summary>
         public async Task<Server> GetServer(ulong id)
         {
-            var server = await Server.FindAsync(keyValues: id);
+            var server = await Servers.FindAsync(keyValues: id);
             if (server == null)
             {
                 // Add server to DB
@@ -102,7 +95,7 @@ namespace Database
         /// </summary>
         public async Task UpdateServer(Server server)
         {
-            Server.Update(server);
+            Servers.Update(server);
             await SaveChangesAsync();
         }
 
@@ -111,7 +104,7 @@ namespace Database
         /// </summary>
         private async Task AddServer(Server server)
         {
-            await Server.AddAsync(server);
+            await Servers.AddAsync(server);
             await SaveChangesAsync();
         }
 
@@ -120,7 +113,7 @@ namespace Database
         /// </summary>
         public async Task<User> GetUser(ulong id)
         {
-            var user = await User.FindAsync(keyValues: id);
+            var user = await Users.FindAsync(keyValues: id);
             if (user == null)
             {
                 // Add server to DB
@@ -138,7 +131,7 @@ namespace Database
         /// </summary>
         public async Task UpdateUser(User user)
         {
-            User.Update(user);
+            Users.Update(user);
             await SaveChangesAsync();
         }
 
@@ -147,7 +140,7 @@ namespace Database
         /// </summary>
         private async Task AddUser(User user)
         {
-            await User.AddAsync(user);
+            await Users.AddAsync(user);
             await SaveChangesAsync();
         }
 
@@ -158,7 +151,7 @@ namespace Database
         /// <returns>A list of User objects.</returns>
         public async Task<List<User>> GetUsers(IEnumerable<ulong> ids)
         {
-            var users = await User.Where(u => ids.Contains(u.Id)).ToListAsync();
+            var users = await Users.Where(u => ids.Contains(u.Id)).ToListAsync();
             var missingIds = ids.Except(users.Select(u => u.Id));
 
             foreach (var id in missingIds)
@@ -180,7 +173,7 @@ namespace Database
         {
             foreach (var user in users)
             {
-                User.Update(user);
+                Users.Update(user);
             }
 
             await SaveChangesAsync();
@@ -195,7 +188,7 @@ namespace Database
         /// </returns>
         public async Task<NewsChannel> GetNewsChannel(ulong id)
         {
-            return await NewsChannel.FindAsync(keyValues: id);
+            return await NewsChannels.FindAsync(keyValues: id);
         }
 
         /// <summary>
@@ -203,7 +196,7 @@ namespace Database
         /// </summary>
         public async Task UpdateNewsChannel(NewsChannel newsChannel)
         {
-            NewsChannel.Update(newsChannel);
+            NewsChannels.Update(newsChannel);
             await SaveChangesAsync();
         }
 
@@ -213,7 +206,7 @@ namespace Database
         /// <param name="newsChannel">The news channel to be removed.</param>
         public async Task RemoveNewsChannel(NewsChannel newsChannel)
         {
-            NewsChannel.Remove(newsChannel);
+            NewsChannels.Remove(newsChannel);
             await SaveChangesAsync();
         }
 
@@ -223,7 +216,7 @@ namespace Database
         /// <param name="newsChannel">The news channel to be added.</param>
         public async Task AddNewsChannel(NewsChannel newsChannel)
         {
-            await NewsChannel.AddAsync(newsChannel);
+            await NewsChannels.AddAsync(newsChannel);
             await SaveChangesAsync();
         }
 
@@ -236,7 +229,7 @@ namespace Database
         /// </returns>
         public async Task<BlackListUser> GetUserFromBlackList(ulong id)
         {
-            return await BlackListUser.FindAsync(keyValues: id);
+            return await BlackListUsers.FindAsync(keyValues: id);
         }
 
         /// <summary>
@@ -245,7 +238,7 @@ namespace Database
         /// <param name="user">The blacklisted user to update.</param>
         public async Task UpdateUserFromBlackList(BlackListUser user)
         {
-            BlackListUser.Update(user);
+            BlackListUsers.Update(user);
             await SaveChangesAsync();
         }
 
@@ -255,7 +248,7 @@ namespace Database
         /// <param name="user">The blacklisted user to be removed.</param>
         public async Task RemoveUserFromBlackList(BlackListUser user)
         {
-            BlackListUser.Remove(user);
+            BlackListUsers.Remove(user);
             await SaveChangesAsync();
         }
 
@@ -265,7 +258,7 @@ namespace Database
         /// <param name="user">The blacklisted user to be added.</param>
         public async Task AddUserToBlackList(BlackListUser user)
         {
-            await BlackListUser.AddAsync(user);
+            await BlackListUsers.AddAsync(user);
             await SaveChangesAsync();
         }
     }
