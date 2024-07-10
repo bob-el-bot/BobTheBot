@@ -13,15 +13,15 @@ namespace Database
     {
         // DbSet properties for your entities
         public virtual DbSet<Server> Server { get; set; }
-        public virtual DbSet<User> Users { get; set; }
-        public virtual DbSet<NewsChannel> NewsChannels { get; set; }
-        public virtual DbSet<BlackListUser> BlackListUsers { get; set; }
+        public virtual DbSet<User> User { get; set; }
+        public virtual DbSet<NewsChannel> NewsChannel { get; set; }
+        public virtual DbSet<BlackListUser> BlackListUser { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             Env.Load();
 
-            var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_PRIVATE_URL");
+            var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 
             // Parse the database URL
             var databaseUri = new Uri(databaseUrl);
@@ -131,7 +131,7 @@ namespace Database
         /// </summary>
         public async Task<User> GetUser(ulong id)
         {
-            var user = await Users.FindAsync(keyValues: id);
+            var user = await User.FindAsync(keyValues: id);
             if (user == null)
             {
                 // Add server to DB
@@ -149,7 +149,7 @@ namespace Database
         /// </summary>
         public async Task UpdateUser(User user)
         {
-            Users.Update(user);
+            User.Update(user);
             await SaveChangesAsync();
         }
 
@@ -158,7 +158,7 @@ namespace Database
         /// </summary>
         private async Task AddUser(User user)
         {
-            await Users.AddAsync(user);
+            await User.AddAsync(user);
             await SaveChangesAsync();
         }
 
@@ -169,7 +169,7 @@ namespace Database
         /// <returns>A list of User objects.</returns>
         public async Task<List<User>> GetUsers(IEnumerable<ulong> ids)
         {
-            var users = await Users.Where(u => ids.Contains(u.Id)).ToListAsync();
+            var users = await User.Where(u => ids.Contains(u.Id)).ToListAsync();
             var missingIds = ids.Except(users.Select(u => u.Id));
 
             foreach (var id in missingIds)
@@ -191,7 +191,7 @@ namespace Database
         {
             foreach (var user in users)
             {
-                Users.Update(user);
+                User.Update(user);
             }
 
             await SaveChangesAsync();
@@ -202,11 +202,11 @@ namespace Database
         /// </summary>
         /// <param name="id">The unique identifier of the news channel to retrieve.</param>
         /// <returns>
-        /// A task representing the asynchronous operation. The task result contains the retrieved <see cref="NewsChannel"/>.
+        /// A task representing the asynchronous operation. The task result contains the retrieved <see cref="Types.NewsChannel"/>.
         /// </returns>
         public async Task<NewsChannel> GetNewsChannel(ulong id)
         {
-            return await NewsChannels.FindAsync(keyValues: id);
+            return await NewsChannel.FindAsync(keyValues: id);
         }
 
         /// <summary>
@@ -214,7 +214,7 @@ namespace Database
         /// </summary>
         public async Task UpdateNewsChannel(NewsChannel newsChannel)
         {
-            NewsChannels.Update(newsChannel);
+            NewsChannel.Update(newsChannel);
             await SaveChangesAsync();
         }
 
@@ -224,7 +224,7 @@ namespace Database
         /// <param name="newsChannel">The news channel to be removed.</param>
         public async Task RemoveNewsChannel(NewsChannel newsChannel)
         {
-            NewsChannels.Remove(newsChannel);
+            NewsChannel.Remove(newsChannel);
             await SaveChangesAsync();
         }
 
@@ -234,7 +234,7 @@ namespace Database
         /// <param name="newsChannel">The news channel to be added.</param>
         public async Task AddNewsChannel(NewsChannel newsChannel)
         {
-            await NewsChannels.AddAsync(newsChannel);
+            await NewsChannel.AddAsync(newsChannel);
             await SaveChangesAsync();
         }
 
@@ -243,11 +243,11 @@ namespace Database
         /// </summary>
         /// <param name="id">The unique identifier of the blacklisted user to retrieve.</param>
         /// <returns>
-        /// A task representing the asynchronous operation. The task result contains the retrieved <see cref="BlackListUser"/>.
+        /// A task representing the asynchronous operation. The task result contains the retrieved <see cref="Types.BlackListUser"/>.
         /// </returns>
         public async Task<BlackListUser> GetUserFromBlackList(ulong id)
         {
-            return await BlackListUsers.FindAsync(keyValues: id);
+            return await BlackListUser.FindAsync(keyValues: id);
         }
 
         /// <summary>
@@ -256,7 +256,7 @@ namespace Database
         /// <param name="user">The blacklisted user to update.</param>
         public async Task UpdateUserFromBlackList(BlackListUser user)
         {
-            BlackListUsers.Update(user);
+            BlackListUser.Update(user);
             await SaveChangesAsync();
         }
 
@@ -266,7 +266,7 @@ namespace Database
         /// <param name="user">The blacklisted user to be removed.</param>
         public async Task RemoveUserFromBlackList(BlackListUser user)
         {
-            BlackListUsers.Remove(user);
+            BlackListUser.Remove(user);
             await SaveChangesAsync();
         }
 
@@ -276,7 +276,7 @@ namespace Database
         /// <param name="user">The blacklisted user to be added.</param>
         public async Task AddUserToBlackList(BlackListUser user)
         {
-            await BlackListUsers.AddAsync(user);
+            await BlackListUser.AddAsync(user);
             await SaveChangesAsync();
         }
     }

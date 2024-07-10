@@ -128,10 +128,10 @@ namespace Commands
 
                 using var context = new BobEntities();
                 ulong entryCount = await context.GetTotalEntries();
-                int userEntriesCount = await context.Users.CountAsync();
-                int blackListEntriesCount = await context.BlackListUsers.CountAsync();
+                int userEntriesCount = await context.User.CountAsync();
+                int blackListEntriesCount = await context.BlackListUser.CountAsync();
                 int serverEntriesCount = await context.Server.CountAsync();
-                int newsChannelEntriesCount = await context.NewsChannels.CountAsync();
+                int newsChannelEntriesCount = await context.NewsChannel.CountAsync();
                 double size = await context.GetDatabaseSizeBytes();
 
                 var embed = new EmbedBuilder
