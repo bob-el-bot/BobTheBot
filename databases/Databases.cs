@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Database.Types;
+using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
+using Npgsql;
 
 namespace Database
 {
@@ -17,8 +19,24 @@ namespace Database
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            // Use PostgreSQL connection
-            optionsBuilder.UseNpgsql(Environment.GetEnvironmentVariable("DATABASE_URL"));
+            Env.Load();
+
+            var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_PRIVATE_URL");
+
+            // Parse the database URL
+            var databaseUri = new Uri(databaseUrl);
+            var userInfo = databaseUri.UserInfo.Split(':');
+
+            var npgsqlConnectionString = new NpgsqlConnectionStringBuilder
+            {
+                Host = databaseUri.Host,
+                Port = databaseUri.Port,
+                Username = userInfo[0],
+                Password = userInfo[1],
+                Database = databaseUri.AbsolutePath.TrimStart('/')
+            }.ToString();
+
+            optionsBuilder.UseNpgsql(npgsqlConnectionString);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

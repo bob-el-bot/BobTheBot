@@ -65,34 +65,34 @@ public static class Bot
 
         await Client.LoginAsync(TokenType.Bot, Token);
         await Client.StartAsync();
-        
-// Start a simple HTTP server to expose status endpoint
-    HttpListener listener = new();
-    listener.Prefixes.Add("http://localhost:7777/"); // Adjust URL and port as needed
 
-    listener.Start();
+        // Start a simple HTTP server to expose status endpoint
+        HttpListener listener = new();
+        listener.Prefixes.Add("http://localhost:7777/"); // Adjust URL and port as needed
 
-    Console.WriteLine("Listening for status requests...");
+        listener.Start();
 
-    // Handle incoming HTTP requests in a separate thread
-    Task handleRequestsTask = Task.Run(async () =>
-    {
-        while (true)
+        Console.WriteLine("Listening for status requests...");
+
+        // Handle incoming HTTP requests in a separate thread
+        Task handleRequestsTask = Task.Run(async () =>
         {
-            HttpListenerContext context = await listener.GetContextAsync();
-            HttpListenerResponse response = context.Response;
+            while (true)
+            {
+                HttpListenerContext context = await listener.GetContextAsync();
+                HttpListenerResponse response = context.Response;
 
-            string responseString = IsBotRunning() ? "Operational" : "Down";
-            byte[] buffer = Encoding.UTF8.GetBytes(responseString);
+                string responseString = IsBotRunning() ? "Operational" : "Down";
+                byte[] buffer = Encoding.UTF8.GetBytes(responseString);
 
-            response.ContentType = "application/json";
-            response.ContentLength64 = buffer.Length;
+                response.ContentType = "application/json";
+                response.ContentLength64 = buffer.Length;
 
-            Stream output = response.OutputStream;
-            await output.WriteAsync(buffer);
-            output.Close();
-        }
-    });
+                Stream output = response.OutputStream;
+                await output.WriteAsync(buffer);
+                output.Close();
+            }
+        });
 
         // Wait for bot to keep running
         await handleRequestsTask;
@@ -143,22 +143,22 @@ public static class Bot
                 TotalUsers -= (Token != Environment.GetEnvironmentVariable("DISCORD_TOKEN")) ? 0 : 20000;
                 Console.WriteLine($"Total Users: {TotalUsers}");
 
-            //     // Update third party stats
-            //     // Throwaway as to not block Gateway Tasks.
-            //     if (Token != "${{TEST_TOKEN}}")
-            //     {
-            //         // Top GG
-            //         var topGGResult = await PostToAPI("https://top.gg/api/bots/705680059809398804/stats", Config.GetTopGGToken(), new StringContent("{\"server_count\":" + Client.Guilds.Count.ToString() + "}", Encoding.UTF8, "application/json"));
-            //         Console.WriteLine($"TopGG POST status: {topGGResult}");
+                //     // Update third party stats
+                //     // Throwaway as to not block Gateway Tasks.
+                //     if (Token != "${{TEST_TOKEN}}")
+                //     {
+                //         // Top GG
+                //         var topGGResult = await PostToAPI("https://top.gg/api/bots/705680059809398804/stats", Config.GetTopGGToken(), new StringContent("{\"server_count\":" + Client.Guilds.Count.ToString() + "}", Encoding.UTF8, "application/json"));
+                //         Console.WriteLine($"TopGG POST status: {topGGResult}");
 
-            //         // Discord Bots GG
-            //         var discordBotsResult = await PostToAPI("https://discord.bots.gg/api/v1/bots/705680059809398804/stats", Config.GetDiscordBotsToken(), new StringContent("{\"guildCount\":" + Client.Guilds.Count.ToString() + "}", Encoding.UTF8, "application/json"));
-            //         Console.WriteLine($"Discord Bots GG POST status: {discordBotsResult}");
-            //     }
-            //     else
-            //     {
-            //         Console.WriteLine("Third party stats NOT updated because test bot is in use.");
-            //     }
+                //         // Discord Bots GG
+                //         var discordBotsResult = await PostToAPI("https://discord.bots.gg/api/v1/bots/705680059809398804/stats", Config.GetDiscordBotsToken(), new StringContent("{\"guildCount\":" + Client.Guilds.Count.ToString() + "}", Encoding.UTF8, "application/json"));
+                //         Console.WriteLine($"Discord Bots GG POST status: {discordBotsResult}");
+                //     }
+                //     else
+                //     {
+                //         Console.WriteLine("Third party stats NOT updated because test bot is in use.");
+                //     }
             });
 
             var cpuUsage = await GetCpuUsageForProcess();
