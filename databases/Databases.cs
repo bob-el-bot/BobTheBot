@@ -21,7 +21,7 @@ namespace Database
         {
             Env.Load();
 
-            var databaseUrl = Environment.GetEnvironmentVariable("Postgres.DATABASE_PRIVATE_URL");
+            var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_PRIVATE_URL");
 
             // Parse the database URL
             var databaseUri = new Uri(databaseUrl);
