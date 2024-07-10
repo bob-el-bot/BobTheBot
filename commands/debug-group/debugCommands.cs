@@ -130,7 +130,7 @@ namespace Commands
                 ulong entryCount = await context.GetTotalEntries();
                 int userEntriesCount = await context.Users.CountAsync();
                 int blackListEntriesCount = await context.BlackListUsers.CountAsync();
-                int serverEntriesCount = await context.Servers.CountAsync();
+                int serverEntriesCount = await context.Server.CountAsync();
                 int newsChannelEntriesCount = await context.NewsChannels.CountAsync();
                 double size = await context.GetDatabaseSizeBytes();
 

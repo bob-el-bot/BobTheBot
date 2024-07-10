@@ -96,6 +96,14 @@ public static class Bot
 
         // Wait for bot to keep running
         await handleRequestsTask;
+
+        // using var context = new BobEntities();
+        // {
+        //     string sqlScript = File.ReadAllText(@"C:\Users\minec\Documents\MyProjects\Bots\BobTheBot - Copy\test.sql");
+
+        //     // Execute the SQL script
+        //     context.Database.ExecuteSqlRaw(sqlScript);
+        // }
     }
 
     private static bool IsBotRunning()

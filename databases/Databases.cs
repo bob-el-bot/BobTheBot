@@ -12,7 +12,7 @@ namespace Database
     public class BobEntities : DbContext
     {
         // DbSet properties for your entities
-        public virtual DbSet<Server> Servers { get; set; }
+        public virtual DbSet<Server> Server { get; set; }
         public virtual DbSet<User> Users { get; set; }
         public virtual DbSet<NewsChannel> NewsChannels { get; set; }
         public virtual DbSet<BlackListUser> BlackListUsers { get; set; }
@@ -95,7 +95,7 @@ namespace Database
         /// </summary>
         public async Task<Server> GetServer(ulong id)
         {
-            var server = await Servers.FindAsync(keyValues: id);
+            var server = await Server.FindAsync(keyValues: id);
             if (server == null)
             {
                 // Add server to DB
@@ -113,7 +113,7 @@ namespace Database
         /// </summary>
         public async Task UpdateServer(Server server)
         {
-            Servers.Update(server);
+            Server.Update(server);
             await SaveChangesAsync();
         }
 
@@ -122,7 +122,7 @@ namespace Database
         /// </summary>
         private async Task AddServer(Server server)
         {
-            await Servers.AddAsync(server);
+            await Server.AddAsync(server);
             await SaveChangesAsync();
         }
 
