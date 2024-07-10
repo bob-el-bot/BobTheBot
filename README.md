@@ -153,7 +153,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/support` Sends an invite to Bob's support Server.
 
 # How is Bob Hosted?
-Bob runs on a Raspberry Pi 4 running Raspberry Pi OS Lite. This enables a lot of freedom in terms of feature sets because Bob no longer relies on [replit](replit.com). Replit was originally used, but after an outrageous price increase it was no longer viable.
+Bob currently lives on railway after migrating from a Raspberry Pi 4 running Raspberry Pi OS Lite (learn more from [this blog](https://bobthebot.net/blogs/we-are-migrating-to-railway.html)). Replit was originally used, but after an outrageous price increase it was no longer viable and the Raspberry Pi 4 went into use.
 
 # Framework
 This bot is written with the [Discord.NET](https://github.com/discord-net/Discord.Net) framework.
