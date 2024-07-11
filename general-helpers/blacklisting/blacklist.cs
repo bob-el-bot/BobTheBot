@@ -1,12 +1,9 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Commands.Helpers;
 using Database;
 using Database.Types;
 using Discord;
-using Discord.WebSocket;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Moderation
