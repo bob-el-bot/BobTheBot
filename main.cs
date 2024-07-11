@@ -112,7 +112,7 @@ public static class Bot
                     TotalUsers += guild.MemberCount;
                 }
 
-                TotalUsers -= (Token != Environment.GetEnvironmentVariable("DISCORD_TOKEN")) ? 0 : 20000;
+                TotalUsers -= (Token == Environment.GetEnvironmentVariable("DISCORD_TOKEN")) ? 0 : 20000;
                 Console.WriteLine($"Total Users: {TotalUsers}");
 
                 //     // Update third party stats

@@ -11,7 +11,6 @@ namespace Database
 {
     public class BobEntities : DbContext
     {
-        // DbSet properties for your entities
         public virtual DbSet<Server> Server { get; set; }
         public virtual DbSet<User> User { get; set; }
         public virtual DbSet<NewsChannel> NewsChannel { get; set; }
