@@ -58,11 +58,11 @@ namespace Database
         public async Task<double> GetDatabaseSizeBytes()
         {
             using var command = Database.GetDbConnection().CreateCommand();
-            command.CommandText = "SELECT page_count * page_size FROM pragma_page_count(), pragma_page_size();";
+            command.CommandText = "SELECT pg_database_size(current_database());";
             await Database.OpenConnectionAsync();
 
             var result = await command.ExecuteScalarAsync();
-            return Convert.ToUInt64(result);
+            return Convert.ToDouble(result);
         }
 
         /// <summary>
