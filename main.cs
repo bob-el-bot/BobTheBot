@@ -66,36 +66,7 @@ public static class Bot
         await Client.LoginAsync(TokenType.Bot, Token);
         await Client.StartAsync();
 
-        // Start a simple HTTP server to expose status endpoint
-        HttpListener listener = new();
-        listener.Prefixes.Add("http://localhost:7777/"); // Adjust URL and port as needed
-
-        listener.Start();
-
-        Console.WriteLine("Listening for status requests...");
-
-        // Handle incoming HTTP requests in a separate thread
-        Task handleRequestsTask = Task.Run(async () =>
-        {
-            while (true)
-            {
-                HttpListenerContext context = await listener.GetContextAsync();
-                HttpListenerResponse response = context.Response;
-
-                string responseString = IsBotRunning() ? "Operational" : "Down";
-                byte[] buffer = Encoding.UTF8.GetBytes(responseString);
-
-                response.ContentType = "application/json";
-                response.ContentLength64 = buffer.Length;
-
-                Stream output = response.OutputStream;
-                await output.WriteAsync(buffer);
-                output.Close();
-            }
-        });
-
-        // Wait for bot to keep running
-        await handleRequestsTask;
+        await Task.Delay(Timeout.Infinite);
 
         // using var context = new BobEntities();
         // {
@@ -104,13 +75,6 @@ public static class Bot
         //     // Execute the SQL script
         //     context.Database.ExecuteSqlRaw(sqlScript);
         // }
-    }
-
-    private static bool IsBotRunning()
-    {
-        // Implement logic to check if your bot is running
-        // Example: Check if DiscordSocketClient is connected
-        return Client.ConnectionState == ConnectionState.Connected;
     }
 
     public static int TotalUsers { get; set; }
