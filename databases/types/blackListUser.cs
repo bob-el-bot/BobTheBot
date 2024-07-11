@@ -9,8 +9,14 @@ namespace Database.Types
     {
         [Key]
         public ulong Id { get; set; }
-        public DateTime? Expiration { get; set; }
+        public DateTime? _expiration;
         public string Reason { get; set; }
+
+        public DateTime? Expiration
+        {
+            get => _expiration;
+            set => _expiration = value?.ToUniversalTime();
+        }
 
         public override string ToString()
         {
