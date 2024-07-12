@@ -18,8 +18,6 @@ namespace Database
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            Env.Load();
-
             var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 
             // Parse the database URL
