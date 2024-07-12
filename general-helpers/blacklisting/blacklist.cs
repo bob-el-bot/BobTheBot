@@ -1,12 +1,9 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Commands.Helpers;
 using Database;
 using Database.Types;
 using Discord;
-using Discord.WebSocket;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Moderation
@@ -217,13 +214,15 @@ namespace Moderation
         /// <returns>The expiration date.</returns>
         public static DateTime? GetExpiration(Punishment duration)
         {
+            DateTime now = DateTime.UtcNow;
+
             return duration switch
             {
-                Punishment.FiveMinutes => DateTime.Now.AddMinutes(5),
-                Punishment.OneHour => DateTime.Now.AddHours(1),
-                Punishment.OneDay => DateTime.Now.AddDays(1),
-                Punishment.OneWeek => DateTime.Now.AddDays(7),
-                Punishment.OneMonth => DateTime.Now.AddMonths(1),
+                Punishment.FiveMinutes => now.AddMinutes(5),
+                Punishment.OneHour => now.AddHours(1),
+                Punishment.OneDay => now.AddDays(1),
+                Punishment.OneWeek => now.AddDays(7),
+                Punishment.OneMonth => now.AddMonths(1),
                 Punishment.Permanent => DateTime.MaxValue,
                 _ => throw new ArgumentOutOfRangeException(nameof(duration), duration, null)
             };
@@ -289,6 +288,8 @@ namespace Moderation
         /// <returns>A task representing the asynchronous operation.</returns>
         public static async Task UpdateUser(BlackListUser user)
         {
+            user.Expiration = user.Expiration?.ToUniversalTime();
+
             var dbUser = await GetUser(user.Id);
             if (dbUser == null)
             {
@@ -298,7 +299,7 @@ namespace Moderation
             else
             {
                 using var context = new BobEntities();
-                await context.UpdateUserFromBlackList(user);           
+                await context.UpdateUserFromBlackList(user);
             }
 
             UpdateCache(user);
