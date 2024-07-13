@@ -772,9 +772,8 @@ namespace Commands
                 await sentMessage.ModifyAsync(x => x.Components = components.Build());
                 await FollowupAsync($"✉️ Sent!\n**Message:** {message} - {signoff}\n**To:** **{user.Mention}**", ephemeral: true);
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine(ex);
                 await FollowupAsync($"❌ Bob could **not** DM {user.Mention}.\n- You could try again, but this *probably* means their DMs are closed which Bob cannot change.", ephemeral: true);
             }
         }
