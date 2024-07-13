@@ -25,8 +25,8 @@ namespace Performance
         {
             var ramUsage = Process.GetCurrentProcess().WorkingSet64;
 
-            // RAM of RPI in Bytes = 4294967296
-            return Math.Round(ramUsage / 4294967296f * 100f, 2);
+            // RAM of Deployment in Bytes = 8,589,934,592
+            return Math.Round(ramUsage / 8589934592f * 100f, 2);
         }
 
         public static string FormatPerformance(double cpu, double ram)
