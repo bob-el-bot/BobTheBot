@@ -480,6 +480,9 @@ $RECYCLE.BIN/
 config.cs
 .env
 
+# SQL
+*.sql
+
 # Databases
 *.db
 *.db-wal

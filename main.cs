@@ -15,9 +15,12 @@ using Discord.Rest;
 using Commands.Attributes;
 using Commands.Helpers;
 using BadgeInterface;
+using static ApiInteractions.Interface;
 using static Commands.Helpers.MessageReader;
-using System.Net;
 using System.IO;
+using Microsoft.EntityFrameworkCore;
+using System.Net.Http;
+using System.Text;
 
 public static class Bot
 {
@@ -61,14 +64,6 @@ public static class Bot
         await Client.StartAsync();
 
         await Task.Delay(Timeout.Infinite);
-
-        // using var context = new BobEntities();
-        // {
-        //     string sqlScript = File.ReadAllText(@"C:\Users\minec\Documents\MyProjects\Bots\BobTheBot - Copy\test.sql");
-
-        //     // Execute the SQL script
-        //     context.Database.ExecuteSqlRaw(sqlScript);
-        // }
     }
 
     public static int TotalUsers { get; set; }
@@ -97,7 +92,7 @@ public static class Bot
             Client.InteractionCreated += InteractionCreated;
             Service.SlashCommandExecuted += SlashCommandResulted;
 
-            _ = Task.Run(() =>
+            _ = Task.Run(async () =>
             {
                 // Determine the user count
                 // Throwaway as to not block Gateway Tasks.
@@ -109,22 +104,22 @@ public static class Bot
                 TotalUsers -= (Token == Environment.GetEnvironmentVariable("DISCORD_TOKEN")) ? 0 : 20000;
                 Console.WriteLine($"Total Users: {TotalUsers}");
 
-                //     // Update third party stats
-                //     // Throwaway as to not block Gateway Tasks.
-                //     if (Token != "${{TEST_TOKEN}}")
-                //     {
-                //         // Top GG
-                //         var topGGResult = await PostToAPI("https://top.gg/api/bots/705680059809398804/stats", Config.GetTopGGToken(), new StringContent("{\"server_count\":" + Client.Guilds.Count.ToString() + "}", Encoding.UTF8, "application/json"));
-                //         Console.WriteLine($"TopGG POST status: {topGGResult}");
+                    // Update third party stats
+                    // Throwaway as to not block Gateway Tasks.
+                    if (Token != "${{TEST_TOKEN}}")
+                    {
+                        // Top GG
+                        var topGGResult = await PostToAPI("https://top.gg/api/bots/705680059809398804/stats", Environment.GetEnvironmentVariable("DISCORD_BOTS_TOKEN"), new StringContent("{\"server_count\":" + Client.Guilds.Count.ToString() + "}", Encoding.UTF8, "application/json"));
+                        Console.WriteLine($"TopGG POST status: {topGGResult}");
 
-                //         // Discord Bots GG
-                //         var discordBotsResult = await PostToAPI("https://discord.bots.gg/api/v1/bots/705680059809398804/stats", Config.GetDiscordBotsToken(), new StringContent("{\"guildCount\":" + Client.Guilds.Count.ToString() + "}", Encoding.UTF8, "application/json"));
-                //         Console.WriteLine($"Discord Bots GG POST status: {discordBotsResult}");
-                //     }
-                //     else
-                //     {
-                //         Console.WriteLine("Third party stats NOT updated because test bot is in use.");
-                //     }
+                        // Discord Bots GG
+                        var discordBotsResult = await PostToAPI("https://discord.bots.gg/api/v1/bots/705680059809398804/stats", Environment.GetEnvironmentVariable("TOP_GG_TOKEN"), new StringContent("{\"guildCount\":" + Client.Guilds.Count.ToString() + "}", Encoding.UTF8, "application/json"));
+                        Console.WriteLine($"Discord Bots GG POST status: {discordBotsResult}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("Third party stats NOT updated because test bot is in use.");
+                    }   
             });
 
             var cpuUsage = await GetCpuUsageForProcess();
