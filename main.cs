@@ -26,7 +26,6 @@ public static class Bot
     public static readonly DiscordSocketClient Client = new(new DiscordSocketConfig
     {
         GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers | GatewayIntents.GuildMessages | GatewayIntents.MessageContent | GatewayIntents.AutoModerationConfiguration,
-        AlwaysDownloadUsers = true,
     });
 
     private static InteractionService Service;
@@ -86,7 +85,7 @@ public static class Bot
 
     private static void ProcessRequest(HttpListenerContext context)
     {
-        HttpListenerRequest request = context.Request;
+        _ = context.Request;
         HttpListenerResponse response = context.Response;
 
         // Process the request here
@@ -96,8 +95,6 @@ public static class Bot
         response.OutputStream.Write(buffer, 0, buffer.Length);
         response.OutputStream.Close();
     }
-
-    public static int TotalUsers { get; set; }
 
     private static async Task Ready()
     {
@@ -125,16 +122,6 @@ public static class Bot
 
             _ = Task.Run(async () =>
             {
-                // Determine the user count
-                // Throwaway as to not block Gateway Tasks.
-                foreach (var guild in Client.Guilds)
-                {
-                    TotalUsers += guild.MemberCount;
-                }
-
-                TotalUsers -= (Token != Environment.GetEnvironmentVariable("DISCORD_TOKEN")) ? 0 : 20000;
-                Console.WriteLine($"Total Users: {TotalUsers}");
-
                 // Update third party stats
                 // Throwaway as to not block Gateway Tasks.
                 // Top GG
@@ -227,9 +214,6 @@ public static class Bot
 
     private static async Task JoinedGuild(SocketGuild guild)
     {
-        // Update user count
-        TotalUsers += guild.MemberCount;
-
         // Add server to DB (if needed)
         using var context = new BobEntities();
         await context.GetServer(guild.Id);
