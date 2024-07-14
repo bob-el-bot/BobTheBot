@@ -6,11 +6,13 @@ The privacy of our users is important to us. This privacy policy explains how we
 
 - When you interact with the Bot, we may collect and process certain data for the purpose of improving and enhancing the functionality of the Bot. We collect and process the following information:
 
-- Command Usage Data: We may log the commands used, server names, and the date and time of command usage for statistical and analytical purposes. However, we do not store this data beyond its immediate use and it is not associated with any personally identifiable information.
+- Command Usage Data: We may log the commands used, server names, and the date and time of command usage for statistical and analytical purposes. Some error messages may also be logged to improve the Bot's functionality and to help remove bugs. However, we do not store this data beyond its immediate use and it is not associated with any personally identifiable information.
 
-- Personal Information: We collect certain game statistics such as wins, and total games played. Additionally we collect premium status, and user Ids.
+- Personal Information: We collect certain game statistics such as wins, and total games played. Additionally, we collect premium status, and user IDs.
 
-- Server Information: We collect guild Ids, channel Ids and in some cases, user-specified welcome messages.
+- Server Information: We collect guild IDs, channel IDs, and in some cases, user-specified welcome messages.
+
+- User Messages: For specific commands that involve reporting, we collect and store the message content solely for the purpose of disciplinary action and maintaining community safety. These messages are only accessible to authorized personnel and are retained only as long as necessary to address the issue.
 
 ## Data Security and Retention
 

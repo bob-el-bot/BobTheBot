@@ -597,8 +597,8 @@ namespace Commands
             .AddField(name: ":calendar_spiral: Date Created", value: TimeStamp.FromDateTimeOffset(Bot.Client.CurrentUser.CreatedAt, TimeStamp.Formats.Detailed), inline: false)
             .AddField(name: "📈 Servers", value: $"`{Bot.Client.Guilds.Count:n0}`", inline: true)
             .AddField(name: "🤗 Users", value: $"`{Bot.TotalUsers:n0}`", inline: true)
-            .AddField(name: "🏗️ Made With", value: "C#, .NET", inline: true)
-            .AddField(name: "📡 Hosted With", value: "Raspberry PI 4", inline: true);
+            .AddField(name: "🏗️ Made With", value: "C#, .NET, PostgreSQL, Docker", inline: true)
+            .AddField(name: "📡 Hosted With", value: "Railway", inline: true);
 
             var components = new ComponentBuilder();
 
@@ -772,9 +772,8 @@ namespace Commands
                 await sentMessage.ModifyAsync(x => x.Components = components.Build());
                 await FollowupAsync($"✉️ Sent!\n**Message:** {message} - {signoff}\n**To:** **{user.Mention}**", ephemeral: true);
             }
-            catch (Exception ex)
+            catch
             {
-                Console.WriteLine(ex);
                 await FollowupAsync($"❌ Bob could **not** DM {user.Mention}.\n- You could try again, but this *probably* means their DMs are closed which Bob cannot change.", ephemeral: true);
             }
         }

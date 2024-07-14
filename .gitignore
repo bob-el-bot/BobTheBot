@@ -478,6 +478,10 @@ $RECYCLE.BIN/
 
 # Config
 config.cs
+.env
+
+# SQL
+*.sql
 
 # Databases
 *.db

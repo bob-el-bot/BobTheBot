@@ -19,7 +19,7 @@ namespace Commands.Helpers
         public static async Task<string> GetPreview(FileLinkInfo linkInfo)
         {
             // Send Request
-            string content = await GetFromAPI(linkInfo.GetApiUrl(), AcceptTypes.application_json, Config.GetGitHubToken());
+            string content = await GetFromAPI(linkInfo.GetApiUrl(), AcceptTypes.application_json, Environment.GetEnvironmentVariable("GITHUB_TOKEN"));
 
             // Parse Content
             JsonObject jsonData = JsonNode.Parse(content).AsObject();

@@ -8,20 +8,18 @@ using System.Threading;
 using System.Linq;
 using Database;
 using Commands;
-using System.Net.Http;
 using static Performance.Stats;
-using static ApiInteractions.Interface;
 using static Debug.Logger;
 using Database.Types;
-using SQLitePCL;
-using Microsoft.EntityFrameworkCore;
 using Discord.Rest;
-using System.Text;
 using Commands.Attributes;
 using Commands.Helpers;
 using BadgeInterface;
-using System.Text.Json.Nodes;
+using static ApiInteractions.Interface;
 using static Commands.Helpers.MessageReader;
+using System.Net;
+using System.Net.Http;
+using System.Text;
 
 public static class Bot
 {
@@ -33,7 +31,7 @@ public static class Bot
 
     private static InteractionService Service;
 
-    private static readonly string Token = Config.GetToken();
+    private static readonly string Token = Environment.GetEnvironmentVariable("DISCORD_TOKEN");
 
     // Purple (normal) Theme: 9261821 | Orange (halloween) Theme: 16760153
     public static readonly Color theme = new(9261821);
@@ -64,7 +62,39 @@ public static class Bot
         await Client.LoginAsync(TokenType.Bot, Token);
         await Client.StartAsync();
 
-        while (Console.ReadKey().Key != ConsoleKey.Q) ;
+        StartHttpListener();
+
+        await Task.Delay(Timeout.Infinite);
+    }
+
+    private static void StartHttpListener()
+    {
+        HttpListener listener = new();
+        listener.Prefixes.Add($"http://*:{Environment.GetEnvironmentVariable("PORT")}/");
+        listener.Start();
+        Console.WriteLine($"Listening for HTTP requests on port {Environment.GetEnvironmentVariable("PORT")}...");
+
+        Task.Run(async () =>
+        {
+            while (true)
+            {
+                HttpListenerContext context = await listener.GetContextAsync();
+                ProcessRequest(context);
+            }
+        });
+    }
+
+    private static void ProcessRequest(HttpListenerContext context)
+    {
+        HttpListenerRequest request = context.Request;
+        HttpListenerResponse response = context.Response;
+
+        // Process the request here
+        string responseString = "Bob is Alive!";
+        byte[] buffer = Encoding.UTF8.GetBytes(responseString);
+        response.ContentLength64 = buffer.Length;
+        response.OutputStream.Write(buffer, 0, buffer.Length);
+        response.OutputStream.Close();
     }
 
     public static int TotalUsers { get; set; }
@@ -102,25 +132,18 @@ public static class Bot
                     TotalUsers += guild.MemberCount;
                 }
 
-                TotalUsers -= (Token == Config.GetTestToken()) ? 0 : 10000;
+                TotalUsers -= (Token != Environment.GetEnvironmentVariable("DISCORD_TOKEN")) ? 0 : 20000;
                 Console.WriteLine($"Total Users: {TotalUsers}");
 
                 // Update third party stats
                 // Throwaway as to not block Gateway Tasks.
-                if (Token != Config.GetTestToken())
-                {
-                    // Top GG
-                    var topGGResult = await PostToAPI("https://top.gg/api/bots/705680059809398804/stats", Config.GetTopGGToken(), new StringContent("{\"server_count\":" + Client.Guilds.Count.ToString() + "}", Encoding.UTF8, "application/json"));
-                    Console.WriteLine($"TopGG POST status: {topGGResult}");
+                // Top GG
+                var topGGResult = await PostToAPI("https://top.gg/api/bots/705680059809398804/stats", Environment.GetEnvironmentVariable("DISCORD_BOTS_TOKEN"), new StringContent("{\"server_count\":" + Client.Guilds.Count + "}", Encoding.UTF8, "application/json"));
+                Console.WriteLine($"TopGG POST status: {topGGResult}");
 
-                    // Discord Bots GG
-                    var discordBotsResult = await PostToAPI("https://discord.bots.gg/api/v1/bots/705680059809398804/stats", Config.GetDiscordBotsToken(), new StringContent("{\"guildCount\":" + Client.Guilds.Count.ToString() + "}", Encoding.UTF8, "application/json"));
-                    Console.WriteLine($"Discord Bots GG POST status: {discordBotsResult}");
-                }
-                else
-                {
-                    Console.WriteLine("Third party stats NOT updated because test bot is in use.");
-                }
+                // Discord Bots GG
+                var discordBotsResult = await PostToAPI("https://discord.bots.gg/api/v1/bots/705680059809398804/stats", Environment.GetEnvironmentVariable("TOP_GG_TOKEN"), new StringContent("{\"guildCount\":" + Client.Guilds.Count + "}", Encoding.UTF8, "application/json"));
+                Console.WriteLine($"Discord Bots GG POST status: {discordBotsResult}");
             });
 
             var cpuUsage = await GetCpuUsageForProcess();
@@ -393,7 +416,7 @@ public static class Bot
                     var executionResult = (ExecuteResult)res;
                     Console.WriteLine($"Error: {executionResult.Exception}");
 
-                    SocketTextChannel logChannel = (SocketTextChannel)Client.GetGuild(supportServerId).GetChannel(Token != Config.GetTestToken() ? systemLogChannelId : devLogChannelId);
+                    SocketTextChannel logChannel = (SocketTextChannel)Client.GetGuild(supportServerId).GetChannel(Token != "${{TEST_TOKEN}}" ? systemLogChannelId : devLogChannelId);
 
                     await LogErrorToDiscord(logChannel, ctx, info, $"{executionResult.ErrorReason}\n{executionResult.Exception}");
 
@@ -431,7 +454,7 @@ public static class Bot
 
             if (DebugGroup.LogGroup.LogEverything == true)
             {
-                SocketTextChannel logChannel = (SocketTextChannel)Client.GetGuild(supportServerId).GetChannel(Token != Config.GetTestToken() ? systemLogChannelId : devLogChannelId);
+                SocketTextChannel logChannel = (SocketTextChannel)Client.GetGuild(supportServerId).GetChannel(Token != "${{TEST_TOKEN}}" ? systemLogChannelId : devLogChannelId);
                 await LogErrorToDiscord(logChannel, ctx, info);
             }
         }

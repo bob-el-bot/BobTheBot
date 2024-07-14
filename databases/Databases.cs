@@ -3,13 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Database.Types;
-using Discord;
-using Microsoft.Data.Sqlite;
+using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using Microsoft.EntityFrameworkCore.Migrations;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
-using Moderation;
+using Npgsql;
 
 namespace Database
 {
@@ -22,10 +18,22 @@ namespace Database
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            var connectionStringBuilder = new SqliteConnectionStringBuilder { DataSource = "bob.db" };
-            var connectionString = connectionStringBuilder.ToString();
-            var connection = new SqliteConnection(connectionString);
-            optionsBuilder.UseSqlite(connection);
+            var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+
+            // Parse the database URL
+            var databaseUri = new Uri(databaseUrl);
+            var userInfo = databaseUri.UserInfo.Split(':');
+
+            var npgsqlConnectionString = new NpgsqlConnectionStringBuilder
+            {
+                Host = databaseUri.Host,
+                Port = databaseUri.Port,
+                Username = userInfo[0],
+                Password = userInfo[1],
+                Database = databaseUri.AbsolutePath.TrimStart('/')
+            }.ToString();
+
+            optionsBuilder.UseNpgsql(npgsqlConnectionString);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -48,11 +56,11 @@ namespace Database
         public async Task<double> GetDatabaseSizeBytes()
         {
             using var command = Database.GetDbConnection().CreateCommand();
-            command.CommandText = "SELECT page_count * page_size FROM pragma_page_count(), pragma_page_size();";
+            command.CommandText = "SELECT pg_database_size(current_database());";
             await Database.OpenConnectionAsync();
 
             var result = await command.ExecuteScalarAsync();
-            return Convert.ToUInt64(result);
+            return Convert.ToDouble(result);
         }
 
         /// <summary>
@@ -191,7 +199,7 @@ namespace Database
         /// </summary>
         /// <param name="id">The unique identifier of the news channel to retrieve.</param>
         /// <returns>
-        /// A task representing the asynchronous operation. The task result contains the retrieved <see cref="NewsChannel"/>.
+        /// A task representing the asynchronous operation. The task result contains the retrieved <see cref="Types.NewsChannel"/>.
         /// </returns>
         public async Task<NewsChannel> GetNewsChannel(ulong id)
         {
@@ -232,7 +240,7 @@ namespace Database
         /// </summary>
         /// <param name="id">The unique identifier of the blacklisted user to retrieve.</param>
         /// <returns>
-        /// A task representing the asynchronous operation. The task result contains the retrieved <see cref="BlackListUser"/>.
+        /// A task representing the asynchronous operation. The task result contains the retrieved <see cref="Types.BlackListUser"/>.
         /// </returns>
         public async Task<BlackListUser> GetUserFromBlackList(ulong id)
         {
