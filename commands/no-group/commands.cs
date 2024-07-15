@@ -604,7 +604,6 @@ namespace Commands
             components.WithButton(label: "Website", emote: new Emoji("🌐"), style: ButtonStyle.Link, url: "https://bobthebot.net")
             .WithButton(label: "GitHub", emote: Emote.Parse("<:github:1236245156798402685>"), style: ButtonStyle.Link, url: "https://github.com/bob-el-bot/BobTheBot");
 
-
             await RespondAsync(embed: embed.Build(), components: components.Build());
         }
 

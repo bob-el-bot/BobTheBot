@@ -159,15 +159,14 @@ namespace Commands
 
                 int totalUsers = 0;
 
-                foreach (var guild in Bot.Client.Guilds)
+                DiscordRestClient client = new();
+                await client.LoginAsync(TokenType.Bot, Bot.Token);
+                var test = await client.GetGuildsAsync(withCounts: true);
+
+                foreach (IGuild guild in test)
                 {
-                    foreach (var user in guild.Users)
-                    {
-                        if (user.IsBot == false)
-                        {
-                            totalUsers++;
-                        }
-                    }
+                    var userCount = guild.ApproximateMemberCount.GetValueOrDefault(0);
+                    totalUsers += userCount;
                 }
 
                 await FollowupAsync(text: $"✅ The exact amount of real users bob has: `{totalUsers}`");
