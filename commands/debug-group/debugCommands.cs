@@ -162,7 +162,7 @@ namespace Commands
                 DiscordRestClient client = new();
                 await client.LoginAsync(TokenType.Bot, Bot.Token);
                 var test = await client.GetGuildsAsync(withCounts: true);
-
+            
                 foreach (IGuild guild in test)
                 {
                     var userCount = guild.ApproximateMemberCount.GetValueOrDefault(0);
