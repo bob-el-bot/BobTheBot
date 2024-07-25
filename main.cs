@@ -20,6 +20,7 @@ using static Commands.Helpers.MessageReader;
 using System.Net;
 using System.Net.Http;
 using System.Text;
+using DotNetEnv;
 
 public static class Bot
 {
@@ -30,7 +31,7 @@ public static class Bot
 
     private static InteractionService Service;
 
-    private static readonly string Token = Environment.GetEnvironmentVariable("DISCORD_TOKEN");
+    public static readonly string Token = Environment.GetEnvironmentVariable("DISCORD_TOKEN");
 
     // Purple (normal) Theme: 9261821 | Orange (halloween) Theme: 16760153
     public static readonly Color theme = new(9261821);
@@ -60,8 +61,6 @@ public static class Bot
 
         await Client.LoginAsync(TokenType.Bot, Token);
         await Client.StartAsync();
-
-        StartHttpListener();
 
         await Task.Delay(Timeout.Infinite);
     }

@@ -104,6 +104,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/encrypt caesar [message] [shift]` Encrypts your message by shifting the letters the specified amount.
 - `/encrypt morse [message]` Encrypts your message using Morse code.
 - `/encrypt vigenere [message] [key]` Encrypts your message using a specified key.
+- `/encrypt binary [message]` Encrypts your message using binary.
 
 ### 🔓 Decryption commands:
 - `/decrypt a1z26 [message]` Decrypts your message by swapping letters to their corresponding number.
@@ -111,6 +112,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/decrypt caesar [message] [shift]` Decrypts your message by shifting the letters the specified amount.
 - `/decrypt morse [message]` Decrypts your message using Morse code.
 - `/decrypt vigenere [message] [key]` Decrypts your message using a specified key.
+- `/decrypt binary [message]` Decrypts your message using binary.
 
 ### ✨ Miscellaneous commands: 
 - `/fonts [text] [font]` Change your text to a different font.
