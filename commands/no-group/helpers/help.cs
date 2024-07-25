@@ -710,6 +710,22 @@ namespace Commands.Helpers
                     },
                     new CommandInfo
                     {
+                        Name = "binary",
+                        InheritGroupName = true,
+                        Description =
+                            "Encrypts your message by representing each character in binary.",
+                        Url = "https://docs.bobthebot.net#encrypt-binary",
+                        Parameters = new[]
+                        {
+                            new ParameterInfo
+                            {
+                                Name = "message",
+                                Description = "The message to encrypt."
+                            }
+                        }
+                    },
+                    new CommandInfo
+                    {
                         Name = "atbash",
                         InheritGroupName = true,
                         Description =
@@ -797,6 +813,22 @@ namespace Commands.Helpers
                         Description =
                             "Decrypts your message by swapping numbers to their corresponding letters.",
                         Url = "https://docs.bobthebot.net#decrypt-a1z26",
+                        Parameters = new[]
+                        {
+                            new ParameterInfo
+                            {
+                                Name = "message",
+                                Description = "The message to decrypt."
+                            }
+                        }
+                    },
+                    new CommandInfo
+                    {
+                        Name = "binary",
+                        InheritGroupName = true,
+                        Description =
+                            "Decrypts your message byswapping binary representations to their corresponding characters.",
+                        Url = "https://docs.bobthebot.net#decrypt-binary",
                         Parameters = new[]
                         {
                             new ParameterInfo

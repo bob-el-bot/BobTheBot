@@ -55,5 +55,12 @@ namespace Commands
                 await Decrypt.SendDecryptMessage(Context.Interaction, Decryption.Vigenere(message, key));
             }
         }
+
+        [SlashCommand("binary", "Bob will decrypt your message by swapping binary representations to their corresponding characters.")]
+        public async Task Binary([Summary("message", "the text you want to decrypt")] string message)
+        {
+            await DeferAsync(ephemeral: true);
+            await Decrypt.SendDecryptMessage(Context.Interaction, Decryption.Binary(message));
+        }
     }
 }
