@@ -102,8 +102,8 @@ namespace Moderation
             SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
 
             using var context = new BobEntities();
-            var dbUser = await context.GetUser(userId); 
-            
+            var dbUser = await context.GetUser(userId);
+
             if (dbUser.ConfessionsOff == false)
             {
                 dbUser.ConfessionsOff = true;
@@ -141,7 +141,19 @@ namespace Moderation
                 }
             }
 
-            await Context.Interaction.ModifyOriginalResponseAsync(x => x.Content = response);
+            if (user == null)
+            {
+                // Remove all components if the user is no longer on the blacklist
+                await Context.Interaction.ModifyOriginalResponseAsync(x =>
+                {
+                    x.Content = response;
+                    x.Components = null;
+                });
+            }
+            else
+            {
+                await Context.Interaction.ModifyOriginalResponseAsync(x => x.Content = response);
+            }
         }
 
         [ComponentInteraction("removeBan:*")]
