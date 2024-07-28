@@ -62,6 +62,8 @@ public static class Bot
         await Client.LoginAsync(TokenType.Bot, Token);
         await Client.StartAsync();
 
+        StartHttpListener();
+
         await Task.Delay(Timeout.Infinite);
     }
 
