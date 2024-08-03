@@ -14,39 +14,42 @@ namespace Commands.Helpers
         public static void ScheduleMessageTask(ScheduledMessage scheduledMessage)
         {
             var delay = scheduledMessage.TimeToSend - DateTime.UtcNow;
+
+            // If delay is negative or zero, send the message immediately
             if (delay <= TimeSpan.Zero)
             {
-                Console.WriteLine("Scheduled time has already passed. Skipping message.");
-                return;
+                Console.WriteLine("Scheduled time has already passed or is now. Sending message immediately.");
+                SendScheduledMessage(scheduledMessage).Wait();
             }
-
-            Console.WriteLine($"Scheduling message with ID: {scheduledMessage.Id} to be sent in {delay.TotalSeconds} seconds.");
-
-            _ = Task.Delay(delay).ContinueWith(async _ =>
+            else
             {
-                try
-                {
-                    using var context = new BobEntities();
-                    var channel = (IMessageChannel) await Bot.Client.GetChannelAsync(scheduledMessage.ChannelId);
+                Console.WriteLine($"Scheduling message with ID: {scheduledMessage.Id} to be sent in {delay.TotalSeconds} seconds.");
+                _ = Task.Delay(delay).ContinueWith(async _ => await SendScheduledMessage(scheduledMessage));
+            }
+        }
 
-                    if (channel == null)
-                    {
-                        Console.WriteLine($"Channel with ID: {scheduledMessage.ChannelId} not found.");
-                        return;
-                    }
+        private static async Task SendScheduledMessage(ScheduledMessage scheduledMessage)
+        {
+            try
+            {
+                using var context = new BobEntities();
+                var channel = (IMessageChannel) await Bot.Client.GetChannelAsync(scheduledMessage.ChannelId);
 
-                    if (!scheduledMessage.IsSent)
-                    {
-                        await channel.SendMessageAsync(scheduledMessage.Message);
-                        scheduledMessage.IsSent = true;
-                        await context.RemoveScheduledMessage(scheduledMessage);
-                    }
-                }
-                catch (Exception ex)
+                if (channel == null)
                 {
-                    Console.WriteLine(ex);
+                    return;
                 }
-            });
+
+                if (!scheduledMessage.IsSent)
+                {
+                    await channel.SendMessageAsync(scheduledMessage.Message);
+                    await context.RemoveScheduledMessage(scheduledMessage);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error occurred while sending scheduled message: {ex.Message}");
+            }
         }
 
         public static async Task LoadAndScheduleMessagesAsync()
