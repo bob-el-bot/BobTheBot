@@ -6,6 +6,7 @@ using Database;
 using Database.Types;
 using Discord;
 using Discord.Interactions;
+using TimeStamps;
 
 namespace Commands
 {
@@ -54,7 +55,7 @@ namespace Commands
 
             Schedule.ScheduleMessageTask(scheduledMessage);
 
-            await ModifyOriginalResponseAsync(x => { x.Content = $"✅ Message scheduled for {scheduledTime} UTC."; });
+            await ModifyOriginalResponseAsync(x => { x.Content = $"✅ Message scheduled for {TimeStamp.FromDateTime(scheduledMessage.TimeToSend, TimeStamp.Formats.Exact)}"; });
         }
     }
 }
