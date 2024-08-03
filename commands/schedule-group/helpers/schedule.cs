@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Commands.Helpers
 {
-    public class Schedule
+    public static class Schedule
     {
         public static void ScheduleMessageTask(ScheduledMessage scheduledMessage)
         {
@@ -33,15 +33,26 @@ namespace Commands.Helpers
             try
             {
                 using var context = new BobEntities();
-                var channel = (IMessageChannel) await Bot.Client.GetChannelAsync(scheduledMessage.ChannelId);
+                var channel = (IMessageChannel)await Bot.Client.GetChannelAsync(scheduledMessage.ChannelId);
 
                 if (channel == null)
                 {
+                    Console.WriteLine($"Channel with ID: {scheduledMessage.ChannelId} not found.");
+                    return;
+                }
+
+                // Check if the message was missed by more than 1 hour
+                var timeSinceScheduled = DateTime.UtcNow - scheduledMessage.TimeToSend;
+                if (timeSinceScheduled > TimeSpan.FromHours(1))
+                {
+                    Console.WriteLine($"Message with ID: {scheduledMessage.Id} was missed by more than 1 hour. Deleting message.");
+                    await context.RemoveScheduledMessage(scheduledMessage);
                     return;
                 }
 
                 if (!scheduledMessage.IsSent)
                 {
+                    Console.WriteLine("Sending scheduled message.");
                     await channel.SendMessageAsync(scheduledMessage.Message);
                     await context.RemoveScheduledMessage(scheduledMessage);
                 }
