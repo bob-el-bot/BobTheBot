@@ -27,6 +27,14 @@ namespace Commands
                     await RespondAsync("🌌 You formed a rift in the spacetime continuum! Try scheduling the message **in the future**.");
                     return;
                 }
+
+                // Define the maximum allowed scheduling period (1 month)
+                DateTime maxAllowedDate = DateTime.UtcNow.AddMonths(1);
+                if (scheduledTime > maxAllowedDate)
+                {
+                    await RespondAsync("🕰️ Scheduling time cannot exceed 1 month into the future.");
+                    return;
+                }
             }
             catch (Exception)
             {
@@ -55,7 +63,10 @@ namespace Commands
 
             Schedule.ScheduleMessageTask(scheduledMessage);
 
-            await ModifyOriginalResponseAsync(x => { x.Content = $"✅ Message scheduled for {TimeStamp.FromDateTime(scheduledMessage.TimeToSend, TimeStamp.Formats.Exact)}"; });
+            await ModifyOriginalResponseAsync(x =>
+            {
+                x.Content = $"✅ Message scheduled for {TimeStamp.FromDateTime(scheduledMessage.TimeToSend, TimeStamp.Formats.Exact)}";
+            });
         }
     }
 }

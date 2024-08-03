@@ -13,13 +13,31 @@ namespace Commands.Helpers
     {
         public static void ScheduleMessageTask(ScheduledMessage scheduledMessage)
         {
+            TimeSpan maxDelay = TimeSpan.FromDays(30); // Maximum scheduling delay of 30 days
             var delay = scheduledMessage.TimeToSend - DateTime.UtcNow;
+
+            // If the delay exceeds the maximum allowed, break it into chunks
+            async Task ScheduleInChunks(TimeSpan totalDelay)
+            {
+                while (totalDelay > maxDelay)
+                {
+                    await Task.Delay(maxDelay);
+                    totalDelay -= maxDelay;
+                }
+                await Task.Delay(totalDelay);
+                await SendScheduledMessage(scheduledMessage);
+            }
 
             // If delay is negative or zero, send the message immediately
             if (delay <= TimeSpan.Zero)
             {
                 Console.WriteLine("Scheduled time has already passed or is now. Sending message immediately.");
                 SendScheduledMessage(scheduledMessage).Wait();
+            }
+            else if (delay > maxDelay)
+            {
+                Console.WriteLine($"Scheduling message with ID: {scheduledMessage.Id} in chunks, total delay: {delay.TotalSeconds} seconds.");
+                _ = ScheduleInChunks(delay);
             }
             else
             {
