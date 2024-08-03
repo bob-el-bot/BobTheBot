@@ -13,8 +13,9 @@ namespace Database
     {
         public virtual DbSet<Server> Server { get; set; }
         public virtual DbSet<User> User { get; set; }
-        public virtual DbSet<NewsChannel> NewsChannel { get; set; }
+        public virtual DbSet<NewsChannel> NewsChannel { get; set; } 
         public virtual DbSet<BlackListUser> BlackListUser { get; set; }
+        public virtual DbSet<ScheduledMessage> ScheduledMessage { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -274,6 +275,29 @@ namespace Database
         public async Task AddUserToBlackList(BlackListUser user)
         {
             await BlackListUser.AddAsync(user);
+            await SaveChangesAsync();
+        }
+
+        public async Task<ScheduledMessage> GetScheduledMessage(ulong id)
+        {
+            return await ScheduledMessage.FindAsync(keyValues: id);
+        }
+
+        public async Task UpdateScheduledMessage(ScheduledMessage message)
+        {
+            ScheduledMessage.Update(message);
+            await SaveChangesAsync();
+        }
+
+        public async Task RemoveScheduledMessage(ScheduledMessage message)
+        {
+            ScheduledMessage.Remove(message);
+            await SaveChangesAsync();
+        }
+
+        public async Task AddScheduledMessage(ScheduledMessage message)
+        {
+            await ScheduledMessage.AddAsync(message);
             await SaveChangesAsync();
         }
     }
