@@ -685,7 +685,13 @@ namespace Commands
         {
             if (user.IsBot)
             {
-                await RespondAsync("❌ Sorry, but no sending messages to bots.", ephemeral: true);
+                await RespondAsync("❌ Sorry, but you can't send messages to bots.", ephemeral: true);
+                return;
+            }
+
+            if (ConfessFiltering.IsBlank(message))
+            {
+                await RespondAsync("❌ Sorry, but you can't send blank, or effectively blank, messages.\n- Try adding characters that are not blank or zero-width.", ephemeral: true);
                 return;
             }
 

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -39,6 +40,39 @@ namespace Commands.Helpers
             @"(http|https|ftp|ftps):\/\/([\w.-]+)\.([a-zA-Z]{2,})([\w\.\&\?\:\%\=\#\/\-]*)?",
             RegexOptions.IgnoreCase | RegexOptions.Compiled
         );
+
+        /// <summary>
+        /// Determines whether the provided string is considered "blank."
+        /// </summary>
+        /// <param name="message">The string to check.</param>
+        /// <returns>
+        /// <c>true</c> if the string is null, empty, or consists solely of whitespace characters,
+        /// including various Unicode space characters, invisible formatting, or control characters;
+        /// otherwise, <c>false</c>.
+        /// </returns>
+        public static bool IsBlank(string message)
+        {
+            if (string.IsNullOrEmpty(message))
+            {
+                return true;
+            }
+
+            foreach (char ch in message)
+            {
+                var category = char.GetUnicodeCategory(ch);
+
+                if (!char.IsWhiteSpace(ch) && ch != '\0' &&
+                    category != UnicodeCategory.SpaceSeparator &&
+                    category != UnicodeCategory.Format &&
+                    category != UnicodeCategory.Control &&
+                    category != UnicodeCategory.OtherNotAssigned)
+                {
+                    return false; // Found a non-blank character, early exit
+                }
+            }
+
+            return true; // All characters are blank or non-visible
+        }
 
         /// <summary>
         /// Determines whether the specified message contains a link.
@@ -175,7 +209,7 @@ namespace Commands.Helpers
 
         public static readonly HashSet<string> BannedWords = new(StringComparer.OrdinalIgnoreCase)
         {
-                  
+
                   "kys",
                   "ky$",
                   "kill yourself",
