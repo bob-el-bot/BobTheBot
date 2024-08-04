@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using Discord.Interactions;
 
 namespace TimeStamps
 {
@@ -7,6 +9,113 @@ namespace TimeStamps
     /// </summary>
     public static class TimeStamp
     {
+        public enum Timezone
+        {
+            [ChoiceDisplay("(DST) Dateline Standard Time")]
+            DatelineStandardTime,  // UTC-12:00
+
+            [ChoiceDisplay("(SST) Samoa Standard Time")]
+            SamoaStandardTime,     // UTC-11:00
+
+            [ChoiceDisplay("(HST) Hawaiian Standard Time")]
+            HawaiianStandardTime,  // UTC-10:00
+
+            [ChoiceDisplay("(AKST) Alaskan Standard Time")]
+            AlaskanStandardTime,   // UTC-09:00
+
+            [ChoiceDisplay("(PST) Pacific Standard Time")]
+            PacificStandardTime,   // UTC-08:00
+
+            [ChoiceDisplay("(MST) Mountain Standard Time")]
+            MountainStandardTime,  // UTC-07:00
+
+            [ChoiceDisplay("(CST) Central Standard Time")]
+            CentralStandardTime,   // UTC-06:00
+
+            [ChoiceDisplay("(EST) Eastern Standard Time")]
+            EasternStandardTime,   // UTC-05:00
+
+            [ChoiceDisplay("(AST) Atlantic Standard Time")]
+            AtlanticStandardTime,  // UTC-04:00
+
+            [ChoiceDisplay("(ART) Argentina Standard Time")]
+            ArgentinaStandardTime, // UTC-03:00
+
+            [ChoiceDisplay("(MST) Mid-Atlantic Standard Time")]
+            MidAtlanticStandardTime, // UTC-02:00
+
+            [ChoiceDisplay("(AZOT) Azores Standard Time")]
+            AzoresStandardTime,    // UTC-01:00
+
+            [ChoiceDisplay("(GMT) Greenwich Mean Time")]
+            GreenwichMeanTime,     // UTC±00:00
+
+            [ChoiceDisplay("(CET) Central European Time")]
+            CentralEuropeanTime,   // UTC+01:00
+
+            [ChoiceDisplay("(EET) Eastern European Time")]
+            EasternEuropeanTime,   // UTC+02:00
+
+            [ChoiceDisplay("(MSK) Moscow Standard Time")]
+            MoscowStandardTime,    // UTC+03:00
+
+            [ChoiceDisplay("(GST) Arabian Standard Time")]
+            ArabianStandardTime,   // UTC+04:00
+
+            [ChoiceDisplay("(PKT) Pakistan Standard Time")]
+            PakistanStandardTime,  // UTC+05:00
+
+            [ChoiceDisplay("(BST) Bangladesh Standard Time")]
+            BangladeshStandardTime, // UTC+06:00
+
+            [ChoiceDisplay("(ICT) Indochina Time")]
+            IndochinaTime,         // UTC+07:00
+
+            [ChoiceDisplay("(CST) China Standard Time")]
+            ChinaStandardTime,     // UTC+08:00
+
+            [ChoiceDisplay("(JST) Japan Standard Time")]
+            JapanStandardTime,     // UTC+09:00
+
+            [ChoiceDisplay("(AEST) Australian Eastern Time")]
+            AustralianEasternTime, // UTC+10:00
+
+            [ChoiceDisplay("(SBT) Solomon Islands Time")]
+            SolomonIslandsTime,    // UTC+11:00
+
+            [ChoiceDisplay("(NZST) New Zealand Standard Time")]
+            NewZealandStandardTime // UTC+12:00
+        }
+
+        public static readonly Dictionary<Timezone, string> TimezoneMappings = new()
+        {
+            { Timezone.DatelineStandardTime, "Dateline Standard Time" },     // UTC-12:00
+            { Timezone.SamoaStandardTime, "Samoa Standard Time" },           // UTC-11:00
+            { Timezone.HawaiianStandardTime, "Hawaiian Standard Time" },     // UTC-10:00
+            { Timezone.AlaskanStandardTime, "Alaskan Standard Time" },       // UTC-09:00
+            { Timezone.PacificStandardTime, "Pacific Standard Time" },       // UTC-08:00
+            { Timezone.MountainStandardTime, "Mountain Standard Time" },     // UTC-07:00
+            { Timezone.CentralStandardTime, "Central Standard Time" },       // UTC-06:00
+            { Timezone.EasternStandardTime, "Eastern Standard Time" },       // UTC-05:00
+            { Timezone.AtlanticStandardTime, "Atlantic Standard Time" },     // UTC-04:00
+            { Timezone.ArgentinaStandardTime, "Argentina Standard Time" },   // UTC-03:00
+            { Timezone.MidAtlanticStandardTime, "Mid-Atlantic Standard Time" }, // UTC-02:00
+            { Timezone.AzoresStandardTime, "Azores Standard Time" },         // UTC-01:00
+            { Timezone.GreenwichMeanTime, "GMT Standard Time" },             // UTC±00:00
+            { Timezone.CentralEuropeanTime, "Central Europe Standard Time" },// UTC+01:00
+            { Timezone.EasternEuropeanTime, "E. Europe Standard Time" },     // UTC+02:00
+            { Timezone.MoscowStandardTime, "Russian Standard Time" },        // UTC+03:00
+            { Timezone.ArabianStandardTime, "Arabian Standard Time" },       // UTC+04:00
+            { Timezone.PakistanStandardTime, "Pakistan Standard Time" },     // UTC+05:00
+            { Timezone.BangladeshStandardTime, "Bangladesh Standard Time" }, // UTC+06:00
+            { Timezone.IndochinaTime, "SE Asia Standard Time" },             // UTC+07:00
+            { Timezone.ChinaStandardTime, "China Standard Time" },           // UTC+08:00
+            { Timezone.JapanStandardTime, "Tokyo Standard Time" },           // UTC+09:00
+            { Timezone.AustralianEasternTime, "AUS Eastern Standard Time" }, // UTC+10:00
+            { Timezone.SolomonIslandsTime, "Central Pacific Standard Time" },// UTC+11:00
+            { Timezone.NewZealandStandardTime, "New Zealand Standard Time" } // UTC+12:00
+        };
+
         /// <summary>
         /// Enumeration of timestamp formats.
         /// </summary>

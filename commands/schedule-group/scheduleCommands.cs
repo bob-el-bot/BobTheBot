@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using Commands.Attributes;
 using Commands.Helpers;
 using Database;
 using Database.Types;
@@ -16,67 +15,66 @@ namespace Commands
     public class ScheduleGroup : InteractionModuleBase<SocketInteractionContext>
     {
         [SlashCommand("message", "Bob will send your message at a specified time.")]
-        public async Task ScheduleMessage(string message, int month, int day, int hour, int minute, int timezoneOffset)
+        public async Task ScheduleMessage(string message, int month, int day, int hour, int minute, TimeStamp.Timezone timezone)
         {
-            DateTime currentDate = DateTime.UtcNow;
-            DateTime localTime;
-            DateTime utcTime;
-            int year;
+            DateTime scheduledTime;
+            TimeZoneInfo timeZoneInfo;
 
             try
             {
-                // Determine the year
-                if (month < currentDate.Month || (month == currentDate.Month && day < currentDate.Day))
+                // Convert month and day to current year
+                int currentYear = DateTime.UtcNow.Year;
+
+                // Create DateTime for the specified time in local time
+                DateTime localDateTime = new(currentYear, month, day, hour, minute, 0, DateTimeKind.Unspecified);
+
+                // Map enum to TimeZoneInfo
+                if (!TimeStamp.TimezoneMappings.TryGetValue(timezone, out string timeZoneId))
                 {
-                    // If the month and day have already passed this year, it means the date is next year
-                    year = currentDate.Year + 1;
-                }
-                else
-                {
-                    // Otherwise, it is still this year
-                    year = currentDate.Year;
+                    await RespondAsync("❌ Invalid timezone selected.");
+                    return;
                 }
 
-                // Create local time with inferred year
-                localTime = new DateTime(year, month, day, hour, minute, 0, DateTimeKind.Unspecified);
+                timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
 
-                // Convert to UTC using the provided timezone offset
-                utcTime = localTime.AddMinutes(-timezoneOffset);
+                // Convert the local time to UTC based on the specified timezone
+                DateTime utcDateTime = TimeZoneInfo.ConvertTimeToUtc(localDateTime, timeZoneInfo);
 
-                // Ensure that the UTC time is always used for scheduling and comparisons
-                if (utcTime <= DateTime.UtcNow)
+                // Round DateTime to avoid microsecond precision issues
+                DateTime nowRounded = DateTime.UtcNow.AddTicks(-(DateTime.UtcNow.Ticks % TimeSpan.TicksPerSecond));
+                DateTime futureLimit = DateTime.UtcNow.AddMonths(1).AddTicks(-(DateTime.UtcNow.Ticks % TimeSpan.TicksPerSecond));
+                utcDateTime = utcDateTime.AddTicks(-(utcDateTime.Ticks % TimeSpan.TicksPerSecond));
+
+                // Check if the scheduled time is valid (future and within 1 month)
+                if (utcDateTime <= nowRounded)
                 {
                     await RespondAsync("🌌 You formed a rift in the spacetime continuum! Try scheduling the message **in the future**.");
                     return;
                 }
 
-                // Define the maximum allowed scheduling period (1 month)
-                DateTime maxAllowedDate = DateTime.UtcNow.AddMonths(1);
-                if (utcTime > maxAllowedDate)
+                if (utcDateTime > futureLimit)
                 {
-                    await RespondAsync("🕰️ Scheduling time cannot exceed 1 month into the future.");
+                    await RespondAsync("📅 Scheduling is only allowed within 1 month into the future.");
                     return;
                 }
+
+                scheduledTime = utcDateTime;
             }
             catch (Exception ex)
             {
-                await RespondAsync($"❌ Invalid date or time. Error: {ex.Message}");
+                await RespondAsync($"❌ An error occurred: {ex.Message}");
                 return;
             }
 
             await RespondAsync("Scheduling message...");
             var response = await GetOriginalResponseAsync();
 
-            // Ensure that all DateTime values are in UTC
-            utcTime = DateTime.SpecifyKind(utcTime, DateTimeKind.Utc);
-
-            // Create a new ScheduledMessage object
             var scheduledMessage = new ScheduledMessage
             {
                 Id = response.Id,
                 Message = message,
                 IsSent = false,
-                TimeToSend = utcTime, // Ensure this is UTC
+                TimeToSend = scheduledTime,
                 ChannelId = Context.Channel.Id,
                 ServerId = Context.Guild.Id,
                 UserId = Context.User.Id
