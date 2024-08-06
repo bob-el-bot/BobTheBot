@@ -5,6 +5,7 @@ using Database;
 using Database.Types;
 using Discord;
 using Discord.Interactions;
+using Discord.WebSocket;
 using TimeStamps;
 
 namespace Commands
@@ -15,13 +16,20 @@ namespace Commands
     public class ScheduleGroup : InteractionModuleBase<SocketInteractionContext>
     {
         [SlashCommand("message", "Bob will send your message at a specified time.")]
-        public async Task ScheduleMessage([Summary("message", "The message you want to send. Markdown still works!")] string message, [Summary("month", "The month you want your message sent.")] int month, [Summary("day", "The day you want your message sent.")] int day, [Summary("hour", "The hour you want your message sent, in military time (if PM, add 12).")] int hour, [Summary("minute", "The minute you want your message sent.")] int minute, [Summary("timezone", "Your timezone.")] TimeStamp.Timezone timezone)
+        public async Task ScheduleMessage([Summary("message", "The message you want to send. Markdown still works!")] string message, [Summary("channel", "The channel for the message to be sent in.")][ChannelTypes(ChannelType.Text)] SocketChannel channel, [Summary("month", "The month you want your message sent.")] int month, [Summary("day", "The day you want your message sent.")] int day, [Summary("hour", "The hour you want your message sent, in military time (if PM, add 12).")] int hour, [Summary("minute", "The minute you want your message sent.")] int minute, [Summary("timezone", "Your timezone.")] TimeStamp.Timezone timezone)
         {
             DateTime scheduledTime;
             TimeZoneInfo timeZoneInfo;
 
             try
             {
+                // Check if Bob has permission to send messages in given channel
+                if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)channel).SendMessages || !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)channel).ViewChannel)
+                {
+                    await RespondAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{channel.Id}>\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    return;
+                }
+
                 // Convert month and day to current year
                 int currentYear = DateTime.UtcNow.Year;
 
@@ -75,7 +83,7 @@ namespace Commands
                 Message = message,
                 IsSent = false,
                 TimeToSend = scheduledTime,
-                ChannelId = Context.Channel.Id,
+                ChannelId = channel.Id,
                 ServerId = Context.Guild.Id,
                 UserId = Context.User.Id
             };
