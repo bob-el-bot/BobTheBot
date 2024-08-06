@@ -15,7 +15,7 @@ namespace Commands
     public class ScheduleGroup : InteractionModuleBase<SocketInteractionContext>
     {
         [SlashCommand("message", "Bob will send your message at a specified time.")]
-        public async Task ScheduleMessage(string message, int month, int day, int hour, int minute, TimeStamp.Timezone timezone)
+        public async Task ScheduleMessage([Summary("message", "The message you want to send. Markdown still works!")] string message, [Summary("month", "The month you want your message sent.")] int month, [Summary("day", "The day you want your message sent.")] int day, [Summary("hour", "The hour you want your message sent, in military time (if PM, add 12).")] int hour, [Summary("minute", "The minute you want your message sent.")] int minute, [Summary("timezone", "Your timezone.")] TimeStamp.Timezone timezone)
         {
             DateTime scheduledTime;
             TimeZoneInfo timeZoneInfo;
