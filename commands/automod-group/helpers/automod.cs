@@ -39,7 +39,7 @@ namespace Commands.Helpers
         }
 
         public static class Patterns
-            {
+        {
             public static readonly string[] LinkPatterns =
             {
                 @"(http|https|ftp|ftps):\/\/([\w.-]+)\.([a-zA-Z]{2,})([\w\.\&\?\:\%\=\#\/\-]*)?"
