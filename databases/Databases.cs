@@ -13,7 +13,7 @@ namespace Database
     {
         public virtual DbSet<Server> Server { get; set; }
         public virtual DbSet<User> User { get; set; }
-        public virtual DbSet<NewsChannel> NewsChannel { get; set; } 
+        public virtual DbSet<NewsChannel> NewsChannel { get; set; }
         public virtual DbSet<BlackListUser> BlackListUser { get; set; }
         public virtual DbSet<ScheduledMessage> ScheduledMessage { get; set; }
 
@@ -289,10 +289,9 @@ namespace Database
             await SaveChangesAsync();
         }
 
-        public async Task RemoveScheduledMessage(ScheduledMessage message)
+        public async Task RemoveScheduledMessage(ulong messageId)
         {
-            ScheduledMessage.Remove(message);
-            await SaveChangesAsync();
+            await Database.ExecuteSqlRawAsync("DELETE FROM \"ScheduledMessage\" WHERE \"Id\" = @p0", messageId);
         }
 
         public async Task AddScheduledMessage(ScheduledMessage message)

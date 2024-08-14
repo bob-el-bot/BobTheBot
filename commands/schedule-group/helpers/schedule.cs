@@ -64,12 +64,12 @@ namespace Commands.Helpers
                 if (timeSinceScheduled > TimeSpan.FromHours(1))
                 {
                     Console.WriteLine($"Message with ID: {scheduledMessage.Id} was missed by more than 1 hour. Deleting message.");
-                    await context.RemoveScheduledMessage(scheduledMessage);
+                    await context.RemoveScheduledMessage(scheduledMessage.Id);
                     return;
                 }
 
                 await channel.SendMessageAsync(scheduledMessage.Message);
-                await context.RemoveScheduledMessage(scheduledMessage);
+                await context.RemoveScheduledMessage(scheduledMessage.Id);
             }
             catch (Exception ex)
             {
