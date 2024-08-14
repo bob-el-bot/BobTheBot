@@ -137,7 +137,7 @@ namespace Commands
             var embed = new EmbedBuilder
             {
                 Title = $"Editing Message ID {scheduledMessage.Id}",
-                Description = scheduledMessage.Message,
+                Description = $"```{scheduledMessage.Message}```",
                 Color = Bot.theme
             };
             embed.AddField(name: "Time", value: $"{TimeStamp.FromDateTime(scheduledMessage.TimeToSend, TimeStamp.Formats.Exact)}");
@@ -191,7 +191,7 @@ namespace Commands
             var embed = new EmbedBuilder()
             {
                 Title = ogEmbed.Title,
-                Description = modal.Content,
+                Description = $"```{modal.Content}```",
                 Color = Bot.theme
             };
             embed.AddField(name: "Time", value: ogEmbed.Fields.First().Value);
@@ -216,7 +216,7 @@ namespace Commands
             var embed = new EmbedBuilder()
             {
                 Title = $"(Deleted) Message ID {message.Id}",
-                Description = message.Message,
+                Description = $"```{message.Message}```",
                 Color = Bot.theme
             };
             embed.AddField(name: "Time", value: ogEmbed.Fields.First().Value);
