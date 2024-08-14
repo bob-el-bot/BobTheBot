@@ -143,7 +143,8 @@ namespace Commands
             embed.AddField(name: "Time", value: $"{TimeStamp.FromDateTime(scheduledMessage.TimeToSend, TimeStamp.Formats.Exact)}");
 
             var components = new ComponentBuilder()
-                    .WithButton(label: "Edit", customId: $"editMessageButton:{id}", style: ButtonStyle.Primary, emote: Emoji.Parse("✍️"));
+                    .WithButton(label: "Edit", customId: $"editMessageButton:{id}", style: ButtonStyle.Primary, emote: Emoji.Parse("✍️"))
+                    .WithButton(label: "Delete", customId: $"deleteMessageButton:{id}", style: ButtonStyle.Danger, emote: Emoji.Parse("🗑️"));
 
             await FollowupAsync(embed: embed.Build(), components: components.Build());
         }
@@ -196,6 +197,31 @@ namespace Commands
             embed.AddField(name: "Time", value: ogEmbed.Fields.First().Value);
 
             await Context.Interaction.ModifyOriginalResponseAsync(x => { x.Embed = embed.Build(); });
+        }
+
+        [ComponentInteraction("deleteMessageButton:*", true)]
+        public async Task DeleteMessageButtonHandler(string id)
+        {
+            await DeferAsync();
+            
+            var originalResponse = await Context.Interaction.GetOriginalResponseAsync();
+            var messageId = Convert.ToUInt64(id);
+
+            using var context = new BobEntities();
+            var message = await context.GetScheduledMessage(messageId);
+            await context.RemoveScheduledMessage(message);
+
+            // Create Embed
+            var ogEmbed = originalResponse.Embeds.First();
+            var embed = new EmbedBuilder()
+            {
+                Title = $"(Deleted) Message ID {message.Id}",
+                Description = message.Message,
+                Color = Bot.theme
+            };
+            embed.AddField(name: "Time", value: ogEmbed.Fields.First().Value);
+
+            await Context.Interaction.ModifyOriginalResponseAsync(x => { x.Embed = embed.Build(); x.Components = null; });
         }
     }
 }
