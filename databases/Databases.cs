@@ -89,8 +89,14 @@ namespace Database
         }
 
         /// <summary>
-        /// GetServer() returns a Server object using the Guild.Id as the key. If a server is not found in the database then a new entry is made and then returned.
+        /// Retrieves a <see cref="Server"/> object by its unique identifier.
+        /// If the server is not found, a new entry is created and returned.
         /// </summary>
+        /// <param name="id">The unique identifier of the server.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation. 
+        /// The task result contains the retrieved or newly created <see cref="Server"/>.
+        /// </returns>
         public async Task<Server> GetServer(ulong id)
         {
             var server = await Server.FindAsync(keyValues: id);
@@ -107,8 +113,9 @@ namespace Database
         }
 
         /// <summary>
-        /// UpdateServer() edits / overwrites an existing server in the database.
+        /// Updates an existing server asynchronously.
         /// </summary>
+        /// <param name="server">The server to update.</param>
         public async Task UpdateServer(Server server)
         {
             Server.Update(server);
@@ -116,8 +123,9 @@ namespace Database
         }
 
         /// <summary>
-        /// AddServer() creates a new server entry in the database. 
+        /// Adds a new server to the database asynchronously.
         /// </summary>
+        /// <param name="server">The server to be added.</param>
         private async Task AddServer(Server server)
         {
             await Server.AddAsync(server);
@@ -125,14 +133,20 @@ namespace Database
         }
 
         /// <summary>
-        /// GetUser() returns a (non-Discord) User object using the User.Id as the key. If a user is not found in the database then a new entry is made and then returned.
+        /// Retrieves a <see cref="User"/> object by its unique identifier.
+        /// If the user is not found, a new entry is created and returned.
         /// </summary>
+        /// <param name="id">The unique identifier of the user.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation. 
+        /// The task result contains the retrieved or newly created <see cref="User"/>.
+        /// </returns>
         public async Task<User> GetUser(ulong id)
         {
             var user = await User.FindAsync(keyValues: id);
             if (user == null)
             {
-                // Add server to DB
+                // Add user to DB
                 await AddUser(new User { Id = id });
                 return await GetUser(id);
             }
@@ -143,8 +157,9 @@ namespace Database
         }
 
         /// <summary>
-        /// UpdateUser() edits / overwrites an existing user in the database.
+        /// Updates an existing user asynchronously.
         /// </summary>
+        /// <param name="user">The user to update.</param>
         public async Task UpdateUser(User user)
         {
             User.Update(user);
@@ -152,8 +167,9 @@ namespace Database
         }
 
         /// <summary>
-        /// AddUser() creates a new user entry in the database. 
+        /// Adds a new user to the database asynchronously.
         /// </summary>
+        /// <param name="user">The user to be added.</param>
         private async Task AddUser(User user)
         {
             await User.AddAsync(user);
@@ -161,10 +177,14 @@ namespace Database
         }
 
         /// <summary>
-        /// GetUsers() retrieves a list of (non-Discord) User objects using their IDs as keys.
+        /// Retrieves a list of <see cref="User"/> objects by their unique identifiers.
+        /// If any user is not found, a new entry is created and returned for that user.
         /// </summary>
         /// <param name="ids">An array of user IDs.</param>
-        /// <returns>A list of User objects.</returns>
+        /// <returns>
+        /// A task representing the asynchronous operation. 
+        /// The task result contains a list of retrieved or newly created <see cref="User"/> objects.
+        /// </returns>
         public async Task<List<User>> GetUsers(IEnumerable<ulong> ids)
         {
             var users = await User.Where(u => ids.Contains(u.Id)).ToListAsync();
@@ -182,9 +202,9 @@ namespace Database
         }
 
         /// <summary>
-        /// UpdateUsers() edits / overwrites existing users in the database.
+        /// Updates existing users asynchronously.
         /// </summary>
-        /// <param name="users">A list of User objects to update.</param>
+        /// <param name="users">A list of <see cref="User"/> objects to update.</param>
         public async Task UpdateUsers(IEnumerable<User> users)
         {
             foreach (var user in users)
@@ -196,11 +216,13 @@ namespace Database
         }
 
         /// <summary>
-        /// Retrieves a news channel by its unique identifier asynchronously.
+        /// Retrieves a <see cref="NewsChannel"/> by its unique identifier asynchronously.
+        /// If the news channel is not found, <c>null</c> is returned.
         /// </summary>
         /// <param name="id">The unique identifier of the news channel to retrieve.</param>
         /// <returns>
-        /// A task representing the asynchronous operation. The task result contains the retrieved <see cref="Types.NewsChannel"/>.
+        /// A task representing the asynchronous operation. 
+        /// The task result contains the retrieved <see cref="NewsChannel"/> or <c>null</c> if not found.
         /// </returns>
         public async Task<NewsChannel> GetNewsChannel(ulong id)
         {
@@ -208,8 +230,9 @@ namespace Database
         }
 
         /// <summary>
-        /// Updates a news channel asynchronously.
+        /// Updates an existing news channel asynchronously.
         /// </summary>
+        /// <param name="newsChannel">The news channel to update.</param>
         public async Task UpdateNewsChannel(NewsChannel newsChannel)
         {
             NewsChannel.Update(newsChannel);
@@ -217,7 +240,7 @@ namespace Database
         }
 
         /// <summary>
-        /// Removes a news channel asynchronously.
+        /// Removes a news channel from the database asynchronously.
         /// </summary>
         /// <param name="newsChannel">The news channel to be removed.</param>
         public async Task RemoveNewsChannel(NewsChannel newsChannel)
@@ -227,7 +250,7 @@ namespace Database
         }
 
         /// <summary>
-        /// Adds a new news channel asynchronously.
+        /// Adds a new news channel to the database asynchronously.
         /// </summary>
         /// <param name="newsChannel">The news channel to be added.</param>
         public async Task AddNewsChannel(NewsChannel newsChannel)
@@ -237,11 +260,13 @@ namespace Database
         }
 
         /// <summary>
-        /// Retrieves a blacklisted user by their unique identifier asynchronously.
+        /// Retrieves a <see cref="BlackListUser"/> by their unique identifier asynchronously.
+        /// If the blacklisted user is not found, <c>null</c> is returned.
         /// </summary>
         /// <param name="id">The unique identifier of the blacklisted user to retrieve.</param>
         /// <returns>
-        /// A task representing the asynchronous operation. The task result contains the retrieved <see cref="Types.BlackListUser"/>.
+        /// A task representing the asynchronous operation. 
+        /// The task result contains the retrieved <see cref="BlackListUser"/> or <c>null</c> if not found.
         /// </returns>
         public async Task<BlackListUser> GetUserFromBlackList(ulong id)
         {
@@ -249,7 +274,7 @@ namespace Database
         }
 
         /// <summary>
-        /// Updates a blacklisted user asynchronously.
+        /// Updates an existing blacklisted user asynchronously.
         /// </summary>
         /// <param name="user">The blacklisted user to update.</param>
         public async Task UpdateUserFromBlackList(BlackListUser user)
@@ -259,7 +284,7 @@ namespace Database
         }
 
         /// <summary>
-        /// Removes a user from the blacklist asynchronously.
+        /// Removes a blacklisted user from the database asynchronously.
         /// </summary>
         /// <param name="user">The blacklisted user to be removed.</param>
         public async Task RemoveUserFromBlackList(BlackListUser user)
@@ -269,34 +294,12 @@ namespace Database
         }
 
         /// <summary>
-        /// Adds a user to the blacklist asynchronously.
+        /// Adds a new blacklisted user to the database asynchronously.
         /// </summary>
         /// <param name="user">The blacklisted user to be added.</param>
         public async Task AddUserToBlackList(BlackListUser user)
         {
             await BlackListUser.AddAsync(user);
-            await SaveChangesAsync();
-        }
-
-        public async Task<ScheduledMessage> GetScheduledMessage(ulong id)
-        {
-            return await ScheduledMessage.FindAsync(keyValues: id);
-        }
-
-        public async Task UpdateScheduledMessage(ScheduledMessage message)
-        {
-            ScheduledMessage.Update(message);
-            await SaveChangesAsync();
-        }
-
-        public async Task RemoveScheduledMessage(ulong messageId)
-        {
-            await Database.ExecuteSqlRawAsync("DELETE FROM \"ScheduledMessage\" WHERE \"Id\" = @p0", messageId);
-        }
-
-        public async Task AddScheduledMessage(ScheduledMessage message)
-        {
-            await ScheduledMessage.AddAsync(message);
             await SaveChangesAsync();
         }
     }
