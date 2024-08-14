@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Database;
 using Database.Types;
+using Debug;
 using Discord;
 using Discord.Interactions;
 using Microsoft.EntityFrameworkCore;
@@ -31,17 +32,14 @@ namespace Commands.Helpers
             // If delay is negative or zero, send the message immediately
             if (delay <= TimeSpan.Zero)
             {
-                Console.WriteLine("Scheduled time has already passed or is now. Sending message immediately.");
                 SendScheduledMessage(scheduledMessage).Wait();
             }
             else if (delay > maxDelay)
             {
-                Console.WriteLine($"Scheduling message with ID: {scheduledMessage.Id} in chunks, total delay: {delay.TotalSeconds} seconds.");
                 _ = ScheduleInChunks(delay);
             }
             else
             {
-                Console.WriteLine($"Scheduling message with ID: {scheduledMessage.Id} to be sent in {delay.TotalSeconds} seconds.");
                 _ = Task.Delay(delay).ContinueWith(async _ => await SendScheduledMessage(scheduledMessage));
             }
         }
@@ -63,7 +61,6 @@ namespace Commands.Helpers
                 var timeSinceScheduled = DateTime.UtcNow - scheduledMessage.TimeToSend;
                 if (timeSinceScheduled > TimeSpan.FromHours(1))
                 {
-                    Console.WriteLine($"Message with ID: {scheduledMessage.Id} was missed by more than 1 hour. Deleting message.");
                     await context.RemoveScheduledMessage(scheduledMessage.Id);
                     return;
                 }
