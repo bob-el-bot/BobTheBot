@@ -302,5 +302,46 @@ namespace Database
             await BlackListUser.AddAsync(user);
             await SaveChangesAsync();
         }
+
+                /// <summary>
+        /// Retrieves a scheduled message by its unique identifier asynchronously.
+        /// </summary>
+        /// <param name="id">The unique identifier of the scheduled message to retrieve.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation. The task result contains the retrieved <see cref="Types.ScheduledMessage"/>.
+        /// </returns>
+        public async Task<ScheduledMessage> GetScheduledMessage(ulong id)
+        {
+            return await ScheduledMessage.FindAsync(keyValues: id);
+        }
+
+        /// <summary>
+        /// Updates an existing scheduled message asynchronously.
+        /// </summary>
+        /// <param name="message">The scheduled message to update.</param>
+        public async Task UpdateScheduledMessage(ScheduledMessage message)
+        {
+            ScheduledMessage.Update(message);
+            await SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Removes a scheduled message from the database asynchronously.
+        /// </summary>
+        /// <param name="messageId">The unique identifier of the scheduled message to be removed.</param>
+        public async Task RemoveScheduledMessage(ulong messageId)
+        {
+            await Database.ExecuteSqlRawAsync("DELETE FROM \"ScheduledMessage\" WHERE \"Id\" = @p0", messageId);
+        }
+
+        /// <summary>
+        /// Adds a new scheduled message to the database asynchronously.
+        /// </summary>
+        /// <param name="message">The scheduled message to be added.</param>
+        public async Task AddScheduledMessage(ScheduledMessage message)
+        {
+            await ScheduledMessage.AddAsync(message);
+            await SaveChangesAsync();
+        }
     }
 }
