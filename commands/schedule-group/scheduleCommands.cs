@@ -161,7 +161,6 @@ namespace Commands
         {
             await DeferAsync();
 
-            var originalResponse = await Context.Interaction.GetOriginalResponseAsync();
             var messageId = Convert.ToUInt64(id);
 
             using var context = new BobEntities();

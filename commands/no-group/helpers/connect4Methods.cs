@@ -192,7 +192,7 @@ namespace Commands.Helpers
         {
             try
             {
-                var (score, chosenMove) = Minimax(game.Grid, game.Turns, 2, true, int.MinValue, int.MaxValue, game.LastMoveColumn, game.LastMoveRow);
+                var chosenMove = Minimax(game.Grid, game.Turns, 2, true, int.MinValue, int.MaxValue, game.LastMoveColumn, game.LastMoveRow).Move;
 
                 if (chosenMove != null && IsValidMove(game.Grid, chosenMove[0]))
                 {
