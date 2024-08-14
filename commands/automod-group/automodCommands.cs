@@ -19,7 +19,7 @@ namespace Commands
         {
             await DeferAsync(ephemeral: true);
 
-            if (!await Automod.canBeAdded(Context.Guild, 1))
+            if (!await Automod.CanBeAdded(Context.Guild, 1))
             {
                 await FollowupAsync(text: $"❌ Links {Automod.keyWordTiggersMessage}", ephemeral: true);
                 return;
@@ -38,7 +38,7 @@ namespace Commands
                 properties.Actions = new AutoModRuleActionProperties[] { actionProperties };
                 properties.TriggerType = AutoModTriggerType.Keyword;
                 properties.EventType = AutoModEventType.MessageSend;
-                properties.RegexPatterns = new string[] { @"(http|https|ftp|ftps):\/\/([\w.-]+)\.([a-zA-Z]{2,})([\w\.\&\?\:\%\=\#\/\-]*)?" };
+                properties.RegexPatterns = Automod.Patterns.LinkPatterns;
             }
 
             await Context.Guild.CreateAutoModRuleAsync(rules);
@@ -50,7 +50,7 @@ namespace Commands
         {
             await DeferAsync(ephemeral: true);
 
-            if (!await Automod.canBeAdded(Context.Guild, 1))
+            if (!await Automod.CanBeAdded(Context.Guild, 1))
             {
                 await FollowupAsync(text: $"❌ Phone number {Automod.keyWordTiggersMessage}", ephemeral: true);
                 return;
@@ -70,16 +70,14 @@ namespace Commands
                 properties.TriggerType = AutoModTriggerType.Keyword;
                 properties.EventType = AutoModEventType.MessageSend;
 
-                string pattern;
                 if (strict)
                 {
-                    pattern = @"^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$";
+                    properties.RegexPatterns = Automod.Patterns.StrictPhoneNumberPatterns;
                 }
                 else
                 {
-                    pattern = @"^\s*(?:\+?(\d{1,3}))?[-. (]*\d{1,3}[-. )]+\d{1,3}[-. ]+\d{1,4}(?: *x(\d+))?\s*$";
+                    properties.RegexPatterns = Automod.Patterns.RelaxedPhoneNumberPatterns;
                 }
-                properties.RegexPatterns = new string[] { pattern };
             }
 
             await Context.Guild.CreateAutoModRuleAsync(rules);
@@ -91,7 +89,7 @@ namespace Commands
         {
             await DeferAsync(ephemeral: true);
 
-            if (!await Automod.canBeAdded(Context.Guild, 1))
+            if (!await Automod.CanBeAdded(Context.Guild, 1))
             {
                 await FollowupAsync(text: $"❌ Zalgo text (glitchy text) {Automod.keyWordTiggersMessage}", ephemeral: true);
                 return;
@@ -110,7 +108,7 @@ namespace Commands
                 properties.Actions = new AutoModRuleActionProperties[] { actionProperties };
                 properties.TriggerType = AutoModTriggerType.Keyword;
                 properties.EventType = AutoModEventType.MessageSend;
-                properties.RegexPatterns = new string[] { @"[\u0300-\u036F\u0489\u1AB0-\u1AFF\u1DC0-\u1DFF\u20D0-\u20FF\u2CEF-\u2CF1\u2DE0-\u2DFF\uA66F-\uA67F\uFE20-\uFE2F]" };
+                properties.RegexPatterns = Automod.Patterns.ZalgoTextPatterns;
             }
 
             await Context.Guild.CreateAutoModRuleAsync(rules);
@@ -122,7 +120,7 @@ namespace Commands
         {
             await DeferAsync(ephemeral: true);
 
-            if (!await Automod.canBeAdded(Context.Guild, 2))
+            if (!await Automod.CanBeAdded(Context.Guild, 2))
             {
                 await FollowupAsync(text: $"❌ Bad word {Automod.keyWordTiggersMessage}\n- Note, that this command adds two new rules due to how many words it checks for.", ephemeral: true);
                 return;
@@ -164,7 +162,7 @@ namespace Commands
         {
             await DeferAsync(ephemeral: true);
 
-            if (!await Automod.canBeAdded(Context.Guild, 1))
+            if (!await Automod.CanBeAdded(Context.Guild, 1))
             {
                 await FollowupAsync(text: $"❌ Invite link {Automod.keyWordTiggersMessage}", ephemeral: true);
                 return;
@@ -183,7 +181,7 @@ namespace Commands
                 properties.Actions = new AutoModRuleActionProperties[] { actionProperties };
                 properties.TriggerType = AutoModTriggerType.Keyword;
                 properties.EventType = AutoModEventType.MessageSend;
-                properties.RegexPatterns = new string[] { @"\b(?:https?://)?(?:www\.)?(?:discord\.(?:gg|io|me|li|com(?:/invite)?))/?(?:invite/)?([a-zA-Z0-9-]+)\b" };
+                properties.RegexPatterns = Automod.Patterns.InviteLinkPatterns;
             }
 
             await Context.Guild.CreateAutoModRuleAsync(rules);
