@@ -154,7 +154,16 @@ namespace Commands
             try
             {
                 var messageId = Convert.ToUInt64(id);
-                await Context.Interaction.RespondWithModalAsync<EditMessageModal>(customId: $"editMessageModal:{messageId}");
+
+                using var context = new BobEntities();
+                var message = await context.GetScheduledMessage(messageId);
+
+                var test = new EditMessageModal
+                {
+                    Content = message.Message
+                };
+
+                await Context.Interaction.RespondWithModalAsync(modal: test, customId: $"editMessageModal:{messageId}");
             }
             catch (Exception ex)
             {
