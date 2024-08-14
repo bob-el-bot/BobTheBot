@@ -68,12 +68,8 @@ namespace Commands.Helpers
                     return;
                 }
 
-                if (!scheduledMessage.IsSent)
-                {
-                    Console.WriteLine("Sending scheduled message.");
-                    await channel.SendMessageAsync(scheduledMessage.Message);
-                    await context.RemoveScheduledMessage(scheduledMessage);
-                }
+                await channel.SendMessageAsync(scheduledMessage.Message);
+                await context.RemoveScheduledMessage(scheduledMessage);
             }
             catch (Exception ex)
             {
@@ -85,7 +81,7 @@ namespace Commands.Helpers
         {
             using var context = new BobEntities();
             var unsentMessages = await context.ScheduledMessage
-                .Where(m => !m.IsSent && m.TimeToSend > DateTime.UtcNow)
+                .Where(m => m.TimeToSend > DateTime.UtcNow)
                 .ToListAsync();
 
             foreach (var scheduledMessage in unsentMessages)

@@ -83,7 +83,6 @@ namespace Commands
             {
                 Id = response.Id,
                 Message = message,
-                IsSent = false,
                 TimeToSend = scheduledTime,
                 ChannelId = channel.Id,
                 ServerId = Context.Guild.Id,
