@@ -145,7 +145,7 @@ namespace Commands.Helpers
                         if (GetWinnerOutcome(grid, turns) == player)
                         {
                             grid[i, j] = 0; // Reset the move
-                            return new int[] { i, j };
+                            return new [] { i, j };
                         }
 
                         grid[i, j] = 0; // Reset the move

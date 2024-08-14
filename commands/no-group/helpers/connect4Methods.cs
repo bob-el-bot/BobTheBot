@@ -126,10 +126,10 @@ namespace Commands.Helpers
             // Directions: horizontal, vertical, diagonal (bottom-left to top-right), diagonal (top-left to bottom-right)
             int[][] directions = new int[][]
             {
-                new int[] { 1, 0 },   // Horizontal
-                new int[] { 0, 1 },   // Vertical
-                new int[] { 1, 1 },   // Diagonal (bottom-left to top-right)
-                new int[] { 1, -1 }   // Diagonal (top-left to bottom-right)
+                new [] { 1, 0 },   // Horizontal
+                new [] { 0, 1 },   // Vertical
+                new [] { 1, 1 },   // Diagonal (bottom-left to top-right)
+                new [] { 1, -1 }   // Diagonal (top-left to bottom-right)
             };
 
             foreach (var dir in directions)
@@ -278,7 +278,9 @@ namespace Commands.Helpers
                     }
 
                     if (beta <= alpha)
+                    {
                         break;
+                    }
                 }
             }
 

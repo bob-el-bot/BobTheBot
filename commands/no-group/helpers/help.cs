@@ -200,7 +200,7 @@ namespace Commands.Helpers
             Url = "https://docs.bobthebot.net"
         };
 
-        public static CommandInfoGroup[] CommandGroups =
+        public static readonly CommandInfoGroup[] CommandGroups =
         {
             new() {
                 Title = "Randomly Generated (RNG)",
