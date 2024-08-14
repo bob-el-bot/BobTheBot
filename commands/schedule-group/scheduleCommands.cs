@@ -9,6 +9,7 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using TimeStamps;
+using static Commands.Helpers.Schedule;
 
 namespace Commands
 {
@@ -155,15 +156,6 @@ namespace Commands
             }
         }
 
-        public class EditMessageModal : IModal
-        {
-            public string Title => "Edit Message";
-
-            [InputLabel("Message Content")]
-            [ModalTextInput("editMessageModal_content", TextInputStyle.Paragraph, "ff", maxLength: 2000)]
-            public string Content { get; set; }
-        }
-
         [ModalInteraction("editMessageModal:*", true)]
         public async Task EditMessageModalHandler(string id, EditMessageModal modal)
         {
@@ -179,24 +171,6 @@ namespace Commands
 
             var embed = BuildEditMessageEmbed(message);
             await Context.Interaction.ModifyOriginalResponseAsync(x => { x.Embed = embed.Build(); });
-        }
-
-        private static EmbedBuilder BuildEditMessageEmbed(ScheduledMessage message)
-        {
-            return new EmbedBuilder
-            {
-                Title = $"Editing Message ID {message.Id}",
-                Description = $"```{message.Message}```",
-                Color = Bot.theme
-            }
-            .AddField(name: "Time", value: $"{TimeStamp.FromDateTime(message.TimeToSend, TimeStamp.Formats.Exact)}");
-        }
-
-        private static ComponentBuilder BuildEditMessageComponents(string id, bool disabled = false)
-        {
-            return new ComponentBuilder()
-                .WithButton(label: "Edit", customId: $"editMessageButton:{id}", style: ButtonStyle.Primary, emote: Emoji.Parse("✍️"), disabled: disabled)
-                .WithButton(label: "Delete", customId: $"deleteMessageButton:{id}", style: ButtonStyle.Danger, emote: Emoji.Parse("🗑️"), disabled: disabled);
         }
 
         [ComponentInteraction("deleteMessageButton:*", true)]
