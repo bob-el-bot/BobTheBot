@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel.DataAnnotations;
-using Discord.Rest;
 
 namespace Database.Types
 {

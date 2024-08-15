@@ -8,6 +8,7 @@ using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
+using PremiumInterface;
 using TimeStamps;
 using static Commands.Helpers.Schedule;
 
@@ -30,8 +31,86 @@ namespace Commands
             DateTime scheduledTime;
             TimeZoneInfo timeZoneInfo;
 
+            await DeferAsync();
+
+            var context = new BobEntities();
+            var user = await context.GetUser(Context.User.Id);
+
             try
             {
+                // Check if the user has premium.
+                if (Premium.IsValidPremium(user.PremiumExpiration) == false)
+                {
+                    await FollowupAsync(text: $"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}", ephemeral: true);
+                    return;
+                }
+
+                if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)channel).SendMessages ||
+                    !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)channel).ViewChannel)
+                {
+                    await FollowupAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{channel.Id}>\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    return;
+                }
+
+                int currentYear = DateTime.UtcNow.Year;
+                DateTime localDateTime = new(currentYear, month, day, hour, minute, 0, DateTimeKind.Unspecified);
+
+                if (!TimeStamp.TimezoneMappings.TryGetValue(timezone, out string timeZoneId))
+                {
+                    await FollowupAsync("❌ Invalid timezone selected.");
+                    return;
+                }
+
+                timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+                DateTime utcDateTime = TimeZoneInfo.ConvertTimeToUtc(localDateTime, timeZoneInfo);
+
+                DateTime nowRounded = DateTime.UtcNow.AddTicks(-(DateTime.UtcNow.Ticks % TimeSpan.TicksPerSecond));
+                DateTime futureLimit = DateTime.UtcNow.AddMonths(1).AddTicks(-(DateTime.UtcNow.Ticks % TimeSpan.TicksPerSecond));
+                utcDateTime = utcDateTime.AddTicks(-(utcDateTime.Ticks % TimeSpan.TicksPerSecond));
+
+                if (utcDateTime <= nowRounded)
+                {
+                    await FollowupAsync("🌌 You formed a rift in the spacetime continuum! Try scheduling the message **in the future**.");
+                    return;
+                }
+
+                if (utcDateTime > futureLimit)
+                {
+                    await FollowupAsync("📅 Scheduling is only allowed within 1 month into the future.");
+                    return;
+                }
+
+                scheduledTime = utcDateTime;
+            }
+            catch (Exception ex)
+            {
+                await FollowupAsync($"❌ An error occurred: {ex.Message}");
+                return;
+            }
+
+            await FollowupAsync("Scheduling message...");
+            var response = await GetOriginalResponseAsync();
+
+            var scheduledMessage = new ScheduledMessage
+            {
+                Id = response.Id,
+                Message = message,
+                TimeToSend = scheduledTime,
+                ChannelId = channel.Id,
+                ServerId = Context.Guild.Id,
+                UserId = Context.User.Id
+            };
+
+            await context.AddScheduledMessage(scheduledMessage);
+
+            ScheduleMessageTask(scheduledMessage);
+
+            await ModifyOriginalResponseAsync(x =>
+            {
+                x.Content = $"✅ Message scheduled for {TimeStamp.FromDateTime(scheduledMessage.TimeToSend, TimeStamp.Formats.Exact)}\n- ID: `{scheduledMessage.Id}`";
+            });
+        }
+
                 if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)channel).SendMessages ||
                     !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)channel).ViewChannel)
                 {
@@ -63,7 +142,7 @@ namespace Commands
 
                 if (utcDateTime > futureLimit)
                 {
-                    await RespondAsync("📅 Scheduling is only allowed within 1 month into the future.");
+                    await FollowupAsync("📅 Scheduling is only allowed within 1 month into the future.");
                     return;
                 }
 
@@ -71,11 +150,11 @@ namespace Commands
             }
             catch (Exception ex)
             {
-                await RespondAsync($"❌ An error occurred: {ex.Message}");
+                await FollowupAsync($"❌ An error occurred: {ex.Message}");
                 return;
             }
 
-            await RespondAsync("Scheduling message...");
+            await FollowupAsync("Scheduling message...");
             var response = await GetOriginalResponseAsync();
 
             var scheduledMessage = new ScheduledMessage
@@ -93,7 +172,7 @@ namespace Commands
                 await context.AddScheduledMessage(scheduledMessage);
             }
 
-            Schedule.ScheduleMessageTask(scheduledMessage);
+            ScheduleMessageTask(scheduledMessage);
 
             await ModifyOriginalResponseAsync(x =>
             {
