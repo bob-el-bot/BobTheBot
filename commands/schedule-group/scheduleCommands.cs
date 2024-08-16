@@ -39,13 +39,6 @@ namespace Commands
 
             try
             {
-                // Check if the user has premium.
-                if (Premium.IsValidPremium(user.PremiumExpiration) == false)
-                {
-                    await FollowupAsync(text: $"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}", ephemeral: true);
-                    return;
-                }
-
                 if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)channel).SendMessages ||
                     !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)channel).ViewChannel)
                 {
