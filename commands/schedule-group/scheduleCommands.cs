@@ -48,13 +48,7 @@ namespace Commands
 
                 int currentYear = DateTime.UtcNow.Year;
                 DateTime localDateTime = new(currentYear, month, day, hour, minute, 0, DateTimeKind.Unspecified);
-
-                if (!TimeStamp.TimezoneMappings.TryGetValue(timezone, out string timeZoneId))
-                {
-                    await FollowupAsync("❌ Invalid timezone selected.");
-                    return;
-                }
-
+                TimeStamp.TimezoneMappings.TryGetValue(timezone, out string timeZoneId);
                 timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
                 DateTime utcDateTime = TimeZoneInfo.ConvertTimeToUtc(localDateTime, timeZoneInfo);
 
@@ -157,13 +151,7 @@ namespace Commands
 
                 int currentYear = DateTime.UtcNow.Year;
                 DateTime localDateTime = new(currentYear, month, day, hour, minute, 0, DateTimeKind.Unspecified);
-
-                if (!TimeStamp.TimezoneMappings.TryGetValue(timezone, out string timeZoneId))
-                {
-                    await FollowupAsync("❌ Invalid timezone selected.");
-                    return;
-                }
-
+                TimeStamp.TimezoneMappings.TryGetValue(timezone, out string timeZoneId);
                 timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
                 DateTime utcDateTime = TimeZoneInfo.ConvertTimeToUtc(localDateTime, timeZoneInfo);
 
