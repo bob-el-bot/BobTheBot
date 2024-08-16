@@ -52,7 +52,7 @@ namespace Commands.Helpers
             return new EmbedBuilder
             {
                 Title = $"Editing Message ID {message.Id}",
-                Description = $"```{message.Message}```",
+                Description = $"{message.Message}",
                 Color = Bot.theme
             }
             .AddField(name: "Time", value: $"{TimeStamp.FromDateTime(message.TimeToSend, TimeStamp.Formats.Exact)}");
