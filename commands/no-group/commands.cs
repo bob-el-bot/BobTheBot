@@ -542,7 +542,7 @@ namespace Commands
         [SlashCommand("announce", "Bob will create a fancy embed announcement in the channel the command is used in.")]
         public async Task Announce([Summary("title", "The title of the announcement (the title of the embed).")] string title, [Summary("description", "The anouncement (the description of the embed).")] string description, [Summary("color", "A color name (purple), or valid hex code (#8D52FD).")] string color)
         {
-            Color finalColor = Colors.TryGetColor(color);
+            Color? finalColor = Colors.TryGetColor(color);
 
             // Check if Bob has permission to send messages in given channel
             ChannelPermissions permissions = Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel);
@@ -550,7 +550,7 @@ namespace Commands
             {
                 await RespondAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{Context.Channel.Id}>\n- Try giving Bob the following pemrissions: `View Channel`, `Send Messages`.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
-            else if (finalColor == 0)
+            else if (finalColor == null)
             {
                 await RespondAsync(text: $"❌ `{color}` is an invalid color. Here is a list of valid colors:\n- {Colors.GetSupportedColorsString()}.\n- Valid hex codes are also accepted.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }

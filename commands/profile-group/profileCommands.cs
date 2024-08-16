@@ -45,7 +45,7 @@ namespace Commands
                 // Check Premium
                 bool hasPremium = Premium.IsValidPremium(userToDisplay.PremiumExpiration);
 
-                Color color = hasPremium ? Colors.TryGetColor(userToDisplay.ProfileColor) : 0x2C2F33;
+                Color color = hasPremium ? Colors.TryGetColor(userToDisplay.ProfileColor) ?? 0x2C2F33 : 0x2C2F33;
 
                 // Format Description
                 string premium = hasPremium ? "💜✨ *Premium*" : "";
@@ -55,7 +55,7 @@ namespace Commands
                 var embed = new EmbedBuilder
                 {
                     Author = new EmbedAuthorBuilder().WithName($"{user.Username}'s Profile").WithIconUrl(user.GetAvatarUrl()),
-                    Color = color,
+                    Color = color ,
                     Description = description
                 };
 
@@ -124,14 +124,14 @@ namespace Commands
             using var context = new BobEntities();
             user = await context.GetUser(Context.User.Id);
 
-            Color finalColor = Colors.TryGetColor(color);
+            Color? finalColor = Colors.TryGetColor(color);
 
             // Check if the user has premium.
             if (Premium.IsValidPremium(user.PremiumExpiration) == false)
             {
                 await FollowupAsync(text: $"✨ This is a *premium* feature.\n-{Premium.HasPremiumMessage}", ephemeral: true);
             }
-            else if (finalColor == 0)
+            else if (finalColor == null)
             {
                 await FollowupAsync(text: $"❌ `{color}` is an invalid color. Here is a list of valid colors:\n- {Colors.GetSupportedColorsString()}.\n- Valid hex codes are also accepted.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }

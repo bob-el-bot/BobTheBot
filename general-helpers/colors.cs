@@ -40,10 +40,10 @@ namespace ColorMethods
         /// Tries to get a <see cref="Color"/> object from a string input.
         /// </summary>
         /// <param name="input">The input string which can be a color name or a hex value.</param>
-        /// <returns>A <see cref="Color"/> object representing the color, or black if the conversion fails.</returns>
-        public static Color TryGetColor(string input)
+        /// <returns>A <see cref="Color?"/> object representing the color, or null if the conversion fails.</returns>
+        public static Color? TryGetColor(string input)
         {
-            Color finalColor;
+            Color? finalColor;
 
             try
             {
@@ -53,7 +53,7 @@ namespace ColorMethods
             catch
             {
                 // If conversion fails, return a default Color (black)
-                finalColor = new Color(0);
+                finalColor = null;
             }
 
             return finalColor;

@@ -113,7 +113,7 @@ namespace Commands
             DateTime scheduledTime;
             TimeZoneInfo timeZoneInfo;
 
-            Color finalColor = Colors.TryGetColor(color);
+            Color? finalColor = Colors.TryGetColor(color);
 
             try
             {
@@ -136,7 +136,7 @@ namespace Commands
                     return;
                 }
 
-                if (finalColor == 0)
+                if (finalColor == null)
                 {
                     await RespondAsync(text: $"❌ `{color}` is an invalid color. Here is a list of valid colors:\n- {Colors.GetSupportedColorsString()}.\n- Valid hex codes are also accepted.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
                 }
