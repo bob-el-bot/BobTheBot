@@ -8,7 +8,6 @@ using Database.Types;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using Microsoft.EntityFrameworkCore;
 using PremiumInterface;
 using TimeStamps;
 using static Commands.Helpers.Schedule;

@@ -21,53 +21,53 @@ namespace Commands.Helpers
     }
 
     /// <summary>
+    /// Modal used for editing a scheduled message's content.
+    /// </summary>
+    public class EditMessageModal : IModal
+    {
+        /// <summary>
+        /// Title of the modal displayed to the user.
+        /// </summary>
+        public string Title => "Edit Message";
+
+        /// <summary>
+        /// The content of the message to be edited.
+        /// </summary>
+        [InputLabel("Message Content")]
+        [ModalTextInput("editMessageModal_content", TextInputStyle.Paragraph, "ff", maxLength: 2000)]
+        public string Content { get; set; }
+    }
+
+    /// <summary>
+    /// Modal used for editing a scheduled announcement's content.
+    /// </summary>
+    public class EditAnnouncementModal : IModal
+    {
+        /// <summary>
+        /// Title of the modal displayed to the user.
+        /// </summary>
+        public string Title => "Edit Announcement";
+
+        /// <summary>
+        /// The title of the embed to be edited.
+        /// </summary>
+        [InputLabel("Title")]
+        [ModalTextInput("editAnnouncementModal_embedTitle", TextInputStyle.Paragraph, "ff", maxLength: 256)]
+        public string EmbedTitle { get; set; }
+
+        /// <summary>
+        /// The description of the embed to be edited.
+        /// </summary>
+        [InputLabel("Description")]
+        [ModalTextInput("editAnnouncementModal_description", TextInputStyle.Paragraph, "ff", maxLength: 4000)]
+        public string Description { get; set; }
+    }
+
+    /// <summary>
     /// Contains helper methods for scheduling and managing scheduled messages and announcements.
     /// </summary>
     public static class Schedule
     {
-        /// <summary>
-        /// Modal used for editing a scheduled message's content.
-        /// </summary>
-        public class EditMessageModal : IModal
-        {
-            /// <summary>
-            /// Title of the modal displayed to the user.
-            /// </summary>
-            public string Title => "Edit Message";
-
-            /// <summary>
-            /// The content of the message to be edited.
-            /// </summary>
-            [InputLabel("Message Content")]
-            [ModalTextInput("editMessageModal_content", TextInputStyle.Paragraph, "ff", maxLength: 2000)]
-            public string Content { get; set; }
-        }
-
-        /// <summary>
-        /// Modal used for editing a scheduled announcement's content.
-        /// </summary>
-        public class EditAnnouncementModal : IModal
-        {
-            /// <summary>
-            /// Title of the modal displayed to the user.
-            /// </summary>
-            public string Title => "Edit Announcement";
-
-            /// <summary>
-            /// The title of the embed to be edited.
-            /// </summary>
-            [InputLabel("Title")]
-            [ModalTextInput("editAnnouncementModal_embedTitle", TextInputStyle.Paragraph, "ff", maxLength: 256)]
-            public string EmbedTitle { get; set; }
-
-            /// <summary>
-            /// The description of the embed to be edited.
-            /// </summary>
-            [InputLabel("Description")]
-            [ModalTextInput("editAnnouncementModal_description", TextInputStyle.Paragraph, "ff", maxLength: 4000)]
-            public string Description { get; set; }
-        }
-
         /// <summary>
         /// Builds an embed for editing a scheduled item.
         /// </summary>
