@@ -137,15 +137,18 @@ namespace Commands
 
                 if (finalColor == null)
                 {
-                    await RespondAsync(text: $"❌ `{color}` is an invalid color. Here is a list of valid colors:\n- {Colors.GetSupportedColorsString()}.\n- Valid hex codes are also accepted.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    await FollowupAsync(text: $"❌ `{color}` is an invalid color. Here is a list of valid colors:\n- {Colors.GetSupportedColorsString()}.\n- Valid hex codes are also accepted.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    return;
                 }
                 else if (title.Length > 256) // 256 is max characters in an embed title.
                 {
-                    await RespondAsync($"❌ The announcement *cannot* be made because it contains **{title.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **256** characters in embed titles.", ephemeral: true);
+                    await FollowupAsync($"❌ The announcement *cannot* be made because the title contains **{title.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **256** characters in embed titles.", ephemeral: true);
+                    return;
                 }
                 else if (description.Length > 4000) // 4000 is the maximum length of an input field
                 {
-                    await RespondAsync($"❌ The announcement *cannot* be made because it contains **{description.Length}** characters.\n- Try having fewer characters.\n- To support editing, a limit of **4000** characters is set because of Discord's Limitations in input fields.", ephemeral: true);
+                    await FollowupAsync($"❌ The announcement *cannot* be made because the description contains **{description.Length}** characters.\n- Try having fewer characters.\n- To support editing, a limit of **4000** characters is set because of Discord's limitations in input fields.", ephemeral: true);
+                    return;
                 }
 
                 int currentYear = DateTime.UtcNow.Year;
