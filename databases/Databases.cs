@@ -347,28 +347,53 @@ namespace Database
             await SaveChangesAsync();
         }
 
+        /// <summary>
+        /// Retrieves a scheduled announcement by its unique identifier.
+        /// </summary>
+        /// <param name="id">The unique identifier of the scheduled announcement.</param>
+        /// <returns>The scheduled announcement with the specified ID, or null if not found.</returns>
         public async Task<ScheduledAnnouncement> GetScheduledAnnouncement(ulong id)
         {
             return await ScheduledAnnouncement.FindAsync(keyValues: id);
         }
 
+        /// <summary>
+        /// Updates an existing scheduled announcement in the database.
+        /// </summary>
+        /// <param name="announcement">The scheduled announcement to update.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public async Task UpdateScheduledAnnouncement(ScheduledAnnouncement announcement)
         {
             ScheduledAnnouncement.Update(announcement);
             await SaveChangesAsync();
         }
 
+        /// <summary>
+        /// Removes a scheduled announcement from the database by its unique identifier.
+        /// </summary>
+        /// <param name="announcementId">The unique identifier of the scheduled announcement to remove.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public async Task RemoveScheduledAnnouncement(ulong announcementId)
         {
             await Database.ExecuteSqlRawAsync("DELETE FROM \"ScheduledAnnouncement\" WHERE \"Id\" = @p0", announcementId);
         }
 
+        /// <summary>
+        /// Adds a new scheduled announcement to the database.
+        /// </summary>
+        /// <param name="announcement">The scheduled announcement to add.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public async Task AddScheduledAnnouncement(ScheduledAnnouncement announcement)
         {
             await ScheduledAnnouncement.AddAsync(announcement);
             await SaveChangesAsync();
         }
 
+        /// <summary>
+        /// Removes a scheduled item (either a message or an announcement) from the database.
+        /// </summary>
+        /// <param name="item">The scheduled item to remove.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public async Task RemoveScheduledItem(IScheduledItem item)
         {
             switch (item)

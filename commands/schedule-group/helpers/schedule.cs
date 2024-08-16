@@ -68,6 +68,11 @@ namespace Commands.Helpers
             public string Description { get; set; }
         }
 
+        /// <summary>
+        /// Builds an embed for editing a scheduled item.
+        /// </summary>
+        /// <param name="item">The scheduled item to build the embed for.</param>
+        /// <returns>The configured EmbedBuilder instance.</returns>
         public static EmbedBuilder BuildEditEmbed(IScheduledItem item)
         {
             var embedBuilder = new EmbedBuilder
@@ -87,10 +92,16 @@ namespace Commands.Helpers
             return embedBuilder;
         }
 
+        /// <summary>
+        /// Builds the component buttons for editing and deleting a scheduled item.
+        /// </summary>
+        /// <param name="item">The scheduled item to build the components for.</param>
+        /// <param name="disabled">Whether the buttons should be disabled.</param>
+        /// <returns>The configured ComponentBuilder instance.</returns>
         public static ComponentBuilder BuildEditMessageComponents(IScheduledItem item, bool disabled = false)
         {
-            string editType = item == null ? "null" : (item is ScheduledMessage ? "Message" : "Announce");
-            string deleteType = item == null ? "null" : (item is ScheduledMessage ? "Message" : "Announce");
+            string editType = item == null ? "null" : (item is ScheduledMessage ? "Message" : "Announcement");
+            string deleteType = item == null ? "null" : (item is ScheduledMessage ? "Message" : "Announcement");
             string itemId = item?.Id.ToString() ?? "null";
 
             return new ComponentBuilder()
@@ -110,6 +121,11 @@ namespace Commands.Helpers
                 );
         }
 
+        /// <summary>
+        /// Schedules a task to send a scheduled item at its specified time.
+        /// </summary>
+        /// <typeparam name="T">The type of scheduled item (message or announcement).</typeparam>
+        /// <param name="scheduledItem">The scheduled item to be sent.</param>
         public static void ScheduleTask<T>(T scheduledItem) where T : IScheduledItem
         {
             TimeSpan maxDelay = TimeSpan.FromDays(30); // Maximum scheduling delay of 30 days
@@ -140,6 +156,11 @@ namespace Commands.Helpers
             }
         }
 
+        /// <summary>
+        /// Sends the scheduled item to the specified channel and removes it from the database.
+        /// </summary>
+        /// <typeparam name="T">The type of scheduled item (message or announcement).</typeparam>
+        /// <param name="scheduledItem">The scheduled item to be sent.</param>
         private static async Task SendScheduledItem<T>(T scheduledItem) where T : IScheduledItem
         {
             try
@@ -196,7 +217,6 @@ namespace Commands.Helpers
         /// Loads all unsent scheduled items from the database and schedules them.
         /// </summary>
         /// <typeparam name="T">The type of scheduled item (message or announcement).</typeparam>
-        /// <param name="items">The items to be loaded and scheduled.</param>
         public static async Task LoadAndScheduleItemsAsync<T>() where T : class, IScheduledItem
         {
             using var context = new BobEntities();
