@@ -132,6 +132,8 @@ namespace Commands
                 int blackListEntriesCount = await context.BlackListUser.CountAsync();
                 int serverEntriesCount = await context.Server.CountAsync();
                 int newsChannelEntriesCount = await context.NewsChannel.CountAsync();
+                int scheduledMessageEntriesCount = await context.ScheduledMessage.CountAsync();
+                int scheduledAnnouncementEntriesCount = await context.ScheduledAnnouncement.CountAsync();
                 double size = await context.GetDatabaseSizeBytes();
 
                 var embed = new EmbedBuilder
@@ -145,6 +147,8 @@ namespace Commands
                     .AddField(name: "BlackListUser Entries", value: $"`{blackListEntriesCount}`", inline: true)
                     .AddField(name: "Server Entries", value: $"`{serverEntriesCount}`", inline: true)
                     .AddField(name: "NewsChannel Entries", value: $"`{newsChannelEntriesCount}`", inline: true)
+                    .AddField(name: "Scheduled Message Entries", value: $"`{scheduledMessageEntriesCount}`", inline: true)
+                    .AddField(name: "Scheduled Announcement Entries", value: $"`{scheduledAnnouncementEntriesCount}`", inline: true)
                     .AddField(name: "Size (Bytes)", value: $"`{size}`", inline: true)
                     .AddField(name: "Size (MegaBytes)", value: $"`{size / 1024 / 1024}`", inline: true)
                     .AddField(name: "Size (GigaBytes)", value: $"`{size / 1024 / 1024 / 1024}`", inline: true);
