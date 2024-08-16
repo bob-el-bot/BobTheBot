@@ -26,6 +26,30 @@ namespace Commands.Helpers
     public static class Schedule
     {
         /// <summary>
+        /// Converts a local time specified by month, day, hour, and minute into UTC time, based on the provided timezone.
+        /// </summary>
+        /// <param name="month">The month of the local time.</param>
+        /// <param name="day">The day of the local time.</param>
+        /// <param name="hour">The hour of the local time (24-hour format).</param>
+        /// <param name="minute">The minute of the local time.</param>
+        /// <param name="timezone">The timezone in which the local time is specified.</param>
+        /// <returns>The equivalent UTC time of the specified local time.</returns>
+        public static DateTime ConvertToUtcTime(int month, int day, int hour, int minute, TimeStamp.Timezone timezone)
+        {
+            // Create a local DateTime object with the specified month, day, hour, and minute.
+            var localDateTime = new DateTime(DateTime.UtcNow.Year, month, day, hour, minute, 0, DateTimeKind.Unspecified);
+
+            // Retrieve the system timezone ID from the TimezoneMappings dictionary.
+            var timeZoneId = TimeStamp.TimezoneMappings[timezone];
+
+            // Find the TimeZoneInfo object for the specified timezone.
+            var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+
+            // Convert the local DateTime to UTC using the TimeZoneInfo.
+            return TimeZoneInfo.ConvertTimeToUtc(localDateTime, timeZoneInfo);
+        }
+
+        /// <summary>
         /// Builds an embed for editing a scheduled item.
         /// </summary>
         /// <param name="item">The scheduled item to build the embed for.</param>

@@ -29,7 +29,6 @@ namespace Commands
             [Summary("timezone", "Your timezone.")] TimeStamp.Timezone timezone)
         {
             DateTime scheduledTime;
-            TimeZoneInfo timeZoneInfo;
 
             await DeferAsync();
 
@@ -45,29 +44,18 @@ namespace Commands
                     return;
                 }
 
-                int currentYear = DateTime.UtcNow.Year;
-                DateTime localDateTime = new(currentYear, month, day, hour, minute, 0, DateTimeKind.Unspecified);
-                TimeStamp.TimezoneMappings.TryGetValue(timezone, out string timeZoneId);
-                timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-                DateTime utcDateTime = TimeZoneInfo.ConvertTimeToUtc(localDateTime, timeZoneInfo);
-
-                DateTime nowRounded = DateTime.UtcNow.AddTicks(-(DateTime.UtcNow.Ticks % TimeSpan.TicksPerSecond));
-                DateTime futureLimit = DateTime.UtcNow.AddMonths(1).AddTicks(-(DateTime.UtcNow.Ticks % TimeSpan.TicksPerSecond));
-                utcDateTime = utcDateTime.AddTicks(-(utcDateTime.Ticks % TimeSpan.TicksPerSecond));
-
-                if (utcDateTime <= nowRounded)
+                // Convert local time to UTC.
+                scheduledTime = ConvertToUtcTime(month, day, hour, minute, timezone);
+                if (scheduledTime <= DateTime.UtcNow)
                 {
-                    await FollowupAsync("🌌 You formed a rift in the spacetime continuum! Try scheduling the message **in the future**.");
+                    await FollowupAsync("🌌 Please schedule the message for a future time.");
                     return;
                 }
-
-                if (utcDateTime > futureLimit)
+                if (scheduledTime > DateTime.UtcNow.AddMonths(1))
                 {
                     await FollowupAsync("📅 Scheduling is only allowed within 1 month into the future.");
                     return;
                 }
-
-                scheduledTime = utcDateTime;
             }
             catch (Exception ex)
             {
@@ -110,7 +98,6 @@ namespace Commands
            [Summary("timezone", "Your timezone.")] TimeStamp.Timezone timezone)
         {
             DateTime scheduledTime;
-            TimeZoneInfo timeZoneInfo;
 
             Color? finalColor = Colors.TryGetColor(color);
 
@@ -151,29 +138,18 @@ namespace Commands
                     return;
                 }
 
-                int currentYear = DateTime.UtcNow.Year;
-                DateTime localDateTime = new(currentYear, month, day, hour, minute, 0, DateTimeKind.Unspecified);
-                TimeStamp.TimezoneMappings.TryGetValue(timezone, out string timeZoneId);
-                timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-                DateTime utcDateTime = TimeZoneInfo.ConvertTimeToUtc(localDateTime, timeZoneInfo);
-
-                DateTime nowRounded = DateTime.UtcNow.AddTicks(-(DateTime.UtcNow.Ticks % TimeSpan.TicksPerSecond));
-                DateTime futureLimit = DateTime.UtcNow.AddMonths(1).AddTicks(-(DateTime.UtcNow.Ticks % TimeSpan.TicksPerSecond));
-                utcDateTime = utcDateTime.AddTicks(-(utcDateTime.Ticks % TimeSpan.TicksPerSecond));
-
-                if (utcDateTime <= nowRounded)
+                // Convert local time to UTC.
+                scheduledTime = ConvertToUtcTime(month, day, hour, minute, timezone);
+                if (scheduledTime <= DateTime.UtcNow)
                 {
-                    await FollowupAsync("🌌 You formed a rift in the spacetime continuum! Try scheduling the message **in the future**.");
+                    await FollowupAsync("🌌 Please schedule the message for a future time.");
                     return;
                 }
-
-                if (utcDateTime > futureLimit)
+                if (scheduledTime > DateTime.UtcNow.AddMonths(1))
                 {
                     await FollowupAsync("📅 Scheduling is only allowed within 1 month into the future.");
                     return;
                 }
-
-                scheduledTime = utcDateTime;
             }
             catch (Exception ex)
             {
