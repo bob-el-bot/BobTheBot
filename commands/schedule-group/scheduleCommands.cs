@@ -5,6 +5,7 @@ using ColorMethods;
 using Commands.Helpers;
 using Database;
 using Database.Types;
+using Debug;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
@@ -59,7 +60,9 @@ namespace Commands
             }
             catch (Exception ex)
             {
-                await FollowupAsync($"❌ An error occurred: {ex.Message}");
+                await FollowupAsync($"❌ An unexpected error occurred: {ex.Message}\n- Try again later.\n- The developers have been notified, but you can join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ) and provide us with more detials if you want.");
+                SocketTextChannel logChannel = (SocketTextChannel)Bot.Client.GetGuild(Bot.supportServerId).GetChannel(Bot.Token != "${{TEST_TOKEN}}" ? Bot.systemLogChannelId : Bot.devLogChannelId);
+                await Logger.LogErrorToDiscord(logChannel, Context, $"{ex}");
                 return;
             }
 
@@ -153,7 +156,9 @@ namespace Commands
             }
             catch (Exception ex)
             {
-                await FollowupAsync($"❌ An error occurred: {ex.Message}");
+                await FollowupAsync($"❌ An unexpected error occurred: {ex.Message}\n- Try again later.\n- The developers have been notified, but you can join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ) and provide us with more detials if you want.");
+                SocketTextChannel logChannel = (SocketTextChannel)Bot.Client.GetGuild(Bot.supportServerId).GetChannel(Bot.Token != "${{TEST_TOKEN}}" ? Bot.systemLogChannelId : Bot.devLogChannelId);
+                await Logger.LogErrorToDiscord(logChannel, Context, $"{ex}");
                 return;
             }
 
