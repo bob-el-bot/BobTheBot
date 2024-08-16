@@ -58,7 +58,7 @@ namespace Commands.Helpers
         {
             var embedBuilder = new EmbedBuilder
             {
-                Title = item is ScheduledMessage ? $"Editing Message | {item.Id}" : $"Editing Announcement | {item.Id}",
+                Title = item is ScheduledMessage ? $"🕖 Editing Message | {item.Id}" : $"🕖 Editing Announcement | {item.Id}",
                 Description = item is ScheduledMessage message ? message.Message : (item as ScheduledAnnouncement)?.Description,
                 Color = item is ScheduledMessage ? Bot.theme : Colors.TryGetColor((item as ScheduledAnnouncement)?.Color)
             };

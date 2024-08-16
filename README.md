@@ -132,6 +132,11 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/preview issue [link]` Preview an issue from GitHub right on Discord.
 - `/preview message [link]` Preview a Discord message from any server Bob is in.
 
+### 🕖 Schedule commands:
+- `/schedule message [message] [channel] [month] [day] [hour] [minute] [timezone]` Bob will send your message at a specified time.
+- `/schedule announcement [title] [description] [color] [channel] [month] [day] [hour] [minute] [timezone]` Bob will send an embed at a specified time.
+- `/schedule edit [id]` Bob will allow you to edit any messages or announcements you have scheduled.
+
 ### 🖨️ Auto commands:
 - `/auto publish-announcements [publish] [channel]` Bob will publish all messages sent in the given channel.
 - `/auto preview-github [preview]` Bob will preview all valid GitHub links in the server.

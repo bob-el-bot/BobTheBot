@@ -319,7 +319,7 @@ namespace Commands
 
             var embed = new EmbedBuilder
             {
-                Title = "(Deleted) Scheduled Message",
+                Title = "🕖 (Deleted) Scheduled Message",
                 Description = originalResponse.Embeds.First().Description,
                 Color = Bot.theme
             }
@@ -353,7 +353,7 @@ namespace Commands
             // Build the new embed
             var embed = new EmbedBuilder
             {
-                Title = "(Deleted) Scheduled Announcement",
+                Title = "🕖 (Deleted) Scheduled Announcement",
                 Description = description,
                 Color = color
             }
