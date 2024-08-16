@@ -228,14 +228,4 @@ namespace Commands.Helpers
             }
         }
     }
-
-    /// <summary>
-    /// Represents a base class for scheduled items such as messages and announcements.
-    /// </summary>
-    public abstract class ScheduledItem
-    {
-        public string Id { get; set; }
-        public ulong ChannelId { get; set; }
-        public DateTime TimeToSend { get; set; }
-    }
 }
