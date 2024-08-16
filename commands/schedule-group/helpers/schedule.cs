@@ -15,6 +15,7 @@ namespace Commands.Helpers
     public interface IScheduledItem
     {
         ulong Id { get; }
+        ulong UserId { get; }
         ulong ChannelId { get; }
         DateTime TimeToSend { get; }
     }
@@ -43,32 +44,70 @@ namespace Commands.Helpers
         }
 
         /// <summary>
-        /// Builds an embed for displaying details of a message being edited.
+        /// Modal used for editing a scheduled announcement's content.
         /// </summary>
-        /// <param name="message">The scheduled message to be edited.</param>
-        /// <returns>An embed showing the message content and time to be sent.</returns>
-        public static EmbedBuilder BuildEditMessageEmbed(ScheduledMessage message)
+        public class EditAnnouncementModal : IModal
         {
-            return new EmbedBuilder
-            {
-                Title = $"Editing Message ID {message.Id}",
-                Description = $"{message.Message}",
-                Color = Bot.theme
-            }
-            .AddField(name: "Time", value: $"{TimeStamp.FromDateTime(message.TimeToSend, TimeStamp.Formats.Exact)}");
+            /// <summary>
+            /// Title of the modal displayed to the user.
+            /// </summary>
+            public string Title => "Edit Announcement";
+
+            /// <summary>
+            /// The title of the embed to be edited.
+            /// </summary>
+            [InputLabel("Title")]
+            [ModalTextInput("editAnnouncementModal_embedTitle", TextInputStyle.Paragraph, "ff", maxLength: 256)]
+            public string EmbedTitle { get; set; }
+
+            /// <summary>
+            /// The description of the embed to be edited.
+            /// </summary>
+            [InputLabel("Description")]
+            [ModalTextInput("editAnnouncementModal_description", TextInputStyle.Paragraph, "ff", maxLength: 4000)]
+            public string Description { get; set; }
         }
 
-        /// <summary>
-        /// Builds components (buttons) for editing or deleting a scheduled message.
-        /// </summary>
-        /// <param name="id">The ID of the scheduled message.</param>
-        /// <param name="disabled">Indicates if the buttons should be disabled.</param>
-        /// <returns>A component builder with edit and delete buttons.</returns>
-        public static ComponentBuilder BuildEditMessageComponents(string id, bool disabled = false)
+        public static EmbedBuilder BuildEditEmbed(IScheduledItem item)
         {
+            var embedBuilder = new EmbedBuilder
+            {
+                Title = item is ScheduledMessage ? $"Editing Message | {item.Id}" : $"Editing Announcement | {item.Id}",
+                Description = item is ScheduledMessage message ? message.Message : (item as ScheduledAnnouncement)?.Description,
+                Color = item is ScheduledMessage ? Bot.theme : Colors.TryGetColor((item as ScheduledAnnouncement)?.Color)
+            };
+
+            if (item is ScheduledAnnouncement announcement)
+            {
+                embedBuilder.AddField(name: "Title", value: announcement.Title);
+            }
+
+            embedBuilder.AddField(name: "Time", value: $"{TimeStamp.FromDateTime(item.TimeToSend, TimeStamp.Formats.Exact)}");
+
+            return embedBuilder;
+        }
+
+        public static ComponentBuilder BuildEditMessageComponents(IScheduledItem item, bool disabled = false)
+        {
+            string editType = item == null ? "null" : (item is ScheduledMessage ? "Message" : "Announce");
+            string deleteType = item == null ? "null" : (item is ScheduledMessage ? "Message" : "Announce");
+            string itemId = item?.Id.ToString() ?? "null";
+
             return new ComponentBuilder()
-                .WithButton(label: "Edit", customId: $"editMessageButton:{id}", style: ButtonStyle.Primary, emote: Emoji.Parse("✍️"), disabled: disabled)
-                .WithButton(label: "Delete", customId: $"deleteMessageButton:{id}", style: ButtonStyle.Danger, emote: Emoji.Parse("🗑️"), disabled: disabled);
+                .WithButton(
+                    label: "Edit",
+                    customId: $"edit{editType}Button:{itemId}",
+                    style: ButtonStyle.Primary,
+                    emote: Emoji.Parse("✍️"),
+                    disabled: disabled
+                )
+                .WithButton(
+                    label: "Delete",
+                    customId: $"delete{deleteType}Button:{itemId}",
+                    style: ButtonStyle.Danger,
+                    emote: Emoji.Parse("🗑️"),
+                    disabled: disabled
+                );
         }
 
         public static void ScheduleTask<T>(T scheduledItem) where T : IScheduledItem

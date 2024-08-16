@@ -144,9 +144,9 @@ namespace Commands
                 {
                     await RespondAsync($"❌ The announcement *cannot* be made because it contains **{title.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **256** characters in embed titles.", ephemeral: true);
                 }
-                else if (description.Length > 4096) // 4096 is max characters in an embed description.
+                else if (description.Length > 4000) // 4000 is the maximum length of an input field
                 {
-                    await RespondAsync($"❌ The announcement *cannot* be made because it contains **{description.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **4096** characters in embed descriptions.", ephemeral: true);
+                    await RespondAsync($"❌ The announcement *cannot* be made because it contains **{description.Length}** characters.\n- Try having fewer characters.\n- To support editing, a limit of **4000** characters is set because of Discord's Limitations in input fields.", ephemeral: true);
                 }
 
                 int currentYear = DateTime.UtcNow.Year;
@@ -208,7 +208,7 @@ namespace Commands
         }
 
         [SlashCommand("edit", "Bob will allow you to edit any messages or announcements you have scheduled.")]
-        public async Task EditScheduledMessage([Summary("id", "The ID of the scheduled message or announcement.")] string id)
+        public async Task EditScheduledItem([Summary("id", "The ID of the scheduled message or announcement.")] string id)
         {
             await DeferAsync();
 
@@ -219,22 +219,26 @@ namespace Commands
             }
 
             using var context = new BobEntities();
-            var scheduledMessage = await context.GetScheduledMessage(parsedId);
+            IScheduledItem scheduledItem = await context.GetScheduledMessage(parsedId);
+            if (scheduledItem == null)
+            {
+                scheduledItem = await context.GetScheduledAnnouncement(parsedId);
+            }
 
-            if (scheduledMessage == null)
+            if (scheduledItem == null)
             {
                 await FollowupAsync($"❌ No scheduled message or announcement found with the provided ID `{id}`.");
                 return;
             }
 
-            if (scheduledMessage.UserId != Context.User.Id)
+            if (scheduledItem.UserId != Context.User.Id)
             {
                 await FollowupAsync("❌ You can only edit your own scheduled messages or announcements.");
                 return;
             }
 
-            var embed = BuildEditMessageEmbed(scheduledMessage);
-            var components = BuildEditMessageComponents(id);
+            var embed = BuildEditEmbed(scheduledItem);
+            var components = BuildEditMessageComponents(scheduledItem);
 
             await FollowupAsync(embed: embed.Build(), components: components.Build());
         }
@@ -262,6 +266,30 @@ namespace Commands
             }
         }
 
+        [ComponentInteraction("editAnnounceButton:*", true)]
+        public async Task EditScheduledAnnounceButton(string id)
+        {
+            try
+            {
+                var announcementId = Convert.ToUInt64(id);
+
+                using var context = new BobEntities();
+                var announcement = await context.GetScheduledAnnouncement(announcementId);
+
+                var modal = new EditAnnouncementModal
+                {
+                    EmbedTitle = announcement.Title,
+                    Description = announcement.Description
+                };
+
+                await Context.Interaction.RespondWithModalAsync(modal: modal, customId: $"editAnnounceModal:{announcementId}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+        }
+
         [ModalInteraction("editMessageModal:*", true)]
         public async Task EditMessageModalHandler(string id, EditMessageModal modal)
         {
@@ -274,7 +302,24 @@ namespace Commands
             message.Message = modal.Content;
             await context.UpdateScheduledMessage(message);
 
-            var embed = BuildEditMessageEmbed(message);
+            var embed = BuildEditEmbed(message);
+            await Context.Interaction.ModifyOriginalResponseAsync(x => { x.Embed = embed.Build(); });
+        }
+
+        [ModalInteraction("editAnnounceModal:*", true)]
+        public async Task EditAnnouncementModalHandler(string id, EditAnnouncementModal modal)
+        {
+            await DeferAsync();
+
+            var announcementId = Convert.ToUInt64(id);
+
+            using var context = new BobEntities();
+            var announcement = await context.GetScheduledAnnouncement(announcementId);
+            announcement.Title = modal.EmbedTitle;
+            announcement.Description = modal.Description;
+            await context.UpdateScheduledAnnouncement(announcement);
+
+            var embed = BuildEditEmbed(announcement);
             await Context.Interaction.ModifyOriginalResponseAsync(x => { x.Embed = embed.Build(); });
         }
 
@@ -300,7 +345,42 @@ namespace Commands
             await Context.Interaction.ModifyOriginalResponseAsync(x =>
             {
                 x.Embed = embed.Build();
-                x.Components = BuildEditMessageComponents(id, true).Build();
+                x.Components = BuildEditMessageComponents(null, true).Build();
+            });
+        }
+
+        [ComponentInteraction("deleteAnnounceButton:*", true)]
+        public async Task DeleteAnnouncementButtonHandler(string id)
+        {
+            await DeferAsync();
+
+            var originalResponse = await Context.Interaction.GetOriginalResponseAsync();
+            var announcementId = Convert.ToUInt64(id);
+
+            using var context = new BobEntities();
+            await context.RemoveScheduledAnnouncement(announcementId);
+
+            // Extract the original embed and its fields
+            var originalEmbed = originalResponse.Embeds.First();
+            var description = originalEmbed.Description;
+            var color = originalEmbed.Color;
+            var timeValue = originalEmbed.Fields.FirstOrDefault(f => f.Name == "Time").Value;
+            var titleValue = originalEmbed.Fields.FirstOrDefault(f => f.Name == "Title").Value;
+
+            // Build the new embed
+            var embed = new EmbedBuilder
+            {
+                Title = "(Deleted) Scheduled Announcement",
+                Description = description,
+                Color = color
+            }
+            .AddField(name: "Title", value: titleValue)
+            .AddField(name: "Time", value: timeValue);
+
+            await Context.Interaction.ModifyOriginalResponseAsync(x =>
+            {
+                x.Embed = embed.Build();
+                x.Components = BuildEditMessageComponents(null, true).Build();
             });
         }
     }
