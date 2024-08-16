@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using ColorMethods;
 using Commands.Helpers;
 using Database;
 using Database.Types;
@@ -103,7 +104,7 @@ namespace Commands
 
             await context.AddScheduledMessage(scheduledMessage);
 
-            ScheduleMessageTask(scheduledMessage);
+            ScheduleTask(scheduledMessage);
 
             await ModifyOriginalResponseAsync(x =>
             {
@@ -111,11 +112,54 @@ namespace Commands
             });
         }
 
+        [SlashCommand("announcement", "Bob will send an embed at a specified time.")]
+        public async Task ScheduleAnnouncement([Summary("title", "The title of the announcement (the title of the embed).")] string title,
+           [Summary("description", "The anouncement (the description of the embed).")] string description,
+           [Summary("color", "A color name (purple), or valid hex code (#8D52FD).")] string color,
+           [Summary("channel", "The channel for the message to be sent in.")][ChannelTypes(ChannelType.Text)] SocketChannel channel,
+           [Summary("month", "The month you want your message sent.")] int month,
+           [Summary("day", "The day you want your message sent.")] int day,
+           [Summary("hour", "The hour you want your message sent, in military time (if PM, add 12).")] int hour,
+           [Summary("minute", "The minute you want your message sent.")] int minute,
+           [Summary("timezone", "Your timezone.")] TimeStamp.Timezone timezone)
+        {
+            DateTime scheduledTime;
+            TimeZoneInfo timeZoneInfo;
+
+            Color finalColor = Colors.TryGetColor(color);
+
+            try
+            {
+                await DeferAsync();
+
+                var context = new BobEntities();
+                var user = await context.GetUser(Context.User.Id);
+
+                // Check if the user has premium.
+                if (Premium.IsValidPremium(user.PremiumExpiration) == false)
+                {
+                    await FollowupAsync(text: $"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}", ephemeral: true);
+                    return;
+                }
+
                 if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)channel).SendMessages ||
                     !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)channel).ViewChannel)
                 {
-                    await RespondAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{channel.Id}>\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    await FollowupAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{channel.Id}>\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
                     return;
+                }
+
+                if (finalColor == 0)
+                {
+                    await RespondAsync(text: $"❌ `{color}` is an invalid color. Here is a list of valid colors:\n- {Colors.GetSupportedColorsString()}.\n- Valid hex codes are also accepted.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                }
+                else if (title.Length > 256) // 256 is max characters in an embed title.
+                {
+                    await RespondAsync($"❌ The announcement *cannot* be made because it contains **{title.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **256** characters in embed titles.", ephemeral: true);
+                }
+                else if (description.Length > 4096) // 4096 is max characters in an embed description.
+                {
+                    await RespondAsync($"❌ The announcement *cannot* be made because it contains **{description.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **4096** characters in embed descriptions.", ephemeral: true);
                 }
 
                 int currentYear = DateTime.UtcNow.Year;
@@ -123,7 +167,7 @@ namespace Commands
 
                 if (!TimeStamp.TimezoneMappings.TryGetValue(timezone, out string timeZoneId))
                 {
-                    await RespondAsync("❌ Invalid timezone selected.");
+                    await FollowupAsync("❌ Invalid timezone selected.");
                     return;
                 }
 
@@ -136,7 +180,7 @@ namespace Commands
 
                 if (utcDateTime <= nowRounded)
                 {
-                    await RespondAsync("🌌 You formed a rift in the spacetime continuum! Try scheduling the message **in the future**.");
+                    await FollowupAsync("🌌 You formed a rift in the spacetime continuum! Try scheduling the message **in the future**.");
                     return;
                 }
 
@@ -154,13 +198,15 @@ namespace Commands
                 return;
             }
 
-            await FollowupAsync("Scheduling message...");
+            await FollowupAsync("Scheduling announcement...");
             var response = await GetOriginalResponseAsync();
 
-            var scheduledMessage = new ScheduledMessage
+            var scheduledAnnouncement = new ScheduledAnnouncement
             {
                 Id = response.Id,
-                Message = message,
+                Description = description,
+                Title = title,
+                Color = color,
                 TimeToSend = scheduledTime,
                 ChannelId = channel.Id,
                 ServerId = Context.Guild.Id,
@@ -169,14 +215,14 @@ namespace Commands
 
             using (var context = new BobEntities())
             {
-                await context.AddScheduledMessage(scheduledMessage);
+                await context.AddScheduledAnnouncement(scheduledAnnouncement);
             }
 
-            ScheduleMessageTask(scheduledMessage);
+            ScheduleTask(scheduledAnnouncement);
 
             await ModifyOriginalResponseAsync(x =>
             {
-                x.Content = $"✅ Message scheduled for {TimeStamp.FromDateTime(scheduledMessage.TimeToSend, TimeStamp.Formats.Exact)}\n- ID: `{scheduledMessage.Id}`";
+                x.Content = $"✅ Message scheduled for {TimeStamp.FromDateTime(scheduledAnnouncement.TimeToSend, TimeStamp.Formats.Exact)}\n- ID: `{scheduledAnnouncement.Id}`";
             });
         }
 

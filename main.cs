@@ -175,7 +175,11 @@ public static class Bot
         });
 
         _ = Task.Run(async () => {
-            await Schedule.LoadAndScheduleMessagesAsync();
+            await Schedule.LoadAndScheduleItemsAsync<ScheduledAnnouncement>();
+        });
+
+        _ = Task.Run(async () => {
+            await Schedule.LoadAndScheduleItemsAsync<ScheduledMessage>();
         });
     }
 

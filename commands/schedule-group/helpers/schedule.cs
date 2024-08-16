@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using ColorMethods;
 using Database;
 using Database.Types;
 using Debug;
@@ -11,8 +12,15 @@ using TimeStamps;
 
 namespace Commands.Helpers
 {
+    public interface IScheduledItem
+    {
+        ulong Id { get; }
+        ulong ChannelId { get; }
+        DateTime TimeToSend { get; }
+    }
+
     /// <summary>
-    /// Contains helper methods for scheduling and managing scheduled messages.
+    /// Contains helper methods for scheduling and managing scheduled messages and announcements.
     /// </summary>
     public static class Schedule
     {
@@ -63,16 +71,11 @@ namespace Commands.Helpers
                 .WithButton(label: "Delete", customId: $"deleteMessageButton:{id}", style: ButtonStyle.Danger, emote: Emoji.Parse("🗑️"), disabled: disabled);
         }
 
-        /// <summary>
-        /// Schedules a task to send the message at the specified time.
-        /// </summary>
-        /// <param name="scheduledMessage">The message to be scheduled.</param>
-        public static void ScheduleMessageTask(ScheduledMessage scheduledMessage)
+        public static void ScheduleTask<T>(T scheduledItem) where T : IScheduledItem
         {
             TimeSpan maxDelay = TimeSpan.FromDays(30); // Maximum scheduling delay of 30 days
-            var delay = scheduledMessage.TimeToSend - DateTime.UtcNow;
+            var delay = scheduledItem.TimeToSend - DateTime.UtcNow;
 
-            // Helper method to schedule the task in chunks if the delay exceeds the maximum allowed.
             async Task ScheduleInChunks(TimeSpan totalDelay)
             {
                 while (totalDelay > maxDelay)
@@ -81,74 +84,99 @@ namespace Commands.Helpers
                     totalDelay -= maxDelay;
                 }
                 await Task.Delay(totalDelay);
-                await SendScheduledMessage(scheduledMessage);
+                await SendScheduledItem(scheduledItem);
             }
 
-            // If the delay is negative or zero, send the message immediately.
             if (delay <= TimeSpan.Zero)
             {
-                SendScheduledMessage(scheduledMessage).Wait();
+                SendScheduledItem(scheduledItem).Wait();
             }
-            // If the delay is greater than the maximum allowed, schedule in chunks.
             else if (delay > maxDelay)
             {
                 _ = ScheduleInChunks(delay);
             }
-            // Otherwise, schedule the message normally.
             else
             {
-                _ = Task.Delay(delay).ContinueWith(async _ => await SendScheduledMessage(scheduledMessage));
+                _ = Task.Delay(delay).ContinueWith(async _ => await SendScheduledItem(scheduledItem));
             }
         }
 
-        /// <summary>
-        /// Sends the scheduled message to the designated channel.
-        /// </summary>
-        /// <param name="scheduledMessage">The message to be sent.</param>
-        private static async Task SendScheduledMessage(ScheduledMessage scheduledMessage)
+        private static async Task SendScheduledItem<T>(T scheduledItem) where T : IScheduledItem
         {
             try
             {
                 using var context = new BobEntities();
-                var channel = (IMessageChannel)await Bot.Client.GetChannelAsync(scheduledMessage.ChannelId);
+                var channel = (IMessageChannel)await Bot.Client.GetChannelAsync(scheduledItem.ChannelId);
 
                 if (channel == null)
                 {
-                    Console.WriteLine($"Channel with ID: {scheduledMessage.ChannelId} not found.");
+                    Console.WriteLine($"Channel with ID: {scheduledItem.ChannelId} not found.");
                     return;
                 }
 
-                // Check if the message was missed by more than 1 hour.
-                var timeSinceScheduled = DateTime.UtcNow - scheduledMessage.TimeToSend;
+                var timeSinceScheduled = DateTime.UtcNow - scheduledItem.TimeToSend;
                 if (timeSinceScheduled > TimeSpan.FromHours(1))
                 {
-                    await context.RemoveScheduledMessage(scheduledMessage.Id);
+                    await context.RemoveScheduledItem(scheduledItem);
                     return;
                 }
 
-                await channel.SendMessageAsync(scheduledMessage.Message);
-                await context.RemoveScheduledMessage(scheduledMessage.Id);
+                if (scheduledItem is ScheduledMessage scheduledMessage)
+                {
+                    await channel.SendMessageAsync(scheduledMessage.Message);
+                }
+                else if (scheduledItem is ScheduledAnnouncement scheduledAnnouncement)
+                {
+                    var user = await Bot.Client.GetUserAsync(scheduledAnnouncement.UserId);
+
+                    var embed = new EmbedBuilder
+                    {
+                        Title = scheduledAnnouncement.Title,
+                        Color = Colors.TryGetColor(scheduledAnnouncement.Color),
+                        Description = Announcement.FormatDescription(scheduledAnnouncement.Description),
+                        Footer = new EmbedFooterBuilder
+                        {
+                            IconUrl = user.GetAvatarUrl(),
+                            Text = $"Announced by {user.GlobalName}."
+                        }
+                    };
+
+                    await channel.SendMessageAsync(embed: embed.Build());
+                }
+
+                // Remove the item after sending
+                await context.RemoveScheduledItem(scheduledItem);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error occurred while sending scheduled message: {ex.Message}");
+                Console.WriteLine($"Error occurred while sending scheduled item: {ex.Message}");
             }
         }
 
         /// <summary>
-        /// Loads all unsent scheduled messages from the database and schedules them.
+        /// Loads all unsent scheduled items from the database and schedules them.
         /// </summary>
-        public static async Task LoadAndScheduleMessagesAsync()
+        /// <typeparam name="T">The type of scheduled item (message or announcement).</typeparam>
+        /// <param name="items">The items to be loaded and scheduled.</param>
+        public static async Task LoadAndScheduleItemsAsync<T>() where T : class, IScheduledItem
         {
             using var context = new BobEntities();
-            var unsentMessages = await context.ScheduledMessage
-                .Where(m => m.TimeToSend > DateTime.UtcNow)
-                .ToListAsync();
+            var unsentItems = await context.Set<T>().Where(m => m.TimeToSend > DateTime.UtcNow).ToListAsync();
 
-            foreach (var scheduledMessage in unsentMessages)
+            foreach (var item in unsentItems)
             {
-                ScheduleMessageTask(scheduledMessage);
+                ScheduleTask(item);
             }
         }
+    }
+
+    /// <summary>
+    /// Represents a base class for scheduled items such as messages and announcements.
+    /// </summary>
+    public abstract class ScheduledItem
+    {
+        public string Id { get; set; }
+        public ulong ChannelId { get; set; }
+        public DateTime TimeToSend { get; set; }
     }
 }

@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reactive.Concurrency;
 using System.Threading.Tasks;
+using Commands.Helpers;
 using Database.Types;
 using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
@@ -16,6 +18,7 @@ namespace Database
         public virtual DbSet<NewsChannel> NewsChannel { get; set; }
         public virtual DbSet<BlackListUser> BlackListUser { get; set; }
         public virtual DbSet<ScheduledMessage> ScheduledMessage { get; set; }
+        public virtual DbSet<ScheduledAnnouncement> ScheduledAnnouncement { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -303,7 +306,7 @@ namespace Database
             await SaveChangesAsync();
         }
 
-                /// <summary>
+        /// <summary>
         /// Retrieves a scheduled message by its unique identifier asynchronously.
         /// </summary>
         /// <param name="id">The unique identifier of the scheduled message to retrieve.</param>
@@ -342,6 +345,41 @@ namespace Database
         {
             await ScheduledMessage.AddAsync(message);
             await SaveChangesAsync();
+        }
+
+        public async Task<ScheduledAnnouncement> GetScheduledAnnouncement(ulong id)
+        {
+            return await ScheduledAnnouncement.FindAsync(keyValues: id);
+        }
+
+        public async Task UpdateScheduledAnnouncement(ScheduledAnnouncement announcement)
+        {
+            ScheduledAnnouncement.Update(announcement);
+            await SaveChangesAsync();
+        }
+
+        public async Task RemoveScheduledAnnouncement(ulong announcementId)
+        {
+            await Database.ExecuteSqlRawAsync("DELETE FROM \"ScheduledAnnouncement\" WHERE \"Id\" = @p0", announcementId);
+        }
+
+        public async Task AddScheduledAnnouncement(ScheduledAnnouncement announcement)
+        {
+            await ScheduledAnnouncement.AddAsync(announcement);
+            await SaveChangesAsync();
+        }
+
+        public async Task RemoveScheduledItem(IScheduledItem item)
+        {
+            switch (item)
+            {
+                case ScheduledMessage message:
+                    await RemoveScheduledMessage(message.Id);
+                    break;
+                case ScheduledAnnouncement announcement:
+                    await RemoveScheduledAnnouncement(announcement.Id);
+                    break;
+            }
         }
     }
 }
