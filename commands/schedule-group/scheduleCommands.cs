@@ -95,7 +95,7 @@ namespace Commands
 
             await ModifyOriginalResponseAsync(x =>
             {
-                x.Content = $"✅ Message scheduled for {TimeStamp.FromDateTime(scheduledMessage.TimeToSend, TimeStamp.Formats.Exact)}\n- ID: `{scheduledMessage.Id}`";
+                x.Content = $"✅ Message scheduled for {TimeStamp.FromDateTime(scheduledMessage.TimeToSend, TimeStamp.Formats.Exact)}\n- ID: `{scheduledMessage.Id}`\n- You can edit your message with `/schedule edit` and the given ID.";
             });
         }
 
@@ -203,7 +203,7 @@ namespace Commands
 
             await ModifyOriginalResponseAsync(x =>
             {
-                x.Content = $"✅ Message scheduled for {TimeStamp.FromDateTime(scheduledAnnouncement.TimeToSend, TimeStamp.Formats.Exact)}\n- ID: `{scheduledAnnouncement.Id}`";
+                x.Content = $"✅ Announcement scheduled for {TimeStamp.FromDateTime(scheduledAnnouncement.TimeToSend, TimeStamp.Formats.Exact)}\n- ID: `{scheduledAnnouncement.Id}`\n- You can edit your announcement with `/schedule edit` and the given ID.";
             });
         }
 
