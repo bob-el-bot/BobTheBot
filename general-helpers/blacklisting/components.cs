@@ -64,7 +64,6 @@ namespace Moderation
             await DeferAsync();
 
             var userId = Convert.ToUInt64(id);
-            SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
 
             await BlackList.NotifyUserReport(userId, message);
 
