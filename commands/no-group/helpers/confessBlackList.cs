@@ -1230,6 +1230,7 @@ namespace Commands.Helpers
                   "need the dick",
                   "negro",
                   "neonazi",
+                  "nig",
                   "niger",
                   "nig nog",
                   "nigaboo",
@@ -1561,6 +1562,7 @@ namespace Commands.Helpers
                   "stroke",
                   "style doggy",
                   "suckass",
+                  "SUICIDE",
                   "suicide girls",
                   "sultry women",
                   "sumofabiatch",
@@ -1696,7 +1698,6 @@ namespace Commands.Helpers
                   "wrinkled starfish",
                   "xrated",
                   "x-rated",
-                  "xx",
                   "xxx",
         };
     }
