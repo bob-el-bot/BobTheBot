@@ -180,7 +180,6 @@ namespace Commands.Helpers
 
             // Reset Expiration Time.
             UpdateExpirationTime(TimeSpan.FromMinutes(1));
-            var dateTime = new DateTimeOffset(ExpirationTime).ToUnixTimeSeconds();
 
             Action<MessageProperties> properties;
 

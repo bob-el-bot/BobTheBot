@@ -21,12 +21,14 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using DotNetEnv;
+using SQLitePCL;
 
 public static class Bot
 {
     public static readonly DiscordSocketClient Client = new(new DiscordSocketConfig
     {
         GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers | GatewayIntents.GuildMessages | GatewayIntents.MessageContent | GatewayIntents.AutoModerationConfiguration,
+        AlwaysDownloadUsers = true,
     });
 
     private static InteractionService Service;
@@ -167,6 +169,14 @@ public static class Bot
                     Console.WriteLine($"Error setting status: {ex.Message} | {statuses[index]}");
                 }
             }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(16));
+        });
+
+        _ = Task.Run(async () => {
+            await Schedule.LoadAndScheduleItemsAsync<ScheduledAnnouncement>();
+        });
+
+        _ = Task.Run(async () => {
+            await Schedule.LoadAndScheduleItemsAsync<ScheduledMessage>();
         });
     }
 

@@ -16,6 +16,7 @@ using PremiumInterface;
 using ColorMethods;
 using TimeStamps;
 using Moderation;
+using System.Reflection.Emit;
 
 namespace Commands
 {
@@ -542,7 +543,7 @@ namespace Commands
         [SlashCommand("announce", "Bob will create a fancy embed announcement in the channel the command is used in.")]
         public async Task Announce([Summary("title", "The title of the announcement (the title of the embed).")] string title, [Summary("description", "The anouncement (the description of the embed).")] string description, [Summary("color", "A color name (purple), or valid hex code (#8D52FD).")] string color)
         {
-            Color finalColor = Colors.TryGetColor(color);
+            Color? finalColor = Colors.TryGetColor(color);
 
             // Check if Bob has permission to send messages in given channel
             ChannelPermissions permissions = Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel);
@@ -550,17 +551,17 @@ namespace Commands
             {
                 await RespondAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{Context.Channel.Id}>\n- Try giving Bob the following pemrissions: `View Channel`, `Send Messages`.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
-            else if (finalColor == 0)
+            else if (finalColor == null)
             {
                 await RespondAsync(text: $"❌ `{color}` is an invalid color. Here is a list of valid colors:\n- {Colors.GetSupportedColorsString()}.\n- Valid hex codes are also accepted.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
             else if (title.Length > 256) // 256 is max characters in an embed title.
             {
-                await RespondAsync($"❌ The announcement *cannot* be made because it contains **{title.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **256** characters in embed titles.", ephemeral: true);
+                await RespondAsync($"❌ The announcement *cannot* be made because the title contains **{title.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **256** characters in embed titles.", ephemeral: true);
             }
             else if (description.Length > 4096) // 4096 is max characters in an embed description.
             {
-                await RespondAsync($"❌ The announcement *cannot* be made because it contains **{description.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **4096** characters in embed descriptions.", ephemeral: true);
+                await RespondAsync($"❌ The announcement *cannot* be made because the description contains **{description.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **4096** characters in embed descriptions.", ephemeral: true);
             }
             else
             {
@@ -627,23 +628,22 @@ namespace Commands
                 Color = Bot.theme
             };
 
-            embed.AddField(name: "🗒️ Creator's Notes", value: @"- Added `/connect4` to play against a friend or Bob in 🔵 Connect 4.
-- Added `/preview message` for viewing 💬 messages from Discord message links.
-- Added `/preview pull-request` for viewing information about a GitHub <:pull_request_git:1234992648280866836> pull request.
-- Added `/preview issue` for viewing information about a GitHub <:issue_opened_git:1234993539134259290> issue.
-- Buffed the 🪞 appearance of challenges in all aspects!
-- Added the 🖼️ `Artist` badge for fanart makers.
-- Buffed `/support` and `/info` to be more 📡 modern.
-- Changed `/code preview` to `/preview code`.
-- Added new auto 🔎 preview features for *premium* users. Message links and all GitHub links can now be conveniently auto previewed when sent.
-- Added more 🌈 colors to all commands which take colors as an input.
+            embed.AddField(name: "🗒️ Creator's Notes", value: @"- Added `/schedule message` to send messages at 🕖 specific times.
+- Added `/schedule announcement` 📢 for sending embeds at scheduled times.
+- Added `/schedule edit` for ✍️ editing scheduled messages.
+- Fixed 🌐 URL validation in `/analyze-link` preventing subdomains.
+- Fixed bug where if a System Channel is not set 👋 `/welcome` would break.
+- Fixed `/confess` to not allow effectively blank messages from being sent.
+- Updated the words ⚖️ blacklist for `/confess`.
+- Fixed bug where if ⚫ black in hex code (#000) was set for a color input it would be marked as invalid input. 
 - Stay 📺 tuned for more awesome updates!", inline: false)
             .AddField(name: "✨ Latest Update", value: commitMessage, inline: true)
             .AddField(name: ":calendar_spiral: Date", value: TimeStamp.FromString(commitDate, TimeStamp.Formats.Detailed), inline: true);
 
             var components = new ComponentBuilder();
 
-            components.WithButton(label: "Future Plans", emote: new Emoji("🔮"), style: ButtonStyle.Link, url: "https://github.com/orgs/bob-el-bot/projects/4");
+            components.WithButton(label: "Future Plans", emote: new Emoji("🔮"), style: ButtonStyle.Link, url: "https://github.com/orgs/bob-el-bot/projects/4")
+            .WithButton(label: "Blog", emote: new Emoji("📰"), style: ButtonStyle.Link, url: "https://bobthebot.net/blog.html");
 
             await RespondAsync(embed: embed.Build(), components: components.Build());
         }
@@ -685,7 +685,13 @@ namespace Commands
         {
             if (user.IsBot)
             {
-                await RespondAsync("❌ Sorry, but no sending messages to bots.", ephemeral: true);
+                await RespondAsync("❌ Sorry, but you can't send messages to bots.", ephemeral: true);
+                return;
+            }
+
+            if (ConfessFiltering.IsBlank(message))
+            {
+                await RespondAsync("❌ Sorry, but you can't send blank, or effectively blank, messages.\n- Try adding characters that are not blank or zero-width.", ephemeral: true);
                 return;
             }
 

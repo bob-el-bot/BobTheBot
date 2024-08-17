@@ -104,15 +104,19 @@ namespace Commands.Helpers
         private static async Task<List<LinkInfo>> GetUrlTrail(string link)
         {
             List<LinkInfo> trail = new();
-
             int redirectCount = 0;
+
             while (redirectCount <= maximumRedirectCount && !string.IsNullOrWhiteSpace(link))
             {
-                HttpClientHandler handler = new()
+                // Validate the URL
+                if (!Uri.TryCreate(link, UriKind.Absolute, out Uri uriResult))
                 {
-                    AllowAutoRedirect = false,
-                };
-                HttpClient httpClient = new(handler);
+                    trail.Add(new LinkInfo { Link = link, Failed = true });
+                    break; // Stop processing if the URL is invalid
+                }
+
+                using HttpClientHandler handler = new() { AllowAutoRedirect = false };
+                using HttpClient httpClient = new(handler);
                 HttpRequestMessage request = new(HttpMethod.Head, link);
 
                 request.Headers.UserAgent.Add(ApiInteractions.Interface.productValue);
@@ -121,13 +125,11 @@ namespace Commands.Helpers
                 try
                 {
                     var req = await httpClient.GetAsync(link);
-
                     bool hasCookies = req.Headers.TryGetValues("Set-Cookie", out _);
 
                     if (req.IsSuccessStatusCode)
                     {
                         string code = await req.Content.ReadAsStringAsync();
-
                         HtmlDocument doc = new();
                         doc.LoadHtml(code);
 
@@ -136,7 +138,7 @@ namespace Commands.Helpers
 
                         if (IsGitHubRepository(link))
                         {
-                            LinkInfo gitHubRepoLink = new()
+                            trail.Add(new LinkInfo
                             {
                                 Link = link,
                                 StatusCode = req.StatusCode,
@@ -144,15 +146,14 @@ namespace Commands.Helpers
                                 IsShortened = IsShortenedUrl(link, false),
                                 ContainsCookies = hasCookies,
                                 Failed = false
-                            };
-                            trail.Add(gitHubRepoLink);
+                            });
                             link = null;
                         }
                         else if (metaTag != null)
                         {
                             string content = metaTag.GetAttributeValue("content", "");
                             string url = GetUrlFromContent(content);
-                            LinkInfo newLink = new()
+                            trail.Add(new LinkInfo
                             {
                                 Link = $"{link}",
                                 StatusCode = req.StatusCode,
@@ -161,14 +162,13 @@ namespace Commands.Helpers
                                 IsRickRoll = HasRickRoll(link),
                                 IsRedirect = true,
                                 IsShortened = IsShortenedUrl(link, true)
-                            };
-                            trail.Add(newLink);
+                            });
                             link = url;
                             redirectCount++;
                         }
                         else if (jsRedirect != null)
                         {
-                            LinkInfo newLink = new()
+                            trail.Add(new LinkInfo
                             {
                                 Link = $"{link}",
                                 StatusCode = req.StatusCode,
@@ -177,15 +177,14 @@ namespace Commands.Helpers
                                 IsRickRoll = HasRickRoll(link),
                                 IsRedirect = true,
                                 IsShortened = IsShortenedUrl(link, true)
-                            };
-                            trail.Add(newLink);
+                            });
                             link = jsRedirect;
                             redirectCount++;
                         }
                         else
                         {
                             bool isRedirect = (int)req.StatusCode >= 300 && (int)req.StatusCode <= 308;
-                            LinkInfo newLink = new()
+                            trail.Add(new LinkInfo
                             {
                                 Link = $"{link}",
                                 StatusCode = req.StatusCode,
@@ -193,15 +192,14 @@ namespace Commands.Helpers
                                 IsRickRoll = HasRickRoll(link),
                                 IsRedirect = isRedirect,
                                 IsShortened = IsShortenedUrl(link, isRedirect)
-                            };
-                            trail.Add(newLink);
+                            });
                             link = null;
                         }
                     }
                     else
                     {
                         bool isRedirect = (int)req.StatusCode >= 300 && (int)req.StatusCode <= 308;
-                        LinkInfo newLink = new()
+                        trail.Add(new LinkInfo
                         {
                             Link = $"{link}",
                             StatusCode = req.StatusCode,
@@ -209,8 +207,7 @@ namespace Commands.Helpers
                             IsRickRoll = HasRickRoll(link),
                             IsRedirect = isRedirect,
                             IsShortened = IsShortenedUrl(link, isRedirect)
-                        };
-                        trail.Add(newLink);
+                        });
 
                         if (req.Headers.Location != null)
                         {
@@ -223,26 +220,26 @@ namespace Commands.Helpers
                         }
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
-                    LinkInfo newLink = new()
+                    trail.Add(new LinkInfo
                     {
                         Link = $"{link}",
                         Failed = true
-                    };
-                    trail.Add(newLink);
+                    });
+                    // Log the exception or handle it appropriately
+                    Console.WriteLine($"Exception while processing link {link}: {ex.Message}");
                     link = null;
                 }
             }
 
             if (redirectCount > maximumRedirectCount)
             {
-                LinkInfo newLink = new()
+                trail.Add(new LinkInfo
                 {
                     Link = $"Unknown (Bob follows **up to {maximumRedirectCount}** redirects.)",
                     Failed = true
-                };
-                trail.Add(newLink);
+                });
             }
 
             return trail;
@@ -303,7 +300,7 @@ namespace Commands.Helpers
         private static bool ContainsShortenedDomain(string url)
         {
             // List of common URL shortener domains
-            string[] shortenerDomains = { "dis.gd", "v.gd", "ow.ly", "bl.ink", "3.ly", "tiny.cc", "bit.ly", "tinyurl.com", "goo.gl", "shorturl.at", "t.ly", "youtu.be", "y2u.be", "t.co", "short.gy", "snip.ly", "Buff.ly", "redd.it", "rb.gy", "msha.ke", "trib.al" };
+            string[] shortenerDomains = { "dis.gd", "v.gd", "ow.ly", "bl.ink", "3.ly", "tiny.cc", "bit.ly", "tinyurl.com", "goo.gl", "shorturl.at", "t.ly", "youtu.be", "y2u.be", "t.co", "short.gy", "snip.ly", "Buff.ly", "redd.it", "rb.gy", "msha.ke", "trib.al", "is.gd" };
 
             if (Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
             {

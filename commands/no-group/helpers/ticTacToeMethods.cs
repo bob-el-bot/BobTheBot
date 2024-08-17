@@ -145,7 +145,7 @@ namespace Commands.Helpers
                         if (GetWinnerOutcome(grid, turns) == player)
                         {
                             grid[i, j] = 0; // Reset the move
-                            return new int[] { i, j };
+                            return new [] { i, j };
                         }
 
                         grid[i, j] = 0; // Reset the move
@@ -158,7 +158,7 @@ namespace Commands.Helpers
 
         private static int[] Minimax(int[,] currentGrid, int turns, int player)
         {
-            int[] bestMove = new int[] { -1, -1 };
+            int[] bestMove = new [] { -1, -1 };
             int bestScore = (player == 1) ? int.MaxValue : int.MinValue;
 
             for (int i = 0; i < 3; i++)
@@ -258,7 +258,7 @@ namespace Commands.Helpers
 
                 if (currentGrid[row, col] == 0)
                 {
-                    return new int[] { row, col };
+                    return new [] { row, col };
                 }
             }
         }

@@ -50,6 +50,32 @@ namespace Debug
             await channel.SendMessageAsync(message);
         }
 
+        public static async Task LogErrorToDiscord(SocketTextChannel channel, IInteractionContext ctx, string errorReason)
+        {
+            string location = (ctx.Interaction.GuildId == null) ? "a DM" : (Bot.Client.GetGuild((ulong)ctx.Interaction.GuildId) == null ? "User Install" : Bot.Client.GetGuild((ulong)ctx.Interaction.GuildId).ToString());
+            IUser user = ctx.User;
+
+            var cpuUsage = await GetCpuUsageForProcess();
+            var ramUsage = GetRamUsageForProcess();
+
+            // Ensure message length doesn't exceed 2000 characters
+            string errorMessage = $"Error: ```cs\n{errorReason}```";
+            string message = $"`{DateTime.Now:dd/MM. H:mm:ss} | {FormatPerformance(cpuUsage, ramUsage)} | Location: {location} | User: {user.GlobalName}, {user.Id}`\n{errorMessage}";
+
+            if (message.Length > 2000)
+            {
+                // Calculate the maximum length for the non-error section
+                int overMaxLengthBy = message.Length + " | **ERR TOO LONG**".Length - 2000;
+                int maxErrorReasonLength = errorReason.Length - overMaxLengthBy;
+                
+                errorReason = errorReason[..maxErrorReasonLength];
+
+                message = $"`{DateTime.Now:dd/MM. H:mm:ss} | {FormatPerformance(cpuUsage, ramUsage)} | Location: {location} | User: {user.GlobalName}, {user.Id}`\nError: ```cs\n{errorReason}``` | **ERR TOO LONG**";
+            }
+
+            await channel.SendMessageAsync(message);
+        }
+
         public static async Task LogFeedbackToDiscord(SocketTextChannel channel, string guildName, string[] reasons)
         {
             StringBuilder formattedReasons = new();

@@ -200,7 +200,7 @@ namespace Commands.Helpers
             Url = "https://docs.bobthebot.net"
         };
 
-        public static CommandInfoGroup[] CommandGroups =
+        public static readonly CommandInfoGroup[] CommandGroups =
         {
             new() {
                 Title = "Randomly Generated (RNG)",
@@ -620,6 +620,131 @@ namespace Commands.Helpers
                         InheritGroupName = true,
                         Description = "Bob will stop using the custom message to welcome users.",
                         Url = "https://docs.bobthebot.net#welcome-remove-message",
+                    }
+                }
+            },
+            new() {
+                Title = "Scheduling",
+                Description = "A collection of commands for scheduling messages and announcements.",
+                Name = "schedule",
+                Emoji = "🕖",
+                Url = "https://docs.bobthebot.net/#schedule",
+                Commands = new[]
+                {
+                    new CommandInfo
+                    {
+                        Name = "message",
+                        InheritGroupName = true,
+                        Description = "Bob will send your message at a specified time.",
+                        Url = "https://docs.bobthebot.net/#schedule-message",
+                        Parameters = new[]
+                        {
+                            new ParameterInfo
+                            {
+                                Name = "message",
+                                Description = "The message you want to send. Markdown still works!"
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "channel",
+                                Description = "The channel for the message to be sent in."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "month",
+                                Description = "The month you want your message sent."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "day",
+                                Description = "The day you want your message sent."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "hour",
+                                Description = "The hour you want your message sent."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "minute",
+                                Description = "The minute you want your message sent."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "timezone",
+                                Description = "Your timezone."
+                            }
+                        },
+                    },
+                    new CommandInfo
+                    {
+                        Name = "announcement",
+                        InheritGroupName = true,
+                        Description = "Bob will send an embed at a specified time.",
+                        Url = "https://docs.bobthebot.net/#schedule-announcement",
+                        Parameters = new[]
+                        {
+                            new ParameterInfo
+                            {
+                                Name = "title",
+                                Description = "The title of the announcement (the title of the embed)."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "description",
+                                Description = "The anouncement (the description of the embed)."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "color",
+                                Description = "A color name (purple), or valid hex code (#8D52FD)."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "channel",
+                                Description = "The channel for the message to be sent in."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "month",
+                                Description = "The month you want your message sent."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "day",
+                                Description = "The day you want your message sent."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "hour",
+                                Description = "The hour you want your message sent."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "minute",
+                                Description = "The minute you want your message sent."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "timezone",
+                                Description = "Your timezone."
+                            }
+                        },
+                    },
+                    new CommandInfo
+                    {
+                        Name = "edit",
+                        InheritGroupName = true,
+                        Description = "Bob will allow you to edit any messages or announcements you have scheduled.",
+                        Url = "https://docs.bobthebot.net/#schedule-edit",
+                        Parameters = new[]
+                        {
+                            new ParameterInfo
+                            {
+                                Name = "id",
+                                Description = "The ID of the scheduled message or announcement."
+                            }
+                        },
                     }
                 }
             },
