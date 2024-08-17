@@ -34,7 +34,6 @@ namespace Commands
             await DeferAsync();
 
             var context = new BobEntities();
-            var user = await context.GetUser(Context.User.Id);
 
             try
             {
