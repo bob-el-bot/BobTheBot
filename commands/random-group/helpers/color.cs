@@ -10,24 +10,20 @@ namespace Commands.Helpers
         {
             SKColor color = HexToSKColor(hex);
 
-            MemoryStream stream = new MemoryStream();
+            MemoryStream stream = new();
 
             using (var surface = SKSurface.Create(new SKImageInfo(width, height)))
             {
                 using (var canvas = surface.Canvas)
                 {
-                    using (var paint = new SKPaint { Color = color })
-                    {
-                        canvas.DrawRect(new SKRect(0, 0, width, height), paint);
-                    }
+                    using var paint = new SKPaint { Color = color };
+                    canvas.DrawRect(new SKRect(0, 0, width, height), paint);
                 }
 
-                using (var image = surface.Snapshot())
-                using (var data = image.Encode(SKEncodedImageFormat.Png, 100))
-                using (var imageStream = data.AsStream())
-                {
-                    imageStream.CopyTo(stream);
-                }
+                using var image = surface.Snapshot();
+                using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+                using var imageStream = data.AsStream();
+                imageStream.CopyTo(stream);
             }
 
             // Reset the position to the beginning of the MemoryStream before returning it
