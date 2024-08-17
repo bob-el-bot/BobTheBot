@@ -33,7 +33,7 @@ public static class Bot
 
     private static InteractionService Service;
 
-    public static string Token;
+    public static readonly string Token = Environment.GetEnvironmentVariable("DISCORD_TOKEN");
 
     // Purple (normal) Theme: 9261821 | Orange (halloween) Theme: 16760153
     public static readonly Color theme = new(9261821);
@@ -46,9 +46,6 @@ public static class Bot
 
     public static async Task Main()
     {
-        Env.Load();
-        Token = Token = Environment.GetEnvironmentVariable("DISCORD_TOKEN");
-
         if (Token is null)
         {
             throw new ArgumentException("Discord bot token not set properly.");
@@ -67,7 +64,7 @@ public static class Bot
         await Client.LoginAsync(TokenType.Bot, Token);
         await Client.StartAsync();
 
-        // StartHttpListener();
+        StartHttpListener();
 
         await Task.Delay(Timeout.Infinite);
     }
