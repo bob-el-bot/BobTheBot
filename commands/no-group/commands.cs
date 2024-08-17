@@ -16,6 +16,7 @@ using PremiumInterface;
 using ColorMethods;
 using TimeStamps;
 using Moderation;
+using System.Reflection.Emit;
 
 namespace Commands
 {
@@ -641,7 +642,8 @@ namespace Commands
 
             var components = new ComponentBuilder();
 
-            components.WithButton(label: "Future Plans", emote: new Emoji("🔮"), style: ButtonStyle.Link, url: "https://github.com/orgs/bob-el-bot/projects/4");
+            components.WithButton(label: "Future Plans", emote: new Emoji("🔮"), style: ButtonStyle.Link, url: "https://github.com/orgs/bob-el-bot/projects/4")
+            .WithButton(label: "Blog", emote: new Emoji("📰"), style: ButtonStyle.Link, url: "https://bobthebot.net/blog.html");
 
             await RespondAsync(embed: embed.Build(), components: components.Build());
         }
