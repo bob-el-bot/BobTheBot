@@ -627,16 +627,14 @@ namespace Commands
                 Color = Bot.theme
             };
 
-            embed.AddField(name: "🗒️ Creator's Notes", value: @"- Added `/connect4` to play against a friend or Bob in 🔵 Connect 4.
-- Added `/preview message` for viewing 💬 messages from Discord message links.
-- Added `/preview pull-request` for viewing information about a GitHub <:pull_request_git:1234992648280866836> pull request.
-- Added `/preview issue` for viewing information about a GitHub <:issue_opened_git:1234993539134259290> issue.
-- Buffed the 🪞 appearance of challenges in all aspects!
-- Added the 🖼️ `Artist` badge for fanart makers.
-- Buffed `/support` and `/info` to be more 📡 modern.
-- Changed `/code preview` to `/preview code`.
-- Added new auto 🔎 preview features for *premium* users. Message links and all GitHub links can now be conveniently auto previewed when sent.
-- Added more 🌈 colors to all commands which take colors as an input.
+            embed.AddField(name: "🗒️ Creator's Notes", value: @"- Added `/schedule message` to send messages at 🕖 specific times.
+- Added `/schedule announcement` 📢 for sending embeds at scheduled times.
+- Added `/schedule edit` for ✍️ editing scheduled messages.
+- Fixed 🌐 URL validation in `/analyze-link` preventing subdomains.
+- Fixed bug where if a System Channel is not set 👋 `/welcome` would break.
+- Fixed `/confess` to not allow effectively blank messages from being sent.
+- Updated the words ⚖️ blacklist for `/confess`.
+- Fixed bug where if ⚫ black in hex code (#000) was set for a color input it would be marked as invalid input. 
 - Stay 📺 tuned for more awesome updates!", inline: false)
             .AddField(name: "✨ Latest Update", value: commitMessage, inline: true)
             .AddField(name: ":calendar_spiral: Date", value: TimeStamp.FromString(commitDate, TimeStamp.Formats.Detailed), inline: true);
