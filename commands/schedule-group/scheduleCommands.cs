@@ -37,6 +37,28 @@ namespace Commands
 
             try
             {
+                // Validate month, day, hour, and minute
+                if (month < 1 || month > 12)
+                {
+                    await FollowupAsync("❌ Please enter a valid month between **1** and **12**.", ephemeral: true);
+                    return;
+                }
+                if (day < 1 || day > DateTime.DaysInMonth(DateTime.UtcNow.Year, month))
+                {
+                    await FollowupAsync($"❌ Please enter a valid day between **1** and **{DateTime.DaysInMonth(DateTime.UtcNow.Year, month)}**.", ephemeral: true);
+                    return;
+                }
+                if (hour < 0 || hour > 23)
+                {
+                    await FollowupAsync("❌ Please enter a valid hour between **0** and **23**.", ephemeral: true);
+                    return;
+                }
+                if (minute < 0 || minute > 59)
+                {
+                    await FollowupAsync("❌ Please enter a valid minute between **0** and **59**.", ephemeral: true);
+                    return;
+                }
+
                 if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)channel).SendMessages ||
                     !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)channel).ViewChannel)
                 {
@@ -59,7 +81,7 @@ namespace Commands
             }
             catch (Exception ex)
             {
-                await FollowupAsync($"❌ An unexpected error occurred: {ex.Message}\n- Try again later.\n- The developers have been notified, but you can join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ) and provide us with more detials if you want.");
+                await FollowupAsync($"❌ An unexpected error occurred: {ex.Message}\n- Try again later.\n- The developers have been notified, but you can join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ) and provide us with more details if you want.");
                 SocketTextChannel logChannel = (SocketTextChannel)Bot.Client.GetGuild(Bot.supportServerId).GetChannel(Bot.Token != "${{TEST_TOKEN}}" ? Bot.systemLogChannelId : Bot.devLogChannelId);
                 await Logger.LogErrorToDiscord(logChannel, Context, $"{ex}");
                 return;
@@ -102,18 +124,40 @@ namespace Commands
             DateTime scheduledTime;
 
             Color? finalColor = Colors.TryGetColor(color);
+            var context = new BobEntities();
 
             try
             {
                 await DeferAsync();
 
-                var context = new BobEntities();
                 var user = await context.GetUser(Context.User.Id);
 
                 // Check if the user has premium.
                 if (Premium.IsValidPremium(user.PremiumExpiration) == false)
                 {
                     await FollowupAsync(text: $"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}", ephemeral: true);
+                    return;
+                }
+
+                // Validate month, day, hour, and minute
+                if (month < 1 || month > 12)
+                {
+                    await FollowupAsync("❌ Please enter a valid month between **1** and **12**.", ephemeral: true);
+                    return;
+                }
+                if (day < 1 || day > DateTime.DaysInMonth(DateTime.UtcNow.Year, month))
+                {
+                    await FollowupAsync($"❌ Please enter a valid day between **1** and **{DateTime.DaysInMonth(DateTime.UtcNow.Year, month)}**.", ephemeral: true);
+                    return;
+                }
+                if (hour < 0 || hour > 23)
+                {
+                    await FollowupAsync("❌ Please enter a valid hour between **0** and **23**.", ephemeral: true);
+                    return;
+                }
+                if (minute < 0 || minute > 59)
+                {
+                    await FollowupAsync("❌ Please enter a valid minute between **0** and **59**.", ephemeral: true);
                     return;
                 }
 
@@ -155,7 +199,7 @@ namespace Commands
             }
             catch (Exception ex)
             {
-                await FollowupAsync($"❌ An unexpected error occurred: {ex.Message}\n- Try again later.\n- The developers have been notified, but you can join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ) and provide us with more detials if you want.");
+                await FollowupAsync($"❌ An unexpected error occurred: {ex.Message}\n- Try again later.\n- The developers have been notified, but you can join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ) and provide us with more details if you want.");
                 SocketTextChannel logChannel = (SocketTextChannel)Bot.Client.GetGuild(Bot.supportServerId).GetChannel(Bot.Token != "${{TEST_TOKEN}}" ? Bot.systemLogChannelId : Bot.devLogChannelId);
                 await Logger.LogErrorToDiscord(logChannel, Context, $"{ex}");
                 return;
@@ -176,10 +220,7 @@ namespace Commands
                 UserId = Context.User.Id
             };
 
-            using (var context = new BobEntities())
-            {
-                await context.AddScheduledAnnouncement(scheduledAnnouncement);
-            }
+            await context.AddScheduledAnnouncement(scheduledAnnouncement);
 
             ScheduleTask(scheduledAnnouncement);
 
