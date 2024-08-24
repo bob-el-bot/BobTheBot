@@ -32,12 +32,20 @@ namespace Commands
             if (server.QuoteChannelId == null)
             {
                 await FollowupAsync(text: "❌ Use `/quote channel` first (a quote channel is not set in this server).\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                return;
             }
-            else if (Context.Guild.GetChannel((ulong)server.QuoteChannelId) == null)
+
+            var channel = Context.Guild.GetChannel((ulong)server.QuoteChannelId);
+
+            if (channel == null)
             {
                 await FollowupAsync(text: "❌ The currently set quote channel no longer exists.\n- Use `/quote channel` to set a new channel.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                return;
             }
-            else if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions(Context.Guild.GetChannel((ulong)server.QuoteChannelId)).SendMessages || !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions(Context.Guild.GetChannel((ulong)server.QuoteChannelId)).ViewChannel)
+
+            var permissions = Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions(channel);
+
+            if (!permissions.SendMessages || !permissions.ViewChannel)
             {
                 await FollowupAsync(text: $"❌ Bob is either missing permissions to view *or* send messages in the channel <#{server.QuoteChannelId}>.\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`.\n- Use `/quote channel` to set a new channel.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
@@ -113,9 +121,7 @@ namespace Commands
                 await FollowupAsync(text: $"🖊️ Quote made.", ephemeral: true);
 
                 // Send quote in quotes channel of server
-                var channel = (ISocketMessageChannel)Context.Guild.GetChannel((ulong)server.QuoteChannelId);
-
-                await channel.SendMessageAsync(embed: embed.Build());
+                await ((ISocketMessageChannel)channel).SendMessageAsync(embed: embed.Build());
             }
         }
 
@@ -136,13 +142,20 @@ namespace Commands
 
             if (server.QuoteChannelId == null)
             {
-                await FollowupAsync(text: "❌ Use `/quote channel` first (a quote channel is not set in this server).\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await FollowupAsync(text: "❌ Use `/quote channel` first (a quote channel is not set in this server).\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                return;
             }
-            else if (Context.Guild.GetChannel((ulong)server.QuoteChannelId) == null)
+
+            var channel = Context.Guild.GetChannel((ulong)server.QuoteChannelId);
+
+            if (channel == null)
             {
-                await FollowupAsync(text: "❌ The currently set quote channel no longer exists.\n- Use `/quote channel` to set a new channel.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await FollowupAsync(text: "❌ The currently set quote channel no longer exists.\n- Use `/quote channel` to set a new channel.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
-            else if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions(Context.Guild.GetChannel((ulong)server.QuoteChannelId)).SendMessages || !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions(Context.Guild.GetChannel((ulong)server.QuoteChannelId)).ViewChannel)
+
+            var permissions = Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions(channel);
+
+            if (!permissions.SendMessages || !permissions.ViewChannel)
             {
                 await FollowupAsync(text: $"❌ Bob is either missing permissions to view *or* send messages in the channel <#{server.QuoteChannelId}>.\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`.\n- Use `/quote channel` to set a new channel.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
@@ -152,7 +165,7 @@ namespace Commands
             }
             else if (quote.Length > (server.MaxQuoteLength ?? 4096) || quote.Length < server.MinQuoteLength) // 4096 is max characters in an embed description.
             {
-                await FollowupAsync($"❌ The quote *cannot* be made because it contains **{quote.Length}** characters.\n- This server's maximum quote length is **{server.MaxQuoteLength}**.\n- This server's minimum quote length is **{server.MinQuoteLength}**.\n- Discord has a limit of **4096** characters in embed descriptions.", ephemeral: true);
+                await FollowupAsync($"❌ The quote *cannot* be made because it contains **{quote.Length}** characters.\n- this server's maximum quote length is **{server.MaxQuoteLength}**.\n- this server's minimum quote length is **{server.MinQuoteLength}**.\n- Discord has a limit of **4096** characters in embed descriptions.", ephemeral: true);
             }
             else
             {
@@ -209,15 +222,13 @@ namespace Commands
                     await FollowupAsync(text: $"🖊️ Quote made.", ephemeral: true);
 
                     // Send quote in quotes channel of server
-                    var channel = (ISocketMessageChannel)Context.Guild.GetChannel((ulong)server.QuoteChannelId);
-
-                    await channel.SendMessageAsync(embed: embed.Build());
+                    await ((ISocketMessageChannel)channel).SendMessageAsync(embed: embed.Build());
                 }
             }
         }
 
         [SlashCommand("channel", "Configure /quote channel.")]
-        public async Task Settings([Summary("channel", "The quotes channel for the server.")] [ChannelTypes(ChannelType.Text)] SocketChannel channel)
+        public async Task Settings([Summary("channel", "The quotes channel for the server.")][ChannelTypes(ChannelType.Text)] SocketChannel channel)
         {
             // Check permissions
             if (!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageChannels)
