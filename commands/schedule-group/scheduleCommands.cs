@@ -21,12 +21,12 @@ namespace Commands
     public class ScheduleGroup : InteractionModuleBase<SocketInteractionContext>
     {
         [SlashCommand("message", "Bob will send your message at a specified time.")]
-        public async Task ScheduleMessage([Summary("message", "The message you want to send. Markdown still works!")] string message,
+        public async Task ScheduleMessage([Summary("message", "The message you want to send. Markdown still works!")][MinLength(1)][MaxLength(2000)] string message,
             [Summary("channel", "The channel for the message to be sent in.")][ChannelTypes(ChannelType.Text)] SocketChannel channel,
-            [Summary("month", "The month you want your message sent.")] int month,
-            [Summary("day", "The day you want your message sent.")] int day,
-            [Summary("hour", "The hour you want your message sent, in military time (if PM, add 12).")] int hour,
-            [Summary("minute", "The minute you want your message sent.")] int minute,
+            [Summary("month", "The month you want your message sent.")][MinValue(1)][MaxValue(12)] int month,
+            [Summary("day", "The day you want your message sent.")] [MinValue(1)][MaxValue(31)]int day,
+            [Summary("hour", "The hour you want your message sent, in military time (if PM, add 12).")][MinValue(0)][MaxValue(23)] int hour,
+            [Summary("minute", "The minute you want your message sent.")][MinValue(0)][MaxValue(59)] int minute,
             [Summary("timezone", "Your timezone.")] TimeStamp.Timezone timezone)
         {
             DateTime scheduledTime;
@@ -37,25 +37,10 @@ namespace Commands
 
             try
             {
-                // Validate month, day, hour, and minute
-                if (month < 1 || month > 12)
-                {
-                    await FollowupAsync("❌ Please enter a valid month between **1** and **12**.", ephemeral: true);
-                    return;
-                }
+                // Validate day
                 if (day < 1 || day > DateTime.DaysInMonth(DateTime.UtcNow.Year, month))
                 {
                     await FollowupAsync($"❌ Please enter a valid day between **1** and **{DateTime.DaysInMonth(DateTime.UtcNow.Year, month)}**.", ephemeral: true);
-                    return;
-                }
-                if (hour < 0 || hour > 23)
-                {
-                    await FollowupAsync("❌ Please enter a valid hour between **0** and **23**.", ephemeral: true);
-                    return;
-                }
-                if (minute < 0 || minute > 59)
-                {
-                    await FollowupAsync("❌ Please enter a valid minute between **0** and **59**.", ephemeral: true);
                     return;
                 }
 
@@ -111,14 +96,14 @@ namespace Commands
         }
 
         [SlashCommand("announcement", "Bob will send an embed at a specified time.")]
-        public async Task ScheduleAnnouncement([Summary("title", "The title of the announcement (the title of the embed).")] string title,
-           [Summary("description", "The anouncement (the description of the embed).")] string description,
+        public async Task ScheduleAnnouncement([Summary("title", "The title of the announcement (the title of the embed).")][MinLength(1)][MaxLength(256)] string title,
+           [Summary("description", "The anouncement (the description of the embed).")][MinLength(1)][MaxLength(4000)] string description,
            [Summary("color", "A color name (purple), or valid hex code (#8D52FD).")] string color,
            [Summary("channel", "The channel for the message to be sent in.")][ChannelTypes(ChannelType.Text)] SocketChannel channel,
-           [Summary("month", "The month you want your message sent.")] int month,
-           [Summary("day", "The day you want your message sent.")] int day,
-           [Summary("hour", "The hour you want your message sent, in military time (if PM, add 12).")] int hour,
-           [Summary("minute", "The minute you want your message sent.")] int minute,
+            [Summary("month", "The month you want your message sent.")][MinValue(1)][MaxValue(12)] int month,
+            [Summary("day", "The day you want your message sent.")] [MinValue(1)][MaxValue(31)]int day,
+            [Summary("hour", "The hour you want your message sent, in military time (if PM, add 12).")][MinValue(0)][MaxValue(23)] int hour,
+            [Summary("minute", "The minute you want your message sent.")][MinValue(0)][MaxValue(59)] int minute,
            [Summary("timezone", "Your timezone.")] TimeStamp.Timezone timezone)
         {
             DateTime scheduledTime;
@@ -139,25 +124,10 @@ namespace Commands
                     return;
                 }
 
-                // Validate month, day, hour, and minute
-                if (month < 1 || month > 12)
-                {
-                    await FollowupAsync("❌ Please enter a valid month between **1** and **12**.", ephemeral: true);
-                    return;
-                }
+                // Validate day
                 if (day < 1 || day > DateTime.DaysInMonth(DateTime.UtcNow.Year, month))
                 {
                     await FollowupAsync($"❌ Please enter a valid day between **1** and **{DateTime.DaysInMonth(DateTime.UtcNow.Year, month)}**.", ephemeral: true);
-                    return;
-                }
-                if (hour < 0 || hour > 23)
-                {
-                    await FollowupAsync("❌ Please enter a valid hour between **0** and **23**.", ephemeral: true);
-                    return;
-                }
-                if (minute < 0 || minute > 59)
-                {
-                    await FollowupAsync("❌ Please enter a valid minute between **0** and **59**.", ephemeral: true);
                     return;
                 }
 
@@ -171,16 +141,6 @@ namespace Commands
                 if (finalColor == null)
                 {
                     await FollowupAsync(text: $"❌ `{color}` is an invalid color. Here is a list of valid colors:\n- {Colors.GetSupportedColorsString()}.\n- Valid hex codes are also accepted.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
-                    return;
-                }
-                else if (title.Length > 256) // 256 is max characters in an embed title.
-                {
-                    await FollowupAsync($"❌ The announcement *cannot* be made because the title contains **{title.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **256** characters in embed titles.", ephemeral: true);
-                    return;
-                }
-                else if (description.Length > 4000) // 4000 is the maximum length of an input field
-                {
-                    await FollowupAsync($"❌ The announcement *cannot* be made because the description contains **{description.Length}** characters.\n- Try having fewer characters.\n- To support editing, a limit of **4000** characters is set because of Discord's limitations in input fields.", ephemeral: true);
                     return;
                 }
 
