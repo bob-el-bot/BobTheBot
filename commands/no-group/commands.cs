@@ -535,7 +535,37 @@ namespace Commands
         public async Task QuotePrompts()
         {
             // Respond
-            await RespondAsync(text: $"Here are all valid prompts for `/random quote`:\nage, athletics, business, change, character, competition, conservative, courage, education, ethics, failure, faith, family, famous-quotes, film, freedom, future, generosity, genius, gratitude, happiness, health, history, honor, humor, humorous, inspirational, knowledge, leadership, life, love, mathematics, motivational, nature, oppurtunity, pain, perseverance, philosphy, politics, power-quotes, proverb, religion, sadness, science, self, sports, stupidity, success, technology, time, tolerance, truth, virtue, war, weakness, wellness, wisdom, work");
+            await RespondAsync(text: @"
+**Here are all valid prompts for `/random quote`:**
+
+**Categories:**
+
+• **Life & Philosophy:**  
+  `age`, `change`, `character`, `courage`, `failure`, `faith`, `gratitude`, `happiness`, `honor`, `inspirational`,  
+  `life`, `love`, `pain`, `perseverance`, `philosophy`, `self`, `truth`, `virtue`, `wisdom`
+
+• **Work & Success:**  
+  `business`, `competition`, `ethics`, `genius`, `leadership`, `motivational`, `opportunity`, `success`,  
+  `work`
+
+• **Society & Politics:**  
+  `conservative`, `education`, `freedom`, `politics`, `power-quotes`, `religion`, `tolerance`, `war`
+
+• **Health & Wellness:**  
+  `athletics`, `health`, `sports`, `wellness`
+
+• **Science & Technology:**  
+  `mathematics`, `science`, `technology`
+
+• **Famous & Historical:**  
+  `famous-quotes`, `history`, `proverb`
+
+• **Emotions & Humor:**  
+  `humor`, `humorous`, `sadness`, `stupidity`, `weakness`
+
+• **Miscellaneous:**  
+  `family`, `film`, `future`, `generosity`, `knowledge`, `nature`, `time`
+");
         }
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
