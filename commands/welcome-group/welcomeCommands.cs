@@ -154,7 +154,7 @@ namespace Commands
                 server = await context.GetServer(Context.Guild.Id);
 
                 // Only write to DB if needed.
-                if (server.CustomWelcomeMessage != null && server.CustomWelcomeMessage != "")
+                if (!string.IsNullOrEmpty(server.CustomWelcomeMessage))
                 {
                     server.CustomWelcomeMessage = "";
                     await context.UpdateServer(server);
