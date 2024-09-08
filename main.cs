@@ -235,7 +235,15 @@ public static class Bot
         IUser entUser = await ent.User.Value.GetOrDownloadAsync();
         User user = await context.GetUser(entUser.Id);
 
-        user.PremiumExpiration = (DateTimeOffset)ent.EndsAt;
+        if (ent.EndsAt == null)
+        {
+            user.PremiumExpiration = DateTimeOffset.MaxValue;
+        }
+        else
+        {
+            user.PremiumExpiration = (DateTimeOffset)ent.EndsAt;
+        }
+
         await context.UpdateUser(user);
     }
 
