@@ -24,19 +24,26 @@ namespace Commands
         public async Task ScheduleMessage([Summary("message", "The message you want to send. Markdown still works!")][MinLength(1)][MaxLength(2000)] string message,
             [Summary("channel", "The channel for the message to be sent in.")][ChannelTypes(ChannelType.Text)] SocketChannel channel,
             [Summary("month", "The month you want your message sent.")][MinValue(1)][MaxValue(12)] int month,
-            [Summary("day", "The day you want your message sent.")] [MinValue(1)][MaxValue(31)]int day,
+            [Summary("day", "The day you want your message sent.")][MinValue(1)][MaxValue(31)] int day,
             [Summary("hour", "The hour you want your message sent, in military time (if PM, add 12).")][MinValue(0)][MaxValue(23)] int hour,
             [Summary("minute", "The minute you want your message sent.")][MinValue(0)][MaxValue(59)] int minute,
             [Summary("timezone", "Your timezone.")] TimeStamp.Timezone timezone)
         {
             DateTime scheduledTime;
+            var context = new BobEntities();
 
             await DeferAsync();
 
-            var context = new BobEntities();
+            var user = await context.GetUser(Context.User.Id);
 
             try
             {
+                if (Premium.IsValidPremium(user.PremiumExpiration) == false && user.TotalScheduledMessages >= Premium.MaxScheduledMessages)
+                {
+                    await FollowupAsync(text: $"✨ This is a *premium* feature.\n- You already have a scheduled message, please upgrade to premium for unlimited scheduled messages.\n- {Premium.HasPremiumMessage}", ephemeral: true);
+                    return;
+                }
+
                 // Validate day
                 if (day < 1 || day > DateTime.DaysInMonth(DateTime.UtcNow.Year, month))
                 {
@@ -86,6 +93,8 @@ namespace Commands
             };
 
             await context.AddScheduledMessage(scheduledMessage);
+            user.TotalScheduledMessages += 1;
+            await context.UpdateUser(user);
 
             ScheduleTask(scheduledMessage);
 
@@ -101,22 +110,21 @@ namespace Commands
            [Summary("color", "A color name (purple), or valid hex code (#8D52FD).")] string color,
            [Summary("channel", "The channel for the message to be sent in.")][ChannelTypes(ChannelType.Text)] SocketChannel channel,
             [Summary("month", "The month you want your message sent.")][MinValue(1)][MaxValue(12)] int month,
-            [Summary("day", "The day you want your message sent.")] [MinValue(1)][MaxValue(31)]int day,
+            [Summary("day", "The day you want your message sent.")][MinValue(1)][MaxValue(31)] int day,
             [Summary("hour", "The hour you want your message sent, in military time (if PM, add 12).")][MinValue(0)][MaxValue(23)] int hour,
             [Summary("minute", "The minute you want your message sent.")][MinValue(0)][MaxValue(59)] int minute,
            [Summary("timezone", "Your timezone.")] TimeStamp.Timezone timezone)
         {
             DateTime scheduledTime;
-
             Color? finalColor = Colors.TryGetColor(color);
             var context = new BobEntities();
 
+            await DeferAsync();
+
+            var user = await context.GetUser(Context.User.Id);
+
             try
             {
-                await DeferAsync();
-
-                var user = await context.GetUser(Context.User.Id);
-
                 // Check if the user has premium.
                 if (Premium.IsValidPremium(user.PremiumExpiration) == false)
                 {
@@ -181,6 +189,8 @@ namespace Commands
             };
 
             await context.AddScheduledAnnouncement(scheduledAnnouncement);
+            user.TotalScheduledAnnouncements += 1;
+            await context.UpdateUser(user);
 
             ScheduleTask(scheduledAnnouncement);
 

@@ -12,6 +12,9 @@ namespace Database.Types
         // Profile
         public string ProfileColor { get; set; }
         public bool ConfessionsOff { get; set; }
+        // Message Scheduling
+        public uint TotalScheduledMessages { get; set; }
+        public uint TotalScheduledAnnouncements { get; set; }
         // Badges
         public ulong EarnedBadges { get; set; }
         // Stats

@@ -155,19 +155,37 @@ namespace Commands.Helpers
                     return;
                 }
 
+                var dbUser = await context.GetUser(scheduledItem.UserId);
+
                 var timeSinceScheduled = DateTime.UtcNow - scheduledItem.TimeToSend;
                 if (timeSinceScheduled > TimeSpan.FromHours(1))
                 {
                     await context.RemoveScheduledItem(scheduledItem);
+
+                    if (scheduledItem is ScheduledMessage)
+                    {
+                        dbUser.TotalScheduledMessages -= 1;
+                    }
+                    else if (scheduledItem is ScheduledAnnouncement)
+                    {
+                        dbUser.TotalScheduledAnnouncements -= 1;
+                    }
+
+                    await context.UpdateUser(dbUser);
                     return;
                 }
 
                 if (scheduledItem is ScheduledMessage scheduledMessage)
                 {
                     await channel.SendMessageAsync(scheduledMessage.Message);
+                    dbUser.TotalScheduledMessages -= 1;
+                    await context.UpdateUser(dbUser);
                 }
                 else if (scheduledItem is ScheduledAnnouncement scheduledAnnouncement)
                 {
+                    dbUser.TotalScheduledMessages -= 1;
+                    await context.UpdateUser(dbUser);
+
                     var user = await Bot.Client.GetUserAsync(scheduledAnnouncement.UserId);
 
                     var embed = new EmbedBuilder
@@ -201,7 +219,7 @@ namespace Commands.Helpers
         public static async Task LoadAndScheduleItemsAsync<T>() where T : class, IScheduledItem
         {
             using var context = new BobEntities();
-            var unsentItems = await context.Set<T>().Where(m => m.TimeToSend > DateTime.UtcNow).ToListAsync();
+            var unsentItems = await context.Set<T>().ToListAsync();
 
             foreach (var item in unsentItems)
             {
