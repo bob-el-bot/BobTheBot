@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using BadgeInterface;
 using Commands.Helpers;
@@ -408,13 +409,19 @@ namespace Challenges
             var userIds = new[] { game.Player1.Id, game.Player2.Id };
             var users = await context.GetUsers(userIds);
 
-            users[0] = UpdateSpecificGameUserStats(game.Type, users[0], winner, false);
-            users[1] = UpdateSpecificGameUserStats(game.Type, users[1], winner, true);
+            // Ensure users[0] is Player1 and users[1] is Player2
+            User player1 = users.First(u => u.Id == game.Player1.Id);
+            User player2 = users.First(u => u.Id == game.Player2.Id);
 
-            users = Badge.CheckGivingUserBadge(users, Badges.Badges.Winner3);
+            // Update stats accordingly
+            player1 = UpdateSpecificGameUserStats(game.Type, player1, winner, true);
+            player2 = UpdateSpecificGameUserStats(game.Type, player2, winner, false);
 
-            await context.UpdateUsers(users);
+            var updatedUsers = Badge.CheckGivingUserBadge(new List<User> { player1, player2 }, Badges.Badges.Winner3);
+
+            await context.UpdateUsers(updatedUsers);
         }
+
 
         /// <summary>
         /// Gets the number of challenges for a specific user.
