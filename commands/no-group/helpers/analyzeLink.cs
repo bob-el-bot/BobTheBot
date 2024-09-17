@@ -133,11 +133,7 @@ namespace Commands.Helpers
                 using HttpClientHandler handler = new()
                 {
                     AllowAutoRedirect = false,
-                    ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true // Allow all certificates
                 };
-
-                // Set TLS version
-                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls13;
 
                 using HttpClient httpClient = new(handler);
                 HttpRequestMessage request = new(HttpMethod.Head, link);
