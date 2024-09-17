@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Net.Security;
+using System.Security.Authentication;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -101,47 +103,72 @@ namespace Commands.Helpers
             return embed.Build();
         }
 
+        static readonly List<string> UserAgents = new()
+        {
+            "Mozilla/5.0 (iPad; CPU OS 8_4_1 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) Version/8.0 Mobile/12H321 Safari/600.1.4",
+            "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.85 Safari/537.36",
+            "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.85 Safari/537.36",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240",
+            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit/600.8.9 (KHTML, like Gecko) Version/7.1.8 Safari/537.85.17",
+            "Mozilla/5.0 (iPad; CPU OS 8_4 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) Version/8.0 Mobile/12H143 Safari/600.1.4",
+            "Mozilla/5.0 (iPad; CPU OS 8_3 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) Version/8.0 Mobile/12F69 Safari/600.1.4"
+        };
+
         private static async Task<List<LinkInfo>> GetUrlTrail(string link)
         {
             List<LinkInfo> trail = new();
             int redirectCount = 0;
+            Random random = new();
+            string actualTlsVersion = string.Empty;
 
             while (redirectCount <= maximumRedirectCount && !string.IsNullOrWhiteSpace(link))
             {
                 // Validate the URL
-                if (!Uri.TryCreate(link, UriKind.Absolute, out Uri uriResult))
+                if (!Uri.TryCreate(link, UriKind.Absolute, out _))
                 {
                     trail.Add(new LinkInfo { Link = link, Failed = true });
                     break; // Stop processing if the URL is invalid
                 }
 
-                using HttpClientHandler handler = new() { AllowAutoRedirect = false };
+                using HttpClientHandler handler = new()
+                {
+                    AllowAutoRedirect = false,
+                    ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true // Allow all certificates
+                };
+
+                // Set TLS version
+                ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls13;
+
                 using HttpClient httpClient = new(handler);
                 HttpRequestMessage request = new(HttpMethod.Head, link);
-
-                request.Headers.UserAgent.Add(ApiInteractions.Interface.productValue);
-                request.Headers.UserAgent.Add(ApiInteractions.Interface.commentValue);
+                string customUserAgent = UserAgents[random.Next(UserAgents.Count)];
+                httpClient.DefaultRequestHeaders.Add("User-Agent", customUserAgent);
 
                 try
                 {
-                    var req = await httpClient.GetAsync(link);
-                    bool hasCookies = req.Headers.TryGetValues("Set-Cookie", out _);
+                    // Send the request
+                    using var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+                    bool hasCookies = response.Headers.TryGetValues("Set-Cookie", out _);
 
-                    if (req.IsSuccessStatusCode)
+                    // Capture the TLS version from the response
+                    actualTlsVersion = response.Version.ToString(); // This captures the version used for the response
+
+                    if (response.IsSuccessStatusCode)
                     {
-                        string code = await req.Content.ReadAsStringAsync();
+                        string code = await response.Content.ReadAsStringAsync();
                         HtmlDocument doc = new();
                         doc.LoadHtml(code);
 
                         string jsRedirect = GetJavaScriptRedirectLink(code);
                         HtmlNode metaTag = doc.DocumentNode.SelectSingleNode("//meta[@http-equiv='refresh']");
 
+                        // Process various cases
                         if (IsGitHubRepository(link))
                         {
                             trail.Add(new LinkInfo
                             {
                                 Link = link,
-                                StatusCode = req.StatusCode,
+                                StatusCode = response.StatusCode,
                                 IsRedirect = false,
                                 IsShortened = IsShortenedUrl(link, false),
                                 ContainsCookies = hasCookies,
@@ -156,7 +183,7 @@ namespace Commands.Helpers
                             trail.Add(new LinkInfo
                             {
                                 Link = $"{link}",
-                                StatusCode = req.StatusCode,
+                                StatusCode = response.StatusCode,
                                 SpecialCase = "Meta-Refresh Redirect",
                                 ContainsCookies = hasCookies,
                                 IsRickRoll = HasRickRoll(link),
@@ -171,7 +198,7 @@ namespace Commands.Helpers
                             trail.Add(new LinkInfo
                             {
                                 Link = $"{link}",
-                                StatusCode = req.StatusCode,
+                                StatusCode = response.StatusCode,
                                 SpecialCase = "JavaScript Redirect",
                                 ContainsCookies = hasCookies,
                                 IsRickRoll = HasRickRoll(link),
@@ -183,11 +210,11 @@ namespace Commands.Helpers
                         }
                         else
                         {
-                            bool isRedirect = (int)req.StatusCode >= 300 && (int)req.StatusCode <= 308;
+                            bool isRedirect = (int)response.StatusCode >= 300 && (int)response.StatusCode <= 308;
                             trail.Add(new LinkInfo
                             {
                                 Link = $"{link}",
-                                StatusCode = req.StatusCode,
+                                StatusCode = response.StatusCode,
                                 ContainsCookies = hasCookies,
                                 IsRickRoll = HasRickRoll(link),
                                 IsRedirect = isRedirect,
@@ -198,20 +225,20 @@ namespace Commands.Helpers
                     }
                     else
                     {
-                        bool isRedirect = (int)req.StatusCode >= 300 && (int)req.StatusCode <= 308;
+                        bool isRedirect = (int)response.StatusCode >= 300 && (int)response.StatusCode <= 308;
                         trail.Add(new LinkInfo
                         {
                             Link = $"{link}",
-                            StatusCode = req.StatusCode,
+                            StatusCode = response.StatusCode,
                             ContainsCookies = hasCookies,
                             IsRickRoll = HasRickRoll(link),
                             IsRedirect = isRedirect,
                             IsShortened = IsShortenedUrl(link, isRedirect)
                         });
 
-                        if (req.Headers.Location != null)
+                        if (response.Headers.Location != null)
                         {
-                            link = req.Headers.Location.ToString();
+                            link = response.Headers.Location.ToString();
                             redirectCount++;
                         }
                         else
@@ -229,6 +256,8 @@ namespace Commands.Helpers
                     });
                     // Log the exception or handle it appropriately
                     Console.WriteLine($"Exception while processing link {link}: {ex.Message}");
+                    Console.WriteLine($"Inner exception: {ex.InnerException?.Message}");
+                    Console.WriteLine($"Actual TLS Version: {actualTlsVersion}");
                     link = null;
                 }
             }
