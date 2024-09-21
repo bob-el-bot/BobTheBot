@@ -38,9 +38,9 @@ namespace Commands
 
             try
             {
-                if (Premium.IsValidPremium(user.PremiumExpiration) == false && user.TotalScheduledMessages >= Premium.MaxScheduledMessages)
+                if (Premium.IsPremium(Context.Interaction.Entitlements) == false && user.TotalScheduledMessages >= Premium.MaxScheduledMessages)
                 {
-                    await FollowupAsync(text: $"✨ This is a *premium* feature.\n- You already have a scheduled message, please upgrade to premium for unlimited scheduled messages.\n- {Premium.HasPremiumMessage}", ephemeral: true);
+                    await FollowupAsync(text: $"✨ This is a *premium* feature.\n- You already have a scheduled message, please upgrade to premium for unlimited scheduled messages.", ephemeral: true);
                     return;
                 }
 
@@ -126,9 +126,9 @@ namespace Commands
             try
             {
                 // Check if the user has premium.
-                if (Premium.IsValidPremium(user.PremiumExpiration) == false)
+                if (Premium.IsPremium(Context.Interaction.Entitlements) == false)
                 {
-                    await FollowupAsync(text: $"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}", ephemeral: true);
+                    await FollowupAsync(text: $"✨ This is a *premium* feature.", ephemeral: true);
                     return;
                 }
 

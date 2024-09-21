@@ -422,7 +422,6 @@ namespace Challenges
             await context.UpdateUsers(updatedUsers);
         }
 
-
         /// <summary>
         /// Gets the number of challenges for a specific user.
         /// </summary>

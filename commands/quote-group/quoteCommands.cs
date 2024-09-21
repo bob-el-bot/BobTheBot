@@ -22,10 +22,8 @@ namespace Commands
             await DeferAsync(ephemeral: true);
 
             Server server;
-            User usingUser;
             using (var context = new BobEntities())
             {
-                usingUser = await context.GetUser(Context.User.Id);
                 server = await context.GetServer(Context.Guild.Id);
             }
 
@@ -53,9 +51,9 @@ namespace Commands
             {
                 await FollowupAsync($"❌ The quote *cannot* be made because it contains **{quote.Length}** characters.\n- this server's maximum quote length is **{server.MaxQuoteLength}**.\n- this server's minimum quote length is **{server.MinQuoteLength}**.\n- Discord has a limit of **4096** characters in embed descriptions.", ephemeral: true);
             }
-            else if ((tag1 != "" || tag2 != "" || tag3 != "") && Premium.IsValidPremium(usingUser.PremiumExpiration) == false) // contains tags and does not have premium
+            else if ((tag1 != "" || tag2 != "" || tag3 != "") && Premium.IsPremium(Context.Interaction.Entitlements) == false) // contains tags and does not have premium
             {
-                await FollowupAsync($"❌ You cannot add tags.\n- Get ✨ premium to use **tags**.\n- {Premium.HasPremiumMessage}");
+                await FollowupAsync($"❌ You cannot add tags.\n- Get ✨ premium to use **tags**.");
             }
             else
             {
@@ -262,11 +260,8 @@ namespace Commands
         {
             await DeferAsync(ephemeral: true);
 
-            User user;
-            Server server;
             using var context = new BobEntities();
-            user = await context.GetUser(Context.User.Id);
-            server = await context.GetServer(Context.Guild.Id);
+            Server server = await context.GetServer(Context.Guild.Id);
 
             // Check if the user has manage channels permissions.
             if (!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageChannels)
@@ -274,9 +269,9 @@ namespace Commands
                 await FollowupAsync(text: $"❌ Ask an admin or mod to configure this for you.\n- Permission(s) needed: `Manage Channels`\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
             // Check if the user has premium.
-            else if (Premium.IsValidPremium(user.PremiumExpiration) == false)
+            else if (Premium.IsPremium(Context.Interaction.Entitlements) == false)
             {
-                await FollowupAsync(text: $"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}", ephemeral: true);
+                await FollowupAsync(text: $"✨ This is a *premium* feature.", ephemeral: true);
             }
             // Check if the message is within Discord's length requirements.
             else if (length > 4096)
@@ -310,11 +305,8 @@ namespace Commands
         {
             await DeferAsync(ephemeral: true);
 
-            User user;
-            Server server;
             using var context = new BobEntities();
-            user = await context.GetUser(Context.User.Id);
-            server = await context.GetServer(Context.Guild.Id);
+            Server server = await context.GetServer(Context.Guild.Id);
 
             // Check if the user has manage channels permissions.
             if (!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageChannels)
@@ -322,9 +314,9 @@ namespace Commands
                 await FollowupAsync(text: $"❌ Ask an admin or mod to configure this for you.\n- Permission(s) needed: `Manage Channels`\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
             // Check if the user has premium.
-            else if (Premium.IsValidPremium(user.PremiumExpiration) == false)
+            else if (Premium.IsPremium(Context.Interaction.Entitlements) == false)
             {
-                await FollowupAsync(text: $"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}", ephemeral: true);
+                await FollowupAsync(text: $"✨ This is a *premium* feature.", ephemeral: true);
             }
             // Check if the message is within Discord's length requirements.
             else if (length > 4096)

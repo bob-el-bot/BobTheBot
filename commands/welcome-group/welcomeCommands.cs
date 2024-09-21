@@ -100,10 +100,9 @@ namespace Commands
             }
 
             // Check if the user has premium.
-            var user = await new BobEntities().GetUser(Context.User.Id);
-            if (!Premium.IsValidPremium(user.PremiumExpiration))
+            if (!Premium.IsPremium(Context.Interaction.Entitlements))
             {
-                await FollowupAsync($"✨ This is a *premium* feature.\n-{Premium.HasPremiumMessage}", ephemeral: true);
+                await FollowupAsync($"✨ This is a *premium* feature.", ephemeral: true);
                 return;
             }
 
@@ -115,31 +114,30 @@ namespace Commands
             }
 
             // Update server welcome information.
-            using (var context = new BobEntities())
-            {
-                var server = await context.GetServer(Context.Guild.Id);
-                // Only write to DB if needed.
-                if (server.CustomWelcomeMessage != message)
-                {
-                    server.CustomWelcomeMessage = message;
-                    await context.UpdateServer(server);
-                }
+            using var context = new BobEntities();
+            var server = await context.GetServer(Context.Guild.Id);
 
-                if (server.Welcome)
+            // Only write to DB if needed.
+            if (server.CustomWelcomeMessage != message)
+            {
+                server.CustomWelcomeMessage = message;
+                await context.UpdateServer(server);
+            }
+
+            if (server.Welcome)
+            {
+                if (systemChannel == null)
                 {
-                    if (systemChannel == null)
-                    {
-                        await FollowupAsync($"❌ Bob knows to welcome users now, and what to say, but you **need** to set a *System Messages* channel in settings for this to take effect.\nYour welcome message will look like so:\n\n{Welcome.FormatCustomMessage(message, Context.User.Mention)}", ephemeral: true);
-                    }
-                    else
-                    {
-                        await FollowupAsync($"✅ Bob will now greet people in <#{systemChannel.Id}> like so:\n\n{Welcome.FormatCustomMessage(message, Context.User.Mention)}", ephemeral: true);
-                    }
+                    await FollowupAsync($"❌ Bob knows to welcome users now, and what to say, but you **need** to set a *System Messages* channel in settings for this to take effect.\nYour welcome message will look like so:\n\n{Welcome.FormatCustomMessage(message, Context.User.Mention)}", ephemeral: true);
                 }
                 else
                 {
-                    await FollowupAsync($"✅ Bob knows what to say, but you **need** to enable welcome messages with `/welcome toggle` for it to take effect.\nYour welcome message will look like so:\n\n{Welcome.FormatCustomMessage(message, Context.User.Mention)}", ephemeral: true);
+                    await FollowupAsync($"✅ Bob will now greet people in <#{systemChannel.Id}> like so:\n\n{Welcome.FormatCustomMessage(message, Context.User.Mention)}", ephemeral: true);
                 }
+            }
+            else
+            {
+                await FollowupAsync($"✅ Bob knows what to say, but you **need** to enable welcome messages with `/welcome toggle` for it to take effect.\nYour welcome message will look like so:\n\n{Welcome.FormatCustomMessage(message, Context.User.Mention)}", ephemeral: true);
             }
         }
 
