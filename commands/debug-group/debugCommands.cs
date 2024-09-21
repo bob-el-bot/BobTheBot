@@ -166,7 +166,7 @@ namespace Commands
                 DiscordRestClient client = new();
                 await client.LoginAsync(TokenType.Bot, Bot.Token);
                 var test = await client.GetGuildsAsync(withCounts: true);
-            
+
                 foreach (IGuild guild in test)
                 {
                     var userCount = guild.ApproximateMemberCount.GetValueOrDefault(0);
@@ -209,6 +209,44 @@ namespace Commands
                     dbUser = await context.GetUser(user == null ? parsedId : user.Id);
 
                     await FollowupAsync(text: $"✅ `Showing User: {discordUser.GlobalName}, {discordUser.Id}`\n{UserDebugging.GetUserPropertyString(dbUser)}");
+                }
+            }
+
+            [SlashCommand("set-user-announcement-total", "Edit the scheduled announcement total.")]
+            public async Task SetUserAnnouncementTotal(int value, IUser user = null, string userId = null)
+            {
+                await DeferAsync();
+
+                bool conversionResult = ulong.TryParse(userId, out ulong parsedId);
+
+                if (user == null && userId == null)
+                {
+                    await FollowupAsync(text: $"❌ You **must** specify a `user` **or** a `userId`.");
+                    return;
+                }
+
+                IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
+
+                if (discordUser.IsBot)
+                {
+                    await FollowupAsync(text: $"❌ You **cannot** perform this action on bots.");
+                }
+                else if (user != null && conversionResult != false && user.Id != parsedId)
+                {
+                    await FollowupAsync(text: $"❌ The given `user` **and** `userId` must have matching IDs.");
+                }
+                else if (value < 0)
+                {
+                    await FollowupAsync(text: $"❌ The given `value` must be greater than 0 (The field is a `uint`).");
+                }
+                else
+                {
+                    using var context = new BobEntities();
+                    User dbUser = await context.GetUser(user == null ? parsedId : user.Id);
+                    dbUser.TotalScheduledAnnouncements = (uint)value;
+                    await context.UpdateUser(dbUser);
+
+                    await FollowupAsync(text: $"✅ `Announcement Count of User: {discordUser.GlobalName}, {discordUser.Id} updated.`\n{UserDebugging.GetUserPropertyString(dbUser)}");
                 }
             }
 
@@ -464,6 +502,26 @@ namespace Commands
                     await BlackList.UpdateUser(dbUser);
 
                     await FollowupAsync(text: $"✅ `Showing Blacklisted User: {discordUser.GlobalName}, {discordUser.Id}`\n{UserDebugging.GetUserPropertyString(dbUser)}");
+                }
+            }
+
+            [SlashCommand("remove-scheduled-announcement", "Removes the ScheduledAnnouncement object with the given ID from the database.")]
+            public async Task RemoveScheduledAnnouncement(string announcementId)
+            {
+                await DeferAsync();
+
+                bool announcementConversionResult = ulong.TryParse(announcementId, out ulong parsedAnnouncementId);
+
+                if (announcementConversionResult == false)
+                {
+                    await FollowupAsync(text: $"❌ The given `announcementId` is not valid.");
+                }
+                else
+                {
+                    using var context = new BobEntities();
+                    await context.RemoveScheduledAnnouncement(parsedAnnouncementId);
+
+                    await FollowupAsync(text: $"✅ Deleted Scheduled Announcement `{parsedAnnouncementId}`.");
                 }
             }
         }
