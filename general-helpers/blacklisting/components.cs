@@ -81,7 +81,6 @@ namespace Moderation
 
             var parsedMessageId = Convert.ToUInt64(messageId);
             var parsedChannelId = Convert.ToUInt64(dmChannelId);
-            SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
 
             await BlackList.NotifyMessageReport(parsedChannelId, parsedMessageId);
 
@@ -98,7 +97,6 @@ namespace Moderation
             await DeferAsync();
 
             var userId = Convert.ToUInt64(id);
-            SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
 
             using var context = new BobEntities();
             var dbUser = await context.GetUser(userId);

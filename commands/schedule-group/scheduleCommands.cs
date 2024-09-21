@@ -246,12 +246,24 @@ namespace Commands
                 using var context = new BobEntities();
                 var message = await context.GetScheduledMessage(messageId);
 
-                var modal = new EditMessageModal
+                if (message == null)
                 {
-                    Content = message.Message
-                };
+                    var component = (SocketMessageComponent)Context.Interaction;
 
-                await Context.Interaction.RespondWithModalAsync(modal: modal, customId: $"editMessageModal:{messageId}");
+                    await component.UpdateAsync(x =>
+                    {
+                        x.Components = BuildEditMessageComponents(null, true).Build();
+                    });
+                }
+                else
+                {
+                    var modal = new EditMessageModal
+                    {
+                        Content = message.Message
+                    };
+
+                    await Context.Interaction.RespondWithModalAsync(modal: modal, customId: $"editMessageModal:{messageId}");
+                }
             }
             catch (Exception ex)
             {
@@ -269,13 +281,25 @@ namespace Commands
                 using var context = new BobEntities();
                 var announcement = await context.GetScheduledAnnouncement(announcementId);
 
-                var modal = new EditAnnouncementModal
+                if (announcement == null)
                 {
-                    EmbedTitle = announcement.Title,
-                    Description = announcement.Description
-                };
+                    var component = (SocketMessageComponent)Context.Interaction;
 
-                await Context.Interaction.RespondWithModalAsync(modal: modal, customId: $"editAnnounceModal:{announcementId}");
+                    await component.UpdateAsync(x =>
+                    {
+                        x.Components = BuildEditMessageComponents(null, true).Build();
+                    });
+                }
+                else
+                {
+                    var modal = new EditAnnouncementModal
+                    {
+                        EmbedTitle = announcement.Title,
+                        Description = announcement.Description
+                    };
+
+                    await Context.Interaction.RespondWithModalAsync(modal: modal, customId: $"editAnnounceModal:{announcementId}");
+                }
             }
             catch (Exception ex)
             {
@@ -327,6 +351,13 @@ namespace Commands
             using var context = new BobEntities();
             await context.RemoveScheduledMessage(messageId);
 
+            // Cancel the corresponding task if it exists
+            if (ScheduledTasks.TryGetValue(messageId, out var cts))
+            {
+                cts.Cancel();
+                ScheduledTasks.Remove(messageId); // Remove the task from tracking
+            }
+
             var embed = new EmbedBuilder
             {
                 Title = "🕖 (Deleted) Scheduled Message",
@@ -352,6 +383,13 @@ namespace Commands
 
             using var context = new BobEntities();
             await context.RemoveScheduledAnnouncement(announcementId);
+
+            // Cancel the corresponding task if it exists
+            if (ScheduledTasks.TryGetValue(announcementId, out var cts))
+            {
+                cts.Cancel();
+                ScheduledTasks.Remove(announcementId); // Remove the task from tracking
+            }
 
             // Extract the original embed and its fields
             var originalEmbed = originalResponse.Embeds.First();
