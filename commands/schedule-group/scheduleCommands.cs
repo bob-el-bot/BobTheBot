@@ -248,8 +248,9 @@ namespace Commands
 
                 if (message == null)
                 {
-                    var originalResponse = await Context.Interaction.GetOriginalResponseAsync();
-                    await originalResponse.ModifyAsync(x =>
+                    var component = (SocketMessageComponent)Context.Interaction;
+
+                    await component.UpdateAsync(x =>
                     {
                         x.Components = BuildEditMessageComponents(null, true).Build();
                     });
@@ -282,8 +283,9 @@ namespace Commands
 
                 if (announcement == null)
                 {
-                    var originalResponse = await GetOriginalResponseAsync();
-                    await originalResponse.ModifyAsync(x =>
+                    var component = (SocketMessageComponent)Context.Interaction;
+
+                    await component.UpdateAsync(x =>
                     {
                         x.Components = BuildEditMessageComponents(null, true).Build();
                     });
