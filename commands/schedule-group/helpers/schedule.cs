@@ -183,7 +183,7 @@ namespace Commands.Helpers
                 }
                 else if (scheduledItem is ScheduledAnnouncement scheduledAnnouncement)
                 {
-                    dbUser.TotalScheduledMessages -= 1;
+                    dbUser.TotalScheduledAnnouncements -= 1;
                     await context.UpdateUser(dbUser);
 
                     var user = await Bot.Client.GetUserAsync(scheduledAnnouncement.UserId);
@@ -209,6 +209,7 @@ namespace Commands.Helpers
             catch (Exception ex)
             {
                 Console.WriteLine($"Error occurred while sending scheduled item: {ex.Message}");
+                Console.WriteLine(ex.StackTrace);
             }
         }
 
