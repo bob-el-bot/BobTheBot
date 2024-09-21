@@ -165,42 +165,39 @@ namespace Commands.Helpers
 
                 var dbUser = await context.GetUser(scheduledItem.UserId);
 
-                var timeSinceScheduled = DateTime.UtcNow - scheduledItem.TimeToSend;
-                if (timeSinceScheduled > TimeSpan.FromHours(1))
+                // Query the latest content from the database based on the scheduled item type
+                if (scheduledItem is ScheduledMessage)
                 {
-                    await context.RemoveScheduledItem(scheduledItem);
+                    var message = await context.GetScheduledMessage(scheduledItem.Id); // Get the latest ScheduledMessage content
 
-                    if (scheduledItem is ScheduledMessage)
+                    if (message == null)
                     {
-                        dbUser.TotalScheduledMessages -= 1;
-                    }
-                    else if (scheduledItem is ScheduledAnnouncement)
-                    {
-                        dbUser.TotalScheduledAnnouncements -= 1;
+                        Console.WriteLine($"Scheduled message with ID: {scheduledItem.Id} not found.");
+                        return;
                     }
 
-                    await context.UpdateUser(dbUser);
-                    return;
-                }
+                    await channel.SendMessageAsync(message.Message); // Send the latest message content
 
-                if (scheduledItem is ScheduledMessage scheduledMessage)
-                {
-                    await channel.SendMessageAsync(scheduledMessage.Message);
                     dbUser.TotalScheduledMessages -= 1;
                     await context.UpdateUser(dbUser);
                 }
-                else if (scheduledItem is ScheduledAnnouncement scheduledAnnouncement)
+                else if (scheduledItem is ScheduledAnnouncement)
                 {
-                    dbUser.TotalScheduledAnnouncements -= 1;
-                    await context.UpdateUser(dbUser);
+                    var announcement = await context.GetScheduledAnnouncement(scheduledItem.Id); // Get the latest ScheduledAnnouncement content
 
-                    var user = await Bot.Client.GetUserAsync(scheduledAnnouncement.UserId);
+                    if (announcement == null)
+                    {
+                        Console.WriteLine($"Scheduled announcement with ID: {scheduledItem.Id} not found.");
+                        return;
+                    }
+
+                    var user = await Bot.Client.GetUserAsync(announcement.UserId);
 
                     var embed = new EmbedBuilder
                     {
-                        Title = scheduledAnnouncement.Title,
-                        Color = Colors.TryGetColor(scheduledAnnouncement.Color),
-                        Description = Announcement.FormatDescription(scheduledAnnouncement.Description),
+                        Title = announcement.Title,
+                        Color = Colors.TryGetColor(announcement.Color),
+                        Description = Announcement.FormatDescription(announcement.Description),
                         Footer = new EmbedFooterBuilder
                         {
                             IconUrl = user.GetAvatarUrl(),
@@ -208,7 +205,10 @@ namespace Commands.Helpers
                         }
                     };
 
-                    await channel.SendMessageAsync(embed: embed.Build());
+                    await channel.SendMessageAsync(embed: embed.Build()); // Send the latest announcement content
+
+                    dbUser.TotalScheduledAnnouncements -= 1;
+                    await context.UpdateUser(dbUser);
                 }
 
                 // Remove the item after sending
