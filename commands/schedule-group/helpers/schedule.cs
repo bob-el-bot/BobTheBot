@@ -1,12 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using ColorMethods;
 using Database;
 using Database.Types;
-using Debug;
 using Discord;
-using Discord.Interactions;
 using Microsoft.EntityFrameworkCore;
 using TimeStamps;
 
@@ -25,6 +25,9 @@ namespace Commands.Helpers
     /// </summary>
     public static class Schedule
     {
+        // Dictionary to keep track of scheduled tasks using their message ID
+        public static readonly Dictionary<ulong, CancellationTokenSource> ScheduledTasks = new();
+
         /// <summary>
         /// Converts a local time specified by month, day, hour, and minute into UTC time, based on the provided timezone.
         /// </summary>
@@ -108,17 +111,20 @@ namespace Commands.Helpers
         /// <param name="scheduledItem">The scheduled item to be sent.</param>
         public static void ScheduleTask<T>(T scheduledItem) where T : IScheduledItem
         {
-            TimeSpan maxDelay = TimeSpan.FromDays(30); // Maximum scheduling delay of 30 days
+            TimeSpan maxDelay = TimeSpan.FromDays(30);
             var delay = scheduledItem.TimeToSend - DateTime.UtcNow;
 
-            async Task ScheduleInChunks(TimeSpan totalDelay)
+            var cts = new CancellationTokenSource();
+            ScheduledTasks[scheduledItem.Id] = cts; // Add the task to the dictionary
+
+            async Task ScheduleInChunks(TimeSpan totalDelay, CancellationToken token)
             {
                 while (totalDelay > maxDelay)
                 {
-                    await Task.Delay(maxDelay);
+                    await Task.Delay(maxDelay, token); // Pass the cancellation token
                     totalDelay -= maxDelay;
                 }
-                await Task.Delay(totalDelay);
+                await Task.Delay(totalDelay, token); // Pass the cancellation token
                 await SendScheduledItem(scheduledItem);
             }
 
@@ -128,11 +134,14 @@ namespace Commands.Helpers
             }
             else if (delay > maxDelay)
             {
-                _ = ScheduleInChunks(delay);
+                _ = ScheduleInChunks(delay, cts.Token); // Use the token in the task
             }
             else
             {
-                _ = Task.Delay(delay).ContinueWith(async _ => await SendScheduledItem(scheduledItem));
+                _ = Task.Delay(delay, cts.Token).ContinueWith(async _ =>
+                {
+                    await SendScheduledItem(scheduledItem);
+                }, cts.Token); // Pass the token here too
             }
         }
 
@@ -204,6 +213,9 @@ namespace Commands.Helpers
 
                 // Remove the item after sending
                 await context.RemoveScheduledItem(scheduledItem);
+
+                // Remove the item from the dictionary after sending
+                ScheduledTasks.Remove(scheduledItem.Id);
             }
             catch (Exception ex)
             {
