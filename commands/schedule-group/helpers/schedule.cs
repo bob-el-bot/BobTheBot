@@ -81,21 +81,20 @@ namespace Commands.Helpers
         /// <returns>The configured ComponentBuilder instance.</returns>
         public static ComponentBuilder BuildEditMessageComponents(IScheduledItem item, bool disabled = false)
         {
-            string editType = item == null ? "null" : (item is ScheduledMessage ? "Message" : "Announcement");
-            string deleteType = item == null ? "null" : (item is ScheduledMessage ? "Message" : "Announcement");
+            string type = item == null ? "null" : (item is ScheduledMessage ? "Message" : "Announce");
             string itemId = item?.Id.ToString() ?? "null";
 
             return new ComponentBuilder()
                 .WithButton(
                     label: "Edit",
-                    customId: $"edit{editType}Button:{itemId}",
+                    customId: $"edit{type}Button:{itemId}",
                     style: ButtonStyle.Primary,
                     emote: Emoji.Parse("✍️"),
                     disabled: disabled
                 )
                 .WithButton(
                     label: "Delete",
-                    customId: $"delete{deleteType}Button:{itemId}",
+                    customId: $"delete{type}Button:{itemId}",
                     style: ButtonStyle.Danger,
                     emote: Emoji.Parse("🗑️"),
                     disabled: disabled
