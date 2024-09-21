@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using ColorMethods;
-using Commands.Helpers;
 using Database;
 using Database.Types;
 using Discord;
@@ -9,7 +8,6 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using PremiumInterface;
 using BadgeInterface;
-using System.Runtime.InteropServices;
 using Moderation;
 
 namespace Commands
@@ -33,9 +31,8 @@ namespace Commands
                 await DeferAsync();
 
                 // Get Stats
-                User userToDisplay;
                 using var context = new BobEntities();
-                userToDisplay = await context.GetUser(user.Id);
+                User userToDisplay = await context.GetUser(user.Id);
 
                 float rpsWinPercent = (float)Math.Round(userToDisplay.TotalRockPaperScissorsGames != 0 ? userToDisplay.RockPaperScissorsWins / userToDisplay.TotalRockPaperScissorsGames * 100 : 0, 2);
                 float tttWinPercent = (float)Math.Round(userToDisplay.TotalTicTacToeGames != 0 ? userToDisplay.TicTacToeWins / userToDisplay.TotalTicTacToeGames * 100 : 0, 2);
@@ -43,7 +40,7 @@ namespace Commands
                 float connect4WinPercent = (float)Math.Round(userToDisplay.TotalConnect4Games != 0 ? userToDisplay.Connect4Wins / userToDisplay.TotalConnect4Games * 100 : 0, 2);
 
                 // Check Premium
-                bool hasPremium = Premium.IsValidPremium(userToDisplay.PremiumExpiration);
+                bool hasPremium = Premium.IsPremium(Context.Interaction.Entitlements);
 
                 Color color = hasPremium ? Colors.TryGetColor(userToDisplay.ProfileColor) ?? 0x2C2F33 : 0x2C2F33;
 
@@ -55,7 +52,7 @@ namespace Commands
                 var embed = new EmbedBuilder
                 {
                     Author = new EmbedAuthorBuilder().WithName($"{user.Username}'s Profile").WithIconUrl(user.GetAvatarUrl()),
-                    Color = color ,
+                    Color = color,
                     Description = description
                 };
 
@@ -120,16 +117,12 @@ namespace Commands
         {
             await DeferAsync(ephemeral: true);
 
-            User user;
-            using var context = new BobEntities();
-            user = await context.GetUser(Context.User.Id);
-
             Color? finalColor = Colors.TryGetColor(color);
 
             // Check if the user has premium.
-            if (Premium.IsValidPremium(user.PremiumExpiration) == false)
+            if (Premium.IsPremium(Context.Interaction.Entitlements) == false)
             {
-                await FollowupAsync(text: $"✨ This is a *premium* feature.\n-{Premium.HasPremiumMessage}", ephemeral: true);
+                await FollowupAsync(text: $"✨ This is a *premium* feature.", ephemeral: true);
             }
             else if (finalColor == null)
             {
@@ -137,6 +130,9 @@ namespace Commands
             }
             else
             {
+                using var context = new BobEntities();
+                User user = await context.GetUser(Context.User.Id);
+
                 // Only write to DB if needed.
                 if (user.ProfileColor != color)
                 {

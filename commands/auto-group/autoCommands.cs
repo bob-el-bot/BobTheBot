@@ -19,10 +19,6 @@ namespace Commands
         {
             await DeferAsync(ephemeral: true);
 
-            User user;
-            using var context = new BobEntities();
-            user = await context.GetUser(Context.User.Id);
-
             SocketNewsChannel givenNewsChannel = (SocketNewsChannel)channel;
 
             // Check if the user has Send Message channels permissions.
@@ -33,15 +29,15 @@ namespace Commands
                 await FollowupAsync(text: $"❌ You do not have the **Send Messages** permission in {givenNewsChannel.Mention}\n- Try asking a user with the permission **Send Messages**.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
             // Check if the user has premium.
-            else if (publish == true && Premium.IsValidPremium(user.PremiumExpiration) == false)
+            else if (publish == true && Premium.IsPremium(Context.Interaction.Entitlements) == false)
             {
-                await FollowupAsync(text: $"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}", ephemeral: true);
+                await FollowupAsync(text: $"✨ This is a *premium* feature.", ephemeral: true);
             }
             // Update news channel information.
             else
             {
-                NewsChannel newsChannel;
-                newsChannel = await context.GetNewsChannel(channel.Id);
+                using var context = new BobEntities();
+                NewsChannel newsChannel = await context.GetNewsChannel(channel.Id);
 
                 if (publish == true)
                 {
@@ -86,20 +82,16 @@ namespace Commands
         {
             await DeferAsync(ephemeral: true);
 
-            User user;
-            using var context = new BobEntities();
-            user = await context.GetUser(Context.User.Id);
-
             // Check if the user has premium.
-            if (preview == true && Premium.IsValidPremium(user.PremiumExpiration) == false)
+            if (preview == true && Premium.IsPremium(Context.Interaction.Entitlements) == false)
             {
-                await FollowupAsync(text: $"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}", ephemeral: true);
+                await FollowupAsync(text: $"✨ This is a *premium* feature.", ephemeral: true);
             }
             // Update github preview information.
             else
             {
-                Server server;
-                server = await context.GetServer(Context.Guild.Id);
+                using var context = new BobEntities();
+                Server server = await context.GetServer(Context.Guild.Id);
 
                 // Only write to DB if needed.
                 if (server.AutoEmbedGitHubLinks != preview)
@@ -124,20 +116,16 @@ namespace Commands
         {
             await DeferAsync(ephemeral: true);
 
-            User user;
-            using var context = new BobEntities();
-            user = await context.GetUser(Context.User.Id);
-
             // Check if the user has premium.
-            if (preview == true && Premium.IsValidPremium(user.PremiumExpiration) == false)
+            if (preview == true && Premium.IsPremium(Context.Interaction.Entitlements) == false)
             {
-                await FollowupAsync(text: $"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}", ephemeral: true);
+                await FollowupAsync(text: $"✨ This is a *premium* feature.", ephemeral: true);
             }
             // Update github preview information.
             else
             {
-                Server server;
-                server = await context.GetServer(Context.Guild.Id);
+                using var context = new BobEntities();
+                Server server = await context.GetServer(Context.Guild.Id);
 
                 // Only write to DB if needed.
                 if (server.AutoEmbedMessageLinks != preview)

@@ -170,11 +170,13 @@ public static class Bot
             }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(16));
         });
 
-        _ = Task.Run(async () => {
+        _ = Task.Run(async () =>
+        {
             await Schedule.LoadAndScheduleItemsAsync<ScheduledAnnouncement>();
         });
 
-        _ = Task.Run(async () => {
+        _ = Task.Run(async () =>
+        {
             await Schedule.LoadAndScheduleItemsAsync<ScheduledMessage>();
         });
     }
