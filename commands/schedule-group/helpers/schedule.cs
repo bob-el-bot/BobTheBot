@@ -28,6 +28,8 @@ namespace Commands.Helpers
         // Dictionary to keep track of scheduled tasks using their message ID
         public static readonly Dictionary<ulong, CancellationTokenSource> ScheduledTasks = new();
 
+        private static readonly TimeSpan MaxDelay = TimeSpan.FromDays(30);
+
         /// <summary>
         /// Converts a local time specified by month, day, hour, and minute into UTC time, based on the provided timezone.
         /// </summary>
@@ -39,16 +41,10 @@ namespace Commands.Helpers
         /// <returns>The equivalent UTC time of the specified local time.</returns>
         public static DateTime ConvertToUtcTime(int month, int day, int hour, int minute, TimeStamp.Timezone timezone)
         {
-            // Create a local DateTime object with the specified month, day, hour, and minute.
             var localDateTime = new DateTime(DateTime.UtcNow.Year, month, day, hour, minute, 0, DateTimeKind.Unspecified);
-
-            // Retrieve the system timezone ID from the TimezoneMappings dictionary.
             var timeZoneId = TimeStamp.TimezoneMappings[timezone];
-
-            // Find the TimeZoneInfo object for the specified timezone.
             var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
 
-            // Convert the local DateTime to UTC using the TimeZoneInfo.
             return TimeZoneInfo.ConvertTimeToUtc(localDateTime, timeZoneInfo);
         }
 
@@ -111,38 +107,39 @@ namespace Commands.Helpers
         /// <param name="scheduledItem">The scheduled item to be sent.</param>
         public static void ScheduleTask<T>(T scheduledItem) where T : IScheduledItem
         {
-            TimeSpan maxDelay = TimeSpan.FromDays(30);
             var delay = scheduledItem.TimeToSend - DateTime.UtcNow;
-
-            var cts = new CancellationTokenSource();
-            ScheduledTasks[scheduledItem.Id] = cts; // Add the task to the dictionary
-
-            async Task ScheduleInChunks(TimeSpan totalDelay, CancellationToken token)
-            {
-                while (totalDelay > maxDelay)
-                {
-                    await Task.Delay(maxDelay, token); // Pass the cancellation token
-                    totalDelay -= maxDelay;
-                }
-                await Task.Delay(totalDelay, token); // Pass the cancellation token
-                await SendScheduledItem(scheduledItem);
-            }
 
             if (delay <= TimeSpan.Zero)
             {
+                // If the item should already have been sent, send it immediately.
                 SendScheduledItem(scheduledItem).Wait();
+                return;
             }
-            else if (delay > maxDelay)
+
+            var cts = new CancellationTokenSource();
+            ScheduledTasks[scheduledItem.Id] = cts; // Cache CancellationTokenSource only when necessary
+
+            if (delay > MaxDelay)
             {
-                _ = ScheduleInChunks(delay, cts.Token); // Use the token in the task
+                // Schedule in chunks to handle long delays
+                _ = ScheduleInChunks(scheduledItem, delay, cts.Token);
             }
             else
             {
-                _ = Task.Delay(delay, cts.Token).ContinueWith(async _ =>
-                {
-                    await SendScheduledItem(scheduledItem);
-                }, cts.Token); // Pass the token here too
+                // Schedule the item with a single delay
+                _ = Task.Delay(delay, cts.Token).ContinueWith(async _ => await SendScheduledItem(scheduledItem), cts.Token);
             }
+        }
+
+        private static async Task ScheduleInChunks<T>(T scheduledItem, TimeSpan totalDelay, CancellationToken token) where T : IScheduledItem
+        {
+            while (totalDelay > MaxDelay)
+            {
+                await Task.Delay(MaxDelay, token); // Delay for max allowed chunk
+                totalDelay -= MaxDelay;
+            }
+            await Task.Delay(totalDelay, token); // Delay for the remaining time
+            await SendScheduledItem(scheduledItem);
         }
 
         /// <summary>
@@ -155,7 +152,7 @@ namespace Commands.Helpers
             try
             {
                 using var context = new BobEntities();
-                var channel = (IMessageChannel)await Bot.Client.GetChannelAsync(scheduledItem.ChannelId);
+                var channel = Bot.Client.GetChannel(scheduledItem.ChannelId) as IMessageChannel;
 
                 if (channel == null)
                 {
@@ -165,62 +162,34 @@ namespace Commands.Helpers
 
                 var dbUser = await context.GetUser(scheduledItem.UserId);
 
-                // Query the latest content from the database based on the scheduled item type
-                if (scheduledItem is ScheduledMessage)
+                if (scheduledItem is ScheduledMessage message)
                 {
-                    var message = await context.GetScheduledMessage(scheduledItem.Id); // Get the latest ScheduledMessage content
-
-                    if (message == null)
+                    var messageToSend = await context.GetScheduledMessage(scheduledItem.Id);
+                    if (messageToSend != null)
                     {
-                        Console.WriteLine($"Scheduled message with ID: {scheduledItem.Id} not found.");
-                        return;
+                        await channel.SendMessageAsync(messageToSend.Message);
+                        dbUser.TotalScheduledMessages -= 1;
                     }
-
-                    await channel.SendMessageAsync(message.Message); // Send the latest message content
-
-                    dbUser.TotalScheduledMessages -= 1;
-                    await context.UpdateUser(dbUser);
                 }
-                else if (scheduledItem is ScheduledAnnouncement)
+                else if (scheduledItem is ScheduledAnnouncement announcement)
                 {
-                    var announcement = await context.GetScheduledAnnouncement(scheduledItem.Id); // Get the latest ScheduledAnnouncement content
-
-                    if (announcement == null)
+                    var announcementToSend = await context.GetScheduledAnnouncement(scheduledItem.Id);
+                    if (announcementToSend != null)
                     {
-                        Console.WriteLine($"Scheduled announcement with ID: {scheduledItem.Id} not found.");
-                        return;
+                        var embed = await BuildAnnouncementEmbed(announcementToSend);
+                        await channel.SendMessageAsync(embed: embed);
+                        dbUser.TotalScheduledAnnouncements -= 1;
                     }
-
-                    var user = await Bot.Client.GetUserAsync(announcement.UserId);
-
-                    var embed = new EmbedBuilder
-                    {
-                        Title = announcement.Title,
-                        Color = Colors.TryGetColor(announcement.Color),
-                        Description = Announcement.FormatDescription(announcement.Description),
-                        Footer = new EmbedFooterBuilder
-                        {
-                            IconUrl = user.GetAvatarUrl(),
-                            Text = $"Announced by {user.GlobalName}."
-                        }
-                    };
-
-                    await channel.SendMessageAsync(embed: embed.Build()); // Send the latest announcement content
-
-                    dbUser.TotalScheduledAnnouncements -= 1;
-                    await context.UpdateUser(dbUser);
                 }
 
-                // Remove the item after sending
+                // Update and remove from database in one batch
+                await context.UpdateUser(dbUser);
                 await context.RemoveScheduledItem(scheduledItem);
-
-                // Remove the item from the dictionary after sending
                 ScheduledTasks.Remove(scheduledItem.Id);
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Error occurred while sending scheduled item: {ex.Message}");
-                Console.WriteLine(ex.StackTrace);
             }
         }
 
@@ -237,6 +206,28 @@ namespace Commands.Helpers
             {
                 ScheduleTask(item);
             }
+        }
+
+        /// <summary>
+        /// Builds the embed for an announcement.
+        /// </summary>
+        private static async Task<Embed> BuildAnnouncementEmbed(ScheduledAnnouncement announcement)
+        {
+            var user = await Bot.Client.GetUserAsync(announcement.UserId);
+
+            var embed = new EmbedBuilder
+            {
+                Title = announcement.Title,
+                Color = Colors.TryGetColor(announcement.Color),
+                Description = Announcement.FormatDescription(announcement.Description),
+                Footer = new EmbedFooterBuilder
+                {
+                    IconUrl = user.GetAvatarUrl(),
+                    Text = $"Announced by {user.GlobalName}."
+                }
+            };
+
+            return embed.Build();
         }
     }
 }
