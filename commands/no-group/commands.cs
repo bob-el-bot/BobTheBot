@@ -650,14 +650,15 @@ namespace Commands
                 Color = Bot.theme
             };
 
-            embed.AddField(name: "🗒️ Creator's Notes", value: @"- Added `/schedule message` to send messages at 🕖 specific times.
-- Added `/schedule announcement` 📢 for sending embeds at scheduled times.
-- Added `/schedule edit` for ✍️ editing scheduled messages.
-- Fixed 🌐 URL validation in `/analyze-link` preventing subdomains.
-- Fixed bug where if a System Channel is not set 👋 `/welcome` would break.
-- Fixed `/confess` to not allow effectively blank messages from being sent.
-- Updated the words ⚖️ blacklist for `/confess`.
-- Fixed bug where if ⚫ black in hex code (#000) was set for a color input it would be marked as invalid input. 
+            embed.AddField(name: "🗒️ Creator's Notes", value: @"- We realize that subscription models suck, and now that Discord has an option for one-time purchases, we do too! Lifetime ✨ premium goes for ***only $4.99!*** (💜 we hope this makes your life better!)
+- Made the `/schedule edit` edit button disable itself when the message or announcement no longer exists.
+- Added User-Agent sniffing Protection for `/analyze-link` (this helps to catch 🎵 rick-rolls).
+- Fixed 📊 stats updating incorrectly in all challenges.
+- Formatted 📜 `/quote-prompts` command.
+- Fixed `/schedule` commands 📅 date validation.
+- Fixed `/schedule edit` edit button not effecting the actually sent message.
+- Fixed `/schedule edit` 🗑️ delete button not working unless Bob was restarted.
+- Made `/schedule` commands generally 💨 faster by limiting DB reads, writes, reworking validation.
 - Stay 📺 tuned for more awesome updates!", inline: false)
             .AddField(name: "✨ Latest Update", value: commitMessage, inline: true)
             .AddField(name: ":calendar_spiral: Date", value: TimeStamp.FromString(commitDate, TimeStamp.Formats.Detailed), inline: true);
@@ -817,7 +818,7 @@ namespace Commands
             bool isPremium = Premium.IsPremium(Context.Interaction.Entitlements);
             if (isPremium == false && Premium.IsValidPremium(user.PremiumExpiration) == false)
             {
-                await RespondAsync(text: "✨ You can get premium below!\n 💜 *Thanks so much!*", components: Premium.GetComponents());
+                await RespondAsync(text: "✨ You can get premium below!\n💜 *Thanks so much!*", components: Premium.GetComponents());
             }
             else
             {

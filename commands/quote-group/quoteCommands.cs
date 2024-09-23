@@ -43,9 +43,9 @@ namespace Commands
 
             var permissions = Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions(channel);
 
-            if (!permissions.SendMessages || !permissions.ViewChannel)
+            if (!permissions.SendMessages || !permissions.ViewChannel || !permissions.EmbedLinks)
             {
-                await FollowupAsync(text: $"❌ Bob is either missing permissions to view *or* send messages in the channel <#{server.QuoteChannelId}>.\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`.\n- Use `/quote channel` to set a new channel.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await FollowupAsync(text: $"❌ Bob is either missing permissions to view, send messages, *or* embed links in the channel <#{server.QuoteChannelId}>.\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`, and `Embed Links`.\n- Use `/quote channel` to set a new channel.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
             else if (quote.Length > (server.MaxQuoteLength ?? 4096) || quote.Length < server.MinQuoteLength) // 4096 is max characters in an embed description.
             {
@@ -153,9 +153,9 @@ namespace Commands
 
             var permissions = Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions(channel);
 
-            if (!permissions.SendMessages || !permissions.ViewChannel)
+            if (!permissions.SendMessages || !permissions.ViewChannel || !permissions.EmbedLinks)
             {
-                await FollowupAsync(text: $"❌ Bob is either missing permissions to view *or* send messages in the channel <#{server.QuoteChannelId}>.\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`.\n- Use `/quote channel` to set a new channel.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await FollowupAsync(text: $"❌ Bob is either missing permissions to view, send messages, *or* embed links in the channel <#{server.QuoteChannelId}>.\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`, and `Embed Links`.\n- Use `/quote channel` to set a new channel.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
             else if (quote == null || quote == "")
             {
@@ -228,15 +228,17 @@ namespace Commands
         [SlashCommand("channel", "Configure /quote channel.")]
         public async Task Settings([Summary("channel", "The quotes channel for the server.")][ChannelTypes(ChannelType.Text)] SocketChannel channel)
         {
+            var permissions = Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)channel);
+
             // Check permissions
             if (!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageChannels)
             {
                 await RespondAsync(text: "❌ Ask an admin or mod to configure this for you.\n- Permission(s) needed: `Manage Channels`\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
             // Check if Bob has permission to send messages in given channel
-            else if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)channel).SendMessages || !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)channel).ViewChannel)
+            else if (!permissions.SendMessages || !permissions.ViewChannel || !permissions.EmbedLinks)
             {
-                await RespondAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{channel.Id}>\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await RespondAsync(text: $"❌ Bob is either missing permissions to view, send messages, *or* embed links in the channel <#{channel.Id}>.\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`, and `Embed Links`.\n- Use `/quote channel` to set a new channel.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
             else
             {
