@@ -51,7 +51,7 @@ namespace Commands
             {
                 await FollowupAsync($"❌ The quote *cannot* be made because it contains **{quote.Length}** characters.\n- this server's maximum quote length is **{server.MaxQuoteLength}**.\n- this server's minimum quote length is **{server.MinQuoteLength}**.\n- Discord has a limit of **4096** characters in embed descriptions.", ephemeral: true);
             }
-            else if ((tag1 != "" || tag2 != "" || tag3 != "") && Premium.IsPremium(Context.Interaction.Entitlements) == false) // contains tags and does not have premium
+            else if (!string.IsNullOrWhiteSpace(tag1) || !string.IsNullOrWhiteSpace(tag2) || !string.IsNullOrWhiteSpace(tag3) && Premium.IsPremium(Context.Interaction.Entitlements) == false) // contains tags and does not have premium
             {
                 await FollowupAsync($"❌ You cannot add tags.\n- Get ✨ premium to use **tags**.", components: Premium.GetComponents());
             }
