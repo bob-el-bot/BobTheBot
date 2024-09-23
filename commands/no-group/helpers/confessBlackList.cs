@@ -209,7 +209,11 @@ namespace Commands.Helpers
 
         public static readonly HashSet<string> BannedWords = new(StringComparer.OrdinalIgnoreCase)
         {
-
+                  "BobTheBot",
+                  "F U C K me",
+                  "fuck me",
+                  "FUCK ME",
+                  "B O L O W J O B",
                   "kys",
                   "ky$",
                   "kill yourself",
