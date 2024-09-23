@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Database;
@@ -51,7 +52,7 @@ namespace Commands
             {
                 await FollowupAsync($"❌ The quote *cannot* be made because it contains **{quote.Length}** characters.\n- this server's maximum quote length is **{server.MaxQuoteLength}**.\n- this server's minimum quote length is **{server.MinQuoteLength}**.\n- Discord has a limit of **4096** characters in embed descriptions.", ephemeral: true);
             }
-            else if ((tag1 != "" || tag2 != "" || tag3 != "") && Premium.IsPremium(Context.Interaction.Entitlements) == false) // contains tags and does not have premium
+            else if (!string.IsNullOrWhiteSpace(tag1) || !string.IsNullOrWhiteSpace(tag2) || !string.IsNullOrWhiteSpace(tag3) && Premium.IsPremium(Context.Interaction.Entitlements) == false) // contains tags and does not have premium
             {
                 await FollowupAsync($"❌ You cannot add tags.\n- Get ✨ premium to use **tags**.", components: Premium.GetComponents());
             }
@@ -95,21 +96,16 @@ namespace Commands
 
                 // Footer
                 StringBuilder footerText = new();
-                if (tag1 != "" || tag2 != "" || tag3 != "")
+                if (!string.IsNullOrWhiteSpace(tag1) || !string.IsNullOrWhiteSpace(tag2) || !string.IsNullOrWhiteSpace(tag3))
                 {
                     footerText.Append("Tag(s): ");
-                    string[] tags = { tag1, tag2, tag3 };
-                    for (int index = 0; index < tags.Length; index++)
-                    {
-                        if (tags[index] != "")
-                        {
-                            footerText.Append(tags[index]);
-                            if (index < tags.Length - 1)
-                            {
-                                footerText.Append(", ");
-                            }
-                        }
-                    }
+                    List<string> tags = new();
+
+                    if (!string.IsNullOrWhiteSpace(tag1)) tags.Add(tag1);
+                    if (!string.IsNullOrWhiteSpace(tag2)) tags.Add(tag2);
+                    if (!string.IsNullOrWhiteSpace(tag3)) tags.Add(tag3);
+
+                    footerText.Append(string.Join(", ", tags)); // Join the tags with ", "
                     footerText.Append(" | ");
                 }
                 footerText.Append($"Quoted by {Context.User.GlobalName}");
