@@ -13,7 +13,7 @@ namespace PremiumInterface
         public static readonly int ChallengeLimit = 1;
         public static readonly int MaxScheduledAnnouncements = 0;
         public static readonly int MaxScheduledMessages = 1;
-       
+
         // Premium Message
         public static readonly string HasPremiumMessage = "If you already have premium (💜 **thanks so much!**) simply use `/premium` to unlock all of the features.";
 
@@ -41,7 +41,7 @@ namespace PremiumInterface
         /// <returns>True if the user is entitled to premium access, otherwise false.</returns>
         public static bool IsPremium(IReadOnlyCollection<RestEntitlement> entitlements)
         {
-            return entitlements.Count > 0 && entitlements.FirstOrDefault(x => x.SkuId == 1169107771673812992) is not null;
+            return entitlements.Any(x => x.SkuId == 1169107771673812992 || x.SkuId == 1282452500913328180);
         }
     }
 }
