@@ -817,7 +817,7 @@ namespace Commands
             bool isPremium = Premium.IsPremium(Context.Interaction.Entitlements);
             if (isPremium == false && Premium.IsValidPremium(user.PremiumExpiration) == false)
             {
-                await RespondAsync(text: "✨ You can get premium below!\n 💜 *Thanks so much!*", components: Premium.GetComponents());
+                await RespondAsync(text: "✨ You can get premium below!\n💜 *Thanks so much!*", components: Premium.GetComponents());
             }
             else
             {
