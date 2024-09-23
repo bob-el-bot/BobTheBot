@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Challenges;
+using Discord;
 using Discord.Rest;
+using Moderation;
 
 namespace PremiumInterface
 {
@@ -16,6 +18,21 @@ namespace PremiumInterface
 
         // Premium Message
         public static readonly string HasPremiumMessage = "If you already have premium (💜 **thanks so much!**) simply use `/premium` to unlock all of the features.";
+
+        public static MessageComponent GetComponents()
+        {
+            var components = new ComponentBuilder();
+
+            var monthlyPremiumButton = new ButtonBuilder();
+            monthlyPremiumButton.WithSkuId(1169107771673812992);
+            monthlyPremiumButton.WithStyle(ButtonStyle.Premium);
+
+            var lifetimePremiumButton = new ButtonBuilder();
+            lifetimePremiumButton.WithSkuId(1282452500913328180);
+            lifetimePremiumButton.WithStyle(ButtonStyle.Premium);
+
+            return components.WithButton(monthlyPremiumButton).WithButton(lifetimePremiumButton).Build();
+        }
 
         /// <summary>
         /// Checks if the premium subscription is still valid based on the expiration date.

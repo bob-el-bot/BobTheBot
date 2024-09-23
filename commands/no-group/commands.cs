@@ -817,18 +817,7 @@ namespace Commands
             bool isPremium = Premium.IsPremium(Context.Interaction.Entitlements);
             if (isPremium == false && Premium.IsValidPremium(user.PremiumExpiration) == false)
             {
-                var components = new ComponentBuilder();
-                
-                var monthlyPremiumButton = new ButtonBuilder();
-                monthlyPremiumButton.WithSkuId(1169107771673812992);
-                monthlyPremiumButton.WithStyle(ButtonStyle.Premium);
-
-                var lifetimePremiumButton = new ButtonBuilder();
-                lifetimePremiumButton.WithSkuId(1282452500913328180);
-                lifetimePremiumButton.WithStyle(ButtonStyle.Premium);
-
-                components.WithButton(monthlyPremiumButton).WithButton(lifetimePremiumButton);
-                await RespondAsync(text: "✨ You can get premium below!\n 💜 *Thanks so much!*", components: components.Build());
+                await RespondAsync(text: "✨ You can get premium below!\n 💜 *Thanks so much!*", components: Premium.GetComponents());
             }
             else
             {

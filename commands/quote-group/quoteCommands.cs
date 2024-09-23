@@ -53,7 +53,7 @@ namespace Commands
             }
             else if ((tag1 != "" || tag2 != "" || tag3 != "") && Premium.IsPremium(Context.Interaction.Entitlements) == false) // contains tags and does not have premium
             {
-                await FollowupAsync($"❌ You cannot add tags.\n- Get ✨ premium to use **tags**.");
+                await FollowupAsync($"❌ You cannot add tags.\n- Get ✨ premium to use **tags**.", components: Premium.GetComponents());
             }
             else
             {
@@ -271,7 +271,7 @@ namespace Commands
             // Check if the user has premium.
             else if (Premium.IsPremium(Context.Interaction.Entitlements) == false)
             {
-                await FollowupAsync(text: $"✨ This is a *premium* feature.", ephemeral: true);
+                await FollowupAsync(text: $"✨ This is a *premium* feature.", components: Premium.GetComponents(), ephemeral: true);
             }
             // Check if the message is within Discord's length requirements.
             else if (length > 4096)
@@ -316,7 +316,7 @@ namespace Commands
             // Check if the user has premium.
             else if (Premium.IsPremium(Context.Interaction.Entitlements) == false)
             {
-                await FollowupAsync(text: $"✨ This is a *premium* feature.", ephemeral: true);
+                await FollowupAsync(text: $"✨ This is a *premium* feature.", components: Premium.GetComponents(), ephemeral: true);
             }
             // Check if the message is within Discord's length requirements.
             else if (length > 4096)

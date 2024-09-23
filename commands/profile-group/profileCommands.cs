@@ -122,7 +122,7 @@ namespace Commands
             // Check if the user has premium.
             if (Premium.IsPremium(Context.Interaction.Entitlements) == false)
             {
-                await FollowupAsync(text: $"✨ This is a *premium* feature.", ephemeral: true);
+                await FollowupAsync(text: $"✨ This is a *premium* feature.", components: Premium.GetComponents(), ephemeral: true);
             }
             else if (finalColor == null)
             {

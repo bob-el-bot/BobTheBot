@@ -31,7 +31,7 @@ namespace Commands
             // Check if the user has premium.
             else if (publish == true && Premium.IsPremium(Context.Interaction.Entitlements) == false)
             {
-                await FollowupAsync(text: $"✨ This is a *premium* feature.", ephemeral: true);
+                await FollowupAsync(text: $"✨ This is a *premium* feature.", components: Premium.GetComponents(), ephemeral: true);
             }
             // Update news channel information.
             else
@@ -85,7 +85,7 @@ namespace Commands
             // Check if the user has premium.
             if (preview == true && Premium.IsPremium(Context.Interaction.Entitlements) == false)
             {
-                await FollowupAsync(text: $"✨ This is a *premium* feature.", ephemeral: true);
+                await FollowupAsync(text: $"✨ This is a *premium* feature.", components: Premium.GetComponents(), ephemeral: true);
             }
             // Update github preview information.
             else
@@ -119,7 +119,7 @@ namespace Commands
             // Check if the user has premium.
             if (preview == true && Premium.IsPremium(Context.Interaction.Entitlements) == false)
             {
-                await FollowupAsync(text: $"✨ This is a *premium* feature.", ephemeral: true);
+                await FollowupAsync(text: $"✨ This is a *premium* feature.", components: Premium.GetComponents(), ephemeral: true);
             }
             // Update github preview information.
             else
