@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 
 namespace Commands.Helpers
 {
@@ -207,9 +209,13 @@ namespace Commands.Helpers
             "son-of-a-bitch"
         };
 
+        public static readonly HashSet<string> MaliciousWords = new (StringComparer.OrdinalIgnoreCase)
+        {
+            "BobTheBot",
+        };
+
         public static readonly HashSet<string> BannedWords = new(StringComparer.OrdinalIgnoreCase)
         {
-                  "BobTheBot",
                   "F U C K me",
                   "fuck me",
                   "FUCK ME",
