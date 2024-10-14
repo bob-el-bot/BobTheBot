@@ -151,12 +151,12 @@ namespace Commands
 
             try
             {
-                content = await GetFromAPI($"http://api.quotable.io/quotes/random?tags={prompt}", AcceptTypes.application_json);
+                content = await GetFromAPI($"https://api.quotable.io/quotes/random?tags={prompt}", AcceptTypes.application_json);
             }
             catch (HttpRequestException ex)
             {
                 Console.WriteLine($"An error occurred while fetching the quote: {ex.Message}");
-                await RespondAsync(text: "❌ There was an issue getting a quote from the API (quotable.io).\n- This is out of Bob's control unfortunately.\n- Please try again later.", ephemeral: true);
+                await RespondAsync(text: "❌ There was an issue getting a quote.\n- The API `quotable.io` failed to respond.\n- This is out of Bob's control unfortunately.\n- Please try again later.", ephemeral: true);
                 return;
             }
 
@@ -209,7 +209,7 @@ namespace Commands
             catch (HttpRequestException ex)
             {
                 Console.WriteLine($"An error occurred while fetching the fact: {ex.Message}");
-                await RespondAsync(text: "❌ There was an issue getting a fact.\n- The API (uselessfacts.jsph.pl) failed to respond.\n- This is out of Bob's control unfortunately.\n- Please try again later.", ephemeral: true);
+                await RespondAsync(text: "❌ There was an issue getting a fact.\n- The API `uselessfacts.jsph.pl` failed to respond.\n- This is out of Bob's control unfortunately.\n- Please try again later.", ephemeral: true);
                 return;
             }
 
@@ -245,7 +245,7 @@ namespace Commands
             catch (HttpRequestException ex)
             {
                 Console.WriteLine($"An error occurred while fetching the dog image: {ex.Message}");
-                await RespondAsync(text: "❌ There was an issue getting a dog image.\n- The API (random.dog) failed to respond.\n- This is out of Bob's control unfortunately.\n- Please try again later.", ephemeral: true);
+                await RespondAsync(text: "❌ There was an issue getting a dog image.\n- The API `random.dog` failed to respond.\n- This is out of Bob's control unfortunately.\n- Please try again later.", ephemeral: true);
                 return;
             }
 
@@ -272,7 +272,7 @@ namespace Commands
             catch (HttpRequestException ex)
             {
                 Console.WriteLine($"An error occurred while fetching advice: {ex.Message}");
-                await RespondAsync(text: "❌ There was an issue getting advice.\n- The API (adviceslip.com) failed to respond.\n- This is out of Bob's control unfortunately.\n- Please try again later.", ephemeral: true);
+                await RespondAsync(text: "❌ There was an issue getting advice.\n- The API `adviceslip.com` failed to respond.\n- This is out of Bob's control unfortunately.\n- Please try again later.", ephemeral: true);
                 return;
             }
 
@@ -299,7 +299,7 @@ namespace Commands
             catch (HttpRequestException ex)
             {
                 Console.WriteLine($"An error occurred while fetching a dad joke: {ex.Message}");
-                await RespondAsync(text: "❌ There was an issue getting a dad joke.\n- The API (icanhazdadjoke.com) failed to respond.\n- This is out of Bob's control unfortunately.\n- Please try again later.", ephemeral: true);
+                await RespondAsync(text: "❌ There was an issue getting a dad joke.\n- The API `icanhazdadjoke.com)`failed to respond.\n- This is out of Bob's control unfortunately.\n- Please try again later.", ephemeral: true);
                 return;
             }
 
