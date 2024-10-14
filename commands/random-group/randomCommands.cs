@@ -200,7 +200,18 @@ namespace Commands
         [SlashCommand("fact", "Bob will provide you with an outrageous fact.")]
         public async Task RandomFacts()
         {
-            string content = await GetFromAPI("https://uselessfacts.jsph.pl/api/v2/facts/random?language=en", AcceptTypes.application_json);
+            string content;
+
+            try
+            {
+                content = await GetFromAPI("https://uselessfacts.jsph.pl/api/v2/facts/random?language=en", AcceptTypes.application_json);
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"An error occurred while fetching the fact: {ex.Message}");
+                await RespondAsync(text: "❌ There was an issue getting a fact.\n- The API (uselessfacts.jsph.pl) failed to respond.\n- This is out of Bob's control unfortunately.\n- Please try again later.", ephemeral: true);
+                return;
+            }
 
             // Parse Content
             var jsonData = JsonNode.Parse(content).AsObject();
@@ -225,7 +236,18 @@ namespace Commands
         [SlashCommand("dog", "Bob will find you a cute doggo image!")]
         public async Task RandomDog()
         {
-            string content = await GetFromAPI("https://random.dog/woof.json", AcceptTypes.application_json);
+            string content;
+
+            try
+            {
+                content = await GetFromAPI("https://random.dog/woof.json", AcceptTypes.application_json);
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"An error occurred while fetching the dog image: {ex.Message}");
+                await RespondAsync(text: "❌ There was an issue getting a dog image.\n- The API (random.dog) failed to respond.\n- This is out of Bob's control unfortunately.\n- Please try again later.", ephemeral: true);
+                return;
+            }
 
             // Parse Content
             var jsonData = JsonNode.Parse(content).AsObject();
@@ -241,7 +263,18 @@ namespace Commands
         [SlashCommand("advice", "Bob will provide you with random advice.")]
         public async Task RandomAdvice()
         {
-            string content = await GetFromAPI("https://api.adviceslip.com/advice", AcceptTypes.application_json);
+            string content;
+
+            try
+            {
+                content = await GetFromAPI("https://api.adviceslip.com/advice", AcceptTypes.application_json);
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"An error occurred while fetching advice: {ex.Message}");
+                await RespondAsync(text: "❌ There was an issue getting advice.\n- The API (adviceslip.com) failed to respond.\n- This is out of Bob's control unfortunately.\n- Please try again later.", ephemeral: true);
+                return;
+            }
 
             // Parse Content
             var jsonData = JsonNode.Parse(content).AsObject();
@@ -257,10 +290,21 @@ namespace Commands
         [SlashCommand("dad-joke", "Bob will tell you a dad joke.")]
         public async Task DadJoke()
         {
-            string content = await GetFromAPI("https://icanhazdadjoke.com", AcceptTypes.text_plain);
+            string content;
+
+            try
+            {
+                content = await GetFromAPI("https://icanhazdadjoke.com", AcceptTypes.text_plain);
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"An error occurred while fetching a dad joke: {ex.Message}");
+                await RespondAsync(text: "❌ There was an issue getting a dad joke.\n- The API (icanhazdadjoke.com) failed to respond.\n- This is out of Bob's control unfortunately.\n- Please try again later.", ephemeral: true);
+                return;
+            }
 
             // Respond
-            await RespondAsync(text: $"😉  *{content}*");
+            await RespondAsync(text: $"😉 *{content}*");
         }
     }
 }
