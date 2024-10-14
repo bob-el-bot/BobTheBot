@@ -107,7 +107,7 @@ namespace Commands
         [SlashCommand("announcement", "Bob will send an embed at a specified time.")]
         public async Task ScheduleAnnouncement([Summary("title", "The title of the announcement (the title of the embed).")][MinLength(1)][MaxLength(256)] string title,
            [Summary("description", "The anouncement (the description of the embed).")][MinLength(1)][MaxLength(4000)] string description,
-           [Summary("color", "A color name (purple), or valid hex code (#8D52FD).")] string color,
+           [Summary("color", "A color name (purple), or a valid hex code (#8D52FD) or valid RGB code (141, 82, 253).")] string color,
            [Summary("channel", "The channel for the message to be sent in.")][ChannelTypes(ChannelType.Text)] SocketChannel channel,
             [Summary("month", "The month you want your message sent.")][MinValue(1)][MaxValue(12)] int month,
             [Summary("day", "The day you want your message sent.")][MinValue(1)][MaxValue(31)] int day,
@@ -148,7 +148,7 @@ namespace Commands
 
                 if (finalColor == null)
                 {
-                    await FollowupAsync(text: $"❌ `{color}` is an invalid color. Here is a list of valid colors:\n- {Colors.GetSupportedColorsString()}.\n- Valid hex codes are also accepted.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    await FollowupAsync(text: $"❌ `{color}` is an invalid color. Here is a list of valid colors:\n- {Colors.GetSupportedColorsString()}.\n- Valid hex and RGB codes are also accepted.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
                     return;
                 }
 

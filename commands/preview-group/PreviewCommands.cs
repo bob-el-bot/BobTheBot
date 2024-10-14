@@ -114,7 +114,6 @@ namespace Commands
             }
         }
 
-
         [SlashCommand("color", "Preview what a color looks like, and get more information.")]
         public async Task Color([Summary("color", "A color name (purple), or a valid hex code (#8D52FD) or valid RGB code (141, 82, 253).")] string color)
         {

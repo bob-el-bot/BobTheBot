@@ -113,7 +113,7 @@ namespace Commands
         }
 
         [SlashCommand("set-color", "Set your profile's embed color.")]
-        public async Task SetColor([Summary("color", "A color name (purple), or valid hex code (#8D52FD).")] string color)
+        public async Task SetColor([Summary("color", "A color name (purple), or a valid hex code (#8D52FD) or valid RGB code (141, 82, 253).")] string color)
         {
             await DeferAsync(ephemeral: true);
 
@@ -126,7 +126,7 @@ namespace Commands
             }
             else if (finalColor == null)
             {
-                await FollowupAsync(text: $"❌ `{color}` is an invalid color. Here is a list of valid colors:\n- {Colors.GetSupportedColorsString()}.\n- Valid hex codes are also accepted.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await FollowupAsync(text: $"❌ `{color}` is an invalid color. Here is a list of valid colors:\n- {Colors.GetSupportedColorsString()}.\n- Valid hex and RGB codes are also accepted.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
             else
             {

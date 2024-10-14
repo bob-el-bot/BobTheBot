@@ -571,7 +571,7 @@ namespace Commands
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("announce", "Bob will create a fancy embed announcement in the channel the command is used in.")]
-        public async Task Announce([Summary("title", "The title of the announcement (the title of the embed).")][MinLength(1)][MaxLength(256)] string title, [Summary("description", "The anouncement (the description of the embed).")][MinLength(1)][MaxLength(4096)] string description, [Summary("color", "A color name (purple), or valid hex code (#8D52FD).")] string color)
+        public async Task Announce([Summary("title", "The title of the announcement (the title of the embed).")][MinLength(1)][MaxLength(256)] string title, [Summary("description", "The anouncement (the description of the embed).")][MinLength(1)][MaxLength(4096)] string description, [Summary("color", "A color name (purple), or a valid hex code (#8D52FD) or valid RGB code (141, 82, 253).")] string color)
         {
             Color? finalColor = Colors.TryGetColor(color);
 
@@ -583,7 +583,7 @@ namespace Commands
             }
             else if (finalColor == null)
             {
-                await RespondAsync(text: $"❌ `{color}` is an invalid color. Here is a list of valid colors:\n- {Colors.GetSupportedColorsString()}.\n- Valid hex codes are also accepted.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await RespondAsync(text: $"❌ `{color}` is an invalid color. Here is a list of valid colors:\n- {Colors.GetSupportedColorsString()}.\n- Valid hex and RGB codes are also accepted.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
             else
             {
