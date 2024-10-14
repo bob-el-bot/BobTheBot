@@ -10,6 +10,7 @@ using static Commands.Helpers.Choose;
 using System.IO;
 using Commands.Helpers;
 using Discord;
+using System.Net.Http;
 
 namespace Commands
 {
@@ -146,21 +147,34 @@ namespace Commands
         [SlashCommand("quote", "Bob will tell you a quote.")]
         public async Task Quote([Summary("prompt", "use /quote-prompts to see all valid prompts")] string prompt = "")
         {
-            string content = await GetFromAPI($"https://api.quotable.io/quotes/random?tags={prompt}", AcceptTypes.application_json);
+            string content;
 
-            if (content != "[]") // no quotes match the prompt
+            try
+            {
+                content = await GetFromAPI($"https://api.quotable.io/quotes/random?tags={prompt}", AcceptTypes.application_json);
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"An error occurred while fetching the quote: {ex.Message}");
+                await RespondAsync(text: "❌ There was an issue getting a quote.\n- The API `quotable.io` failed to respond.\n- This is out of Bob's control unfortunately.\n- Please try again later.", ephemeral: true);
+                return;
+            }
+
+            // Check if the content is empty or indicates no quotes found
+            if (content != "[]")
             {
                 // Parse Content
                 var formattedContent = content[1..^1];
                 var jsonData = JsonNode.Parse(formattedContent).AsObject();
                 var quote = jsonData["content"].ToString();
                 var author = jsonData["author"].ToString();
-                // Respond
+
+                // Respond with the quote
                 await RespondAsync(text: $"✍️ {quote} - *{author}*");
             }
             else
             {
-                // Respond
+                // Respond if no quotes match the prompt
                 await RespondAsync(text: $"❌ The prompt: {prompt} was not recognized. Use `/quote-prompts` to see all valid prompts.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
         }
@@ -186,7 +200,18 @@ namespace Commands
         [SlashCommand("fact", "Bob will provide you with an outrageous fact.")]
         public async Task RandomFacts()
         {
-            string content = await GetFromAPI("https://uselessfacts.jsph.pl/api/v2/facts/random?language=en", AcceptTypes.application_json);
+            string content;
+
+            try
+            {
+                content = await GetFromAPI("https://uselessfacts.jsph.pl/api/v2/facts/random?language=en", AcceptTypes.application_json);
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"An error occurred while fetching the fact: {ex.Message}");
+                await RespondAsync(text: "❌ There was an issue getting a fact.\n- The API `uselessfacts.jsph.pl` failed to respond.\n- This is out of Bob's control unfortunately.\n- Please try again later.", ephemeral: true);
+                return;
+            }
 
             // Parse Content
             var jsonData = JsonNode.Parse(content).AsObject();
@@ -211,7 +236,18 @@ namespace Commands
         [SlashCommand("dog", "Bob will find you a cute doggo image!")]
         public async Task RandomDog()
         {
-            string content = await GetFromAPI("https://random.dog/woof.json", AcceptTypes.application_json);
+            string content;
+
+            try
+            {
+                content = await GetFromAPI("https://random.dog/woof.json", AcceptTypes.application_json);
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"An error occurred while fetching the dog image: {ex.Message}");
+                await RespondAsync(text: "❌ There was an issue getting a dog image.\n- The API `random.dog` failed to respond.\n- This is out of Bob's control unfortunately.\n- Please try again later.", ephemeral: true);
+                return;
+            }
 
             // Parse Content
             var jsonData = JsonNode.Parse(content).AsObject();
@@ -227,7 +263,18 @@ namespace Commands
         [SlashCommand("advice", "Bob will provide you with random advice.")]
         public async Task RandomAdvice()
         {
-            string content = await GetFromAPI("https://api.adviceslip.com/advice", AcceptTypes.application_json);
+            string content;
+
+            try
+            {
+                content = await GetFromAPI("https://api.adviceslip.com/advice", AcceptTypes.application_json);
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"An error occurred while fetching advice: {ex.Message}");
+                await RespondAsync(text: "❌ There was an issue getting advice.\n- The API `adviceslip.com` failed to respond.\n- This is out of Bob's control unfortunately.\n- Please try again later.", ephemeral: true);
+                return;
+            }
 
             // Parse Content
             var jsonData = JsonNode.Parse(content).AsObject();
@@ -243,10 +290,21 @@ namespace Commands
         [SlashCommand("dad-joke", "Bob will tell you a dad joke.")]
         public async Task DadJoke()
         {
-            string content = await GetFromAPI("https://icanhazdadjoke.com", AcceptTypes.text_plain);
+            string content;
+
+            try
+            {
+                content = await GetFromAPI("https://icanhazdadjoke.com", AcceptTypes.text_plain);
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"An error occurred while fetching a dad joke: {ex.Message}");
+                await RespondAsync(text: "❌ There was an issue getting a dad joke.\n- The API `icanhazdadjoke.com)`failed to respond.\n- This is out of Bob's control unfortunately.\n- Please try again later.", ephemeral: true);
+                return;
+            }
 
             // Respond
-            await RespondAsync(text: $"😉  *{content}*");
+            await RespondAsync(text: $"😉 *{content}*");
         }
     }
 }

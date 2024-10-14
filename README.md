@@ -4,8 +4,7 @@
     <img src="https://skillicons.dev/icons?i=cs,net,raspberrypi,discord,postgres">
 </p>
 
-
-<p>The bot for 🎲 RNG, 🖊️ quoting, 📜 fonts, 🔒 encryption, 🎮 games, and ✨ more! Currently serving 125,000+ users in 1,250+ servers!</p>
+<p>The bot for 🎲 RNG, 🖊️ quoting, 📜 fonts, 🔒 encryption, and ✨ more! Currently serving 125,000+ users in 1,550+ servers!</p>
 
 <a href="https://discord.com/oauth2/authorize?client_id=705680059809398804&permissions=1110719392886&scope=bot%20applications.commands">Invite</a>
 <span>|
@@ -132,6 +131,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/preview pull-request [link]` Preview a pull request from GitHub right on Discord.
 - `/preview issue [link]` Preview an issue from GitHub right on Discord.
 - `/preview message [link]` Preview a Discord message from any server Bob is in.
+- `/preview color [color]` Preview what a color looks like, and get more information.
 
 ### 🕖 Schedule commands:
 - `/schedule message [message] [channel] [month] [day] [hour] [minute] [timezone]` Bob will send your message at a specified time.

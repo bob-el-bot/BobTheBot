@@ -11,17 +11,17 @@ namespace ColorMethods
         /// Dictionary storing color names and their corresponding hex values.
         /// </summary>
         private static readonly Dictionary<string, string> colors = new()
-        { 
-            { "red", "ED4245" }, 
-            { "orange", "FFA500" }, 
-            { "yellow", "FEE75C" }, 
-            { "green", "57F287" }, 
-            { "black", "23272A" }, 
-            { "pink", "EB459E" }, 
-            { "blue", "3498DB" }, 
-            { "grey", "95A5A6" }, 
-            { "gray", "95A5A6" }, 
-            { "white", "FFFFFF" }, 
+        {
+            { "red", "ED4245" },
+            { "orange", "FFA500" },
+            { "yellow", "FEE75C" },
+            { "green", "57F287" },
+            { "black", "23272A" },
+            { "pink", "EB459E" },
+            { "blue", "3498DB" },
+            { "grey", "95A5A6" },
+            { "gray", "95A5A6" },
+            { "white", "FFFFFF" },
             { "purple", "8D52FD" },
             { "cyan", "00FFFF" },
             { "magenta", "FF00FF" },
@@ -39,7 +39,7 @@ namespace ColorMethods
         /// <summary>
         /// Tries to get a <see cref="Color"/> object from a string input.
         /// </summary>
-        /// <param name="input">The input string which can be a color name or a hex value.</param>
+        /// <param name="input">The input string which can be a color name, hex value, or RGB value.</param>
         /// <returns>A <see cref="Color?"/> object representing the color, or null if the conversion fails.</returns>
         public static Color? TryGetColor(string input)
         {
@@ -48,11 +48,19 @@ namespace ColorMethods
             try
             {
                 // Convert the input string to a hexadecimal string and then to a Color object
-                finalColor = new Color(Convert.ToUInt32(StringToHex(input), 16));
+                string hexValue = StringToHex(input) ?? RgbToHex(input);
+
+                if (hexValue != null)
+                {
+                    finalColor = new Color(Convert.ToUInt32(hexValue, 16));
+                }
+                else
+                {
+                    finalColor = null;
+                }
             }
             catch
             {
-                // If conversion fails, return a default Color (black)
                 finalColor = null;
             }
 
@@ -62,16 +70,36 @@ namespace ColorMethods
         /// <summary>
         /// Converts a string to a hexadecimal color string.
         /// </summary>
-        /// <param name="input">The input string which can be a color name or a hex value.</param>
+        /// <param name="input">The input string which can be a color name, hex value, or RGB value.</param>
         /// <returns>The corresponding hex string if valid; otherwise, null.</returns>
         private static string StringToHex(string input)
         {
-            // Try to convert a named color to hex, or a hex string to hex
             return WordToHex(input) ?? HexStringToHex(input) ?? null;
         }
 
         /// <summary>
-        /// Converts a hex string (e.g., "FFA500") to a hexadecimal string without '#'.
+        /// Converts RGB string (e.g., "255,0,0") to a hexadecimal string.
+        /// </summary>
+        /// <param name="input">The RGB string input.</param>
+        /// <returns>The corresponding hex string if valid; otherwise, null.</returns>
+        private static string RgbToHex(string input)
+        {
+            var rgbComponents = input.Split(',');
+
+            if (rgbComponents.Length == 3 &&
+                int.TryParse(rgbComponents[0], out int r) &&
+                int.TryParse(rgbComponents[1], out int g) &&
+                int.TryParse(rgbComponents[2], out int b) &&
+                r >= 0 && r <= 255 && g >= 0 && g <= 255 && b >= 0 && b <= 255)
+            {
+                return $"{r:X2}{g:X2}{b:X2}";
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Converts a hex string (e.g., "FFA500") to a hexadecimal string without '#' or invalid formats.
         /// </summary>
         /// <param name="input">The hex string input.</param>
         /// <returns>The cleaned hex string if valid; otherwise, null.</returns>
@@ -84,20 +112,12 @@ namespace ColorMethods
             }
 
             // Ensure the string has a valid length
-            if (input.Length % 2 != 0 || input.Length > 6)
+            if (input.Length != 6) // Ensure it's exactly 6 characters for RGB hex
             {
                 return null;
             }
 
-            StringBuilder hexBuilder = new();
-
-            for (int i = 0; i < input.Length; i += 2)
-            {
-                string hexPair = input.Substring(i, 2);
-                hexBuilder.Append(hexPair);
-            }
-
-            return hexBuilder.ToString();
+            return input.ToUpper(); // return in uppercase for consistency
         }
 
         /// <summary>

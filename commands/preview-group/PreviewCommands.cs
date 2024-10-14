@@ -1,6 +1,9 @@
 using System;
+using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using ColorHelper;
+using ColorMethods;
 using Commands.Helpers;
 using Discord;
 using Discord.Interactions;
@@ -109,6 +112,40 @@ namespace Commands
                     await RespondAsync(text: "❌ Your link is not valid. Here are some things to know: \n- Your link needs to start with `https://github.com/`.\n- If you preview a link with no line specificaions, Bob will automatically show as many lines as possible from the start.\n- For line specifications, put `#L15` or `#L15-L18` at the end of the link to the file. (see below).\n- If you are sharing a single line it could look like this: `https://github.com/bob-el-bot/website/blob/main/index.html#L15`\n- If you are sharing multiple lines it could look like this: `https://github.com/bob-el-bot/website/blob/main/index.html#L15-L18`\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
                 }
             }
+        }
+
+        [SlashCommand("color", "Preview what a color looks like, and get more information.")]
+        public async Task Color([Summary("color", "A color name (purple), or a valid hex code (#8D52FD) or valid RGB code (141, 82, 253).")] string color)
+        {
+            // Get Values
+            Color? finalColor = Colors.TryGetColor(color);
+
+            if (finalColor == null)
+            {
+                await RespondAsync(text: $"❌ `{color}` is an invalid color. Here is a list of valid colors:\n- {Colors.GetSupportedColorsString()}.\n- Valid hex and RGB codes are also accepted.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                return;
+            }
+
+            string hex = finalColor.Value.ToString();
+            CMYK cmyk = ColorConverter.HexToCmyk(new HEX(hex));
+            HSL hsl = ColorConverter.HexToHsl(new HEX(hex));
+            HSV hsv = ColorConverter.HexToHsv(new HEX(hex));
+            RGB rgb = ColorConverter.HexToRgb(new HEX(hex));
+
+            // Make Color Image
+            using MemoryStream imageStream = ColorPreview.CreateColorImage(100, 100, hex);
+
+            // Make Embed
+            var embed = new EmbedBuilder { };
+            embed.AddField("Hex", $"```{hex}```")
+            .AddField("RGB", $"```R: {rgb.R}, G: {rgb.G}, B: {rgb.B}```")
+            .AddField("CMYK", $"```C: {cmyk.C}, M: {cmyk.M}, Y: {cmyk.Y}, K: {cmyk.K}```")
+            .AddField("HSL", $"```H: {hsl.H}, S: {hsl.S}, L: {hsl.L}```")
+            .AddField("HSV", $"```H: {hsv.H}, S: {hsv.S}, V: {hsv.V}```")
+            .WithThumbnailUrl("attachment://image.png")
+            .WithColor(finalColor.Value);
+
+            await RespondWithFileAsync(imageStream, "image.png", "", embed: embed.Build());
         }
 
         [SlashCommand("pull-request", "Preview a pull request from GitHub right on Discord.")]
