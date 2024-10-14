@@ -10,6 +10,7 @@ using static Commands.Helpers.Choose;
 using System.IO;
 using Commands.Helpers;
 using Discord;
+using System.Net.Http;
 
 namespace Commands
 {
@@ -146,21 +147,34 @@ namespace Commands
         [SlashCommand("quote", "Bob will tell you a quote.")]
         public async Task Quote([Summary("prompt", "use /quote-prompts to see all valid prompts")] string prompt = "")
         {
-            string content = await GetFromAPI($"https://api.quotable.io/quotes/random?tags={prompt}", AcceptTypes.application_json);
+            string content;
 
-            if (content != "[]") // no quotes match the prompt
+            try
+            {
+                content = await GetFromAPI($"http://api.quotable.io/quotes/random?tags={prompt}", AcceptTypes.application_json);
+            }
+            catch (HttpRequestException ex)
+            {
+                Console.WriteLine($"An error occurred while fetching the quote: {ex.Message}");
+                await RespondAsync(text: "❌ There was an issue getting a quote from the API (quotable.io).\n- This is out of Bob's control unfortunately.\n- Please try again later.", ephemeral: true);
+                return;
+            }
+
+            // Check if the content is empty or indicates no quotes found
+            if (content != "[]")
             {
                 // Parse Content
                 var formattedContent = content[1..^1];
                 var jsonData = JsonNode.Parse(formattedContent).AsObject();
                 var quote = jsonData["content"].ToString();
                 var author = jsonData["author"].ToString();
-                // Respond
+
+                // Respond with the quote
                 await RespondAsync(text: $"✍️ {quote} - *{author}*");
             }
             else
             {
-                // Respond
+                // Respond if no quotes match the prompt
                 await RespondAsync(text: $"❌ The prompt: {prompt} was not recognized. Use `/quote-prompts` to see all valid prompts.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
             }
         }
