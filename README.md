@@ -131,6 +131,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/preview pull-request [link]` Preview a pull request from GitHub right on Discord.
 - `/preview issue [link]` Preview an issue from GitHub right on Discord.
 - `/preview message [link]` Preview a Discord message from any server Bob is in.
+- `/preview color [color]` Preview what a color looks like, and get more information.
 
 ### 🕖 Schedule commands:
 - `/schedule message [message] [channel] [month] [day] [hour] [minute] [timezone]` Bob will send your message at a specified time.

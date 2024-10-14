@@ -475,7 +475,7 @@ namespace Commands.Helpers
                             new ParameterInfo
                             {
                                 Name = "color",
-                                Description = "A color name (like \"purple\"), or a valid hex code (like \"#8D52FD\")"
+                                Description = "A color name (like \"purple\"), or a valid hex code (like \"#8D52FD\") or valid RGB code (like \"141, 82, 253\")."
                             }
                         }
                     },
@@ -697,7 +697,7 @@ namespace Commands.Helpers
                             new ParameterInfo
                             {
                                 Name = "color",
-                                Description = "A color name (purple), or valid hex code (#8D52FD)."
+                                Description = "A color name (like \"purple\"), or a valid hex code (like \"#8D52FD\") or valid RGB code (like \"141, 82, 253\")."
                             },
                             new ParameterInfo
                             {
@@ -1111,7 +1111,7 @@ namespace Commands.Helpers
                             new ParameterInfo
                             {
                                 Name = "color",
-                                Description = "The color of the embd. A color name (like \"purple\"), or a valid hex code (like \"#8D52FD\")"
+                                Description = "A color name (like \"purple\"), or a valid hex code (like \"#8D52FD\") or valid RGB code (like \"141, 82, 253\")."
                             }
                         }
                     },
@@ -1242,6 +1242,21 @@ namespace Commands.Helpers
                             {
                                 Name = "link",
                                 Description = "The link to the Discord message. Valid formats include: `https://discord.com/channels/1058077635692994651/1058081599222186074/1111715651476799619`"
+                            }
+                        }
+                    },
+                    new CommandInfo
+                    {
+                        Name = "color",
+                        InheritGroupName = true,
+                        Description = "Preview what a color looks like, and get more information.",
+                        Url = "https://docs.bobthebot.net#preview-color",
+                        Parameters = new[]
+                        {
+                            new ParameterInfo
+                            {
+                                Name = "color",
+                                Description = "A color name (like \"purple\"), or a valid hex code (like \"#8D52FD\") or valid RGB code (like \"141, 82, 253\")."
                             }
                         }
                     }
