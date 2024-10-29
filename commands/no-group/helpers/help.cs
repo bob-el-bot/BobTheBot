@@ -1262,7 +1262,7 @@ namespace Commands.Helpers
                     }
                 }
             },
-                        new() {
+            new() {
                 Title = "Auto Moderation",
                 Name = "automod",
                 Description = "Commands related to auto moderation.",

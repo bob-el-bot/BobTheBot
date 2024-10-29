@@ -110,6 +110,12 @@
           "SkiaSharp": "2.88.6"
         }
       },
+      "UnitsNet": {
+        "type": "Direct",
+        "requested": "[5.60.0, )",
+        "resolved": "5.60.0",
+        "contentHash": "y+EtFw5cSgEaerlrZMr8QhBT2f4GtbyNhDPNdjVZHntqCAevC8TyvQV3dyEHOM8sR4DuiUcFAZ/McyNyewFcMw=="
+      },
       "Discord.Net.Commands": {
         "type": "Transitive",
         "resolved": "3.16.0",
