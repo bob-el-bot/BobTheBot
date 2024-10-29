@@ -154,21 +154,29 @@ namespace Commands.Helpers
                 using var context = new BobEntities();
                 var channel = Bot.Client.GetChannel(scheduledItem.ChannelId) as IMessageChannel;
 
+                var dbUser = await context.GetUser(scheduledItem.UserId);
+                bool userChanged = false; // Flag to track if user properties change
+
                 if (channel == null)
                 {
                     Console.WriteLine($"Channel with ID: {scheduledItem.ChannelId} not found.");
-                    return;
+                    if (dbUser.TotalScheduledMessages > 0)
+                    {
+                        dbUser.TotalScheduledMessages -= 1;
+                        userChanged = true; // Mark that the user was changed
+                    }
                 }
-
-                var dbUser = await context.GetUser(scheduledItem.UserId);
-
-                if (scheduledItem is ScheduledMessage message)
+                else if (scheduledItem is ScheduledMessage message)
                 {
                     var messageToSend = await context.GetScheduledMessage(scheduledItem.Id);
                     if (messageToSend != null)
                     {
                         await channel.SendMessageAsync(messageToSend.Message);
-                        dbUser.TotalScheduledMessages -= 1;
+                        if (dbUser.TotalScheduledMessages > 0)
+                        {
+                            dbUser.TotalScheduledMessages -= 1;
+                            userChanged = true; // Mark that the user was changed
+                        }
                     }
                 }
                 else if (scheduledItem is ScheduledAnnouncement announcement)
@@ -178,18 +186,27 @@ namespace Commands.Helpers
                     {
                         var embed = await BuildAnnouncementEmbed(announcementToSend);
                         await channel.SendMessageAsync(embed: embed);
-                        dbUser.TotalScheduledAnnouncements -= 1;
+                        if (dbUser.TotalScheduledAnnouncements > 0)
+                        {
+                            dbUser.TotalScheduledAnnouncements -= 1;
+                            userChanged = true; // Mark that the user was changed
+                        }
                     }
                 }
 
-                // Update and remove from database in one batch
-                await context.UpdateUser(dbUser);
+                // Only update the user if there were changes
+                if (userChanged)
+                {
+                    await context.UpdateUser(dbUser);
+                }
+
+                // Always remove the scheduled item
                 await context.RemoveScheduledItem(scheduledItem);
                 ScheduledTasks.Remove(scheduledItem.Id);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error occurred while sending scheduled item: {ex.Message}");
+                Console.WriteLine($"Error occurred while sending scheduled item: {ex.Message} {ex}");
             }
         }
 
