@@ -79,4 +79,40 @@ namespace Time.Timezones
         [ChoiceDisplay("(NZST) New Zealand Standard Time")]
         NewZealandStandardTime // UTC+12:00
     }
+
+    public static class TimezoneExtensions
+    {
+        public static string ToDisplayName(this Timezone abbreviation)
+        {
+            return abbreviation switch
+            {
+                Timezone.DatelineStandardTime => "Dateline Standard Time",
+                Timezone.SamoaStandardTime => "Samoa Standard Time",
+                Timezone.HawaiianStandardTime => "Hawaiian Standard Time",
+                Timezone.AlaskanStandardTime => "Alaskan Standard Time",
+                Timezone.PacificStandardTime => "Pacific Standard Time",
+                Timezone.MountainStandardTime => "Mountain Standard Time",
+                Timezone.CentralStandardTime => "Central Standard Time",
+                Timezone.EasternStandardTime => "Eastern Standard Time",
+                Timezone.AtlanticStandardTime => "Atlantic Standard Time",
+                Timezone.ArgentinaStandardTime => "Argentina Standard Time",
+                Timezone.MidAtlanticStandardTime => "Mid-Atlantic Standard Time",
+                Timezone.AzoresStandardTime => "Azores Standard Time",
+                Timezone.GreenwichMeanTime => "GMT Standard Time",
+                Timezone.CentralEuropeanTime => "Central Europe Standard Time",
+                Timezone.EasternEuropeanTime => "E. Europe Standard Time",
+                Timezone.MoscowStandardTime => "Russian Standard Time",
+                Timezone.ArabianStandardTime => "Arabian Standard Time",
+                Timezone.PakistanStandardTime => "Pakistan Standard Time",
+                Timezone.BangladeshStandardTime => "Bangladesh Standard Time",
+                Timezone.IndochinaTime => "SE Asia Standard Time",
+                Timezone.ChinaStandardTime => "China Standard Time",
+                Timezone.JapanStandardTime => "Tokyo Standard Time",
+                Timezone.AustralianEasternTime => "AUS Eastern Standard Time",
+                Timezone.SolomonIslandsTime => "Central Pacific Standard Time",
+                Timezone.NewZealandStandardTime => "New Zealand Standard Time",
+                _ => "Unknown"
+            };
+        }
+    }
 }

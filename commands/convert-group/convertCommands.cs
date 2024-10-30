@@ -85,5 +85,37 @@ namespace Commands
 
             await Context.Interaction.ModifyOriginalResponseAsync(x => { x.Content = "✅ Suggestion made successfully!\n- This will be manually reviewed as soon as possible.\n- Thanks for the idea!"; x.Components = null; });
         }
+
+        [SlashCommand("timezone", "Convert time from one timezone to another.")]
+        public async Task ConvertTime(
+            [Summary("month", "The month for the time you want to convert.")][MinValue(1)][MaxValue(12)] int month,
+            [Summary("day", "The day for the time you want to convert.")][MinValue(1)][MaxValue(31)] int day,
+            [Summary("hour", "The hour for the time you want to convert, in 24-hour format.")][MinValue(0)][MaxValue(23)] int hour,
+            [Summary("minute", "The minute for the time you want to convert.")][MinValue(0)][MaxValue(59)] int minute,
+            [Summary("source_timezone", "Your source timezone.")] Timezone sourceTimezone,
+            [Summary("destination_timezone", "The timezone you want to convert to.")] Timezone destinationTimezone)
+        {
+            try
+            {
+                // Validate the day based on the month and current year
+                if (day < 1 || day > DateTime.DaysInMonth(DateTime.UtcNow.Year, month))
+                {
+                    await RespondAsync($"❌ Please enter a valid day between **1** and **{DateTime.DaysInMonth(DateTime.UtcNow.Year, month)}**.", ephemeral: true);
+                    return;
+                }
+
+                var destinationDateTime = TimeConverter.ConvertBetweenTimezones(month, day, hour, minute, sourceTimezone, destinationTimezone);
+
+                await RespondAsync($"{TimeConversion.GetClosestTimeEmoji(destinationDateTime)} {Timestamp.FromDateTime(TimeConverter.ConvertToUtcTime(month, day, hour, minute, sourceTimezone), Timestamp.Formats.Exact)} in {sourceTimezone.ToDisplayName()} is {Timestamp.FromDateTime(destinationDateTime, Timestamp.Formats.Exact)} in {destinationTimezone.ToDisplayName()}.");
+            }
+            catch (TimeZoneNotFoundException)
+            {
+                await RespondAsync("❌ One of the specified timezones is invalid. Please check your input.", ephemeral: true);
+            }
+            catch (Exception ex)
+            {
+                await RespondAsync($"❌ An unexpected error occurred: {ex.Message}", ephemeral: true);
+            }
+        }
     }
 }
