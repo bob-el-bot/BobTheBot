@@ -17,7 +17,7 @@ namespace Feedback
             return (SocketTextChannel)Bot.Client.GetGuild(Bot.supportServerId).GetChannel(suggestionChannelId);
         });
 
-        public static async Task SuggestUnitToDiscord(IInteractionContext ctx, Conversion.UnitType unitType, string suggestion)
+        public static async Task SuggestUnitToDiscord(IInteractionContext ctx, UnitConversion.UnitType unitType, string suggestion)
         {
             IUser user = ctx.User;
 

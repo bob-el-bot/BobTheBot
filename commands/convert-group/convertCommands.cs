@@ -6,6 +6,8 @@ using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using Feedback.Models;
+using Time.Timestamps;
+using Time.Timezones;
 using UnitsNet;
 
 namespace Commands
@@ -16,28 +18,28 @@ namespace Commands
     public class ConvertGroup : InteractionModuleBase<SocketInteractionContext>
     {
         [SlashCommand("units", "Bob will convert units for you.")]
-        public async Task ConvertUnit(Conversion.UnitType unitType, string amount, string fromUnit, string toUnit)
+        public async Task ConvertUnit(UnitConversion.UnitType unitType, string amount, string fromUnit, string toUnit)
         {
             try
             {
                 // Parse the quantity from user input
                 if (double.TryParse(amount, out double value))
                 {
-                    Type unitEnumType = Conversion.GetUnitEnumType(unitType);
+                    Type unitEnumType = UnitConversion.GetUnitEnumType(unitType);
 
                     // Attempt parsing units with enhanced logic
-                    if (Conversion.TryParseUnit(fromUnit, unitEnumType, out Enum fromUnitEnum) && Conversion.TryParseUnit(toUnit, unitEnumType, out Enum toUnitEnum))
+                    if (UnitConversion.TryParseUnit(fromUnit, unitEnumType, out Enum fromUnitEnum) && UnitConversion.TryParseUnit(toUnit, unitEnumType, out Enum toUnitEnum))
                     {
                         IQuantity quantity = Quantity.From(value, fromUnitEnum);
                         IQuantity convertedQuantity = quantity.ToUnit(toUnitEnum);
 
-                        await RespondAsync($"{Conversion.GetUnitTypeEmoji(unitType)} `{value}` **{fromUnit}** is equal to `{convertedQuantity.Value}` **{toUnit}**.");
+                        await RespondAsync($"{UnitConversion.GetUnitTypeEmoji(unitType)} `{value}` **{fromUnit}** is equal to `{convertedQuantity.Value}` **{toUnit}**.");
                     }
                     else
                     {
                         // Provide feedback on invalid units with a list of valid units
-                        string validUnits = Conversion.GetValidUnits(unitType);
-                        await RespondAsync($"❌ Invalid unit specified. Please use a valid unit for the specified quantity type like:\n- {validUnits}\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", components: Conversion.GetSuggestionButton(unitType), ephemeral: true);
+                        string validUnits = UnitConversion.GetValidUnits(unitType);
+                        await RespondAsync($"❌ Invalid unit specified. Please use a valid unit for the specified quantity type like:\n- {validUnits}\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", components: UnitConversion.GetSuggestionButton(unitType), ephemeral: true);
                     }
                 }
                 else
@@ -77,7 +79,7 @@ namespace Commands
         {
             await DeferAsync();
 
-            var unitType = (Conversion.UnitType)Enum.Parse(typeof(Conversion.UnitType), type);
+            var unitType = (UnitConversion.UnitType)Enum.Parse(typeof(UnitConversion.UnitType), type);
 
             await Feedback.Suggestion.SuggestUnitToDiscord(Context, unitType, modal.Content);
 

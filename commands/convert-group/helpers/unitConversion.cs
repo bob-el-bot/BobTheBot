@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 using Discord;
 using Discord.Interactions;
 using UnitsNet;
@@ -9,7 +7,7 @@ using UnitsNet.Units;
 
 namespace Commands.Helpers
 {
-    public static class Conversion
+    public static class UnitConversion
     {
         /// <summary>
         /// Get the quantity type for the specified unit type.
