@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using Discord;
 using Discord.Interactions;
 using UnitsNet;
 using UnitsNet.Units;
@@ -128,6 +130,22 @@ namespace Commands.Helpers
                 UnitType.Frequency => "📡",
                 _ => "❓"
             };
+        }
+
+        /// <summary>
+        /// Get a suggestion button for the specified unit type.
+        /// </summary>
+        /// <param name="unitType">The unit type to get the suggestion button for.</param>
+        public static MessageComponent GetSuggestionButton(UnitType unitType)
+        {
+            return new ComponentBuilder()
+                .WithButton(
+                        label: "Suggest a Unit",
+                        customId: $"suggestUnit:{unitType}",
+                        style: ButtonStyle.Primary,
+                        emote: Emoji.Parse(GetUnitTypeEmoji(unitType))
+                    )
+                    .Build();
         }
 
         /// <summary>

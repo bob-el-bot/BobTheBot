@@ -5,6 +5,7 @@ using Debug;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using Feedback.Models;
 using UnitsNet;
 
 namespace Commands
@@ -36,12 +37,12 @@ namespace Commands
                     {
                         // Provide feedback on invalid units with a list of valid units
                         string validUnits = Conversion.GetValidUnits(unitType);
-                        await RespondAsync($"❌ Invalid unit specified. Please use a valid unit for the specified quantity type:\n- {validUnits}\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)");
+                        await RespondAsync($"❌ Invalid unit specified. Please use a valid unit for the specified quantity type like:\n- {validUnits}\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", components: Conversion.GetSuggestionButton(unitType), ephemeral: true);
                     }
                 }
                 else
                 {
-                    await RespondAsync("❌ Invalid amount specified.\n- Please provide a numeric value.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)");
+                    await RespondAsync("❌ Invalid amount specified.\n- Please provide a numeric value.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
                 }
             }
             catch (Exception ex)
@@ -51,6 +52,36 @@ namespace Commands
                 await Logger.LogErrorToDiscord(logChannel, Context, $"{ex}");
                 return;
             }
+        }
+
+        [ComponentInteraction("suggestUnit:*", true)]
+        public async Task EditScheduledMessageButton(string type)
+        {
+            try
+            {
+                var modal = new SuggestUnitModal
+                {
+                    Content = "Please provide a brief description of the unit you would like to suggest."
+                };
+
+                await Context.Interaction.RespondWithModalAsync(modal: modal, customId: $"suggestUnitModal:{type}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+        }
+
+        [ModalInteraction("suggestUnitModal:*", true)]
+        public async Task EditMessageModalHandler(string type, SuggestUnitModal modal)
+        {
+            await DeferAsync();
+
+            var unitType = (Conversion.UnitType)Enum.Parse(typeof(Conversion.UnitType), type);
+
+            await Feedback.Suggestion.SuggestUnitToDiscord(Context, unitType, modal.Content);
+
+            await Context.Interaction.ModifyOriginalResponseAsync(x => { x.Content = "✅ Suggestion made successfully!\n- This will be manually reviewed as soon as possible.\n- Thanks for the idea!"; x.Components = null; });
         }
     }
 }
