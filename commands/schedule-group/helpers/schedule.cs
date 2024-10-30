@@ -8,7 +8,7 @@ using Database;
 using Database.Types;
 using Discord;
 using Microsoft.EntityFrameworkCore;
-using TimeStamps;
+using Time.Timestamps;
 
 namespace Commands.Helpers
 {
@@ -31,24 +31,6 @@ namespace Commands.Helpers
         private static readonly TimeSpan MaxDelay = TimeSpan.FromDays(30);
 
         /// <summary>
-        /// Converts a local time specified by month, day, hour, and minute into UTC time, based on the provided timezone.
-        /// </summary>
-        /// <param name="month">The month of the local time.</param>
-        /// <param name="day">The day of the local time.</param>
-        /// <param name="hour">The hour of the local time (24-hour format).</param>
-        /// <param name="minute">The minute of the local time.</param>
-        /// <param name="timezone">The timezone in which the local time is specified.</param>
-        /// <returns>The equivalent UTC time of the specified local time.</returns>
-        public static DateTime ConvertToUtcTime(int month, int day, int hour, int minute, TimeStamp.Timezone timezone)
-        {
-            var localDateTime = new DateTime(DateTime.UtcNow.Year, month, day, hour, minute, 0, DateTimeKind.Unspecified);
-            var timeZoneId = TimeStamp.TimezoneMappings[timezone];
-            var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-
-            return TimeZoneInfo.ConvertTimeToUtc(localDateTime, timeZoneInfo);
-        }
-
-        /// <summary>
         /// Builds an embed for editing a scheduled item.
         /// </summary>
         /// <param name="item">The scheduled item to build the embed for.</param>
@@ -67,7 +49,7 @@ namespace Commands.Helpers
                 embedBuilder.AddField(name: "Title", value: announcement.Title);
             }
 
-            embedBuilder.AddField(name: "Time", value: $"{TimeStamp.FromDateTime(item.TimeToSend, TimeStamp.Formats.Exact)}");
+            embedBuilder.AddField(name: "Time", value: $"{Timestamp.FromDateTime(item.TimeToSend, Timestamp.Formats.Exact)}");
 
             return embedBuilder;
         }

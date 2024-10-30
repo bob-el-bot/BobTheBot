@@ -14,9 +14,8 @@ using System.Linq;
 using Challenges;
 using PremiumInterface;
 using ColorMethods;
-using TimeStamps;
 using Moderation;
-using System.Reflection.Emit;
+using Time.Timestamps;
 
 namespace Commands
 {
@@ -617,7 +616,7 @@ namespace Commands
 
             embed.AddField(name: "📛 Username", value: $"{Bot.Client.CurrentUser.Username}", inline: true)
             .AddField(name: "🪪 ID", value: $"`{Bot.Client.CurrentUser.Id}`", inline: true)
-            .AddField(name: ":calendar_spiral: Date Created", value: TimeStamp.FromDateTimeOffset(Bot.Client.CurrentUser.CreatedAt, TimeStamp.Formats.Detailed), inline: false)
+            .AddField(name: ":calendar_spiral: Date Created", value: Timestamp.FromDateTimeOffset(Bot.Client.CurrentUser.CreatedAt, Timestamp.Formats.Detailed), inline: false)
             .AddField(name: "📈 Servers", value: $"`{Bot.Client.Guilds.Count:n0}`", inline: true)
             .AddField(name: "🏗️ Made With", value: "C#, .NET, PostgreSQL, Docker", inline: true)
             .AddField(name: "📡 Hosted With", value: "Railway", inline: true);
@@ -661,7 +660,7 @@ namespace Commands
 - Made `/schedule` commands generally 💨 faster by limiting DB reads, writes, reworking validation.
 - Stay 📺 tuned for more awesome updates!", inline: false)
             .AddField(name: "✨ Latest Update", value: commitMessage, inline: true)
-            .AddField(name: ":calendar_spiral: Date", value: TimeStamp.FromString(commitDate, TimeStamp.Formats.Detailed), inline: true);
+            .AddField(name: ":calendar_spiral: Date", value: Timestamp.FromString(commitDate, Timestamp.Formats.Detailed), inline: true);
 
             var components = new ComponentBuilder();
 
@@ -736,12 +735,12 @@ namespace Commands
                     if (isUserBlacklisted)
                     {
                         bannedUser = await BlackList.StepBanUser(Context.User.Id, reason);
-                        await FollowupAsync($"❌ Your message contains blacklisted words and you are **already banned**. Your punishment has **increased**.\n- You will be able to use `/confess` again {TimeStamp.FromDateTime((DateTime)bannedUser.Expiration, TimeStamp.Formats.Relative)}.\n**Reason(s):**\n{bannedUser.Reason}\n- Use `/profile punishments` to check your punishment status.\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
+                        await FollowupAsync($"❌ Your message contains blacklisted words and you are **already banned**. Your punishment has **increased**.\n- You will be able to use `/confess` again {Timestamp.FromDateTime((DateTime)bannedUser.Expiration, Timestamp.Formats.Relative)}.\n**Reason(s):**\n{bannedUser.Reason}\n- Use `/profile punishments` to check your punishment status.\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
                     }
                     else
                     {
                         bannedUser = await BlackList.BlackListUser(bannedUser, Context.User.Id, reason, BlackList.Punishment.FiveMinutes);
-                        await FollowupAsync($"❌ Your message contains blacklisted words. You have been temporarily banned.\n- You will be able to use `/confess` again {TimeStamp.FromDateTime((DateTime)bannedUser.Expiration, TimeStamp.Formats.Relative)}.\n**Reason(s):**\n{bannedUser.Reason}\n- Use `/profile punishments` to check your punishment status.\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
+                        await FollowupAsync($"❌ Your message contains blacklisted words. You have been temporarily banned.\n- You will be able to use `/confess` again {Timestamp.FromDateTime((DateTime)bannedUser.Expiration, Timestamp.Formats.Relative)}.\n**Reason(s):**\n{bannedUser.Reason}\n- Use `/profile punishments` to check your punishment status.\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
                     }
                     return;
                 }

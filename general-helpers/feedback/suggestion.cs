@@ -11,7 +11,7 @@ namespace Feedback
     {
         private static readonly ulong suggestionChannelId = 1301279825264115832;
 
-        private static readonly Lazy<SocketTextChannel> suggestionChannel = new Lazy<SocketTextChannel>(() =>
+        private static readonly Lazy<SocketTextChannel> suggestionChannel = new(() =>
         {
             // Fetch the channel only once when first accessed
             return (SocketTextChannel)Bot.Client.GetGuild(Bot.supportServerId).GetChannel(suggestionChannelId);

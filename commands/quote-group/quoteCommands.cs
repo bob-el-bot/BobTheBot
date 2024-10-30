@@ -8,7 +8,7 @@ using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using PremiumInterface;
-using TimeStamps;
+using Time.Timestamps;
 
 namespace Commands
 {
@@ -77,13 +77,13 @@ namespace Commands
                     embed = new EmbedBuilder
                     {
                         Title = $"{formattedQuote}",
-                        Description = $"-{user.Mention}, {TimeStamp.FromDateTimeOffset(DateTimeOffset.UtcNow, TimeStamp.Formats.Relative)}"
+                        Description = $"-{user.Mention}, {Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow, Timestamp.Formats.Relative)}"
                     };
                 }
                 else
                 {
                     // Use description for quote to fit up to 4096 characters or contains mentions/links
-                    string description = $"**{formattedQuote}**\n-{user.Mention}, {TimeStamp.FromDateTimeOffset(DateTimeOffset.UtcNow, TimeStamp.Formats.Relative)}";
+                    string description = $"**{formattedQuote}**\n-{user.Mention}, {Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow, Timestamp.Formats.Relative)}";
                     embed = new EmbedBuilder
                     {
                         Title = "",
@@ -182,13 +182,13 @@ namespace Commands
                     embed = new EmbedBuilder
                     {
                         Title = $"{formattedQuote}",
-                        Description = $"-{user.Mention}, {TimeStamp.FromDateTimeOffset(message.Timestamp, TimeStamp.Formats.Relative)}"
+                        Description = $"-{user.Mention}, {Timestamp.FromDateTimeOffset(message.Timestamp, Timestamp.Formats.Relative)}"
                     };
                 }
                 else
                 {
                     // Use description for quote to fit up to 4096 characters or contains mentions/links
-                    string description = $"**{formattedQuote}**\n-{user.Mention}, {TimeStamp.FromDateTimeOffset(message.Timestamp, TimeStamp.Formats.Relative)}";
+                    string description = $"**{formattedQuote}**\n-{user.Mention}, {Timestamp.FromDateTimeOffset(message.Timestamp, Timestamp.Formats.Relative)}";
                     embed = new EmbedBuilder
                     {
                         Title = "",
