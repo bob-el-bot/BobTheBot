@@ -662,7 +662,7 @@ namespace Commands.Helpers
                             new ParameterInfo
                             {
                                 Name = "hour",
-                                Description = "The hour you want your message sent."
+                                Description = "The hour you want your message sent, in military time (if PM, add 12)."
                             },
                             new ParameterInfo
                             {
@@ -717,7 +717,7 @@ namespace Commands.Helpers
                             new ParameterInfo
                             {
                                 Name = "hour",
-                                Description = "The hour you want your message sent."
+                                Description = "The hour you want your message sent, in military time (if PM, add 12)."
                             },
                             new ParameterInfo
                             {
@@ -1302,7 +1302,6 @@ namespace Commands.Helpers
                     },
                     new CommandInfo
                     {
-                        //- `/convert timezones [month] [day] [hour] [minute] [from-timezone] [to-timezone]` Convert time from one timezone to another.
                         Name = "timezones",
                         InheritGroupName = true,
                         Description = "Bob will convert a time from one timezone to another.",
@@ -1322,12 +1321,12 @@ namespace Commands.Helpers
                             new ParameterInfo
                             {
                                 Name = "hour",
-                                Description = "The hour of the time you want to convert."
+                                Description = "The hour of the time you want to convert, in military time (if PM, add 12)."
                             },
                             new ParameterInfo
                             {
                                 Name = "minute",
-                                Description = "The minutes of the time you want to convert."
+                                Description = "The minute of the time you want to convert."
                             },
                             new ParameterInfo
                             {
