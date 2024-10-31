@@ -420,9 +420,7 @@ public static class Bot
                     var executionResult = (ExecuteResult)res;
                     Console.WriteLine($"Error: {executionResult.Exception}");
 
-                    SocketTextChannel logChannel = (SocketTextChannel)Client.GetGuild(supportServerId).GetChannel(Token != "${{TEST_TOKEN}}" ? systemLogChannelId : devLogChannelId);
-
-                    await LogErrorToDiscord(logChannel, ctx, info, $"{executionResult.ErrorReason}\n{executionResult.Exception}");
+                    await LogErrorToDiscord(ctx, info, $"{executionResult.ErrorReason}\n{executionResult.Exception}");
 
                     // Live Debugging
                     // Server Logging
@@ -458,8 +456,7 @@ public static class Bot
 
             if (DebugGroup.LogGroup.LogEverything == true)
             {
-                SocketTextChannel logChannel = (SocketTextChannel)Client.GetGuild(supportServerId).GetChannel(Token != "${{TEST_TOKEN}}" ? systemLogChannelId : devLogChannelId);
-                await LogErrorToDiscord(logChannel, ctx, info);
+                await LogErrorToDiscord(ctx, info);
             }
         }
     }
