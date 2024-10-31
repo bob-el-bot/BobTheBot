@@ -92,7 +92,7 @@ namespace Commands
             [Summary("day", "The day for the time you want to convert.")][MinValue(1)][MaxValue(31)] int day,
             [Summary("hour", "The hour for the time you want to convert, in 24-hour format.")][MinValue(0)][MaxValue(23)] int hour,
             [Summary("minute", "The minute for the time you want to convert.")][MinValue(0)][MaxValue(59)] int minute,
-            [Summary("from_timezone", "The timezone to convert from.")] Timezone sourceTimezone,
+            [Summary("from-timezone", "The timezone to convert from.")] Timezone sourceTimezone,
             [Summary("to-timezone", "The timezone you want to convert to.")] Timezone destinationTimezone)
         {
             try

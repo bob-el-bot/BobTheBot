@@ -126,6 +126,10 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/review` Get a link to review Bob on Top.GG.
 - `/hi` Say hi to Bob.
 
+### ↔️ Convert commands:
+- `/convert units [unit-type] [amount] [from-unit] [to-unit]` Bob will convert units for you.
+- `/convert timezones [month] [day] [hour] [minute] [from-timezone] [to-timezone]` Convert time from one timezone to another.
+
 ### 🔎 Preview commands:
 - `/preview code [link]` Preview specific lines of code from a file on GitHub.
 - `/preview pull-request [link]` Preview a pull request from GitHub right on Discord.
