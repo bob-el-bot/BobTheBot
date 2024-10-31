@@ -10,7 +10,8 @@ using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 using PremiumInterface;
-using TimeStamps;
+using Time.Timestamps;
+using Time.Timezones;
 using static Commands.Helpers.Schedule;
 
 namespace Commands
@@ -27,7 +28,7 @@ namespace Commands
             [Summary("day", "The day you want your message sent.")][MinValue(1)][MaxValue(31)] int day,
             [Summary("hour", "The hour you want your message sent, in military time (if PM, add 12).")][MinValue(0)][MaxValue(23)] int hour,
             [Summary("minute", "The minute you want your message sent.")][MinValue(0)][MaxValue(59)] int minute,
-            [Summary("timezone", "Your timezone.")] TimeStamp.Timezone timezone)
+            [Summary("timezone", "Your timezone.")] Timezone timezone)
         {
             DateTime scheduledTime;
             var context = new BobEntities();
@@ -59,7 +60,7 @@ namespace Commands
                 }
 
                 // Convert local time to UTC.
-                scheduledTime = ConvertToUtcTime(month, day, hour, minute, timezone);
+                scheduledTime = TimeConverter.ConvertToUtcTime(month, day, hour, minute, timezone);
                 if (scheduledTime <= DateTime.UtcNow)
                 {
                     await FollowupAsync("🌌 Please schedule the message for a future time.");
@@ -74,8 +75,8 @@ namespace Commands
             catch (Exception ex)
             {
                 await FollowupAsync($"❌ An unexpected error occurred: {ex.Message}\n- Try again later.\n- The developers have been notified, but you can join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ) and provide us with more details if you want.");
-                SocketTextChannel logChannel = (SocketTextChannel)Bot.Client.GetGuild(Bot.supportServerId).GetChannel(Bot.Token != "${{TEST_TOKEN}}" ? Bot.systemLogChannelId : Bot.devLogChannelId);
-                await Logger.LogErrorToDiscord(logChannel, Context, $"{ex}");
+                
+                await Logger.LogErrorToDiscord(Context, $"{ex}");
                 return;
             }
 
@@ -100,7 +101,7 @@ namespace Commands
 
             await ModifyOriginalResponseAsync(x =>
             {
-                x.Content = $"✅ Message scheduled for {TimeStamp.FromDateTime(scheduledMessage.TimeToSend, TimeStamp.Formats.Exact)}\n- ID: `{scheduledMessage.Id}`\n- You can edit your message with `/schedule edit` and the given ID.";
+                x.Content = $"✅ Message scheduled for {Timestamp.FromDateTime(scheduledMessage.TimeToSend, Timestamp.Formats.Exact)}\n- ID: `{scheduledMessage.Id}`\n- You can edit your message with `/schedule edit` and the given ID.";
             });
         }
 
@@ -113,7 +114,7 @@ namespace Commands
             [Summary("day", "The day you want your message sent.")][MinValue(1)][MaxValue(31)] int day,
             [Summary("hour", "The hour you want your message sent, in military time (if PM, add 12).")][MinValue(0)][MaxValue(23)] int hour,
             [Summary("minute", "The minute you want your message sent.")][MinValue(0)][MaxValue(59)] int minute,
-           [Summary("timezone", "Your timezone.")] TimeStamp.Timezone timezone)
+           [Summary("timezone", "Your timezone.")] Timezone timezone)
         {
             DateTime scheduledTime;
             Color? finalColor = Colors.TryGetColor(color);
@@ -153,7 +154,7 @@ namespace Commands
                 }
 
                 // Convert local time to UTC.
-                scheduledTime = ConvertToUtcTime(month, day, hour, minute, timezone);
+                scheduledTime = TimeConverter.ConvertToUtcTime(month, day, hour, minute, timezone);
                 if (scheduledTime <= DateTime.UtcNow)
                 {
                     await FollowupAsync("🌌 Please schedule the message for a future time.");
@@ -168,8 +169,8 @@ namespace Commands
             catch (Exception ex)
             {
                 await FollowupAsync($"❌ An unexpected error occurred: {ex.Message}\n- Try again later.\n- The developers have been notified, but you can join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ) and provide us with more details if you want.");
-                SocketTextChannel logChannel = (SocketTextChannel)Bot.Client.GetGuild(Bot.supportServerId).GetChannel(Bot.Token != "${{TEST_TOKEN}}" ? Bot.systemLogChannelId : Bot.devLogChannelId);
-                await Logger.LogErrorToDiscord(logChannel, Context, $"{ex}");
+                
+                await Logger.LogErrorToDiscord(Context, $"{ex}");
                 return;
             }
 
@@ -196,7 +197,7 @@ namespace Commands
 
             await ModifyOriginalResponseAsync(x =>
             {
-                x.Content = $"✅ Announcement scheduled for {TimeStamp.FromDateTime(scheduledAnnouncement.TimeToSend, TimeStamp.Formats.Exact)}\n- ID: `{scheduledAnnouncement.Id}`\n- You can edit your announcement with `/schedule edit` and the given ID.";
+                x.Content = $"✅ Announcement scheduled for {Timestamp.FromDateTime(scheduledAnnouncement.TimeToSend, Timestamp.Formats.Exact)}\n- ID: `{scheduledAnnouncement.Id}`\n- You can edit your announcement with `/schedule edit` and the given ID.";
             });
         }
 

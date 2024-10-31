@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Net;
-using System.Runtime.CompilerServices;
 using System.Text;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Discord;
-using TimeStamps;
+using Time.Timestamps;
 using static ApiInteractions.Interface;
 
 namespace Commands.Helpers
@@ -79,13 +76,13 @@ namespace Commands.Helpers
             embed.AddField(name: $"{(!pullRequestInfo.Merged ? "<:pull_request_git:1234992648280866836>" : "<:merge_git:1234992673618919507>")} State", value: $"`{pullRequestInfo.State}`", inline: true);
             if (pullRequestInfo.MergedAt != null)
             {
-                embed.AddField(name: "Merged At", value: TimeStamp.FromString(pullRequestInfo.MergedAt, TimeStamp.Formats.Detailed), inline: true);
+                embed.AddField(name: "Merged At", value: Timestamp.FromString(pullRequestInfo.MergedAt, Timestamp.Formats.Detailed), inline: true);
             }
             else
             {
                 if (pullRequestInfo.State == "closed")
                 {
-                    embed.AddField(name: "Closed At", value: TimeStamp.FromString(pullRequestInfo.ClosedAt, TimeStamp.Formats.Detailed), inline: true);
+                    embed.AddField(name: "Closed At", value: Timestamp.FromString(pullRequestInfo.ClosedAt, Timestamp.Formats.Detailed), inline: true);
                 }
 
                 embed.AddField(name: "Merged", value: $"`{pullRequestInfo.Merged}`", inline: true);
@@ -95,7 +92,7 @@ namespace Commands.Helpers
             .AddField(name: "Comments", value: $"`{pullRequestInfo.Comments}`", inline: true)
             .AddField(name: "ReviewComments", value: $"`{pullRequestInfo.ReviewComments}`", inline: true)
             .AddField(name: "Commits", value: $"`{pullRequestInfo.Commits}`", inline: true)
-            .AddField(name: "Last Updated", value: TimeStamp.FromString(pullRequestInfo.UpdatedAt, TimeStamp.Formats.Detailed), inline: true)
+            .AddField(name: "Last Updated", value: Timestamp.FromString(pullRequestInfo.UpdatedAt, Timestamp.Formats.Detailed), inline: true)
             .AddField(name: "Labels", value: pullRequestInfo.Labels.Count > 0 ? FormatLabels(pullRequestInfo.Labels) : "`none`")
             .AddField(name: "Diff", value: FormatDiff(pullRequestInfo.ChangedFiles, pullRequestInfo.Additions, pullRequestInfo.Deletions));
 

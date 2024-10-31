@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
-using TimeStamps;
+using Time.Timestamps;
 
 namespace Database.Types
 {
@@ -36,7 +36,7 @@ namespace Database.Types
             DateTime? expirationUtc = Expiration;
 
             string expirationString = expirationUtc.HasValue && expirationUtc != DateTime.MaxValue
-                ? TimeStamp.FromDateTime((DateTime)expirationUtc, TimeStamp.Formats.Relative)
+                ? Timestamp.FromDateTime((DateTime)expirationUtc, Timestamp.Formats.Relative)
                 : "Never | Permanent";
 
             sb.AppendLine($"**Expiration:**\n{expirationString}");

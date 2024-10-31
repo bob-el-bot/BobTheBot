@@ -1,11 +1,10 @@
 using System;
 using System.Threading.Tasks;
 using Challenges;
-using Database;
 using Discord;
 using Discord.WebSocket;
 using Games;
-using TimeStamps;
+using Time.Timestamps;
 
 namespace Commands.Helpers
 {
@@ -46,7 +45,7 @@ namespace Commands.Helpers
             .WithButton(label: "📃 Paper", customId: $"rps:1:{Id}", style: ButtonStyle.Secondary)
             .WithButton(label: "✂️ Scissors", customId: $"rps:2:{Id}", style: ButtonStyle.Secondary);
 
-            await Message.ModifyAsync(x => { x.Content = null; x.Embed = Challenge.CreateEmbed($"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\nChoose {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)}.", Challenge.DefaultColor); x.Components = components.Build(); });
+            await Message.ModifyAsync(x => { x.Content = null; x.Embed = Challenge.CreateEmbed($"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\nChoose {Timestamp.FromDateTime(ExpirationTime, Timestamp.Formats.Relative)}.", Challenge.DefaultColor); x.Components = components.Build(); });
         }
 
         public override async Task StartGame(SocketMessageComponent interaction)
@@ -62,7 +61,7 @@ namespace Commands.Helpers
             .WithButton(label: "📃 Paper", customId: $"rps:1:{Id}", style: ButtonStyle.Secondary)
             .WithButton(label: "✂️ Scissors", customId: $"rps:2:{Id}", style: ButtonStyle.Secondary);
 
-            await interaction.ModifyOriginalResponseAsync(x => { x.Content = null; x.Embed = Challenge.CreateEmbed($"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\nChoose  {TimeStamp.FromDateTime(ExpirationTime, TimeStamp.Formats.Relative)}.", Challenge.DefaultColor); x.Components = components.Build(); });
+            await interaction.ModifyOriginalResponseAsync(x => { x.Content = null; x.Embed = Challenge.CreateEmbed($"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.\nChoose  {Timestamp.FromDateTime(ExpirationTime, Timestamp.Formats.Relative)}.", Challenge.DefaultColor); x.Components = components.Build(); });
         }
 
         public override async Task EndGameOnTime()

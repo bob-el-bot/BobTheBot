@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Challenges;
 using Discord;
 using static ApiInteractions.Interface;
-using TimeStamps;
+using Time.Timestamps;
 
 namespace Commands.Helpers
 {
@@ -165,7 +165,7 @@ namespace Commands.Helpers
                     $"**{game.Player1.GlobalName}**: {game.Player1Chart} {(!game.Player2.IsBot ? $"**{game.Player2.GlobalName}**: {game.Player2Chart}" : "")}" : "")
                 .AppendLine($"Question: {game.Questions.Count}/{TotalQuestions}\n")
                 .AppendLine(FormatQuestionText(lastQuestion))
-                .AppendLine($"(Ends {TimeStamp.FromDateTime(game.ExpirationTime, TimeStamp.Formats.Relative)}).")
+                .AppendLine($"(Ends {Timestamp.FromDateTime(game.ExpirationTime, Timestamp.Formats.Relative)}).")
                 .ToString();
 
             return new EmbedBuilder

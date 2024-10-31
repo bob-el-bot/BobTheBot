@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Net;
-using System.Runtime.CompilerServices;
 using System.Text;
-using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Discord;
-using TimeStamps;
+using Time.Timestamps;
 using static ApiInteractions.Interface;
 
 namespace Commands.Helpers
@@ -77,7 +74,7 @@ namespace Commands.Helpers
 
             if (issueInfo.State == "closed")
             {
-                embed.AddField(name: "<:issue_closed_git:1234993540119920711> Closed At", value: TimeStamp.FromString(issueInfo.ClosedAt, TimeStamp.Formats.Detailed), inline: true);
+                embed.AddField(name: "<:issue_closed_git:1234993540119920711> Closed At", value: Timestamp.FromString(issueInfo.ClosedAt, Timestamp.Formats.Detailed), inline: true);
             }
             else
             {
@@ -86,7 +83,7 @@ namespace Commands.Helpers
 
             embed.AddField(name: "<:lock_git:1234998466904854648> Locked", value: $"`{issueInfo.Locked}`", inline: true)
             .AddField(name: "Comments", value: $"`{issueInfo.Comments}`", inline: true)
-            .AddField(name: "Last Updated", value: TimeStamp.FromString(issueInfo.UpdatedAt, TimeStamp.Formats.Detailed), inline: true)
+            .AddField(name: "Last Updated", value: Timestamp.FromString(issueInfo.UpdatedAt, Timestamp.Formats.Detailed), inline: true)
             .AddField(name: "Labels", value: issueInfo.Labels.Count > 0 ? FormatLabels(issueInfo.Labels) : "`none`");
 
             return embed.Build();

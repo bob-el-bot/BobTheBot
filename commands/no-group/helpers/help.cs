@@ -662,7 +662,7 @@ namespace Commands.Helpers
                             new ParameterInfo
                             {
                                 Name = "hour",
-                                Description = "The hour you want your message sent."
+                                Description = "The hour you want your message sent, in military time (if PM, add 12)."
                             },
                             new ParameterInfo
                             {
@@ -717,7 +717,7 @@ namespace Commands.Helpers
                             new ParameterInfo
                             {
                                 Name = "hour",
-                                Description = "The hour you want your message sent."
+                                Description = "The hour you want your message sent, in military time (if PM, add 12)."
                             },
                             new ParameterInfo
                             {
@@ -1262,7 +1262,87 @@ namespace Commands.Helpers
                     }
                 }
             },
-                        new() {
+            new() {
+                Title = "Convert",
+                Name = "convert",
+                Description = "Commands related to conversions.",
+                Emoji = "↔️",
+                Url = "https://docs.bobthebot.net#convert",
+                Commands = new[]
+                {
+                    new CommandInfo
+                    {
+                        Name = "units",
+                        InheritGroupName = true,
+                        Description = "Bob will convert one unit to another for you.",
+                        Url = "https://docs.bobthebot.net#convert-units",
+                        Parameters = new[]
+                        {
+                            new ParameterInfo
+                            {
+                                Name = "unit-type",
+                                Description = "The unit type of the conversion. Choose from: length, mass, temperature, volume, duration, speed, area, pressure, energy, information, angle, frequency."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "amount",
+                                Description = "The amount of the unit you want to convert."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "from-unit",
+                                Description = "The unit you want to convert from (to see specifics use the command with a random value for this field)."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "to-unit",
+                                Description = "The unit you want to convert to (to see specifics use the command with a random value for this field)."
+                            }
+                        }
+                    },
+                    new CommandInfo
+                    {
+                        Name = "timezones",
+                        InheritGroupName = true,
+                        Description = "Bob will convert a time from one timezone to another.",
+                        Url = "https://docs.bobthebot.net#convert-timezones",
+                        Parameters = new[]
+                        {
+                            new ParameterInfo
+                            {
+                                Name = "month",
+                                Description = "The month of the time you want to convert."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "day",
+                                Description = "The day of the time you want to convert."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "hour",
+                                Description = "The hour of the time you want to convert, in military time (if PM, add 12)."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "minute",
+                                Description = "The minute of the time you want to convert."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "from-timezone",
+                                Description = "The timezone of the time you want to convert from."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "to-timezone",
+                                Description = "The timezone of the time you want to convert to."
+                            }
+                        }
+                    },
+                }
+            },
+            new() {
                 Title = "Auto Moderation",
                 Name = "automod",
                 Description = "Commands related to auto moderation.",

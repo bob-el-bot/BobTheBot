@@ -8,7 +8,7 @@ using Database;
 using Database.Types;
 using Discord;
 using Microsoft.EntityFrameworkCore;
-using TimeStamps;
+using Time.Timestamps;
 
 namespace Commands.Helpers
 {
@@ -31,24 +31,6 @@ namespace Commands.Helpers
         private static readonly TimeSpan MaxDelay = TimeSpan.FromDays(30);
 
         /// <summary>
-        /// Converts a local time specified by month, day, hour, and minute into UTC time, based on the provided timezone.
-        /// </summary>
-        /// <param name="month">The month of the local time.</param>
-        /// <param name="day">The day of the local time.</param>
-        /// <param name="hour">The hour of the local time (24-hour format).</param>
-        /// <param name="minute">The minute of the local time.</param>
-        /// <param name="timezone">The timezone in which the local time is specified.</param>
-        /// <returns>The equivalent UTC time of the specified local time.</returns>
-        public static DateTime ConvertToUtcTime(int month, int day, int hour, int minute, TimeStamp.Timezone timezone)
-        {
-            var localDateTime = new DateTime(DateTime.UtcNow.Year, month, day, hour, minute, 0, DateTimeKind.Unspecified);
-            var timeZoneId = TimeStamp.TimezoneMappings[timezone];
-            var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
-
-            return TimeZoneInfo.ConvertTimeToUtc(localDateTime, timeZoneInfo);
-        }
-
-        /// <summary>
         /// Builds an embed for editing a scheduled item.
         /// </summary>
         /// <param name="item">The scheduled item to build the embed for.</param>
@@ -67,7 +49,7 @@ namespace Commands.Helpers
                 embedBuilder.AddField(name: "Title", value: announcement.Title);
             }
 
-            embedBuilder.AddField(name: "Time", value: $"{TimeStamp.FromDateTime(item.TimeToSend, TimeStamp.Formats.Exact)}");
+            embedBuilder.AddField(name: "Time", value: $"{Timestamp.FromDateTime(item.TimeToSend, Timestamp.Formats.Exact)}");
 
             return embedBuilder;
         }
@@ -154,21 +136,29 @@ namespace Commands.Helpers
                 using var context = new BobEntities();
                 var channel = Bot.Client.GetChannel(scheduledItem.ChannelId) as IMessageChannel;
 
+                var dbUser = await context.GetUser(scheduledItem.UserId);
+                bool userChanged = false; // Flag to track if user properties change
+
                 if (channel == null)
                 {
                     Console.WriteLine($"Channel with ID: {scheduledItem.ChannelId} not found.");
-                    return;
+                    if (dbUser.TotalScheduledMessages > 0)
+                    {
+                        dbUser.TotalScheduledMessages -= 1;
+                        userChanged = true; // Mark that the user was changed
+                    }
                 }
-
-                var dbUser = await context.GetUser(scheduledItem.UserId);
-
-                if (scheduledItem is ScheduledMessage message)
+                else if (scheduledItem is ScheduledMessage message)
                 {
                     var messageToSend = await context.GetScheduledMessage(scheduledItem.Id);
                     if (messageToSend != null)
                     {
                         await channel.SendMessageAsync(messageToSend.Message);
-                        dbUser.TotalScheduledMessages -= 1;
+                        if (dbUser.TotalScheduledMessages > 0)
+                        {
+                            dbUser.TotalScheduledMessages -= 1;
+                            userChanged = true; // Mark that the user was changed
+                        }
                     }
                 }
                 else if (scheduledItem is ScheduledAnnouncement announcement)
@@ -178,18 +168,27 @@ namespace Commands.Helpers
                     {
                         var embed = await BuildAnnouncementEmbed(announcementToSend);
                         await channel.SendMessageAsync(embed: embed);
-                        dbUser.TotalScheduledAnnouncements -= 1;
+                        if (dbUser.TotalScheduledAnnouncements > 0)
+                        {
+                            dbUser.TotalScheduledAnnouncements -= 1;
+                            userChanged = true; // Mark that the user was changed
+                        }
                     }
                 }
 
-                // Update and remove from database in one batch
-                await context.UpdateUser(dbUser);
+                // Only update the user if there were changes
+                if (userChanged)
+                {
+                    await context.UpdateUser(dbUser);
+                }
+
+                // Always remove the scheduled item
                 await context.RemoveScheduledItem(scheduledItem);
                 ScheduledTasks.Remove(scheduledItem.Id);
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error occurred while sending scheduled item: {ex.Message}");
+                Console.WriteLine($"Error occurred while sending scheduled item: {ex.Message} {ex}");
             }
         }
 

@@ -19,6 +19,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="7.0.11" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="7.0.11" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.54" />
+    <PackageReference Include="UnitsNet" Version="5.60.0" />
     <Reference Include="System.Net.Http" />
     <PackageReference Include="ColorHelper" Version="1.8.1" />
   </ItemGroup>

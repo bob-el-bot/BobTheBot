@@ -52,8 +52,7 @@ namespace Feedback
 
             await component.ModifyOriginalResponseAsync(x => { x.Content = "💜 Thanks for the feedback!"; x.Components = null; });
 
-            SocketTextChannel logChannel = (SocketTextChannel)Bot.Client.GetGuild(Bot.supportServerId).GetChannel(Bot.systemLogChannelId);
-            await Logger.LogFeedbackToDiscord(logChannel, guildName, (string[])component.Data.Values);
+            await Logger.LogFeedbackToDiscord(guildName, (string[])component.Data.Values);
         }
     }
 }

@@ -11,7 +11,16 @@ namespace Debug
 {
     public static class Logger
     {
-        public static async Task LogErrorToDiscord(SocketTextChannel channel, IInteractionContext ctx, SlashCommandInfo info, string errorReason = null)
+        private static readonly ulong logChannelId = 1160105468082004029;
+        private static readonly ulong devLogChannelId = 1196575302143459388;
+
+        private static readonly Lazy<SocketTextChannel> logChannel = new(() =>
+        {
+            // Fetch the channel only once when first accessed
+            return (SocketTextChannel)Bot.Client.GetGuild(Bot.supportServerId).GetChannel(logChannelId);
+        });
+
+        public static async Task LogErrorToDiscord(IInteractionContext ctx, SlashCommandInfo info, string errorReason = null)
         {
             string location = (ctx.Interaction.GuildId == null) ? "a DM" : (Bot.Client.GetGuild((ulong)ctx.Interaction.GuildId) == null ? "User Install" : Bot.Client.GetGuild((ulong)ctx.Interaction.GuildId).ToString());
             var commandName = info.IsTopLevelCommand ? $"/{info.Name}" : $"/{info.Module.SlashGroupName} {info.Name}";
@@ -47,10 +56,10 @@ namespace Debug
                 message = $"`{DateTime.Now:dd/MM. H:mm:ss} | {FormatPerformance(cpuUsage, ramUsage)} | Location: {location} | User: {user.GlobalName}, {user.Id}`\n```{commandUsage}```{(errorReason == null ? "" : $"Error: ```cs\n{errorReason}```")}Command type: **{commandType}** | Method name in code: **{methodName}** | **ERR TOO LONG**";
             }
 
-            await channel.SendMessageAsync(message);
+            await logChannel.Value.SendMessageAsync(message);
         }
 
-        public static async Task LogErrorToDiscord(SocketTextChannel channel, IInteractionContext ctx, string errorReason)
+        public static async Task LogErrorToDiscord(IInteractionContext ctx, string errorReason)
         {
             string location = (ctx.Interaction.GuildId == null) ? "a DM" : (Bot.Client.GetGuild((ulong)ctx.Interaction.GuildId) == null ? "User Install" : Bot.Client.GetGuild((ulong)ctx.Interaction.GuildId).ToString());
             IUser user = ctx.User;
@@ -73,10 +82,10 @@ namespace Debug
                 message = $"`{DateTime.Now:dd/MM. H:mm:ss} | {FormatPerformance(cpuUsage, ramUsage)} | Location: {location} | User: {user.GlobalName}, {user.Id}`\nError: ```cs\n{errorReason}``` | **ERR TOO LONG**";
             }
 
-            await channel.SendMessageAsync(message);
+            await logChannel.Value.SendMessageAsync(message);
         }
 
-        public static async Task LogFeedbackToDiscord(SocketTextChannel channel, string guildName, string[] reasons)
+        public static async Task LogFeedbackToDiscord(string guildName, string[] reasons)
         {
             StringBuilder formattedReasons = new();
 
@@ -85,7 +94,7 @@ namespace Debug
                 formattedReasons.Append($"{reason}, ");
             }
 
-            await channel.SendMessageAsync($"`Location: {guildName}`\n**Reason(s):** {formattedReasons}");
+            await logChannel.Value.SendMessageAsync($"`Location: {guildName}`\n**Reason(s):** {formattedReasons}");
         }
 
         public static async Task LogServerUseToDiscord(RestTextChannel channel, IInteractionContext ctx, SlashCommandInfo info, string errorReason = null)
