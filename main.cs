@@ -147,7 +147,7 @@ public static class Bot
             Console.WriteLine(e);
         }
 
-        string[] statuses = { "/help | Games!", "/help | Premium! ❤︎", "/help | bobthebot.net", "/help | RNG!", "/help | Quotes!", "/help | Confessions!" };
+        string[] statuses = { "/help | Games!", "/help | Premium! ❤︎", "/help | Scheduling!", "/help | Automod!", "/help | bobthebot.net", "/help | RNG!", "/help | Quotes!", "/help | Confessions!" };
         int index = 0;
 
         _ = Task.Run(() =>
