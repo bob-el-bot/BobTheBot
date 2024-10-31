@@ -646,18 +646,23 @@ namespace Commands
             var embed = new EmbedBuilder
             {
                 Title = $"What's New?",
-                Color = Bot.theme
-            };
-
-            embed.AddField(name: "🗒️ Creator's Notes", value: @"- We realize that subscription models suck, and now that Discord has an option for one-time purchases, we do too! Lifetime ✨ premium goes for ***only $4.99!*** (💜 we hope this makes your life better!)
+                Description = @"### 🗒️ Creator's Notes
+- We realize that subscription models suck, and now that Discord has an option for one-time purchases, we do too! Lifetime ✨ premium goes for ***only $4.99!*** (💜 we hope this makes your life better!)
 - Made the `/schedule edit` edit button disable itself when the message or announcement no longer exists.
+- Added `/preview color` to preview a 🌈 color along with its alternative codes (RGB, HEX, CMYK, HSL, HSV).
 - Added `/convert units` to for 📏 unit conversion right in Discord.
 - Added `/convert timezones` to convert time between 🕗 timezones.
+- Added 🎨 RGB value input support across all commands with color parameters (just try: '141, 82, 253')!
+- Added API request error handling to ensure users know why a command which relies on an API failed.
+- Fixed various permission issues with `/announce`, `/quote` group involving the Embed Links permission.
 - Fixed a bug where scheduled messages and announcements would not get 🗑️ deleted if the channel to send in was deleted.
 - New statuses in rotation 👀.
 - Fixed a bug 🛠️ where the automatic error logging system would make an API call for the channel even if fetched previously.
-- Stay 📺 tuned for more awesome updates!", inline: false)
-            .AddField(name: "✨ Latest Update", value: commitMessage, inline: true)
+- Stay 📺 tuned for more awesome updates!",
+                Color = Bot.theme
+            };
+
+            embed.AddField(name: "✨ Latest Update", value: commitMessage, inline: true)
             .AddField(name: ":calendar_spiral: Date", value: Timestamp.FromString(commitDate, Timestamp.Formats.Detailed), inline: true);
 
             var components = new ComponentBuilder();
