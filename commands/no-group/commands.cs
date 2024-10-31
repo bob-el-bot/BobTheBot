@@ -651,13 +651,11 @@ namespace Commands
 
             embed.AddField(name: "🗒️ Creator's Notes", value: @"- We realize that subscription models suck, and now that Discord has an option for one-time purchases, we do too! Lifetime ✨ premium goes for ***only $4.99!*** (💜 we hope this makes your life better!)
 - Made the `/schedule edit` edit button disable itself when the message or announcement no longer exists.
-- Added User-Agent sniffing Protection for `/analyze-link` (this helps to catch 🎵 rick-rolls).
-- Fixed 📊 stats updating incorrectly in all challenges.
-- Formatted 📜 `/quote-prompts` command.
-- Fixed `/schedule` commands 📅 date validation.
-- Fixed `/schedule edit` edit button not effecting the actually sent message.
-- Fixed `/schedule edit` 🗑️ delete button not working unless Bob was restarted.
-- Made `/schedule` commands generally 💨 faster by limiting DB reads, writes, reworking validation.
+- Added `/convert units` to for 📏 unit conversion right in Discord.
+- Added `/convert timezones` to convert time between 🕗 timezones.
+- Fixed a bug where scheduled messages and announcements would not get 🗑️ deleted if the channel to send in was deleted.
+- New statuses in rotation 👀.
+- Fixed a bug 🛠️ where the automatic error logging system would make an API call for the channel even if fetched previously.
 - Stay 📺 tuned for more awesome updates!", inline: false)
             .AddField(name: "✨ Latest Update", value: commitMessage, inline: true)
             .AddField(name: ":calendar_spiral: Date", value: Timestamp.FromString(commitDate, Timestamp.Formats.Detailed), inline: true);
