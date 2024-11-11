@@ -1,4 +1,9 @@
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using BadgeInterface;
 using Commands.Attributes;
@@ -11,6 +16,7 @@ using Discord.Rest;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 using Moderation;
+using static ApiInteractions.Interface;
 
 namespace Commands
 {
@@ -174,6 +180,41 @@ namespace Commands
                 }
 
                 await FollowupAsync(text: $"✅ The exact amount of real users bob has: `{totalUsers}`");
+            }
+
+            [SlashCommand("update-bot-sites-server-count", "Updates the Top.GG and discord.bots server count.")]
+            public async Task UpdateTopGGServerCount()
+            {
+                await DeferAsync();
+
+                int totalServers = Bot.Client.Guilds.Count;
+                var message = new StringBuilder();
+
+                async Task<HttpStatusCode> UpdateServerCount(string url, string token, string jsonKey)
+                {
+                    var content = new StringContent($"{{\"{jsonKey}\":{totalServers}}}", Encoding.UTF8, "application/json");
+                    return await PostToAPI(url, Environment.GetEnvironmentVariable(token), content);
+                }
+
+                var topGGResult = await UpdateServerCount("https://top.gg/api/bots/705680059809398804/stats", "TOP_GG_TOKEN", "server_count");
+                var discordBotsResult = await UpdateServerCount("https://discord.bots.gg/api/v1/bots/705680059809398804/stats", "DISCORD_BOTS_TOKEN", "guildCount");
+
+                void AppendResult(string siteName, string url, HttpStatusCode result)
+                {
+                    if (result == HttpStatusCode.OK)
+                    {
+                        message.AppendLine($"✅ The exact amount of servers has been updated to: `{totalServers}` on [{siteName}](<{url}>)");
+                    }
+                    else
+                    {
+                        message.AppendLine($"❌ There was an error updating the server count on {siteName}.\n- Status Code: `{result}`");
+                    }
+                }
+
+                AppendResult("Top.GG", "https://top.gg/bot/705680059809398804", topGGResult);
+                AppendResult("Discord.Bots", "https://discord.bots.gg/bots/705680059809398804", discordBotsResult);
+
+                await FollowupAsync(text: message.ToString());
             }
         }
 

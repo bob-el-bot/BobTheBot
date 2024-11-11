@@ -32,7 +32,7 @@ public static class Bot
 
     private static InteractionService Service;
 
-    public static readonly string Token = Environment.GetEnvironmentVariable("DISCORD_TOKEN");
+    public static string Token = Environment.GetEnvironmentVariable("DISCORD_TOKEN");
 
     // Purple (normal) Theme: 9261821 | Orange (halloween) Theme: 16760153
     public static readonly Color theme = new(9261821);
@@ -45,6 +45,9 @@ public static class Bot
 
     public static async Task Main()
     {
+        Env.Load();
+        Token = Environment.GetEnvironmentVariable("DISCORD_TOKEN");
+
         if (Token is null)
         {
             throw new ArgumentException("Discord bot token not set properly.");
@@ -63,7 +66,7 @@ public static class Bot
         await Client.LoginAsync(TokenType.Bot, Token);
         await Client.StartAsync();
 
-        StartHttpListener();
+        // StartHttpListener();
 
         await Task.Delay(Timeout.Infinite);
     }
@@ -127,11 +130,11 @@ public static class Bot
                 // Update third party stats
                 // Throwaway as to not block Gateway Tasks.
                 // Top GG
-                var topGGResult = await PostToAPI("https://top.gg/api/bots/705680059809398804/stats", Environment.GetEnvironmentVariable("DISCORD_BOTS_TOKEN"), new StringContent("{\"server_count\":" + Client.Guilds.Count + "}", Encoding.UTF8, "application/json"));
+                var topGGResult = await PostToAPI("https://top.gg/api/bots/705680059809398804/stats", Environment.GetEnvironmentVariable("TOP_GG_TOKEN"), new StringContent("{\"server_count\":" + Client.Guilds.Count + "}", Encoding.UTF8, "application/json"));
                 Console.WriteLine($"TopGG POST status: {topGGResult}");
 
                 // Discord Bots GG
-                var discordBotsResult = await PostToAPI("https://discord.bots.gg/api/v1/bots/705680059809398804/stats", Environment.GetEnvironmentVariable("TOP_GG_TOKEN"), new StringContent("{\"guildCount\":" + Client.Guilds.Count + "}", Encoding.UTF8, "application/json"));
+                var discordBotsResult = await PostToAPI("https://discord.bots.gg/api/v1/bots/705680059809398804/stats", Environment.GetEnvironmentVariable("DISCORD_BOTS_TOKEN"), new StringContent("{\"guildCount\":" + Client.Guilds.Count + "}", Encoding.UTF8, "application/json"));
                 Console.WriteLine($"Discord Bots GG POST status: {discordBotsResult}");
             });
 
