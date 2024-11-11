@@ -648,7 +648,6 @@ namespace Commands
                 Title = $"What's New?",
                 Description = @"### 🗒️ Creator's Notes
 - We realize that subscription models suck, and now that Discord has an option for one-time purchases, we do too! Lifetime ✨ premium goes for ***only $4.99!*** (💜 we hope this makes your life better!)
-- Made the `/schedule edit` edit button disable itself when the message or announcement no longer exists.
 - Added `/preview color` to preview a 🌈 color along with its alternative codes (RGB, HEX, CMYK, HSL, HSV).
 - Added `/convert units` to for 📏 unit conversion right in Discord.
 - Added `/convert timezones` to convert time between 🕗 timezones.
