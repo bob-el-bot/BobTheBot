@@ -91,7 +91,9 @@ namespace Commands.Helpers
         {
             // Try parsing with original case-sensitive input
             if (UnitsNetSetup.Default.UnitParser.TryParse(unit, unitEnumType, out unitEnum))
+            {
                 return true;
+            }
 
             // Normalize input: lowercase and remove spaces
             string normalizedUnit = unit.ToLower().Replace(" ", "");

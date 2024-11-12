@@ -37,9 +37,8 @@ public static class Bot
     // Purple (normal) Theme: 9261821 | Orange (halloween) Theme: 16760153
     public static readonly Color theme = new(9261821);
 
-    public const ulong supportServerId = 1058077635692994651;
-    public const ulong systemLogChannelId = 1160105468082004029;
-    public const ulong devLogChannelId = 1196575302143459388;
+    public static readonly ulong supportServerId = 1058077635692994651;
+    public static readonly ulong systemLogChannelId = 1160105468082004029;
 
     public static async Task Main()
     {

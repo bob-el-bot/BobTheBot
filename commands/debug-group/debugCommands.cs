@@ -31,7 +31,7 @@ namespace Commands
         [Group("log", "All debug commands for logging.")]
         public class LogGroup : InteractionModuleBase<SocketInteractionContext>
         {
-            public const ulong DebugServerCategoryId = 1181420597138427967;
+            private static readonly ulong DebugServerCategoryId = 1181420597138427967;
             public static Dictionary<ulong, IGuild> ServersToLog { get; set; } = new();
             public static Dictionary<ulong, RestTextChannel> ServerLogChannels { get; set; } = new();
             public static bool LogEverything { get; set; } = false;
