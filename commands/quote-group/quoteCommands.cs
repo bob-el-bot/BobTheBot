@@ -101,9 +101,18 @@ namespace Commands
                     footerText.Append("Tag(s): ");
                     List<string> tags = new();
 
-                    if (!string.IsNullOrWhiteSpace(tag1)) tags.Add(tag1);
-                    if (!string.IsNullOrWhiteSpace(tag2)) tags.Add(tag2);
-                    if (!string.IsNullOrWhiteSpace(tag3)) tags.Add(tag3);
+                    if (!string.IsNullOrWhiteSpace(tag1))
+                    {
+                        tags.Add(tag1);
+                    }
+                    if (!string.IsNullOrWhiteSpace(tag2))
+                    {
+                        tags.Add(tag2);
+                    }
+                    if (!string.IsNullOrWhiteSpace(tag3))
+                    {
+                        tags.Add(tag3);
+                    }
 
                     footerText.Append(string.Join(", ", tags)); // Join the tags with ", "
                     footerText.Append(" | ");

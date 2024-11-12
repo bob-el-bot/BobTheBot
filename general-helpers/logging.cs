@@ -17,7 +17,7 @@ namespace Debug
         private static readonly Lazy<SocketTextChannel> logChannel = new(() =>
         {
             // Fetch the channel only once when first accessed
-            return (SocketTextChannel)Bot.Client.GetGuild(Bot.supportServerId).GetChannel(logChannelId);
+            return (SocketTextChannel)Bot.Client.GetGuild(Bot.supportServerId).GetChannel(Bot.Token == Environment.GetEnvironmentVariable("TEST_DISCORD_TOKEN") ? devLogChannelId : logChannelId);
         });
 
         public static async Task LogErrorToDiscord(IInteractionContext ctx, SlashCommandInfo info, string errorReason = null)

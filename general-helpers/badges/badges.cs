@@ -35,7 +35,7 @@ namespace Badges
         public string HowToGet { get; set; }
     }
 
-    public class BadgeDescriptions
+    public static class BadgeDescriptions
     {
         public static Dictionary<Badges, BadgeInformation> Descriptions { get; } = new Dictionary<Badges, BadgeInformation>
         {

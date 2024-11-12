@@ -37,9 +37,8 @@ public static class Bot
     // Purple (normal) Theme: 9261821 | Orange (halloween) Theme: 16760153
     public static readonly Color theme = new(9261821);
 
-    public const ulong supportServerId = 1058077635692994651;
-    public const ulong systemLogChannelId = 1160105468082004029;
-    public const ulong devLogChannelId = 1196575302143459388;
+    public static readonly ulong supportServerId = 1058077635692994651;
+    public static readonly ulong systemLogChannelId = 1160105468082004029;
 
     public static async Task Main()
     {
@@ -120,18 +119,21 @@ public static class Bot
             Client.InteractionCreated += InteractionCreated;
             Service.SlashCommandExecuted += SlashCommandResulted;
 
-            _ = Task.Run(async () =>
+            if (Token != Environment.GetEnvironmentVariable("TEST_DISCORD_TOKEN"))
             {
-                // Update third party stats
-                // Throwaway as to not block Gateway Tasks.
-                // Top GG
-                var topGGResult = await PostToAPI("https://top.gg/api/bots/705680059809398804/stats", Environment.GetEnvironmentVariable("TOP_GG_TOKEN"), new StringContent("{\"server_count\":" + Client.Guilds.Count + "}", Encoding.UTF8, "application/json"));
-                Console.WriteLine($"TopGG POST status: {topGGResult}");
+                _ = Task.Run(async () =>
+                {
+                    // Update third party stats
+                    // Throwaway as to not block Gateway Tasks.
+                    // Top GG
+                    var topGGResult = await PostToAPI("https://top.gg/api/bots/705680059809398804/stats", Environment.GetEnvironmentVariable("TOP_GG_TOKEN"), new StringContent("{\"server_count\":" + Client.Guilds.Count + "}", Encoding.UTF8, "application/json"));
+                    Console.WriteLine($"TopGG POST status: {topGGResult}");
 
-                // Discord Bots GG
-                var discordBotsResult = await PostToAPI("https://discord.bots.gg/api/v1/bots/705680059809398804/stats", Environment.GetEnvironmentVariable("DISCORD_BOTS_TOKEN"), new StringContent("{\"guildCount\":" + Client.Guilds.Count + "}", Encoding.UTF8, "application/json"));
-                Console.WriteLine($"Discord Bots GG POST status: {discordBotsResult}");
-            });
+                    // Discord Bots GG
+                    var discordBotsResult = await PostToAPI("https://discord.bots.gg/api/v1/bots/705680059809398804/stats", Environment.GetEnvironmentVariable("DISCORD_BOTS_TOKEN"), new StringContent("{\"guildCount\":" + Client.Guilds.Count + "}", Encoding.UTF8, "application/json"));
+                    Console.WriteLine($"Discord Bots GG POST status: {discordBotsResult}");
+                });
+            }
 
             var cpuUsage = await GetCpuUsageForProcess();
             Console.WriteLine("CPU at Ready: " + cpuUsage.ToString() + "%");
