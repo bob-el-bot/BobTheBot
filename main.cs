@@ -41,13 +41,8 @@ public static class Bot
     public const ulong systemLogChannelId = 1160105468082004029;
     public const ulong devLogChannelId = 1196575302143459388;
 
-    private static Timer timer;
-
     public static async Task Main()
     {
-        Env.Load();
-        Token = Environment.GetEnvironmentVariable("DISCORD_TOKEN");
-
         if (Token is null)
         {
             throw new ArgumentException("Discord bot token not set properly.");
@@ -66,7 +61,7 @@ public static class Bot
         await Client.LoginAsync(TokenType.Bot, Token);
         await Client.StartAsync();
 
-        // StartHttpListener();
+        StartHttpListener();
 
         await Task.Delay(Timeout.Infinite);
     }
@@ -156,21 +151,21 @@ public static class Bot
         _ = Task.Run(() =>
         {
             // Status
-            timer = new Timer(async x =>
-            {
-                try
-                {
-                    if (Client.ConnectionState == ConnectionState.Connected)
-                    {
-                        await Client.SetCustomStatusAsync(statuses[index]);
-                        index = (index + 1) % statuses.Length;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Error setting status: {ex.Message} | {statuses[index]}");
-                }
-            }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(16));
+            _ = new Timer(async x =>
+           {
+               try
+               {
+                   if (Client.ConnectionState == ConnectionState.Connected)
+                   {
+                       await Client.SetCustomStatusAsync(statuses[index]);
+                       index = (index + 1) % statuses.Length;
+                   }
+               }
+               catch (Exception ex)
+               {
+                   Console.WriteLine($"Error setting status: {ex.Message} | {statuses[index]}");
+               }
+           }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(16));
         });
 
         _ = Task.Run(async () =>
