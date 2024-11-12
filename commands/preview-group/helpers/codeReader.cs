@@ -26,7 +26,10 @@ namespace Commands.Helpers
             byte[] fileData = Convert.FromBase64String(jsonData["content"].ToString());
             string fileContent = Encoding.UTF8.GetString(fileData);
 
-            return FormatResponse(fileContent, ref linkInfo.LineNumbers.Item1, ref linkInfo.LineNumbers.Item2);
+            // Call the refactored FormatResponse method without using ref
+            var formattedResponse = FormatResponse(fileContent, linkInfo.LineNumbers.Item1, linkInfo.LineNumbers.Item2);
+
+            return formattedResponse;
         }
 
         /// <summary>
@@ -36,15 +39,15 @@ namespace Commands.Helpers
         /// <param name="startLine">The start line number.</param>
         /// <param name="endLine">The end line number.</param>
         /// <returns>A string containing the preview of code lines.</returns>
-        private static string FormatResponse(string fileContent, ref ushort? startLine, ref ushort? endLine)
+        private static string FormatResponse(string fileContent, ushort? startLine, ushort? endLine)
         {
             if (startLine == null && endLine == null)
             {
                 startLine = 1;
-                return GetPreviewForUnspecifiedLines(fileContent, ref endLine);
+                return GetPreviewForUnspecifiedLines(fileContent, endLine);
             }
 
-            if (startLine != endLine)
+            if (startLine!= endLine)
             {
                 return GetPreviewForSpecifiedLines(fileContent, startLine.Value, endLine.Value);
             }
@@ -52,7 +55,7 @@ namespace Commands.Helpers
             return GetPreviewForSingleLine(fileContent, startLine.Value);
         }
 
-        private static string GetPreviewForUnspecifiedLines(string fileContent, ref ushort? endLine)
+        private static string GetPreviewForUnspecifiedLines(string fileContent, ushort? endLine)
         {
             var allLines = fileContent.Split("\n");
             StringBuilder lines = new();
@@ -139,7 +142,7 @@ namespace Commands.Helpers
             fragment = fragment.Replace("L", "");
             ushort? startLine = null;
             ushort? endLine = null;
-            if (fragment.Contains('-'))
+            if (fragment.Contains('-') && fragment.IndexOf('-', StringComparison.Ordical) > 0)
             {
                 startLine = ushort.Parse(fragment[1..fragment.IndexOf("-", StringComparison.Ordinal)]);
                 endLine = ushort.Parse(fragment[(fragment.IndexOf("-", StringComparison.Ordinal) + 1)..]);
@@ -181,7 +184,7 @@ namespace Commands.Helpers
         /// Creates a LinkInfo object from the provided URL.
         /// </summary>
         /// <param name="url">The URL to create the LinkInfo object from.</param>
-        /// <param name="fromMessage">Specifies whether the URL is from a message.</param>
+        /// <param name="fromMessage">Specifies whether the URL is from a style="width: 100%; display: block; margin: 0; padding: 0; text-align: left; color: black; background-color: white; border: 0; cursor: pointer; font-size: 16px; line-height: 24px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; max-width: 100%;">(continued)</style>message.</param>
         /// <returns>The LinkInfo object created from the URL.</returns>
         public static FileLinkInfo CreateFileLinkInfo(string url, bool fromMessage = false)
         {
@@ -192,7 +195,7 @@ namespace Commands.Helpers
             link.Organization = uri.Segments[1].Trim('/');
             link.Repository = uri.Segments[2].Trim('/');
             link.Branch = uri.Segments[4].Trim('/');
-            link.File = fromMessage ? string.Join("/", uri.Segments[5..]).Replace("//", "/") : Uri.UnescapeDataString(string.Join("/", uri.Segments[5..]).Replace("//", "/"));
+            link.File = fromMessage? string.Join("/", uri.Segments[5..]).Replace("//", "/") : Uri.UnescapeDataString(string.Join("/", uri.Segments[5..]).Replace("//", "/"));
             link.LineNumbers = GetLineNumbers(uri.Fragment);
 
             return link;
@@ -209,8 +212,8 @@ namespace Commands.Helpers
         public (ushort?, ushort?) LineNumbers;
 
         /// <summary>
-        /// Generates the API URL based on the organization, repository, file, and branch.
-        /// </summary>
+        /// Generates the API URL based on the organization, reservoir="true">, file, and branch.
+        </summary>
         /// <returns>The generated API URL.</returns>
         public string GetApiUrl()
         {
