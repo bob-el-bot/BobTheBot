@@ -162,7 +162,7 @@ namespace Commands
                 await FollowupAsync(embed: embed.Build());
             }
 
-            [SlashCommand("exact-user-count", "Calculates the EXACT user count excluding bots.")]
+            [SlashCommand("exact-user-count", "Calculates the EXACT user count excluding bots and shows top servers.")]
             public async Task ExactUserCount()
             {
                 await DeferAsync();
@@ -171,15 +171,34 @@ namespace Commands
 
                 DiscordRestClient client = new();
                 await client.LoginAsync(TokenType.Bot, Bot.Token);
-                var test = await client.GetGuildsAsync(withCounts: true);
+                var guilds = await client.GetGuildsAsync(withCounts: true);
 
-                foreach (IGuild guild in test)
+                // List to store guilds with their member count
+                var guildUserCounts = new List<(string guildName, int userCount)>();
+
+                foreach (IGuild guild in guilds)
                 {
                     var userCount = guild.ApproximateMemberCount.GetValueOrDefault(0);
                     totalUsers += userCount;
+
+                    // Add the guild and its user count to the list
+                    guildUserCounts.Add((guild.Name, userCount));
                 }
 
-                await FollowupAsync(text: $"✅ The exact amount of real users bob has: `{totalUsers}`");
+                // Sort the guilds by user count in descending order
+                var topServers = guildUserCounts.OrderByDescending(g => g.userCount).Take(5).ToList();
+
+                // Build the message with the top servers and their user counts
+                var topServersMessage = new StringBuilder();
+                topServersMessage.AppendLine("Top 5 biggest servers (by user count):");
+
+                foreach (var (guildName, userCount) in topServers)
+                {
+                    topServersMessage.AppendLine($"**{guildName}**: `{userCount}` users");
+                }
+
+                // Send the response
+                await FollowupAsync(text: $"✅ The exact amount of real users Bob has is: `{totalUsers}`\n\n{topServersMessage}");
             }
 
             [SlashCommand("update-bot-sites-server-count", "Updates the Top.GG and discord.bots server count.")]
