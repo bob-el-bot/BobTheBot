@@ -85,6 +85,12 @@
           "Npgsql": "7.0.6"
         }
       },
+      "QRCoder": {
+        "type": "Direct",
+        "requested": "[1.6.0, )",
+        "resolved": "1.6.0",
+        "contentHash": "XmPA81eo+oRxBuyVdswsSkTGTE1d3thfF11Z1PdD7oB56A6HU4G4AAOdySmGRMb/cljwlFTMWUtosGEnwpS6GA=="
+      },
       "simple-ciphers": {
         "type": "Direct",
         "requested": "[2.3.0, )",

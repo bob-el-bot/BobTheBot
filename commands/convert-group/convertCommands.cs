@@ -1,10 +1,11 @@
 using System;
+using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Commands.Helpers;
 using Debug;
 using Discord;
 using Discord.Interactions;
-using Discord.WebSocket;
 using Feedback.Models;
 using Time.Timestamps;
 using Time.Timezones;
@@ -49,8 +50,7 @@ namespace Commands
             }
             catch (Exception ex)
             {
-                await RespondAsync($"❌ An unexpected error occurred: {ex.Message}\n- Try again later.\n- The developers have been notified, but you can join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ) and provide us with more details if you want.");
-                return;
+                await Logger.HandleUnexpectedError(Context, ex, false);
             }
         }
 
@@ -112,7 +112,52 @@ namespace Commands
             }
             catch (Exception ex)
             {
-                await RespondAsync($"❌ An unexpected error occurred: {ex.Message}", ephemeral: true);
+                await Logger.HandleUnexpectedError(Context, ex, false);
+            }
+        }
+
+        [SlashCommand("qr-code", "Bob will convert a link or text to a QR code.")]
+        public async Task ConvertToQRCode(string content, QRCodeConverter.ErrorCorrectionLevel errorCorrectionLevel = QRCodeConverter.ErrorCorrectionLevel.L)
+        {
+            // Calculate the payload size of the content in bytes and determine the QR version
+            int payloadSize = Encoding.UTF8.GetByteCount(content);
+            int qrVersion = QRCodeConverter.GetSuitableVersion(payloadSize, errorCorrectionLevel);
+
+            // If QR version is invalid, handle the error
+            if (qrVersion == -1)
+            {
+                await RespondAsync(QRCodeConverter.GetPayloadSizeErrorMessage(payloadSize, errorCorrectionLevel), ephemeral: true);
+                return;
+            }
+
+            // Initialize the stream variable
+            MemoryStream stream = null;
+
+            try
+            {
+                await DeferAsync();
+
+                // Generate the QR code as an optimized PNG
+                stream = QRCodeConverter.CreateQRCodePng(content, suitableVersion: qrVersion, eccLevel: errorCorrectionLevel);
+
+                // Create and send the embed with the QR code image
+                var embed = new EmbedBuilder()
+                    .WithTitle("🔳 QR Code Generated")
+                    .WithImageUrl("attachment://qr-code.png")
+                    .WithFooter($"Error correction level: {QRCodeConverter.GetErrorCorrectionLevelDisplay(errorCorrectionLevel)} | Size: {stream.Length} bytes")
+                    .WithColor(new Color(0x2B2D31))
+                    .Build();
+
+                await FollowupWithFileAsync(fileStream: stream, fileName: "qr-code.png", embed: embed);
+            }
+            catch (Exception ex)
+            {
+                await Logger.HandleUnexpectedError(Context, ex, true);
+            }
+            finally
+            {
+                // Ensure the stream is disposed of even if an exception occurs
+                stream?.Dispose();
             }
         }
     }

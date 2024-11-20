@@ -136,10 +136,12 @@ namespace Commands
             .AddField("CMYK", $"```C: {cmyk.C}, M: {cmyk.M}, Y: {cmyk.Y}, K: {cmyk.K}```")
             .AddField("HSL", $"```H: {hsl.H}, S: {hsl.S}, L: {hsl.L}```")
             .AddField("HSV", $"```H: {hsv.H}, S: {hsv.S}, V: {hsv.V}```")
-            .WithThumbnailUrl("attachment://image.png")
+            .WithThumbnailUrl("attachment://image.webp")
             .WithColor(displayColor);
 
-            await RespondWithFileAsync(imageStream, "image.png", "", embed: embed.Build());
+            await RespondWithFileAsync(imageStream, "image.webp", "", embed: embed.Build());
+
+            imageStream.Dispose();
         }
 
         [CommandContextType(InteractionContextType.Guild | InteractionContextType.PrivateChannel)]
