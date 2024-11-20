@@ -4,7 +4,7 @@
     <img src="https://skillicons.dev/icons?i=cs,net,raspberrypi,discord,postgres">
 </p>
 
-<p>The bot for 🎲 RNG, 🖊️ quoting, 📜 fonts, 🔒 encryption, and ✨ more! Currently serving 125,000+ users in 1,650+ servers!</p>
+<p>The bot for 🎲 RNG, 🖊️ quoting, 📜 fonts, 🔒 encryption, and ✨ more! Currently serving 125,000+ users in 1,750+ servers!</p>
 
 <a href="https://discord.com/oauth2/authorize?client_id=705680059809398804&permissions=1110719392886&scope=bot%20applications.commands">Invite</a>
 <span>|
@@ -129,6 +129,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 ### ↔️ Convert commands:
 - `/convert units [unit-type] [amount] [from-unit] [to-unit]` Bob will convert units for you.
 - `/convert timezones [month] [day] [hour] [minute] [from-timezone] [to-timezone]` Convert time from one timezone to another.
+- `/convert qr-code [content] [error-correction-level]` Convert text or links into QR codes.
 
 ### 🔎 Preview commands:
 - `/preview code [link]` Preview specific lines of code from a file on GitHub.

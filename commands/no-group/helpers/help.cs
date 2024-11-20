@@ -1340,6 +1340,26 @@ namespace Commands.Helpers
                             }
                         }
                     },
+                    new CommandInfo
+                    {
+                        Name = "qr-code",
+                        InheritGroupName = true,
+                        Description = "Bob will convert a link or text to a QR code.",
+                        Url = "https://docs.bobthebot.net#convert-qr-code",
+                        Parameters = new[]
+                        {
+                            new ParameterInfo
+                            {
+                                Name = "content",
+                                Description = "The content you want to convert to a QR code (text or a link)."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "Error Correction Level",
+                                Description = "The error correction level of the QR code. Choose from: L, M, Q, H."
+                            },
+                        }
+                    },
                 }
             },
             new() {
