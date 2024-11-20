@@ -1355,7 +1355,7 @@ namespace Commands.Helpers
                             },
                             new ParameterInfo
                             {
-                                Name = "Error Correction Level",
+                                Name = "error-correction-level",
                                 Description = "The error correction level of the QR code. Choose from: L, M, Q, H."
                             },
                         }
