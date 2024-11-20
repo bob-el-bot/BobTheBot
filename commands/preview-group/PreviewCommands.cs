@@ -142,10 +142,10 @@ namespace Commands
             .AddField("CMYK", $"```C: {cmyk.C}, M: {cmyk.M}, Y: {cmyk.Y}, K: {cmyk.K}```")
             .AddField("HSL", $"```H: {hsl.H}, S: {hsl.S}, L: {hsl.L}```")
             .AddField("HSV", $"```H: {hsv.H}, S: {hsv.S}, V: {hsv.V}```")
-            .WithThumbnailUrl("attachment://image.png")
+            .WithThumbnailUrl("attachment://image.webp")
             .WithColor(finalColor.Value);
 
-            await RespondWithFileAsync(imageStream, "image.png", "", embed: embed.Build());
+            await RespondWithFileAsync(imageStream, "image.webp", "", embed: embed.Build());
         }
 
         [SlashCommand("pull-request", "Preview a pull request from GitHub right on Discord.")]

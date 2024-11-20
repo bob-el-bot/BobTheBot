@@ -21,13 +21,15 @@ namespace Commands.Helpers
                 }
 
                 using var image = surface.Snapshot();
-                using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+                using var data = image.Encode(SKEncodedImageFormat.Webp, 100);
                 using var imageStream = data.AsStream();
                 imageStream.CopyTo(stream);
             }
 
             // Reset the position to the beginning of the MemoryStream before returning it
             stream.Position = 0;
+
+            Console.WriteLine("Color image size: " + stream.Length + " bytes");
 
             return stream;
         }
