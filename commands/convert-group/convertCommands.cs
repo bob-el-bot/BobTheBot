@@ -120,53 +120,31 @@ namespace Commands
             }
         }
 
-        [SlashCommand("qr-code", "Bob will convert a link or text to a qr code.")]
+        [SlashCommand("qr-code", "Bob will convert a link or text to a QR code.")]
         public async Task ConvertToQRCode(string content, QRCodeConverter.ErrorCorrectionLevel errorCorrectionLevel = QRCodeConverter.ErrorCorrectionLevel.L)
         {
-            // Check if the content exceeds the maximum size for the specified error correction level
-            if (QRCodeConverter.IsPayloadTooLarge(content, errorCorrectionLevel))
+            // Calculate the payload size of the content in bytes and determine the QR version
+            int payloadSize = Encoding.UTF8.GetByteCount(content);
+            int qrVersion = QRCodeConverter.GetSuitableVersion(payloadSize, errorCorrectionLevel);
+
+            // If QR version is invalid, handle the error
+            if (qrVersion == -1)
             {
-                // Get the maximum allowed size for the current ECC level and version
-                int maxAllowedSize = QRCodeConverter.MaxPayloadSizes[39, (int)QRCodeConverter.MapErrorCorrectionLevel(errorCorrectionLevel)];
-
-                // Calculate the payload size of the content in bytes
-                int payloadSize = Encoding.UTF8.GetByteCount(content);
-
-                // Calculate how much smaller the content needs to be in bytes
-                int sizeDifference = payloadSize - maxAllowedSize;
-                int charEstimation = QRCodeConverter.GetCharacterEstimation(sizeDifference);
-
-                var messageBuilder = new StringBuilder();
-
-                messageBuilder.AppendLine("❌ The QR Code **could not** be generated because the given content exceeds the maximum size of a QR code.");
-
-                // Suggest lowering ECC level if ECC level is higher than Low
-                if (errorCorrectionLevel > QRCodeConverter.ErrorCorrectionLevel.L)
-                {
-                    messageBuilder.AppendLine("- Try lowering the error correction level.");
-                }
-
-                // Add suggestion for shortening content and the character estimation
-                messageBuilder.AppendLine($"- Try shortening the content by at least **{sizeDifference} bytes** (approximately **{charEstimation} characters**).");
-
-                // Send the constructed message
-                await RespondAsync(messageBuilder.ToString(), ephemeral: true);
+                await RespondAsync(QRCodeConverter.GetPayloadSizeErrorMessage(payloadSize, errorCorrectionLevel), ephemeral: true);
                 return;
             }
 
+            // Initialize the stream variable
             MemoryStream stream = null;
 
             try
             {
                 await DeferAsync();
 
-                // Generate the QR code as an optimized PNG (this will return a MemoryStream)
-                stream = QRCodeConverter.CreateQRCodePng(content, eccLevel: errorCorrectionLevel);
+                // Generate the QR code as an optimized PNG
+                stream = QRCodeConverter.CreateQRCodePng(content, suitableVersion: qrVersion, eccLevel: errorCorrectionLevel);
 
-                // Ensure the stream is at the beginning before using it
-                stream.Seek(0, SeekOrigin.Begin);
-
-                // Create an embed for the QR code
+                // Create and send the embed with the QR code image
                 var embed = new EmbedBuilder()
                     .WithTitle("QR Code Generated")
                     .WithImageUrl("attachment://qr-code.png")
@@ -174,21 +152,23 @@ namespace Commands
                     .WithColor(new Color(0x2B2D31))
                     .Build();
 
-                // Send the QR code image file to Discord
                 await FollowupWithFileAsync(fileStream: stream, fileName: "qr-code.png", embed: embed);
             }
             catch (Exception ex)
             {
-                await FollowupAsync($"❌ An unexpected error occurred: {ex.Message}\n- Try again later.\n- The developers have been notified, but you can join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ) and provide us with more details if you want.");
-
-                await Logger.LogErrorToDiscord(Context, ex.ToString());
-                return;
+                await HandleUnexpectedError(ex);
             }
             finally
             {
                 // Ensure the stream is disposed of even if an exception occurs
                 stream?.Dispose();
             }
+        }
+
+        private async Task HandleUnexpectedError(Exception ex)
+        {
+            await FollowupAsync($"❌ An unexpected error occurred: {ex.Message}\n- Try again later.\n- The developers have been notified, but you can join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ) and provide us with more details if you want.");
+            await Logger.LogErrorToDiscord(Context, ex.ToString());
         }
     }
 }

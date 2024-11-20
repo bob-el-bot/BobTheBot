@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using Discord.Interactions;
 using QRCoder;
 using SkiaSharp;
+using System.Text;
 
 namespace Commands.Helpers
 {
@@ -64,6 +65,36 @@ namespace Commands.Helpers
             { 2789, 1992, 1370, 805 }
         };
 
+        /// <summary>
+        /// Get the error message for the payload size exceeding the maximum size of a QR code.
+        /// </summary>
+        /// <param name="payloadSize">The size of the payload in bytes.</param>
+        /// <param name="errorCorrectionLevel">The error correction level.</param>
+        /// <returns>The error message for the payload size exceeding the maximum size of a QR code.</returns>
+        public static string GetPayloadSizeErrorMessage(int payloadSize, ErrorCorrectionLevel errorCorrectionLevel)
+        {
+            int maxAllowedSize = MaxPayloadSizes[39, (int)MapErrorCorrectionLevel(errorCorrectionLevel)];
+            int sizeDifference = payloadSize - maxAllowedSize;
+            int charEstimation = GetCharacterEstimation(sizeDifference);
+
+            var messageBuilder = new StringBuilder();
+            messageBuilder.AppendLine("❌ The QR Code **could not** be generated because the given content exceeds the maximum size of a QR code.");
+
+            if (errorCorrectionLevel > ErrorCorrectionLevel.L)
+            {
+                messageBuilder.AppendLine("- Try lowering the error correction level.");
+            }
+
+            messageBuilder.AppendLine($"- Try shortening the content by at least **{sizeDifference} bytes** (or approximately **{charEstimation} characters**).");
+
+            return messageBuilder.ToString();
+        }
+
+        /// <summary>
+        /// Get the estimated number of characters that can be encoded in the QR code.
+        /// </summary>
+        /// <param name="sizeDifference">The size difference between the data and the maximum payload size.</param>
+        /// <returns>The estimated number of characters that can be encoded in the QR code.</returns>
         public static int GetCharacterEstimation(int sizeDifference)
         {
             // Estimate the average number of bytes per character for UTF-8 encoding
@@ -93,18 +124,6 @@ namespace Commands.Helpers
         }
 
         /// <summary>
-        /// Check if the payload is too large for the specified error correction level.
-        /// </summary>
-        /// <param name="data">The data to encode.</param>
-        /// <param name="eccLevel">The error correction level.</param>
-        /// <returns>True if the payload is too large, false otherwise.</returns>
-        public static bool IsPayloadTooLarge(string data, ErrorCorrectionLevel eccLevel)
-        {
-            int payloadSize = System.Text.Encoding.UTF8.GetByteCount(data);
-            return GetSuitableVersion(payloadSize, eccLevel) == -1;
-        }
-
-        /// <summary>
         /// Returns the version of QR code that can fit the given data size with the specified error correction level.
         /// </summary>
         /// <param name="dataSize">The size of the data in bytes.</param>
@@ -129,7 +148,7 @@ namespace Commands.Helpers
         /// <param name="data">The data to encode in the QR code.</param>
         /// <param name="eccLevel">The error correction level.</param>
         /// <returns>The QR code image as a PNG in memory.</returns>
-        public static MemoryStream CreateQRCodePng(string data, ErrorCorrectionLevel eccLevel = ErrorCorrectionLevel.L)
+        public static MemoryStream CreateQRCodePng(string data, int suitableVersion, ErrorCorrectionLevel eccLevel = ErrorCorrectionLevel.L)
         {
             try
             {
@@ -138,10 +157,9 @@ namespace Commands.Helpers
 
                 // Initialize the QR code generator
                 var qrGenerator = new QRCodeGenerator();
-                int payloadSize = System.Text.Encoding.UTF8.GetByteCount(data);
 
                 // Create the QR code data with the appropriate ECC level and version
-                var qrCodeData = qrGenerator.CreateQrCode(data, ecc, requestedVersion: GetSuitableVersion(payloadSize, eccLevel));
+                var qrCodeData = qrGenerator.CreateQrCode(data, ecc, requestedVersion: suitableVersion);
 
                 int moduleCount = qrCodeData.ModuleMatrix.Count;
                 int imageSize = 400;
