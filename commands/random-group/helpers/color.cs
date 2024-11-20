@@ -29,8 +29,6 @@ namespace Commands.Helpers
             // Reset the position to the beginning of the MemoryStream before returning it
             stream.Position = 0;
 
-            Console.WriteLine("Color image size: " + stream.Length + " bytes");
-
             return stream;
         }
 

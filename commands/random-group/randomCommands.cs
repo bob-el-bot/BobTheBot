@@ -140,6 +140,8 @@ namespace Commands
             .WithColor(displayColor);
 
             await RespondWithFileAsync(imageStream, "image.webp", "", embed: embed.Build());
+
+            imageStream.Dispose();
         }
 
         [CommandContextType(InteractionContextType.Guild | InteractionContextType.PrivateChannel)]

@@ -146,6 +146,8 @@ namespace Commands
             .WithColor(finalColor.Value);
 
             await RespondWithFileAsync(imageStream, "image.webp", "", embed: embed.Build());
+
+            imageStream.Dispose();
         }
 
         [SlashCommand("pull-request", "Preview a pull request from GitHub right on Discord.")]
