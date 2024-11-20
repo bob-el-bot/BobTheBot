@@ -120,5 +120,21 @@ namespace Debug
 
             await channel.SendMessageAsync($"`{DateTime.Now:dd/MM. H:mm:ss} | {FormatPerformance(cpuUsage, ramUsage)} | Location: {location} | User: {user.GlobalName}, {user.Id}`\n```{commandUsage}```{(errorReason == null ? "" : $"Error: ```cs\n{errorReason}```")}Command type: **{commandType}** | Method name in code: **{methodName}**");
         }
+
+        public static async Task HandleUnexpectedError(IInteractionContext ctx, Exception ex, bool deferred, bool ephemeral = true)
+        {
+            string message = $"❌ An unexpected error occurred: {ex.Message}\n- Try again later.\n- The developers have been notified, but you can join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ) and provide us with more details if you want.";
+
+            if (deferred)
+            {
+                await ctx.Interaction.FollowupAsync(message, ephemeral: ephemeral);
+            }
+            else
+            {
+                await ctx.Interaction.RespondAsync(message, ephemeral: ephemeral);
+            }
+
+            await LogErrorToDiscord(ctx, ex.ToString());
+        }
     }
 }

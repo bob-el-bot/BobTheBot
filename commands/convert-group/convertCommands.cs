@@ -51,10 +51,7 @@ namespace Commands
             }
             catch (Exception ex)
             {
-                await RespondAsync($"❌ An unexpected error occurred: {ex.Message}\n- Try again later.\n- The developers have been notified, but you can join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ) and provide us with more details if you want.");
-
-                await Logger.LogErrorToDiscord(Context, $"{ex}");
-                return;
+                await Logger.HandleUnexpectedError(Context, ex, false);
             }
         }
 
@@ -116,7 +113,7 @@ namespace Commands
             }
             catch (Exception ex)
             {
-                await RespondAsync($"❌ An unexpected error occurred: {ex.Message}", ephemeral: true);
+                await Logger.HandleUnexpectedError(Context, ex, false);
             }
         }
 
@@ -156,19 +153,13 @@ namespace Commands
             }
             catch (Exception ex)
             {
-                await HandleUnexpectedError(ex);
+                await Logger.HandleUnexpectedError(Context, ex, true);
             }
             finally
             {
                 // Ensure the stream is disposed of even if an exception occurs
                 stream?.Dispose();
             }
-        }
-
-        private async Task HandleUnexpectedError(Exception ex)
-        {
-            await FollowupAsync($"❌ An unexpected error occurred: {ex.Message}\n- Try again later.\n- The developers have been notified, but you can join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ) and provide us with more details if you want.");
-            await Logger.LogErrorToDiscord(Context, ex.ToString());
         }
     }
 }
