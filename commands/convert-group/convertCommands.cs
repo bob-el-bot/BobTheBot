@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Commands.Helpers;
 using Debug;
@@ -51,6 +52,8 @@ namespace Commands
             catch (Exception ex)
             {
                 await RespondAsync($"❌ An unexpected error occurred: {ex.Message}\n- Try again later.\n- The developers have been notified, but you can join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ) and provide us with more details if you want.");
+
+                await Logger.LogErrorToDiscord(Context, $"{ex}");
                 return;
             }
         }
@@ -120,23 +123,52 @@ namespace Commands
         [SlashCommand("qr-code", "Bob will convert a link or text to a qr code.")]
         public async Task ConvertToQRCode(string content, QRCodeConverter.ErrorCorrectionLevel errorCorrectionLevel = QRCodeConverter.ErrorCorrectionLevel.L)
         {
-            await DeferAsync();
+            // Check if the content exceeds the maximum size for the specified error correction level
+            if (QRCodeConverter.IsPayloadTooLarge(content, errorCorrectionLevel))
+            {
+                // Get the maximum allowed size for the current ECC level and version
+                int maxAllowedSize = QRCodeConverter.MaxPayloadSizes[39, (int)QRCodeConverter.MapErrorCorrectionLevel(errorCorrectionLevel)];
+
+                // Calculate the payload size of the content in bytes
+                int payloadSize = Encoding.UTF8.GetByteCount(content);
+
+                // Calculate how much smaller the content needs to be in bytes
+                int sizeDifference = payloadSize - maxAllowedSize;
+
+                // Estimate the average number of bytes per character for UTF-8 encoding
+                // We assume an average of 1.5 bytes per character as a rough estimate (since UTF-8 characters range from 1 to 3 bytes)
+                double averageBytesPerCharacter = 1.5;
+                int charEstimation = (int)(sizeDifference / averageBytesPerCharacter);
+
+                var messageBuilder = new StringBuilder();
+
+                messageBuilder.AppendLine("❌ The QR Code **could not** be generated because the given content exceeds the maximum size of a QR code.");
+
+                // Suggest lowering ECC level if ECC level is higher than Low
+                if (errorCorrectionLevel > QRCodeConverter.ErrorCorrectionLevel.L)
+                {
+                    messageBuilder.AppendLine("- Try lowering the error correction level.");
+                }
+
+                // Add suggestion for shortening content and the character estimation
+                messageBuilder.AppendLine($"- Try shortening the content by at least **{sizeDifference} bytes** (approximately **{charEstimation} characters**).");
+
+                // Send the constructed message
+                await RespondAsync(messageBuilder.ToString(), ephemeral: true);
+                return;
+            }
 
             MemoryStream stream = null;
+
             try
             {
+                await DeferAsync();
+
                 // Generate the QR code as an optimized PNG (this will return a MemoryStream)
                 stream = QRCodeConverter.CreateQRCodePng(content, eccLevel: errorCorrectionLevel);
 
                 // Ensure the stream is at the beginning before using it
                 stream.Seek(0, SeekOrigin.Begin);
-
-                // Check if the image is too large (optional: based on your needs)
-                if (stream.Length > 8 * 1024 * 1024) // 8MB limit
-                {
-                    await FollowupAsync("❌ The QR code image is too large to upload. Please try shorter text.", ephemeral: true);
-                    return;
-                }
 
                 // Create an embed for the QR code
                 var embed = new EmbedBuilder()
@@ -151,8 +183,10 @@ namespace Commands
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
-                await FollowupAsync($"❌ An unexpected error occurred: {ex.Message}", ephemeral: true);
+                await FollowupAsync($"❌ An unexpected error occurred: {ex.Message}\n- Try again later.\n- The developers have been notified, but you can join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ) and provide us with more details if you want.");
+
+                await Logger.LogErrorToDiscord(Context, $"{ex}");
+                return;
             }
             finally
             {
