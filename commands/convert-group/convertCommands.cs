@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using Commands.Helpers;
 using Debug;
@@ -113,6 +114,50 @@ namespace Commands
             catch (Exception ex)
             {
                 await RespondAsync($"❌ An unexpected error occurred: {ex.Message}", ephemeral: true);
+            }
+        }
+
+        [SlashCommand("qr-code", "Bob will convert a link or text to a qr code.")]
+        public async Task ConvertToQRCode(string content, QRCodeConverter.ErrorCorrectionLevel errorCorrectionLevel = QRCodeConverter.ErrorCorrectionLevel.L)
+        {
+            await DeferAsync();
+
+            MemoryStream stream = null;
+            try
+            {
+                // Generate the QR code as an optimized PNG (this will return a MemoryStream)
+                stream = QRCodeConverter.CreateQRCodePng(content, eccLevel: errorCorrectionLevel);
+
+                // Ensure the stream is at the beginning before using it
+                stream.Seek(0, SeekOrigin.Begin);
+
+                // Check if the image is too large (optional: based on your needs)
+                if (stream.Length > 8 * 1024 * 1024) // 8MB limit
+                {
+                    await FollowupAsync("❌ The QR code image is too large to upload. Please try shorter text.", ephemeral: true);
+                    return;
+                }
+
+                // Create an embed for the QR code
+                var embed = new EmbedBuilder()
+                    .WithTitle("QR Code Generated")
+                    .WithImageUrl("attachment://qr-code.png")
+                    .WithFooter($"Error correction level: {QRCodeConverter.GetErrorCorrectionLevelDisplay(errorCorrectionLevel)}")
+                    .WithColor(new Color(0x2B2D31))
+                    .Build();
+
+                // Send the QR code image file to Discord
+                await FollowupWithFileAsync(fileStream: stream, fileName: "qr-code.png", embed: embed);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+                await FollowupAsync($"❌ An unexpected error occurred: {ex.Message}", ephemeral: true);
+            }
+            finally
+            {
+                // Ensure the stream is disposed of even if an exception occurs
+                stream?.Dispose();
             }
         }
     }
