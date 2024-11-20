@@ -6,7 +6,6 @@ using Commands.Helpers;
 using Debug;
 using Discord;
 using Discord.Interactions;
-using Discord.WebSocket;
 using Feedback.Models;
 using Time.Timestamps;
 using Time.Timezones;
@@ -143,9 +142,9 @@ namespace Commands
 
                 // Create and send the embed with the QR code image
                 var embed = new EmbedBuilder()
-                    .WithTitle("QR Code Generated")
+                    .WithTitle("🔳 QR Code Generated")
                     .WithImageUrl("attachment://qr-code.png")
-                    .WithFooter($"Error correction level: {QRCodeConverter.GetErrorCorrectionLevelDisplay(errorCorrectionLevel)}")
+                    .WithFooter($"Error correction level: {QRCodeConverter.GetErrorCorrectionLevelDisplay(errorCorrectionLevel)} | Size: {stream.Length} bytes")
                     .WithColor(new Color(0x2B2D31))
                     .Build();
 
