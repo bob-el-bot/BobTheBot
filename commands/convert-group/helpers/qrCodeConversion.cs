@@ -64,9 +64,19 @@ namespace Commands.Helpers
             { 2789, 1992, 1370, 805 }
         };
 
+        public static int GetCharacterEstimation(int sizeDifference)
+        {
+            // Estimate the average number of bytes per character for UTF-8 encoding
+            // Assume an average of 1.5 bytes per character as a rough estimate (since UTF-8 characters range from 1 to 3 bytes)
+            double averageBytesPerCharacter = 1.5;
+            return (int)(sizeDifference / averageBytesPerCharacter);
+        }
+
         /// <summary>
         /// Get the display string for the error correction level.
         /// </summary>
+        /// <param name="level">The error correction level.</param>
+        /// <returns>The display string for the error correction level.</returns>
         public static string GetErrorCorrectionLevelDisplay(ErrorCorrectionLevel level)
         {
             return ErrorCorrectionDisplayMap.TryGetValue(level, out var display) ? display : "Unknown ECC Level";
@@ -75,6 +85,8 @@ namespace Commands.Helpers
         /// <summary>
         /// Map the error correction level from the enum to the QR code library.
         /// </summary>
+        /// <param name="eccLevel">The error correction level.</param>
+        /// <returns>The mapped error correction level.</returns>
         public static QRCodeGenerator.ECCLevel MapErrorCorrectionLevel(ErrorCorrectionLevel eccLevel)
         {
             return ErrorCorrectionMap.GetValueOrDefault(eccLevel, QRCodeGenerator.ECCLevel.L);
@@ -83,6 +95,9 @@ namespace Commands.Helpers
         /// <summary>
         /// Check if the payload is too large for the specified error correction level.
         /// </summary>
+        /// <param name="data">The data to encode.</param>
+        /// <param name="eccLevel">The error correction level.</param>
+        /// <returns>True if the payload is too large, false otherwise.</returns>
         public static bool IsPayloadTooLarge(string data, ErrorCorrectionLevel eccLevel)
         {
             int payloadSize = System.Text.Encoding.UTF8.GetByteCount(data);
@@ -92,6 +107,9 @@ namespace Commands.Helpers
         /// <summary>
         /// Returns the version of QR code that can fit the given data size with the specified error correction level.
         /// </summary>
+        /// <param name="dataSize">The size of the data in bytes.</param>
+        /// <param name="eccLevel">The error correction level.</param>
+        /// <returns>The version of QR code that can fit the data size, or -1 if the data is too large.</returns>
         public static int GetSuitableVersion(int dataSize, ErrorCorrectionLevel eccLevel)
         {
             int eccIndex = (int)MapErrorCorrectionLevel(eccLevel);
@@ -108,6 +126,9 @@ namespace Commands.Helpers
         /// <summary>
         /// Creates a QR Code image as a PNG in memory.
         /// </summary>
+        /// <param name="data">The data to encode in the QR code.</param>
+        /// <param name="eccLevel">The error correction level.</param>
+        /// <returns>The QR code image as a PNG in memory.</returns>
         public static MemoryStream CreateQRCodePng(string data, ErrorCorrectionLevel eccLevel = ErrorCorrectionLevel.L)
         {
             try

@@ -134,11 +134,7 @@ namespace Commands
 
                 // Calculate how much smaller the content needs to be in bytes
                 int sizeDifference = payloadSize - maxAllowedSize;
-
-                // Estimate the average number of bytes per character for UTF-8 encoding
-                // We assume an average of 1.5 bytes per character as a rough estimate (since UTF-8 characters range from 1 to 3 bytes)
-                double averageBytesPerCharacter = 1.5;
-                int charEstimation = (int)(sizeDifference / averageBytesPerCharacter);
+                int charEstimation = QRCodeConverter.GetCharacterEstimation(sizeDifference);
 
                 var messageBuilder = new StringBuilder();
 
@@ -185,7 +181,7 @@ namespace Commands
             {
                 await FollowupAsync($"❌ An unexpected error occurred: {ex.Message}\n- Try again later.\n- The developers have been notified, but you can join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ) and provide us with more details if you want.");
 
-                await Logger.LogErrorToDiscord(Context, $"{ex}");
+                await Logger.LogErrorToDiscord(Context, ex.ToString());
                 return;
             }
             finally
