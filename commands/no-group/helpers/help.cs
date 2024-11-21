@@ -1142,7 +1142,7 @@ namespace Commands.Helpers
                             new ParameterInfo
                             {
                                 Name = "user * 2",
-                                Description = "The users to check compatibility for."
+                                Description = "The users to check compatibility for. If left empty it will choose a random user."
                             }
                         }
                     },
@@ -1355,7 +1355,7 @@ namespace Commands.Helpers
                             },
                             new ParameterInfo
                             {
-                                Name = "Error Correction Level",
+                                Name = "error-correction-level",
                                 Description = "The error correction level of the QR code. Choose from: L, M, Q, H."
                             },
                         }
