@@ -939,17 +939,32 @@ namespace Commands
             }
         }
 
-        [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
+        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("ship", "Bob will determine how good of a couple two users would make")]
-        public async Task Ship(SocketUser person1, SocketUser person2)
+        public async Task Ship(SocketUser person1 = null, SocketUser person2 = null)
         {
-            // Prepare for calculations
+            await DeferAsync();
+
+            if (person1 == null)
+            {
+                await CachedUsers.AddGuildUsersAsync(Context);  // Ensure the guild is cached
+                person1 = CachedUsers.GetRandomMember(Context);
+            }
+
             string id1 = person1.Id.ToString();
-            int[] id1MakeUp = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+            int[] id1MakeUp = new int[11];
+
+            if (person2 == null)
+            {
+                await CachedUsers.AddGuildUsersAsync(Context);  // Ensure the guild is cached
+                person2 = CachedUsers.GetRandomMember(Context);
+            }
+
             string id2 = person2.Id.ToString();
-            int[] id2MakeUp = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-            int longestIdLength = id1.Length >= id2.Length ? id1.Length : id2.Length;
+            int[] id2MakeUp = new int[11];
+
+            int longestIdLength = Math.Max(id1.Length, id2.Length);
 
             // determine amount of each digit
             for (int i = 0; i < longestIdLength; i++)
@@ -1013,7 +1028,7 @@ namespace Commands
 
             embed.AddField(name: $"Match of:", value: $"`{matchPercent}%`", inline: true).AddField(name: "Heart Level", value: heartLevel, inline: true);
 
-            await RespondAsync(embed: embed.Build());
+            await FollowupAsync(embed: embed.Build());
         }
     }
 }
