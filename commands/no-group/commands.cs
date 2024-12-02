@@ -948,73 +948,39 @@ namespace Commands
 
             if (person1 == null)
             {
-                await CachedUsers.AddGuildUsersAsync(Context);  // Ensure the guild is cached
+                await CachedUsers.AddGuildUsersAsync(Context); // Ensure the guild is cached
                 person1 = CachedUsers.GetRandomMember(Context);
             }
 
-            string id1 = person1.Id.ToString();
-            int[] id1MakeUp = new int[11];
-
             if (person2 == null)
             {
-                await CachedUsers.AddGuildUsersAsync(Context);  // Ensure the guild is cached
+                await CachedUsers.AddGuildUsersAsync(Context); // Ensure the guild is cached
                 person2 = CachedUsers.GetRandomMember(Context);
             }
 
-            string id2 = person2.Id.ToString();
-            int[] id2MakeUp = new int[11];
+            float matchPercent = 0;
 
-            int longestIdLength = Math.Max(id1.Length, id2.Length);
-
-            // determine amount of each digit
-            for (int i = 0; i < longestIdLength; i++)
+            if (person1.Id != person2.Id)
             {
-                if (i < id1.Length)
+                // Ensure order consistency
+                if (person1.Id > person2.Id)
                 {
-                    id1MakeUp[int.Parse($"{id1[i]}")] += 1;
-                }
-                else
-                {
-                    id1MakeUp[10] += 1;
+                    (person1, person2) = (person2, person1);
                 }
 
-                if (i < id2.Length)
-                {
-                    id2MakeUp[int.Parse($"{id2[i]}")] += 1;
-                }
-                else
-                {
-                    id2MakeUp[10] += 1;
-                }
+                // Combine the snowflakes and usernames into a single string
+                string combinedString = person1.Id.ToString() + person2.Id.ToString() + person1.Username + person2.Username;
+
+                // 1. Hash the combined string (both IDs and usernames)
+                int hash = combinedString.GetHashCode(); // Combined hash of both user IDs and usernames
+
+                // 2. Normalize hash to 0-100 range
+                float hashBasedVariance = Math.Abs(hash % 100);  // Use modulo to restrict hash within 0-99
+                matchPercent = hashBasedVariance;  // Directly use the hash as the match percentage
+
+                // 3. Adjust match percentage if needed (for example, ensure the match is always between 0 and 100)
+                matchPercent = Math.Clamp(matchPercent, 0, 100);  // Ensure final result is within 0-100
             }
-
-            // determine difference between digits
-            float idDifference = 0;
-            for (int i = 0; i < 10; i++)
-            {
-                idDifference += MathF.Abs(id1MakeUp[i] - id2MakeUp[i]);
-            }
-
-            // determine difference in name lengths
-            float nameLengthDifference = MathF.Abs(person1.Username.Length - person2.Username.Length);
-
-            // determine difference in names
-            int nameDifference = 0;
-            if (person1.Username[0] != person2.Username[0])
-            {
-                nameDifference += 10;
-                if (person1.Username[1] != person2.Username[1])
-                {
-                    nameDifference += 20;
-                }
-            }
-            if (person1.Username[^1] != person2.Username[^1])
-            {
-                nameDifference += 10;
-            }
-
-            // calculate perecentage of similarity.
-            float matchPercent = (idDifference / longestIdLength + nameLengthDifference / 30 + nameDifference / 40) / 3 * 100;
 
             // Determine Heart Level
             string heartLevel = HeartLevels.CalculateHeartLevel(matchPercent);
@@ -1026,7 +992,8 @@ namespace Commands
                 Color = new Color(15548997),
             };
 
-            embed.AddField(name: $"Match of:", value: $"`{matchPercent}%`", inline: true).AddField(name: "Heart Level", value: heartLevel, inline: true);
+            embed.AddField(name: $"Match of:", value: $"`{matchPercent}%`", inline: true)
+                 .AddField(name: "Heart Level", value: heartLevel, inline: true);
 
             await FollowupAsync(embed: embed.Build());
         }
