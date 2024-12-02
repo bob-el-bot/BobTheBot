@@ -192,7 +192,7 @@ namespace Commands.Helpers
         {
             try
             {
-                var chosenMove = Minimax(game.Grid, game.Turns, 2, true, int.MinValue, int.MaxValue, game.LastMoveColumn, game.LastMoveRow).Move;
+                var chosenMove = Minimax(game.Grid, game.Turns, 4, true, int.MinValue, int.MaxValue, game.LastMoveColumn, game.LastMoveRow).Move;
 
                 if (chosenMove != null && IsValidMove(game.Grid, chosenMove[0]))
                 {
@@ -263,7 +263,7 @@ namespace Commands.Helpers
                         if (score > bestScore)
                         {
                             bestScore = score;
-                            bestMove = new [] { col, row };
+                            bestMove = new[] { col, row };
                         }
                         alpha = Math.Max(alpha, score);
                     }
@@ -272,7 +272,7 @@ namespace Commands.Helpers
                         if (score < bestScore)
                         {
                             bestScore = score;
-                            bestMove = new [] { col, row };
+                            bestMove = new[] { col, row };
                         }
                         beta = Math.Min(beta, score);
                     }
@@ -290,44 +290,101 @@ namespace Commands.Helpers
         private static int EvaluateGrid(int[,] grid, int lastMoveColumn, int lastMoveRow)
         {
             int score = 0;
+            int player = grid[lastMoveColumn, lastMoveRow]; // The current player
+            int opponent = player == 1 ? 2 : 1;            // The opponent player
 
-            int player = grid[lastMoveColumn, lastMoveRow];
-
-            // Directions: horizontal, vertical, diagonal (bottom-left to top-right), diagonal (top-left to bottom-right)
+            // Define directions to check: horizontal, vertical, diagonal (both directions)
             int[][] directions = new int[][]
             {
-                new [] { 1, 0 },   // Horizontal
-                new [] { 0, 1 },   // Vertical
-                new [] { 1, 1 },   // Diagonal (bottom-left to top-right)
-                new [] { 1, -1 }   // Diagonal (top-left to bottom-right)
+                new[] { 1, 0 }, // Horizontal
+                new[] { 0, 1 }, // Vertical
+                new[] { 1, 1 }, // Diagonal (bottom-left to top-right)
+                new[] { 1, -1 } // Diagonal (top-left to bottom-right)
             };
 
             foreach (var dir in directions)
             {
-                int count = 1;
-                for (int i = -1; i <= 1; i += 2) // Check both directions for each axis
-                {
-                    int colDir = dir[0] * i;
-                    int rowDir = dir[1] * i;
+                // Evaluate for the bot's tokens
+                score += EvaluateDirection(grid, lastMoveColumn, lastMoveRow, dir[0], dir[1], player);
 
-                    count += CountConsecutiveTokens(grid, lastMoveColumn, lastMoveRow, colDir, rowDir, player);
-                }
-
-                if (count >= 4)
-                {
-                    score += 1000; // Winning condition
-                }
-                else if (count == 3)
-                {
-                    score += 100; // Potential winning move
-                }
-                else if (count == 2)
-                {
-                    score += 10; // Creating a fork
-                }
+                // Evaluate for the opponent's tokens (negative impact)
+                score -= EvaluateDirection(grid, lastMoveColumn, lastMoveRow, dir[0], dir[1], opponent);
             }
 
-            return player == 2 ? score : -score; // Adjust score based on player
+            return score;
+        }
+
+        private static int EvaluateDirection(int[,] grid, int startCol, int startRow, int colDir, int rowDir, int player)
+        {
+            int score = 0;
+
+            // Check sequences starting from the last move
+            int count = 1; // Include the starting token
+            int emptySpaces = 0;
+
+            // Forward direction
+            int col = startCol + colDir;
+            int row = startRow + rowDir;
+
+            while (col >= 0 && col < grid.GetLength(0) && row >= 0 && row < grid.GetLength(1))
+            {
+                if (grid[col, row] == player)
+                {
+                    count++;
+                }
+                else if (grid[col, row] == 0) // Empty space
+                {
+                    emptySpaces++;
+                    break; // Stop after encountering an empty space
+                }
+                else // Opponent's token
+                {
+                    break;
+                }
+
+                col += colDir;
+                row += rowDir;
+            }
+
+            // Backward direction
+            col = startCol - colDir;
+            row = startRow - rowDir;
+
+            while (col >= 0 && col < grid.GetLength(0) && row >= 0 && row < grid.GetLength(1))
+            {
+                if (grid[col, row] == player)
+                {
+                    count++;
+                }
+                else if (grid[col, row] == 0) // Empty space
+                {
+                    emptySpaces++;
+                    break; // Stop after encountering an empty space
+                }
+                else // Opponent's token
+                {
+                    break;
+                }
+
+                col -= colDir;
+                row -= rowDir;
+            }
+
+            // Score weighting: Favor sequences that can lead to Connect 4
+            if (count >= 4)
+            {
+                score += 1000; // Winning move
+            }
+            else if (count == 3 && emptySpaces > 0)
+            {
+                score += 100; // Strong position
+            }
+            else if (count == 2 && emptySpaces > 0)
+            {
+                score += 10; // Decent position
+            }
+
+            return score;
         }
 
         private static bool IsValidMove(int[,] grid, int col)
@@ -371,7 +428,7 @@ namespace Commands.Helpers
             }
 
             int selectedCol = validCols[random.Next(validCols.Count)];
-            return new [] { selectedCol, GetNextAvailableRow(grid, selectedCol) };
+            return new[] { selectedCol, GetNextAvailableRow(grid, selectedCol) };
         }
     }
 }
