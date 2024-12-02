@@ -1142,7 +1142,7 @@ namespace Commands.Helpers
                             new ParameterInfo
                             {
                                 Name = "user * 2",
-                                Description = "The users to check compatibility for. If left empty it will choose a random user."
+                                Description = "The users to check compatibility for. If left empty Bob will choose a random user."
                             }
                         }
                     },
