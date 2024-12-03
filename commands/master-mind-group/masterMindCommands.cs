@@ -1,104 +1,87 @@
 using System.Threading.Tasks;
+using System.Linq;
 using Commands.Helpers;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using System;
 
 namespace Commands
 {
     [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
     [IntegrationType(ApplicationIntegrationType.GuildInstall)]
-    [Group("master-mind", "All commands relevant to the game Master Mind.")]
+    [Group("mastermind", "All commands relevant to the game Master Mind.")]
     public class MasterMindGroup : InteractionModuleBase<SocketInteractionContext>
     {
         [SlashCommand("new-game", "Start a game of Master Mind (rules will be sent upon use of this command).")]
         public async Task NewGame()
         {
-            if (MasterMindGeneral.CurrentGames != null && MasterMindGeneral.CurrentGames.Find(game => game.Id == Context.Channel.Id) != null)
+            if (MasterMindMethods.CurrentGames != null && MasterMindMethods.CurrentGames.Find(game => game.Id == Context.Channel.Id) != null)
             {
                 await RespondAsync(text: "❌ Only one game of Master Mind can be played per channel at a time.", ephemeral: true);
             }
             else // Display Rules / Initial Embed
             {
-                MasterMindGame game = new();
-                MasterMindGeneral.CurrentGames.Add(game);
-                game.Id = Context.Channel.Id;
-                game.StartUser = Context.User;
+                MasterMindGame game = new(Context.Channel.Id, Context.User);
+                MasterMindMethods.CurrentGames.Add(game);
 
                 var embed = new EmbedBuilder
                 {
                     Title = "🧠 Master Mind",
-                    Color = new(16415395),
+                    Color = MasterMindMethods.DefaultColor,
                 };
-                embed.AddField(name: "How to Play.", value: "The goal of the game is to guess the correct randomly generated code. **Each code is 4 digits** long where each digit is an integer from **1-9**. Use the command `/master-mind guess` to make your guess. Be warned you only have **8 tries**!");
+                embed.AddField(name: "How to Play.", value: @"
+The goal of the game is to guess the correct randomly generated code. Each code consists of 4 colors, chosen from 6 possible colors (duplicates are allowed). Use the command `/mastermind guess` to make your guess. 
+After each guess you will be given feedback on how close you are to the correct code. The feedback is as follows:
+- ⬛ = Color is in the correct position.
+- ⬜ = Color is in the wrong position.
+- 🔳 = Color is not in the code.
 
-                // Begin Button
-                var button = new ButtonBuilder
-                {
-                    Label = "Begin Game!",
-                    Style = ButtonStyle.Success,
-                    CustomId = "begin"
-                };
+You can pick a difficulty level:
 
-                var builder = new ComponentBuilder().WithButton(button);
+- Easy: 10 tries.
+- Medium: 8 tries.
+- Hard: 6 tries.
 
-                await RespondAsync(embed: embed.Build(), components: builder.Build());
+Good luck cracking the code!");
+
+                await RespondAsync(embed: embed.Build(), components: MasterMindMethods.CreateDifficultySelectMenu());
             }
         }
 
         [SlashCommand("guess", "make a guess in an existing game of Master Mind")]
-        public async Task Guess([Summary("guess", "Type a 4 digit guess as to what the answer is.")] string guess)
+        public async Task Guess([Summary("color1", "The first color in your guess.")] MasterMindMethods.Colors color1, [Summary("color2", "The second color in your guess.")] MasterMindMethods.Colors color2, [Summary("color3", "The third color in your guess.")] MasterMindMethods.Colors color3, [Summary("color4", "The fourth color in your guess.")] MasterMindMethods.Colors color4)
         {
-            var game = MasterMindGeneral.CurrentGames.Find(game => game.Id == Context.Channel.Id);
+            var game = MasterMindMethods.CurrentGames.Find(game => game.Id == Context.Channel.Id);
             if (game == null)
             {
                 await RespondAsync(text: "❌ There is currently not a game of Master Mind in this channel. To make one use `/master-mind new-game`", ephemeral: true);
             }
-            else if (MasterMindGeneral.CurrentGames.Count > 0 && game.IsStarted == false)
+            else if (MasterMindMethods.CurrentGames.Count > 0 && game.IsStarted == false)
             {
                 await RespondAsync(text: "❌ Press \"Begin Game!\" to start guessing.", ephemeral: true);
-            }
-            else if (guess.Length != 4)
-            {
-                await RespondAsync(text: "❌ Your should have **exactly 4 digits** (No guesses were expended).", ephemeral: true);
             }
             else
             {
                 // Set Values
                 game.GuessesLeft -= 1;
+                var guess = new[] { color1, color2, color3, color4 };
+                game.Guesses.Add((game.GetResultString(guess), guess));
 
-                // Get Result
-                string result = MasterMindGeneral.GetResult(guess, game.Key);
-
-                // Ready Embed
-                var embed = new EmbedBuilder
+                // Edit Game Message Embed
+                if (game.DoesGuessMatchKey(guess)) // it is solved
                 {
-                    Title = "🧠 Master Mind",
-                    Color = new(16415395),
-                };
-
-                if (result == "🟩🟩🟩🟩") // it is solved
-                {
-                    embed.Title += " (solved)";
-                    embed.Color = new(5763719);
-                    embed.Description = MasterMindGeneral.GetCongrats();
-                    embed.AddField(name: "Answer:", value: $"`{game.Key}`", inline: true).AddField(name: "Guesses Left:", value: $"`{game.GuessesLeft}`", inline: true);
-                    await game.Message.ModifyAsync(x => { x.Embed = embed.Build(); x.Components = null; });
-                    MasterMindGeneral.CurrentGames.Remove(game);
+                    await game.Message.ModifyAsync(x => { x.Embed = MasterMindMethods.CreateEmbed(game, true); x.Components = null; });
+                    MasterMindMethods.CurrentGames.Remove(game);
                 }
                 else if (game.GuessesLeft <= 0) // lose game
                 {
-                    embed.Title += " (lost)";
-                    embed.Color = new(15548997);
-                    embed.Description = "You have lost, but don't be sad you can just start a new game with `/master-mind new-game`";
-                    embed.AddField(name: "Answer:", value: $"`{game.Key}`");
-                    await game.Message.ModifyAsync(x => { x.Embed = embed.Build(); x.Components = null; });
-                    MasterMindGeneral.CurrentGames.Remove(game);
+                    await game.Message.ModifyAsync(x => { x.Embed = MasterMindMethods.CreateEmbed(game); x.Components = null; });
+                    MasterMindMethods.CurrentGames.Remove(game);
                 }
                 else
                 {
-                    embed.AddField(name: "Guesses Left:", value: $"`{game.GuessesLeft}`", inline: true).AddField(name: "Last Guess:", value: $"`{guess}`", inline: true).AddField(name: "Result:", value: $"{result}");
-                    await game.Message.ModifyAsync(x => { x.Embed = embed.Build(); });
+                    await game.Message.ModifyAsync(x => { x.Embed = MasterMindMethods.CreateEmbed(game); });
                 }
 
                 // Respond
@@ -106,27 +89,31 @@ namespace Commands
             }
         }
 
-        [ComponentInteraction("begin", ignoreGroupNames: true)]
+        [ComponentInteraction("mastermind-difficulty", ignoreGroupNames: true)]
         public async Task MasterMindBeginButtonHandler()
         {
             await DeferAsync();
             // Get Game
-            var game = MasterMindGeneral.CurrentGames.Find(game => game.Id == Context.Interaction.ChannelId);
+            var game = MasterMindMethods.CurrentGames.Find(game => game.Id == Context.Interaction.ChannelId);
 
             // Set message
             var component = (SocketMessageComponent)Context.Interaction;
             game.Message = component.Message;
 
+            // Initialize Guesses Left
+            game.GuessesLeft = int.Parse(component.Data.Values.FirstOrDefault());
+
             // Initialize Key
-            game.Key = MasterMindGeneral.CreateKey();
+            game.Key = MasterMindMethods.CreateKey();
 
             // Initialize Embed  
             var embed = new EmbedBuilder
             {
                 Title = "🧠 Master Mind",
-                Color = new(16415395),
+                Color = MasterMindMethods.DefaultColor,
+                Description = "Make your first guess with `/master-mind guess`.",
             };
-            embed.AddField(name: "Guesses Left:", value: $"`{game.GuessesLeft}`", inline: true).AddField(name: "Last Guess:", value: "use `/master-mind guess`", inline: true).AddField(name: "Result:", value: "use `/master-mind guess`");
+            embed.AddField(name: "Guesses Left:", value: $"`{game.GuessesLeft}`", inline: true);
 
             // Forfeit Button
             var button = new ButtonBuilder
@@ -150,7 +137,7 @@ namespace Commands
             await DeferAsync();
 
             // Get Game
-            var game = MasterMindGeneral.CurrentGames.Find(game => game.Id == Context.Interaction.Channel.Id);
+            var game = MasterMindMethods.CurrentGames.Find(game => game.Id == Context.Interaction.Channel.Id);
 
             if (game.StartUser.Id == Context.Interaction.User.Id)
             {
@@ -162,9 +149,9 @@ namespace Commands
                 };
 
                 embed.Title += " (forfeited)";
-                embed.AddField(name: "Answer:", value: $"`{game.Key}`");
+                embed.AddField(name: "Answer:", value: MasterMindMethods.GetColorsString(game.Key));
                 await game.Message.ModifyAsync(x => { x.Embed = embed.Build(); x.Components = null; });
-                MasterMindGeneral.CurrentGames.Remove(game);
+                MasterMindMethods.CurrentGames.Remove(game);
             }
             else
             {
