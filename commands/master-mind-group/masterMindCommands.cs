@@ -35,7 +35,7 @@ The goal of the game is to guess the correct randomly generated code. Each code 
 After each guess you will be given feedback on how close you are to the correct code. The feedback is as follows:
 - ⬛ = Color is in the correct position.
 - ⬜ = Color is in the wrong position.
-- 🔳 = Color is not in the code.
+- 🟫 = Color is not in the code.
 
 You can pick a difficulty level:
 
