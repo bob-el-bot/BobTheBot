@@ -16,7 +16,7 @@ namespace Commands
         [SlashCommand("new-game", "Start a game of Master Mind (rules will be sent upon use of this command).")]
         public async Task NewGame()
         {
-            if (MasterMindMethods.CurrentGames != null && MasterMindMethods.CurrentGames.Find(game => game.Id == Context.Channel.Id) != null)
+            if (MasterMindMethods.CurrentGames != null && MasterMindMethods.GetGame(Context.Channel.Id) != null)
             {
                 await RespondAsync(text: "❌ Only one game of Master Mind can be played per channel at a time.", ephemeral: true);
             }
@@ -52,7 +52,8 @@ Good luck cracking the code!");
         [SlashCommand("guess", "make a guess in an existing game of Master Mind")]
         public async Task Guess([Summary("color1", "The first color in your guess.")] MasterMindMethods.Colors color1, [Summary("color2", "The second color in your guess.")] MasterMindMethods.Colors color2, [Summary("color3", "The third color in your guess.")] MasterMindMethods.Colors color3, [Summary("color4", "The fourth color in your guess.")] MasterMindMethods.Colors color4)
         {
-            var game = MasterMindMethods.CurrentGames.Find(game => game.Id == Context.Channel.Id);
+            var game = MasterMindMethods.GetGame(Context.Channel.Id);
+            
             if (game == null)
             {
                 await RespondAsync(text: "❌ There is currently not a game of Master Mind in this channel. To make one use `/mastermind new-game`", ephemeral: true);
@@ -94,7 +95,7 @@ Good luck cracking the code!");
         {
             await DeferAsync();
             // Get Game
-            var game = MasterMindMethods.CurrentGames.Find(game => game.Id == Context.Interaction.ChannelId);
+            var game = MasterMindMethods.GetGame(Context.Interaction.Channel.Id);
 
             // Set message
             var component = (SocketMessageComponent)Context.Interaction;
@@ -137,7 +138,7 @@ Good luck cracking the code!");
             await DeferAsync();
 
             // Get Game
-            var game = MasterMindMethods.CurrentGames.Find(game => game.Id == Context.Interaction.Channel.Id);
+            var game = MasterMindMethods.GetGame(Context.Interaction.Channel.Id);
 
             if (game.StartUser.Id == Context.Interaction.User.Id)
             {

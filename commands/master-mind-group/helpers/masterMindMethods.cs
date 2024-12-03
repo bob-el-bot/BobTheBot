@@ -162,6 +162,16 @@ namespace Commands.Helpers
             };
         }
 
+        /// <summary>
+        /// Retrieves a game instance by its unique identifier.
+        /// </summary>
+        /// <param name="id">The unique identifier of the game.</param>
+        /// <returns>The game instance associated with the identifier.</returns>
+        public static MasterMindGame GetGame(ulong id)
+        {
+            return CurrentGames.FirstOrDefault(game => game.Id == id);
+        }
+
         private static string GetDescriptionString(List<(string, Colors[])> guesses)
         {
             StringBuilder description = new();
