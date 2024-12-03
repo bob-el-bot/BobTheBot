@@ -55,11 +55,11 @@ Good luck cracking the code!");
             var game = MasterMindMethods.CurrentGames.Find(game => game.Id == Context.Channel.Id);
             if (game == null)
             {
-                await RespondAsync(text: "❌ There is currently not a game of Master Mind in this channel. To make one use `/master-mind new-game`", ephemeral: true);
+                await RespondAsync(text: "❌ There is currently not a game of Master Mind in this channel. To make one use `/mastermind new-game`", ephemeral: true);
             }
             else if (MasterMindMethods.CurrentGames.Count > 0 && game.IsStarted == false)
             {
-                await RespondAsync(text: "❌ Press \"Begin Game!\" to start guessing.", ephemeral: true);
+                await RespondAsync(text: "❌ Select your difficulty to start guessing.", ephemeral: true);
             }
             else
             {
@@ -111,7 +111,7 @@ Good luck cracking the code!");
             {
                 Title = "🧠 Master Mind",
                 Color = MasterMindMethods.DefaultColor,
-                Description = "Make your first guess with `/master-mind guess`.",
+                Description = "Make your first guess with `/mastermind guess`.",
             };
             embed.AddField(name: "Guesses Left:", value: $"`{game.GuessesLeft}`", inline: true);
 
@@ -145,7 +145,7 @@ Good luck cracking the code!");
                 {
                     Title = "🧠 Master Mind",
                     Color = new(15548997),
-                    Description = "This was certainly difficult, try again with `/master-mind new-game`",
+                    Description = "This was certainly difficult, try again with `/mastermind new-game`",
                 };
 
                 embed.Title += " (forfeited)";
