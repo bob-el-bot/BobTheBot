@@ -192,6 +192,17 @@ namespace Commands.Helpers
         {
             try
             {
+                // First move: Place token in a random column
+                if (game.Turns == 0 || game.Turns == 1)
+                {
+                    int[] randomMove = GetRandomValidMove(game.Grid);
+                    PlaceToken(game.Grid, randomMove[0], 2);
+                    game.LastMoveColumn = randomMove[0];
+                    game.LastMoveRow = randomMove[1];
+                    await game.EndBotTurn();
+                    return;
+                }
+
                 var chosenMove = Minimax(game.Grid, game.Turns, 4, true, int.MinValue, int.MaxValue, game.LastMoveColumn, game.LastMoveRow).Move;
 
                 if (chosenMove != null && IsValidMove(game.Grid, chosenMove[0]))
@@ -222,6 +233,10 @@ namespace Commands.Helpers
                 await game.EndBotTurn();
             }
         }
+
+        // AI Methods
+        // Minimax algorithm with alpha-beta pruning
+        private static readonly Random random = new();
 
         private static (int Score, int[] Move) Minimax(int[,] grid, int turns, int depth, bool isMaximizing, int alpha, int beta, int lastMoveColumn, int lastMoveRow)
         {
@@ -415,7 +430,6 @@ namespace Commands.Helpers
 
         private static int[] GetRandomValidMove(int[,] grid)
         {
-            Random random = new();
             int columns = grid.GetLength(0);
             List<int> validCols = new();
 

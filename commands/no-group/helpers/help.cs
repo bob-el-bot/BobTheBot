@@ -395,25 +395,25 @@ namespace Commands.Helpers
                     },
                     new CommandInfo
                     {
-                        Name = "master-mind new-game",
+                        Name = "mastermind new-game",
                         InheritGroupName = false,
                         Description =
-                            "Play a game of Master Mind, the rules will shared upon usage.",
-                        Url = "https://docs.bobthebot.net/#master-mind-new",
+                            "Play a game of Mastermind, the rules will shared upon usage. You may only have one game per channel.",
+                        Url = "https://docs.bobthebot.net/#mastermind-new-game",
                     },
                     new CommandInfo
                     {
-                        Name = "master-mind guess",
+                        Name = "mastermind guess",
                         InheritGroupName = false,
                         Description =
-                            "Make a guess in a game of Master Mind. You may only have one game per channel.",
-                        Url = "https://docs.bobthebot.net/#master-mind-guess",
+                            "Make a guess in a game of Mastermind.",
+                        Url = "https://docs.bobthebot.net/#mastermind-guess",
                         Parameters = new[]
                         {
                             new ParameterInfo
                             {
-                                Name = "guess",
-                                Description = "Your 4 digit guess for the code."
+                                Name = "color * 4",
+                                Description = "Your guess for the colors in the code."
                             }
                         }
                     },
