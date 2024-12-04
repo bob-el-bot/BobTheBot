@@ -47,99 +47,104 @@ namespace Commands
             if (!permissions.SendMessages || !permissions.ViewChannel || !permissions.EmbedLinks)
             {
                 await FollowupAsync(text: $"❌ Bob is either missing permissions to view, send messages, *or* embed links in the channel <#{server.QuoteChannelId}>.\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`, and `Embed Links`.\n- Use `/quote channel` to set a new channel.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                return;
             }
-            else if (quote.Length > (server.MaxQuoteLength ?? 4096) || quote.Length < server.MinQuoteLength) // 4096 is max characters in an embed description.
+
+            if (quote.Length > (server.MaxQuoteLength ?? 4096) || quote.Length < server.MinQuoteLength) // 4096 is max characters in an embed description.
             {
                 await FollowupAsync($"❌ The quote *cannot* be made because it contains **{quote.Length}** characters.\n- this server's maximum quote length is **{server.MaxQuoteLength}**.\n- this server's minimum quote length is **{server.MinQuoteLength}**.\n- Discord has a limit of **4096** characters in embed descriptions.", ephemeral: true);
+                return;
             }
-            else if (!string.IsNullOrWhiteSpace(tag1) || !string.IsNullOrWhiteSpace(tag2) || !string.IsNullOrWhiteSpace(tag3) && Premium.IsPremium(Context.Interaction.Entitlements) == false) // contains tags and does not have premium
+
+            if (!string.IsNullOrWhiteSpace(tag1) || !string.IsNullOrWhiteSpace(tag2) || !string.IsNullOrWhiteSpace(tag3) && Premium.IsPremium(Context.Interaction.Entitlements) == false) // contains tags and does not have premium
             {
                 await FollowupAsync($"❌ You cannot add tags.\n- Get ✨ premium to use **tags**.", components: Premium.GetComponents());
+                return;
+            }
+
+            // Format Quote
+            string formattedQuote = quote.Length <= 4094 && quote[0] != '"' && quote[^1] != '"' ? $"\"{quote}\"" : quote;
+
+            // Check if the quote contains any mentions or links
+            bool containsMentionsOrLinks = quote.Contains("<@") || quote.Contains("<#") || quote.Contains("http");
+
+            // Create embed
+            EmbedBuilder embed = new();
+
+            if (formattedQuote.Length <= 256 && !containsMentionsOrLinks)
+            {
+                // If the quote is short enough and does not contain mentions or links, use title
+                embed.Title = formattedQuote;
+                embed.Description = $"-{user.Mention}, {Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow, Timestamp.Formats.Relative)}";
             }
             else
             {
-                // Format Quote
-                string formattedQuote = quote.Length <= 4094 && quote[0] != '"' && quote[^1] != '"' ? $"\"{quote}\"" : quote;
+                // Prepare description
+                var timestamp = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow, Timestamp.Formats.Relative);
+                string description = formattedQuote.Length <= 4092 ? $"**{formattedQuote}**" : formattedQuote;
+                string footer = $"\n-{user.Mention}, {timestamp}";
 
-                // Check if the quote contains any mentions or links
-                bool containsMentionsOrLinks = quote.Contains("<@") || quote.Contains("<#") || quote.Contains("http");
-
-                // Create embed
-                EmbedBuilder embed = new();
-
-                if (formattedQuote.Length <= 256 && !containsMentionsOrLinks)
+                // Handle cases where combined description and footer exceed limits
+                if (description.Length + footer.Length > 4096)
                 {
-                    // If the quote is short enough and does not contain mentions or links, use title
-                    embed.Title = formattedQuote;
-                    embed.Description = $"-{user.Mention}, {Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow, Timestamp.Formats.Relative)}";
+                    if (description.Length + user.Mention.Length > 4096)
+                    {
+                        embed.AddField("Sent By", user.Mention, true);
+                    }
+
+                    embed.AddField("Time", timestamp, true);
                 }
                 else
                 {
-                    // Prepare description
-                    var timestamp = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow, Timestamp.Formats.Relative);
-                    string description = formattedQuote.Length <= 4092 ? $"**{formattedQuote}**" : formattedQuote;
-                    string footer = $"\n-{user.Mention}, {timestamp}";
-
-                    // Handle cases where combined description and footer exceed limits
-                    if (description.Length + footer.Length > 4096)
-                    {
-                        if (description.Length + user.Mention.Length > 4096)
-                        {
-                            embed.AddField("Sent By", user.Mention, true);
-                        }
-
-                        embed.AddField("Time", timestamp, true);
-                    }
-                    else
-                    {
-                        description += footer;
-                    }
-
-                    // Check for final description length
-                    if (description.Length > 4096)
-                    {
-                        await FollowupAsync($"❌ The quote *cannot* be made because it contains **{description.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **4096** characters in embed descriptions.", ephemeral: true);
-                        return;
-                    }
-
-                    embed.Description = description;
+                    description += footer;
                 }
 
-                embed.Color = new Color(0x2B2D31);
-                embed.WithAuthor(new EmbedAuthorBuilder().WithName(user.GlobalName).WithIconUrl(user.GetAvatarUrl()));
-
-                // Footer
-                StringBuilder footerText = new();
-                if (!string.IsNullOrWhiteSpace(tag1) || !string.IsNullOrWhiteSpace(tag2) || !string.IsNullOrWhiteSpace(tag3))
+                // Check for final description length
+                if (description.Length > 4096)
                 {
-                    footerText.Append("Tag(s): ");
-                    List<string> tags = new();
-
-                    if (!string.IsNullOrWhiteSpace(tag1))
-                    {
-                        tags.Add(tag1);
-                    }
-                    if (!string.IsNullOrWhiteSpace(tag2))
-                    {
-                        tags.Add(tag2);
-                    }
-                    if (!string.IsNullOrWhiteSpace(tag3))
-                    {
-                        tags.Add(tag3);
-                    }
-
-                    footerText.Append(string.Join(", ", tags)); // Join the tags with ", "
-                    footerText.Append(" | ");
+                    await FollowupAsync($"❌ The quote *cannot* be made because it contains **{description.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **4096** characters in embed descriptions.", ephemeral: true);
+                    return;
                 }
-                footerText.Append($"Quoted by {Context.User.GlobalName}");
-                embed.WithFooter(footer => footer.Text = footerText.ToString());
 
-                // Respond
-                await FollowupAsync(text: $"🖊️ Quote made in <#{channel.Id}>.", ephemeral: true);
-
-                // Send quote in quotes channel of server
-                await ((ISocketMessageChannel)channel).SendMessageAsync(embed: embed.Build());
+                embed.Description = description;
             }
+
+            embed.Color = new Color(0x2B2D31);
+            embed.WithAuthor(new EmbedAuthorBuilder().WithName(user.GlobalName).WithIconUrl(user.GetAvatarUrl()));
+
+            // Footer
+            StringBuilder footerText = new();
+            if (!string.IsNullOrWhiteSpace(tag1) || !string.IsNullOrWhiteSpace(tag2) || !string.IsNullOrWhiteSpace(tag3))
+            {
+                footerText.Append("Tag(s): ");
+                List<string> tags = new();
+
+                if (!string.IsNullOrWhiteSpace(tag1))
+                {
+                    tags.Add(tag1);
+                }
+                if (!string.IsNullOrWhiteSpace(tag2))
+                {
+                    tags.Add(tag2);
+                }
+                if (!string.IsNullOrWhiteSpace(tag3))
+                {
+                    tags.Add(tag3);
+                }
+
+                footerText.Append(string.Join(", ", tags)); // Join the tags with ", "
+                footerText.Append(" | ");
+            }
+            
+            footerText.Append($"Quoted by {Context.User.GlobalName}");
+            embed.WithFooter(footer => footer.Text = footerText.ToString());
+
+            // Respond
+            await FollowupAsync(text: $"🖊️ Quote made in <#{channel.Id}>.", ephemeral: true);
+
+            // Send quote in quotes channel of server
+            await ((ISocketMessageChannel)channel).SendMessageAsync(embed: embed.Build());
+
         }
 
         [MessageCommand(name: "Quote")]
@@ -168,6 +173,7 @@ namespace Commands
             if (channel == null)
             {
                 await FollowupAsync(text: "❌ The currently set quote channel no longer exists.\n- Use `/quote channel` to set a new channel.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                return;
             }
 
             var permissions = Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions(channel);
@@ -175,82 +181,84 @@ namespace Commands
             if (!permissions.SendMessages || !permissions.ViewChannel || !permissions.EmbedLinks)
             {
                 await FollowupAsync(text: $"❌ Bob is either missing permissions to view, send messages, *or* embed links in the channel <#{server.QuoteChannelId}>.\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`, and `Embed Links`.\n- Use `/quote channel` to set a new channel.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                return;
             }
-            else if (quote == null || quote == "")
+
+            if (quote == null || quote == "")
             {
                 await FollowupAsync(text: "❌ The message you tried quoting is invalid. \n- Embeds can't be quoted. \n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                return;
             }
-            else if (quote.Length > (server.MaxQuoteLength ?? 4096) || quote.Length < server.MinQuoteLength) // 4096 is max characters in an embed description.
+
+            if (quote.Length > (server.MaxQuoteLength ?? 4096) || quote.Length < server.MinQuoteLength) // 4096 is max characters in an embed description.
             {
                 await FollowupAsync($"❌ The quote *cannot* be made because it contains **{quote.Length}** characters.\n- this server's maximum quote length is **{server.MaxQuoteLength}**.\n- this server's minimum quote length is **{server.MinQuoteLength}**.\n- Discord has a limit of **4096** characters in embed descriptions.", ephemeral: true);
+                return;
+            }
+
+            // Format Quote
+            string formattedQuote = quote.Length <= 4094 && quote[0] != '"' && quote[^1] != '"' ? $"\"{quote}\"" : quote;
+
+            // Check if the quote contains any mentions or links
+            bool containsMentionsOrLinks = quote.Contains("<@") || quote.Contains("<#") || quote.Contains("http");
+
+            // Create embed
+            EmbedBuilder embed = new();
+
+            if (formattedQuote.Length <= 256 && !containsMentionsOrLinks)
+            {
+                // If the quote is short enough and does not contain mentions or links, use title
+                embed = new EmbedBuilder
+                {
+                    Title = $"{formattedQuote}",
+                    Description = $"-{user.Mention}, {Timestamp.FromDateTimeOffset(message.Timestamp, Timestamp.Formats.Relative)}"
+                };
             }
             else
             {
-                // Format Quote
-                string formattedQuote = quote.Length <= 4094 && quote[0] != '"' && quote[^1] != '"' ? $"\"{quote}\"" : quote;
+                var timestamp = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow, Timestamp.Formats.Relative);
+                string description = formattedQuote.Length <= 4092 ? $"**{formattedQuote}**" : formattedQuote;
+                string footer = $"\n-{user.Mention}, {timestamp}";
 
-                // Check if the quote contains any mentions or links
-                bool containsMentionsOrLinks = quote.Contains("<@") || quote.Contains("<#") || quote.Contains("http");
-
-                // Create embed
-                EmbedBuilder embed = new();
-
-                if (formattedQuote.Length <= 256 && !containsMentionsOrLinks)
+                // Handle cases where combined description and footer exceed limits
+                if (description.Length + footer.Length > 4096)
                 {
-                    // If the quote is short enough and does not contain mentions or links, use title
-                    embed = new EmbedBuilder
+                    if (description.Length + user.Mention.Length > 4096)
                     {
-                        Title = $"{formattedQuote}",
-                        Description = $"-{user.Mention}, {Timestamp.FromDateTimeOffset(message.Timestamp, Timestamp.Formats.Relative)}"
-                    };
+                        embed.AddField("Sent By", user.Mention, true);
+                    }
+
+                    embed.AddField("Time", timestamp, true);
                 }
                 else
                 {
-                    var timestamp = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow, Timestamp.Formats.Relative);
-                    string description = formattedQuote.Length <= 4092 ? $"**{formattedQuote}**" : formattedQuote;
-                    string footer = $"\n-{user.Mention}, {timestamp}";
-
-                    // Handle cases where combined description and footer exceed limits
-                    if (description.Length + footer.Length > 4096)
-                    {
-                        if (description.Length + user.Mention.Length > 4096)
-                        {
-                            embed.AddField("Sent By", user.Mention, true);
-                        }
-
-                        embed.AddField("Time", timestamp, true);
-                    }
-                    else
-                    {
-                        description += footer;
-                    }
-
-                    embed.Description = description;
+                    description += footer;
                 }
 
-                if (embed.Description.Length > 4096)
-                {
-                    await FollowupAsync($"❌ The quote *cannot* be made because it contains **{embed.Description.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **4096** characters in embed descriptions.", ephemeral: true);
-                }
-                else
-                {
-                    embed.Color = new Color(0x2B2D31);
-                    embed.WithAuthor(new EmbedAuthorBuilder().WithName(user.GlobalName).WithIconUrl(user.GetAvatarUrl()));
-
-                    // Orignal Message Field
-                    embed.AddField(name: "Original Message", value: $"{message.GetJumpUrl()}");
-
-                    // Footer
-                    string footerText = $"Quoted by {Context.User.GlobalName}";
-                    embed.WithFooter(footer => footer.Text = footerText);
-
-                    // Respond
-                    await FollowupAsync(text: $"🖊️ Quote made.", ephemeral: true);
-
-                    // Send quote in quotes channel of server
-                    await ((ISocketMessageChannel)channel).SendMessageAsync(embed: embed.Build());
-                }
+                embed.Description = description;
             }
+
+            if (embed.Description.Length > 4096)
+            {
+                await FollowupAsync($"❌ The quote *cannot* be made because it contains **{embed.Description.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **4096** characters in embed descriptions.", ephemeral: true);
+                return;
+            }
+
+            embed.Color = new Color(0x2B2D31);
+            embed.WithAuthor(new EmbedAuthorBuilder().WithName(user.GlobalName).WithIconUrl(user.GetAvatarUrl()));
+
+            // Orignal Message Field
+            embed.AddField(name: "Original Message", value: $"{message.GetJumpUrl()}");
+
+            // Footer
+            string footerText = $"Quoted by {Context.User.GlobalName}";
+            embed.WithFooter(footer => footer.Text = footerText);
+
+            // Respond
+            await FollowupAsync(text: $"🖊️ Quote made.", ephemeral: true);
+
+            // Send quote in quotes channel of server
+            await ((ISocketMessageChannel)channel).SendMessageAsync(embed: embed.Build());
         }
 
         [SlashCommand("channel", "Configure /quote channel.")]
