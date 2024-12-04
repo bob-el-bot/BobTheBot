@@ -187,11 +187,7 @@ namespace Commands
             else
             {
                 // Format Quote
-                string formattedQuote = quote;
-                if (quote[0] != '"' && quote[^1] != '"')
-                {
-                    formattedQuote = $"\"{quote}\"";
-                }
+                string formattedQuote = quote.Length <= 4094 && quote[0] != '"' && quote[^1] != '"' ? $"\"{quote}\"" : quote;
 
                 // Check if the quote contains any mentions or links
                 bool containsMentionsOrLinks = quote.Contains("<@") || quote.Contains("<#") || quote.Contains("http");
@@ -210,13 +206,26 @@ namespace Commands
                 }
                 else
                 {
-                    // Use description for quote to fit up to 4096 characters or contains mentions/links
-                    string description = $"**{formattedQuote}**\n-{user.Mention}, {Timestamp.FromDateTimeOffset(message.Timestamp, Timestamp.Formats.Relative)}";
-                    embed = new EmbedBuilder
+                    var timestamp = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow, Timestamp.Formats.Relative);
+                    string description = formattedQuote.Length <= 4092 ? $"**{formattedQuote}**" : formattedQuote;
+                    string footer = $"\n-{user.Mention}, {timestamp}";
+
+                    // Handle cases where combined description and footer exceed limits
+                    if (description.Length + footer.Length > 4096)
                     {
-                        Title = "",
-                        Description = description
-                    };
+                        if (description.Length + user.Mention.Length > 4096)
+                        {
+                            embed.AddField("Sent By", user.Mention, true);
+                        }
+
+                        embed.AddField("Time", timestamp, true);
+                    }
+                    else
+                    {
+                        description += footer;
+                    }
+
+                    embed.Description = description;
                 }
 
                 if (embed.Description.Length > 4096)
