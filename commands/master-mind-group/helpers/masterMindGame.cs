@@ -69,7 +69,7 @@ namespace Commands.Helpers
             var result = guess.Select((g, i) =>
                 g == Key[i] ? "⬛" : // Correct color in the correct position.
                 Key.Contains(g) ? "⬜" : // Correct color in the wrong position.
-                "🔳" // Incorrect color.
+                "🟫" // Incorrect color.
             );
 
             return string.Concat(result);

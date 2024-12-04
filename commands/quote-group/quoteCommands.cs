@@ -59,11 +59,7 @@ namespace Commands
             else
             {
                 // Format Quote
-                string formattedQuote = quote;
-                if (quote[0] != '"' && quote[^1] != '"')
-                {
-                    formattedQuote = "\"" + quote + "\"";
-                }
+                string formattedQuote = quote.Length <= 4094 && quote[0] != '"' && quote[^1] != '"' ? $"\"{quote}\"" : quote;
 
                 // Check if the quote contains any mentions or links
                 bool containsMentionsOrLinks = quote.Contains("<@") || quote.Contains("<#") || quote.Contains("http");
@@ -74,21 +70,39 @@ namespace Commands
                 if (formattedQuote.Length <= 256 && !containsMentionsOrLinks)
                 {
                     // If the quote is short enough and does not contain mentions or links, use title
-                    embed = new EmbedBuilder
-                    {
-                        Title = $"{formattedQuote}",
-                        Description = $"-{user.Mention}, {Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow, Timestamp.Formats.Relative)}"
-                    };
+                    embed.Title = formattedQuote;
+                    embed.Description = $"-{user.Mention}, {Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow, Timestamp.Formats.Relative)}";
                 }
                 else
                 {
-                    // Use description for quote to fit up to 4096 characters or contains mentions/links
-                    string description = $"**{formattedQuote}**\n-{user.Mention}, {Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow, Timestamp.Formats.Relative)}";
-                    embed = new EmbedBuilder
+                    // Prepare description
+                    var timestamp = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow, Timestamp.Formats.Relative);
+                    string description = formattedQuote.Length <= 4092 ? $"**{formattedQuote}**" : formattedQuote;
+                    string footer = $"\n-{user.Mention}, {timestamp}";
+
+                    // Handle cases where combined description and footer exceed limits
+                    if (description.Length + footer.Length > 4096)
                     {
-                        Title = "",
-                        Description = description
-                    };
+                        if (description.Length + user.Mention.Length > 4096)
+                        {
+                            embed.AddField("Sent By", user.Mention, true);
+                        }
+
+                        embed.AddField("Time", timestamp, true);
+                    }
+                    else
+                    {
+                        description += footer;
+                    }
+
+                    // Check for final description length
+                    if (description.Length > 4096)
+                    {
+                        await FollowupAsync($"❌ The quote *cannot* be made because it contains **{description.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **4096** characters in embed descriptions.", ephemeral: true);
+                        return;
+                    }
+
+                    embed.Description = description;
                 }
 
                 embed.Color = new Color(0x2B2D31);
@@ -121,7 +135,7 @@ namespace Commands
                 embed.WithFooter(footer => footer.Text = footerText.ToString());
 
                 // Respond
-                await FollowupAsync(text: $"🖊️ Quote made.", ephemeral: true);
+                await FollowupAsync(text: $"🖊️ Quote made in <#{channel.Id}>.", ephemeral: true);
 
                 // Send quote in quotes channel of server
                 await ((ISocketMessageChannel)channel).SendMessageAsync(embed: embed.Build());
@@ -173,11 +187,7 @@ namespace Commands
             else
             {
                 // Format Quote
-                string formattedQuote = quote;
-                if (quote[0] != '"' && quote[^1] != '"')
-                {
-                    formattedQuote = $"\"{quote}\"";
-                }
+                string formattedQuote = quote.Length <= 4094 && quote[0] != '"' && quote[^1] != '"' ? $"\"{quote}\"" : quote;
 
                 // Check if the quote contains any mentions or links
                 bool containsMentionsOrLinks = quote.Contains("<@") || quote.Contains("<#") || quote.Contains("http");
@@ -196,13 +206,26 @@ namespace Commands
                 }
                 else
                 {
-                    // Use description for quote to fit up to 4096 characters or contains mentions/links
-                    string description = $"**{formattedQuote}**\n-{user.Mention}, {Timestamp.FromDateTimeOffset(message.Timestamp, Timestamp.Formats.Relative)}";
-                    embed = new EmbedBuilder
+                    var timestamp = Timestamp.FromDateTimeOffset(DateTimeOffset.UtcNow, Timestamp.Formats.Relative);
+                    string description = formattedQuote.Length <= 4092 ? $"**{formattedQuote}**" : formattedQuote;
+                    string footer = $"\n-{user.Mention}, {timestamp}";
+
+                    // Handle cases where combined description and footer exceed limits
+                    if (description.Length + footer.Length > 4096)
                     {
-                        Title = "",
-                        Description = description
-                    };
+                        if (description.Length + user.Mention.Length > 4096)
+                        {
+                            embed.AddField("Sent By", user.Mention, true);
+                        }
+
+                        embed.AddField("Time", timestamp, true);
+                    }
+                    else
+                    {
+                        description += footer;
+                    }
+
+                    embed.Description = description;
                 }
 
                 if (embed.Description.Length > 4096)

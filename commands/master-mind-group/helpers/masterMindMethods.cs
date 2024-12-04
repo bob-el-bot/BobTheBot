@@ -196,7 +196,7 @@ namespace Commands.Helpers
             {
                 Title = "🧠 Master Mind",
                 Color = isSolved ? WinColor : game.GuessesLeft == 0 ? LoseColor : DefaultColor,
-                Footer = new() { Text = "⬛ = Color is in the correct position ⬜ = Color is in the wrong position 🔳 = Color is not in the code" }
+                Footer = new() { Text = "⬛ = Color is in the correct position ⬜ = Color is in the wrong position 🟫 = Color is not in the code" }
             };
 
             defaultEmbed.AddField("Board:", GetDescriptionString(game.Guesses), true);
