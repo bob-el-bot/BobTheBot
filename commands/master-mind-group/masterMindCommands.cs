@@ -14,7 +14,7 @@ namespace Commands
     public class MasterMindGroup : InteractionModuleBase<SocketInteractionContext>
     {
         [SlashCommand("new-game", "Start a game of Master Mind (rules will be sent upon use of this command).")]
-        public async Task NewGame()
+        public async Task NewGame(MasterMindMethods.GameMode mode = MasterMindMethods.GameMode.Classic)
         {
             if (MasterMindMethods.CurrentGames != null && MasterMindMethods.GetGame(Context.Channel.Id) != null)
             {
@@ -22,7 +22,7 @@ namespace Commands
             }
             else // Display Rules / Initial Embed
             {
-                MasterMindGame game = new(Context.Channel.Id, Context.User);
+                MasterMindGame game = new(Context.Channel.Id, Context.User, mode);
                 MasterMindMethods.CurrentGames.Add(game);
 
                 var embed = new EmbedBuilder
@@ -30,27 +30,14 @@ namespace Commands
                     Title = "🧠 Master Mind",
                     Color = MasterMindMethods.DefaultColor,
                 };
-                embed.AddField(name: "How to Play.", value: @"
-The goal of the game is to guess the correct randomly generated code. Each code consists of 4 colors, chosen from 6 possible colors (duplicates are allowed). Use the command `/mastermind guess` to make your guess. 
-After each guess you will be given feedback on how close you are to the correct code. The feedback is as follows:
-- ⬛ = Color is in the correct position.
-- ⬜ = Color is in the wrong position.
-- 🟫 = Color is not in the code.
-
-You can pick a difficulty level:
-
-- Easy: 10 tries.
-- Medium: 8 tries.
-- Hard: 6 tries.
-
-Good luck cracking the code!");
+                embed.AddField(name: "How to Play.", value: MasterMindMethods.GetRules(mode), inline: false);
 
                 await RespondAsync(embed: embed.Build(), components: MasterMindMethods.CreateDifficultySelectMenu());
             }
         }
 
         [SlashCommand("guess", "make a guess in an existing game of Master Mind")]
-        public async Task Guess([Summary("color1", "The first color in your guess.")] MasterMindMethods.Colors color1, [Summary("color2", "The second color in your guess.")] MasterMindMethods.Colors color2, [Summary("color3", "The third color in your guess.")] MasterMindMethods.Colors color3, [Summary("color4", "The fourth color in your guess.")] MasterMindMethods.Colors color4)
+        public async Task Guess([Summary("color1", "The first color in your guess.")] MasterMindMethods.Color color1, [Summary("color2", "The second color in your guess.")] MasterMindMethods.Color color2, [Summary("color3", "The third color in your guess.")] MasterMindMethods.Color color3, [Summary("color4", "The fourth color in your guess.")] MasterMindMethods.Color color4)
         {
             var game = MasterMindMethods.GetGame(Context.Channel.Id);
             
@@ -156,7 +143,7 @@ Good luck cracking the code!");
             }
             else
             {
-                await FollowupAsync(text: $"❌ **Only** {game.StartUser.Mention} can forfeit this game of Master Mind.\n- Only the user who started the game of Master Mind can forfeit.", ephemeral: true);
+                await FollowupAsync(text: $"❌ **Only** {game.StartUser.Mention} can forfeit this game of Master Mind.\n- Only the user who started the game of Mastermind can forfeit.", ephemeral: true);
             }
         }
     }

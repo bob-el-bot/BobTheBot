@@ -17,14 +17,14 @@ namespace Commands.Helpers
         private static readonly Random random = new();
 
         // Colors used for the game embeds
-        public static readonly Color DefaultColor = new(16415395); // Default embed color
-        private static readonly Color WinColor = new(5763719);     // Embed color for winning
-        private static readonly Color LoseColor = new(15548997);   // Embed color for losing
+        public static readonly Discord.Color DefaultColor = new(16415395); // Default embed color
+        private static readonly Discord.Color WinColor = new(5763719);     // Embed color for winning
+        private static readonly Discord.Color LoseColor = new(15548997);   // Embed color for losing
 
         /// <summary>
         /// Represents the color options available in Master Mind, with corresponding emoji display.
         /// </summary>
-        public enum Colors
+        public enum Color
         {
             [ChoiceDisplay("🟥 Red")]
             Red,
@@ -38,6 +38,14 @@ namespace Commands.Helpers
             Blue,
             [ChoiceDisplay("🟪 Purple")]
             Purple
+        }
+
+        public enum GameMode
+        {
+            [ChoiceDisplay("Classic | Positional feedback (⬛⬜🟫⬜)")]
+            Classic,
+            [ChoiceDisplay("Numeric | Aggregate feedback (Correct: 1, Misplaced: 2, Incorrect: 1)")]
+            Numeric
         }
 
         // Internal class for representing select menu options
@@ -74,6 +82,43 @@ namespace Commands.Helpers
                 Emote = new Emoji("💀")
             }
         };
+
+        /// <summary>
+        /// Creates a select menu for choosing the game difficulty.
+        /// </summary>
+        /// <param name="mode">The game mode to use.</param>
+        /// <returns>A select menu for choosing the game difficulty.</returns>
+        public static string GetRules(GameMode mode)
+        {
+            StringBuilder rules = new();
+
+            rules.Append("The goal of the game is to guess the correct randomly generated code. Each code consists of 4 colors, chosen from 6 possible colors (duplicates are allowed). Use the command `/mastermind guess` to make your guess. After each guess you will be given feedback on how close you are to the correct code. The feedback is as follows:\n");
+
+            switch (mode)
+            {
+                case GameMode.Classic: 
+                    rules.Append(@"- ⬛ = Color is in the correct position.
+- ⬜ = Color is in the wrong position.
+- 🟫 = Color is not in the code.");
+                    break;
+                case GameMode.Numeric:
+                    rules.Append(@"- ⬛ = How many of colors are correct and in the correct position.
+- ⬜ = How many colors are correct, but in the wrong position.
+- 🟫 = How many colors are not in the code.");
+                    break;
+            }
+
+            rules.Append(@"
+You can pick a difficulty level:
+
+- Easy: 10 tries.
+- Medium: 8 tries.
+- Hard: 6 tries.
+
+Good luck cracking the code!");
+
+            return rules.ToString();
+        }
 
         /// <summary>
         /// Creates a select menu component for choosing the game's difficulty level.
@@ -118,14 +163,14 @@ namespace Commands.Helpers
         /// <summary>
         /// Generates a random secret code (key) for the Master Mind game.
         /// </summary>
-        /// <returns>An array of <see cref="Colors"/> representing the secret key.</returns>
-        public static Colors[] CreateKey()
+        /// <returns>An array of <see cref="Color"/> representing the secret key.</returns>
+        public static Color[] CreateKey()
         {
-            Colors[] key = new Colors[4];
+            Color[] key = new Color[4];
 
             for (int i = 0; i < key.Length; i++)
             {
-                key[i] = (Colors)random.Next(0, Enum.GetValues(typeof(Colors)).Length);
+                key[i] = (Color)random.Next(0, Enum.GetValues(typeof(Color)).Length);
             }
 
             return key;
@@ -136,7 +181,7 @@ namespace Commands.Helpers
         /// </summary>
         /// <param name="colors">The array of colors to convert.</param>
         /// <returns>A string representation of the colors.</returns>
-        public static string GetColorsString(Colors[] colors)
+        public static string GetColorsString(Color[] colors)
         {
             StringBuilder colorString = new();
 
@@ -148,16 +193,16 @@ namespace Commands.Helpers
             return colorString.ToString();
         }
 
-        private static string GetColorString(Colors color)
+        private static string GetColorString(Color color)
         {
             return color switch
             {
-                Colors.Red => "🟥",
-                Colors.Orange => "🟧",
-                Colors.Yellow => "🟨",
-                Colors.Green => "🟩",
-                Colors.Blue => "🟦",
-                Colors.Purple => "🟪",
+                Color.Red => "🟥",
+                Color.Orange => "🟧",
+                Color.Yellow => "🟨",
+                Color.Green => "🟩",
+                Color.Blue => "🟦",
+                Color.Purple => "🟪",
                 _ => throw new ArgumentOutOfRangeException(nameof(color), color, null)
             };
         }
@@ -172,7 +217,7 @@ namespace Commands.Helpers
             return CurrentGames.FirstOrDefault(game => game.Id == id);
         }
 
-        private static string GetDescriptionString(List<(string, Colors[])> guesses)
+        private static string GetDescriptionString(List<(string, Color[])> guesses)
         {
             StringBuilder description = new();
 
@@ -196,7 +241,7 @@ namespace Commands.Helpers
             {
                 Title = "🧠 Master Mind",
                 Color = isSolved ? WinColor : game.GuessesLeft == 0 ? LoseColor : DefaultColor,
-                Footer = new() { Text = "⬛ = Color is in the correct position ⬜ = Color is in the wrong position 🟫 = Color is not in the code" }
+                Footer = new() { Text = GetFooterString(game.Mode) }
             };
 
             defaultEmbed.AddField("Board:", GetDescriptionString(game.Guesses), true);
@@ -215,6 +260,16 @@ namespace Commands.Helpers
             }
 
             return defaultEmbed.Build();
+        }
+
+        private static string GetFooterString(GameMode mode)
+        {
+            return mode switch
+            {
+                GameMode.Classic => "⬛ = Color is in the correct position ⬜ = Color is in the wrong position 🟫 = Color is not in the code",
+                GameMode.Numeric => "⬛ = How many of colors are correct and in the correct position ⬜ = How many colors are correct, but in the wrong position 🟫 = How many colors are not in the code",
+                _ => throw new ArgumentOutOfRangeException(nameof(mode), mode, null)
+            };
         }
     }
 }
