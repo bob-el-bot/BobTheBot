@@ -648,15 +648,14 @@ namespace Commands
                 Title = $"What's New?",
                 Description = @"### 🗒️ Creator's Notes
 - We realize that subscription models suck, and now that Discord has an option for one-time purchases, we do too! Lifetime ✨ premium goes for ***only $4.99!*** (💜 we hope this makes your life better!)
-- Added `/preview color` to preview a 🌈 color along with its alternative codes (RGB, HEX, CMYK, HSL, HSV).
-- Added `/convert units` to for 📏 unit conversion right in Discord.
-- Added `/convert timezones` to convert time between 🕗 timezones.
-- Added 🎨 RGB value input support across all commands with color parameters (just try: '141, 82, 253')!
-- Added API request error handling to ensure users know why a command which relies on an API failed.
-- Fixed various permission issues with `/announce`, `/quote` group involving the Embed Links permission.
-- Fixed a bug where scheduled messages and announcements would not get 🗑️ deleted if the channel to send in was deleted.
-- New statuses in rotation 👀.
-- Fixed a bug 🛠️ where the automatic error logging system would make an API call for the channel even if fetched previously.
+- Added `/convert qr-code` to convert text or URLs to a QR code here in Discord!
+- Added random selection of users if left unspecified in `/ship`. Shoutout x_star. for the idea!
+- Revamped `/mastermind` to be more accurate to the original board game. It is now color-based, has three difficulty options, and two game modes. Shoutout intelligenceunknownsh for some of these ideas!
+- Improved the `/connect4` AI to be more challenging by increasing search depth and adding in some randomness to the beginning of games. Shoutout intelligenceunknownsh for catching this!
+- Improved `/ship` calculation to make the distribution more even and less biased towards 60-70%. Shoutout intelligenceunknownsh for catching this!
+- Made `/preview color` and `/random color` faster and more memory efficient by using the WEBP format instead of PNG.
+- Fixed bug where user's game stats were updated on the test bot.
+- Fixed bug where `/quote new` and the message command `Quote` incorrectly handled quotes of 4096 characters which led to uncaught exceptions.
 - Stay 📺 tuned for more awesome updates!",
                 Color = Bot.theme
             };
