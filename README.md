@@ -77,7 +77,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/connect4` Play Bob or a user in a game of Connect 4.
 - `/tic-tac-toe [opponent]` Play Bob or a user in a game of Tic Tac Toe. 
 - `/rock-paper-scissors [opponent]` Play Bob or a user in a game of Rock Paper Scissors.
-- `/mastermind new-game` Play a game of Mastermind, the rules will shared upon usage.
+- `/mastermind new-game [mode]` Play a game of Mastermind, the rules will shared upon usage.
 - `/mastermind guess` Make a guess in a game of Mastermind.
 
 ### 👤 Profile Commands

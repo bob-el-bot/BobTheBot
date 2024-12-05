@@ -15,12 +15,12 @@ namespace Commands.Helpers
         /// <summary>
         /// The secret key (code) that players attempt to guess.
         /// </summary>
-        public Colors[] Key { get; set; }
+        public MasterMindMethods.Color[] Key { get; set; }
 
         /// <summary>
         /// A collection of previous guesses and their associated results.
         /// </summary>
-        public List<(string Result, Colors[] Guess)> Guesses { get; set; }
+        public List<(string Result, MasterMindMethods.Color[] Guess)> Guesses { get; set; }
 
         /// <summary>
         /// A unique identifier for the game instance.
@@ -48,14 +48,21 @@ namespace Commands.Helpers
         public SocketUserMessage Message { get; set; }
 
         /// <summary>
+        /// The game mode selected by the player.
+        /// </summary>
+        public GameMode Mode { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="MasterMindGame"/> class.
         /// </summary>
         /// <param name="Id">The unique identifier for the game.</param>
         /// <param name="StartUser">The user who started the game.</param>
-        public MasterMindGame(ulong Id, IUser StartUser)
+        /// <param name="mode">The game mode selected by the player.</param>
+        public MasterMindGame(ulong Id, IUser StartUser, GameMode mode)
         {
             this.Id = Id;
             this.StartUser = StartUser;
+            this.Mode = mode;
             Guesses = new();
         }
 
@@ -64,15 +71,44 @@ namespace Commands.Helpers
         /// </summary>
         /// <param name="guess">The player's guess.</param>
         /// <returns>A string indicating the accuracy of the guess.</returns>
-        public string GetResultString(Colors[] guess)
+        public string GetResultString(MasterMindMethods.Color[] guess)
         {
-            var result = guess.Select((g, i) =>
-                g == Key[i] ? "⬛" : // Correct color in the correct position.
-                Key.Contains(g) ? "⬜" : // Correct color in the wrong position.
-                "🟫" // Incorrect color.
-            );
+            string result = "";
 
-            return string.Concat(result);
+            switch (Mode)
+            {
+                case GameMode.Classic:
+                    result = string.Concat(guess.Select((g, i) =>
+                        g == Key[i] ? "⬛" : // Correct color in the correct position.
+                        Key.Contains(g) ? "⬜" : // Correct color in the wrong position.
+                        "🟫" // Incorrect color.
+                    ));
+                    break;
+
+                case GameMode.Numeric:
+                    int correctPositions = 0;
+                    int misplacedColors = 0;
+
+                    for (int i = 0; i < guess.Length; i++)
+                    {
+                        if (guess[i] == Key[i])
+                        {
+                            correctPositions++;
+                        }
+                        else if (Key.Contains(guess[i]))
+                        {
+                            misplacedColors++;
+                        }
+                    }
+                    
+                    int incorrectColors = guess.Length - correctPositions - misplacedColors;
+
+                    // Step 5: Format the result string
+                    result = $"⬛ `{correctPositions}` ⬜ `{misplacedColors}` 🟫 `{incorrectColors}`";
+                    break;
+            }
+
+            return result;
         }
 
         /// <summary>
@@ -80,7 +116,7 @@ namespace Commands.Helpers
         /// </summary>
         /// <param name="guess">The player's guess.</param>
         /// <returns>True if the guess matches the key; otherwise, false.</returns>
-        public bool DoesGuessMatchKey(Colors[] guess)
+        public bool DoesGuessMatchKey(MasterMindMethods.Color[] guess)
         {
             return Enumerable.SequenceEqual(Key, guess);
         }

@@ -400,6 +400,14 @@ namespace Commands.Helpers
                         Description =
                             "Play a game of Mastermind, the rules will shared upon usage. You may only have one game per channel.",
                         Url = "https://docs.bobthebot.net/#mastermind-new-game",
+                        Parameters = new[]
+                        {
+                            new ParameterInfo
+                            {
+                                Name = "mode",
+                                Description = "Choose between: Classic | Positional feedback (⬛⬜🟫⬜) and Numeric | Aggregate feedback (Correct: 1, Misplaced: 2, Incorrect: 1)"
+                            }
+                        }
                     },
                     new CommandInfo
                     {
