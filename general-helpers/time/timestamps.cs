@@ -69,18 +69,16 @@ namespace Time.Timestamps
             Console.WriteLine("FromDateTime() before goes to DateTimeOffset: " + dateTime);
 
             // Assign the correct timezone offset
-            var dateTimeOffset = timeZone.HasValue
-                ? new DateTimeOffset(dateTime, TimeZoneInfo.FindSystemTimeZoneById(TimeConverter.GetTimezoneId(timeZone.Value)).GetUtcOffset(dateTime))
-                : new DateTimeOffset(dateTime);
-
+            var dateTimeOffset = new DateTimeOffset(dateTime);
 
             // Log the DateTimeOffset after conversion
             Console.WriteLine("FromDateTime() after gone to DateTimeOffset: " + dateTimeOffset);
+            
+            long unixTime = timeZone.HasValue ? dateTimeOffset.ToUnixTimeSeconds() : dateTimeOffset.ToUniversalTime().ToUnixTimeSeconds();
 
             // Return the formatted timestamp string
-            return $"<t:{dateTimeOffset.ToUniversalTime().ToUnixTimeSeconds()}:{(char)format}>";
+            return $"<t:{unixTime}:{(char)format}>";
         }
-
 
         /// <summary>
         /// Generates a timestamp from a DateTimeOffset object in the specified format.
