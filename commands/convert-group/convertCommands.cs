@@ -84,47 +84,47 @@ namespace Commands
             await Context.Interaction.ModifyOriginalResponseAsync(x => { x.Content = "✅ Suggestion made successfully!\n- This will be manually reviewed as soon as possible.\n- Thanks for the idea!"; x.Components = null; });
         }
 
-        [SlashCommand("timezones", "Convert time from one timezone to another.")]
-        public async Task ConvertTime(
-            [Summary("month", "The month for the time you want to convert.")][MinValue(1)][MaxValue(12)] int month,
-            [Summary("day", "The day for the time you want to convert.")][MinValue(1)][MaxValue(31)] int day,
-            [Summary("hour", "The hour for the time you want to convert, in 24-hour format.")][MinValue(0)][MaxValue(23)] int hour,
-            [Summary("minute", "The minute for the time you want to convert.")][MinValue(0)][MaxValue(59)] int minute,
-            [Summary("from-timezone", "The timezone to convert from.")] Timezone sourceTimezone,
-            [Summary("to-timezone", "The timezone you want to convert to.")] Timezone destinationTimezone)
-        {
-            try
-            {
-                // Validate the day based on the month and current year
-                if (day < 1 || day > DateTime.DaysInMonth(DateTime.UtcNow.Year, month))
-                {
-                    await RespondAsync($"❌ Please enter a valid day between **1** and **{DateTime.DaysInMonth(DateTime.UtcNow.Year, month)}**.", ephemeral: true);
-                    return;
-                }
+        // [SlashCommand("timezones", "Convert time from one timezone to another.")]
+        // public async Task ConvertTime(
+        //     [Summary("month", "The month for the time you want to convert.")][MinValue(1)][MaxValue(12)] int month,
+        //     [Summary("day", "The day for the time you want to convert.")][MinValue(1)][MaxValue(31)] int day,
+        //     [Summary("hour", "The hour for the time you want to convert, in 24-hour format.")][MinValue(0)][MaxValue(23)] int hour,
+        //     [Summary("minute", "The minute for the time you want to convert.")][MinValue(0)][MaxValue(59)] int minute,
+        //     [Summary("from-timezone", "The timezone to convert from.")] Timezone sourceTimezone,
+        //     [Summary("to-timezone", "The timezone you want to convert to.")] Timezone destinationTimezone)
+        // {
+        //     try
+        //     {
+        //         // Validate the day based on the month and current year
+        //         if (day < 1 || day > DateTime.DaysInMonth(DateTime.UtcNow.Year, month))
+        //         {
+        //             await RespondAsync($"❌ Please enter a valid day between **1** and **{DateTime.DaysInMonth(DateTime.UtcNow.Year, month)}**.", ephemeral: true);
+        //             return;
+        //         }
                 
-                var sourceDateTime = new DateTime(DateTime.UtcNow.Year, month, day, hour, minute, 0, DateTimeKind.Unspecified);
-                Console.WriteLine("Source time: " + sourceDateTime);
+        //         var sourceDateTime = new DateTime(DateTime.UtcNow.Year, month, day, hour, minute, 0, DateTimeKind.Unspecified);
+        //         Console.WriteLine("Source time: " + sourceDateTime);
 
-                var sourceTimestamp = Timestamp.FromDateTime(sourceDateTime, Timestamp.Formats.Exact, sourceTimezone);
-                Console.WriteLine("Source timestamp: " + sourceTimestamp);
+        //         var sourceTimestamp = Timestamp.FromDateTime(sourceDateTime, Timestamp.Formats.Exact, sourceTimezone);
+        //         Console.WriteLine("Source timestamp: " + sourceTimestamp);
 
-                var destinationDateTime = TimeConverter.ConvertBetweenTimezones(month, day, hour, minute, sourceTimezone, destinationTimezone);
-                Console.WriteLine("Destination time: " + destinationDateTime);
+        //         var destinationDateTime = TimeConverter.ConvertBetweenTimezones(month, day, hour, minute, sourceTimezone, destinationTimezone);
+        //         Console.WriteLine("Destination time: " + destinationDateTime);
 
-                var destinationTimestamp = Timestamp.FromDateTime(destinationDateTime, Timestamp.Formats.Exact, destinationTimezone);
-                Console.WriteLine("Destination timestamp: " + destinationTimestamp);
+        //         var destinationTimestamp = Timestamp.FromDateTime(destinationDateTime, Timestamp.Formats.Exact, destinationTimezone);
+        //         Console.WriteLine("Destination timestamp: " + destinationTimestamp);
 
-                await RespondAsync($"{TimeConversion.GetClosestTimeEmoji(destinationDateTime)} {sourceTimestamp} in {sourceTimezone.ToDisplayName()} is {destinationTimestamp} in {destinationTimezone.ToDisplayName()}.");
-            }
-            catch (TimeZoneNotFoundException)
-            {
-                await RespondAsync("❌ One of the specified timezones is invalid. Please check your input.", ephemeral: true);
-            }
-            catch (Exception ex)
-            {
-                await Logger.HandleUnexpectedError(Context, ex, false);
-            }
-        }
+        //         await RespondAsync($"{TimeConversion.GetClosestTimeEmoji(destinationDateTime)} {sourceTimestamp} in {sourceTimezone.ToDisplayName()} is {destinationTimestamp} in {destinationTimezone.ToDisplayName()}.");
+        //     }
+        //     catch (TimeZoneNotFoundException)
+        //     {
+        //         await RespondAsync("❌ One of the specified timezones is invalid. Please check your input.", ephemeral: true);
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         await Logger.HandleUnexpectedError(Context, ex, false);
+        //     }
+        // }
 
         [SlashCommand("qr-code", "Bob will convert a link or text to a QR code.")]
         public async Task ConvertToQRCode(string content, QRCodeConverter.ErrorCorrectionLevel errorCorrectionLevel = QRCodeConverter.ErrorCorrectionLevel.L)
