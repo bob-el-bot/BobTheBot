@@ -84,8 +84,16 @@ namespace Commands
             // Get Game
             var game = MasterMindMethods.GetGame(Context.Interaction.Channel.Id);
 
+            SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
+
+            if (game == null)
+            {
+                await component.Message.ModifyAsync(x => { x.Components = MasterMindMethods.CreateDifficultySelectMenu(true); });
+                await FollowupAsync(text: "❌ This game does not exist any more.\n- To make a new one use `/mastermind new-game`.", ephemeral: true);
+                return;
+            }
+
             // Set message
-            var component = (SocketMessageComponent)Context.Interaction;
             game.Message = component.Message;
 
             // Initialize Guesses Left
@@ -103,20 +111,11 @@ namespace Commands
             };
             embed.AddField(name: "Guesses Left:", value: $"`{game.GuessesLeft}`", inline: true);
 
-            // Forfeit Button
-            var button = new ButtonBuilder
-            {
-                Label = "Forfeit",
-                Style = ButtonStyle.Danger,
-                CustomId = "quit"
-            };
-            var builder = new ComponentBuilder().WithButton(button);
-
             // Begin Game
             game.IsStarted = true;
 
             // Edit Message For Beginning of Game.
-            await component.Message.ModifyAsync(x => { x.Embed = embed.Build(); x.Components = builder.Build(); });
+            await component.Message.ModifyAsync(x => { x.Embed = embed.Build(); x.Components = MasterMindMethods.GetForfeitButton(); });
         }
 
         [ComponentInteraction("quit", ignoreGroupNames: true)]
@@ -126,6 +125,14 @@ namespace Commands
 
             // Get Game
             var game = MasterMindMethods.GetGame(Context.Interaction.Channel.Id);
+
+            if (game == null)
+            {
+                SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
+                await component.Message.ModifyAsync(x => { x.Components = MasterMindMethods.GetForfeitButton(true); });
+                await FollowupAsync(text: "❌ This game does not exist any more.\n- To make a new one use `/mastermind new-game`.", ephemeral: true);
+                return;
+            }
 
             if (game.StartUser.Id == Context.Interaction.User.Id)
             {
@@ -138,7 +145,7 @@ namespace Commands
 
                 embed.Title += " (forfeited)";
                 embed.AddField(name: "Answer:", value: MasterMindMethods.GetColorsString(game.Key));
-                await game.Message.ModifyAsync(x => { x.Embed = embed.Build(); x.Components = null; });
+                await game.Message.ModifyAsync(x => { x.Embed = embed.Build(); x.Components = MasterMindMethods.GetForfeitButton(true); });
                 MasterMindMethods.CurrentGames.Remove(game);
             }
             else
