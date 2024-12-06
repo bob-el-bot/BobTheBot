@@ -57,13 +57,9 @@ namespace Time.Timestamps
         {
             // Ensure the dateTime is within the range supported by DateTimeOffset
             if (dateTime < DateTimeOffset.MinValue.UtcDateTime)
-            {
                 dateTime = DateTimeOffset.MinValue.UtcDateTime;
-            }
             else if (dateTime > DateTimeOffset.MaxValue.UtcDateTime)
-            {
                 dateTime = DateTimeOffset.MaxValue.UtcDateTime;
-            }
 
             // Log the time before conversion
             Console.WriteLine("FromDateTime() before goes to DateTimeOffset: " + dateTime);
@@ -71,12 +67,13 @@ namespace Time.Timestamps
             // Adjust for the provided timezone if specified
             var timeZoneInfo = timeZone.HasValue
                 ? TimeZoneInfo.FindSystemTimeZoneById(TimeConverter.GetTimezoneId(timeZone.Value))
-                : null; // Default to local timezone
+                : TimeZoneInfo.Local; // Default to local timezone
 
-            // Create a DateTimeOffset with no further offsetting to ensure agnostic behavior
-            var dateTimeOffset = new DateTimeOffset(dateTime);
+            // Treat the input DateTime as being in the specified timezone
+            var adjustedDateTime = TimeZoneInfo.ConvertTime(dateTime, timeZoneInfo);
 
-            dateTimeOffset.AddHours(timeZoneInfo?.BaseUtcOffset.Hours ?? 0);
+            // Create DateTimeOffset with the correct offset for the timezone
+            var dateTimeOffset = new DateTimeOffset(adjustedDateTime, timeZoneInfo.GetUtcOffset(adjustedDateTime));
 
             // Log the DateTimeOffset after conversion
             Console.WriteLine("FromDateTime() after gone to DateTimeOffset: " + dateTimeOffset);
