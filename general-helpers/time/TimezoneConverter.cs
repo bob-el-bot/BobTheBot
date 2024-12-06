@@ -49,6 +49,7 @@ namespace Time.Timezones
         public static DateTime ConvertToUtcTime(int month, int day, int hour, int minute, Timezone timezone)
         {
             var localDateTime = new DateTime(DateTime.UtcNow.Year, month, day, hour, minute, 0, DateTimeKind.Unspecified);
+            Console.WriteLine(localDateTime);
             var timeZoneId = TimezoneMappings[timezone];
             var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
 
@@ -74,6 +75,7 @@ namespace Time.Timezones
             }
 
             var sourceTimeInUtc = ConvertToUtcTime(month, day, hour, minute, sourceTimezone);
+            Console.WriteLine("Source time in UTC: " + sourceTimeInUtc);
 
             // Get the destination time zone
             var destinationTimeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(destinationTimeZoneId);
