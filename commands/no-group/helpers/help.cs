@@ -1310,7 +1310,7 @@ namespace Commands.Helpers
                     },
                     new CommandInfo
                     {
-                        Name = "timezones",
+                        Name = "timezones (TEMPORARILY REMOVED DUE TO ISSUES)",
                         InheritGroupName = true,
                         Description = "Bob will convert a time from one timezone to another.",
                         Url = "https://docs.bobthebot.net#convert-timezones",

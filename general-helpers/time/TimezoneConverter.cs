@@ -73,7 +73,6 @@ namespace Time.Timezones
             return utcDateTime;
         }
 
-
         /// <summary>
         /// Converts a given time to UTC time.
         /// </summary>
