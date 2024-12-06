@@ -2,7 +2,8 @@ using Discord.Interactions;
 
 namespace Time.Timezones
 {
-    public enum Timezone
+    #nullable enable
+    public enum Timezone 
     {
         [ChoiceDisplay("(DST) Dateline Standard Time")]
         DatelineStandardTime,  // UTC-12:00
