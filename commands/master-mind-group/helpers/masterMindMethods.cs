@@ -123,8 +123,9 @@ Good luck cracking the code!");
         /// <summary>
         /// Creates a select menu component for choosing the game's difficulty level.
         /// </summary>
+        /// <param name="disabled">Indicates whether the select menu should be disabled.</param>
         /// <returns>A message component containing the difficulty select menu.</returns>
-        public static MessageComponent CreateDifficultySelectMenu()
+        public static MessageComponent CreateDifficultySelectMenu(bool disabled = false)
         {
             var components = new ComponentBuilder();
 
@@ -134,6 +135,7 @@ Good luck cracking the code!");
                 MaxValues = 1,
                 CustomId = "mastermind-difficulty",
                 Placeholder = "Select Difficulty...",
+                IsDisabled = disabled
             };
 
             foreach (var option in Difficulty)
@@ -174,6 +176,24 @@ Good luck cracking the code!");
             }
 
             return key;
+        }
+
+        /// <summary>
+        /// Creates the forfeit button component and builds it for the Mastermind game.
+        /// </summary>
+        /// <param name="disabled">Indicates whether the button should be disabled.</param>
+        /// <returns>A <see cref="MessageComponent"/> containing the button.</returns>
+        public static MessageComponent GetForfeitButton(bool disabled = false)
+        {
+            var button = new ButtonBuilder
+            {
+                Label = "Forfeit",
+                Style = ButtonStyle.Danger,
+                CustomId = "quit",
+                IsDisabled = disabled
+            };
+
+            return new ComponentBuilder().WithButton(button).Build();
         }
 
         /// <summary>

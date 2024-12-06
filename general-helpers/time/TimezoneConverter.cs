@@ -67,7 +67,7 @@ namespace Time.Timezones
         /// <returns>The converted time in UTC.</returns>
         public static DateTime ConvertBetweenTimezones(int month, int day, int hour, int minute, Timezone sourceTimezone, Timezone destinationTimezone)
         {
-            if (!TimezoneMappings.TryGetValue(sourceTimezone, out var sourceTimeZoneId) ||
+            if (!TimezoneMappings.TryGetValue(sourceTimezone, out _) ||
                 !TimezoneMappings.TryGetValue(destinationTimezone, out var destinationTimeZoneId))
             {
                 throw new ArgumentException("Unsupported timezone provided.");
