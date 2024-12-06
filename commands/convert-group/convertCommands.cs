@@ -55,7 +55,7 @@ namespace Commands
         }
 
         [ComponentInteraction("suggestUnit:*", true)]
-        public async Task EditScheduledMessageButton(string type)
+        public async Task SuggestUnitButton(string type)
         {
             try
             {
@@ -73,7 +73,7 @@ namespace Commands
         }
 
         [ModalInteraction("suggestUnitModal:*", true)]
-        public async Task EditMessageModalHandler(string type, SuggestUnitModal modal)
+        public async Task SuggestUnitModalHandler(string type, SuggestUnitModal modal)
         {
             await DeferAsync();
 
@@ -103,8 +103,9 @@ namespace Commands
                 }
 
                 var destinationDateTime = TimeConverter.ConvertBetweenTimezones(month, day, hour, minute, sourceTimezone, destinationTimezone);
+                var sourceDateTime = new DateTime(DateTime.UtcNow.Year, month, day, hour, minute, 0, DateTimeKind.Unspecified);
 
-                await RespondAsync($"{TimeConversion.GetClosestTimeEmoji(destinationDateTime)} {Timestamp.FromDateTime(TimeConverter.ConvertToUtcTime(month, day, hour, minute, sourceTimezone), Timestamp.Formats.Exact)} in {sourceTimezone.ToDisplayName()} is {Timestamp.FromDateTime(destinationDateTime, Timestamp.Formats.Exact)} in {destinationTimezone.ToDisplayName()}.");
+                await RespondAsync($"{TimeConversion.GetClosestTimeEmoji(destinationDateTime)} {Timestamp.FromDateTime(sourceDateTime, Timestamp.Formats.Exact)} in {sourceTimezone.ToDisplayName()} is {Timestamp.FromDateTime(destinationDateTime, Timestamp.Formats.Exact)} in {destinationTimezone.ToDisplayName()}.");
             }
             catch (TimeZoneNotFoundException)
             {
