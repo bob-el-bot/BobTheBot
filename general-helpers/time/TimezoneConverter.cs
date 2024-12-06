@@ -48,13 +48,21 @@ namespace Time.Timezones
         /// <returns>The equivalent UTC time of the specified local time.</returns>
         public static DateTime ConvertToUtcTime(int month, int day, int hour, int minute, Timezone timezone)
         {
+            // Create a DateTime with DateTimeKind.Unspecified to indicate it's not tied to any particular time zone yet
             var localDateTime = new DateTime(DateTime.UtcNow.Year, month, day, hour, minute, 0, DateTimeKind.Unspecified);
-            Console.WriteLine(localDateTime);
+            Console.WriteLine($"Local time (unspecified): {localDateTime}");
+
+            // Get the corresponding time zone ID from the TimezoneMappings
             var timeZoneId = TimezoneMappings[timezone];
             var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
 
-            return TimeZoneInfo.ConvertTimeToUtc(localDateTime, timeZoneInfo);
+            // Convert the local time to UTC, treating the input time as being in the specified time zone
+            var utcDateTime = TimeZoneInfo.ConvertTimeToUtc(localDateTime, timeZoneInfo);
+            Console.WriteLine($"Converted UTC time: {utcDateTime}");
+
+            return utcDateTime;
         }
+
 
         /// <summary>
         /// Converts a given time to UTC time.

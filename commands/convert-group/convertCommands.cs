@@ -101,14 +101,20 @@ namespace Commands
                     await RespondAsync($"❌ Please enter a valid day between **1** and **{DateTime.DaysInMonth(DateTime.UtcNow.Year, month)}**.", ephemeral: true);
                     return;
                 }
+                
+                var sourceDateTime = new DateTime(DateTime.UtcNow.Year, month, day, hour, minute, 0, DateTimeKind.Unspecified);
+                Console.WriteLine("Source time: " + sourceDateTime);
+
+                var sourceTimestamp = Timestamp.FromDateTime(sourceDateTime, Timestamp.Formats.Exact);
+                Console.WriteLine("Source timestamp: " + sourceTimestamp);
 
                 var destinationDateTime = TimeConverter.ConvertBetweenTimezones(month, day, hour, minute, sourceTimezone, destinationTimezone);
                 Console.WriteLine("Destination time: " + destinationDateTime);
 
-                var sourceDateTime = new DateTime(DateTime.UtcNow.Year, month, day, hour, minute, 0, DateTimeKind.Unspecified);
-                Console.WriteLine("Source time: " + sourceDateTime);
+                var destinationTimestamp = Timestamp.FromDateTime(destinationDateTime, Timestamp.Formats.Exact);
+                Console.WriteLine("Destination timestamp: " + destinationTimestamp);
 
-                await RespondAsync($"{TimeConversion.GetClosestTimeEmoji(destinationDateTime)} {Timestamp.FromDateTime(sourceDateTime, Timestamp.Formats.Exact)} in {sourceTimezone.ToDisplayName()} is {Timestamp.FromDateTime(destinationDateTime, Timestamp.Formats.Exact)} in {destinationTimezone.ToDisplayName()}.");
+                await RespondAsync($"{TimeConversion.GetClosestTimeEmoji(destinationDateTime)} {sourceTimestamp} in {sourceTimezone.ToDisplayName()} is {destinationTimestamp} in {destinationTimezone.ToDisplayName()}.");
             }
             catch (TimeZoneNotFoundException)
             {
