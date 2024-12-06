@@ -63,8 +63,12 @@ namespace Time.Timestamps
                 dateTime = DateTimeOffset.MaxValue.UtcDateTime;
             }
 
+            Console.WriteLine("FromDateTime() before goes to DateTimeOffset: " + dateTime);
+
             // Create a DateTimeOffset with the validated dateTime
             var dateTimeOffset = new DateTimeOffset(dateTime);
+
+            Console.WriteLine("FromDateTime() after gone to DateTimeOffset: " + dateTimeOffset);
 
             // Return the formatted timestamp string
             return $"<t:{dateTimeOffset.ToUniversalTime().ToUnixTimeSeconds()}:{(char)format}>";
