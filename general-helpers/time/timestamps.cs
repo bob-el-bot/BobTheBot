@@ -69,9 +69,9 @@ namespace Time.Timestamps
             Console.WriteLine("FromDateTime() before goes to DateTimeOffset: " + dateTime);
 
             // Assign the correct timezone offset
-var dateTimeOffset = timeZone.HasValue 
-    ? new DateTimeOffset(dateTime, TimeZoneInfo.FindSystemTimeZoneById(TimeConverter.GetTimezoneId(timeZone.Value)).GetUtcOffset(dateTime))
-    : new DateTimeOffset(dateTime);
+            var dateTimeOffset = timeZone.HasValue
+                ? new DateTimeOffset(dateTime, TimeZoneInfo.FindSystemTimeZoneById(TimeConverter.GetTimezoneId(timeZone.Value)).GetUtcOffset(dateTime))
+                : new DateTimeOffset(dateTime);
 
 
             // Log the DateTimeOffset after conversion
