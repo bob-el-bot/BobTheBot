@@ -105,13 +105,13 @@ namespace Commands
                 var sourceDateTime = new DateTime(DateTime.UtcNow.Year, month, day, hour, minute, 0, DateTimeKind.Unspecified);
                 Console.WriteLine("Source time: " + sourceDateTime);
 
-                var sourceTimestamp = Timestamp.FromDateTime(sourceDateTime, Timestamp.Formats.Exact);
+                var sourceTimestamp = Timestamp.FromDateTime(sourceDateTime, Timestamp.Formats.Exact, sourceTimezone);
                 Console.WriteLine("Source timestamp: " + sourceTimestamp);
 
                 var destinationDateTime = TimeConverter.ConvertBetweenTimezones(month, day, hour, minute, sourceTimezone, destinationTimezone);
                 Console.WriteLine("Destination time: " + destinationDateTime);
 
-                var destinationTimestamp = Timestamp.FromDateTime(destinationDateTime, Timestamp.Formats.Exact);
+                var destinationTimestamp = Timestamp.FromDateTime(destinationDateTime, Timestamp.Formats.Exact, destinationTimezone);
                 Console.WriteLine("Destination timestamp: " + destinationTimestamp);
 
                 await RespondAsync($"{TimeConversion.GetClosestTimeEmoji(destinationDateTime)} {sourceTimestamp} in {sourceTimezone.ToDisplayName()} is {destinationTimestamp} in {destinationTimezone.ToDisplayName()}.");
