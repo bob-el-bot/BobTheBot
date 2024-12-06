@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Commands.Helpers;
 using Discord.Interactions;
+using Time.Timezones;
 
 namespace Time.Timestamps
 {
@@ -50,8 +51,9 @@ namespace Time.Timestamps
         /// </summary>
         /// <param name="dateTime">The DateTime object to generate the timestamp from.</param>
         /// <param name="format">The format of the timestamp.</param>
+        /// <param name="timeZone">The timezone to use for the timestamp. Null by default</param>
         /// <returns>The generated timestamp string.</returns>
-        public static string FromDateTime(DateTime dateTime, Formats format)
+        public static string FromDateTime(DateTime dateTime, Formats format, Timezone? timeZone = null)
         {
             // Ensure the dateTime is within the range supported by DateTimeOffset
             if (dateTime < DateTimeOffset.MinValue.UtcDateTime)
@@ -63,16 +65,22 @@ namespace Time.Timestamps
                 dateTime = DateTimeOffset.MaxValue.UtcDateTime;
             }
 
+            // Log the time before conversion
             Console.WriteLine("FromDateTime() before goes to DateTimeOffset: " + dateTime);
 
-            // Create a DateTimeOffset with the validated dateTime
-            var dateTimeOffset = new DateTimeOffset(dateTime);
+            // Assign the correct timezone offset
+var dateTimeOffset = timeZone.HasValue 
+    ? new DateTimeOffset(dateTime, TimeZoneInfo.FindSystemTimeZoneById(TimeConverter.GetTimezoneId(timeZone.Value)).GetUtcOffset(dateTime))
+    : new DateTimeOffset(dateTime);
 
+
+            // Log the DateTimeOffset after conversion
             Console.WriteLine("FromDateTime() after gone to DateTimeOffset: " + dateTimeOffset);
 
             // Return the formatted timestamp string
             return $"<t:{dateTimeOffset.ToUniversalTime().ToUnixTimeSeconds()}:{(char)format}>";
         }
+
 
         /// <summary>
         /// Generates a timestamp from a DateTimeOffset object in the specified format.

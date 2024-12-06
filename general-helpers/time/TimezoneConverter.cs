@@ -38,6 +38,16 @@ namespace Time.Timezones
         };
 
         /// <summary>
+        /// Gets the timezone ID for the specified timezone.
+        /// </summary>
+        /// <param name="timezone">The timezone to get the ID for.</param>
+        /// <returns>The timezone ID.</returns>
+        public static string GetTimezoneId(Timezone timezone)
+        {
+            return TimezoneMappings[timezone];
+        }
+
+        /// <summary>
         /// Converts a local time specified by month, day, hour, and minute into UTC time, based on the provided timezone.
         /// </summary>
         /// <param name="month">The month of the local time.</param>
@@ -77,7 +87,7 @@ namespace Time.Timezones
         public static DateTime ConvertBetweenTimezones(int month, int day, int hour, int minute, Timezone sourceTimezone, Timezone destinationTimezone)
         {
             if (!TimezoneMappings.TryGetValue(sourceTimezone, out _) ||
-                !TimezoneMappings.TryGetValue(destinationTimezone, out var destinationTimeZoneId))
+                !TimezoneMappings.TryGetValue(destinationTimezone, out var destinationTimezoneId))
             {
                 throw new ArgumentException("Unsupported timezone provided.");
             }
@@ -86,7 +96,7 @@ namespace Time.Timezones
             Console.WriteLine("Source time in UTC: " + sourceTimeInUtc);
 
             // Get the destination time zone
-            var destinationTimeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(destinationTimeZoneId);
+            var destinationTimeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(destinationTimezoneId);
 
             // Convert from UTC to the destination time zone.
             return TimeZoneInfo.ConvertTimeFromUtc(sourceTimeInUtc, destinationTimeZoneInfo);
