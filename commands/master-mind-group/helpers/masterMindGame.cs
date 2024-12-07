@@ -86,24 +86,46 @@ namespace Commands.Helpers
                     break;
 
                 case GameMode.Numeric:
+                    // Step 1: Initialize counters
                     int correctPositions = 0;
                     int misplacedColors = 0;
 
+                    // Step 2: Create arrays to track processed indices for the key and guess
+                    bool[] keyProcessed = new bool[Key.Length];
+                    bool[] guessProcessed = new bool[guess.Length];
+
+                    // Step 3: First pass to count exact matches (⬛)
                     for (int i = 0; i < guess.Length; i++)
                     {
                         if (guess[i] == Key[i])
                         {
                             correctPositions++;
-                        }
-                        else if (Key.Contains(guess[i]))
-                        {
-                            misplacedColors++;
+                            keyProcessed[i] = true; // Mark as processed in the key
+                            guessProcessed[i] = true; // Mark as processed in the guess
                         }
                     }
-                    
+
+                    // Step 4: Second pass to count misplaced colors (⬜)
+                    for (int i = 0; i < guess.Length; i++)
+                    {
+                        if (!guessProcessed[i]) // Only consider unprocessed guesses
+                        {
+                            for (int j = 0; j < Key.Length; j++)
+                            {
+                                if (!keyProcessed[j] && guess[i] == Key[j])
+                                {
+                                    misplacedColors++;
+                                    keyProcessed[j] = true; // Mark as processed in the key
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    // Step 5: Calculate incorrect colors (🟫)
                     int incorrectColors = guess.Length - correctPositions - misplacedColors;
 
-                    // Step 5: Format the result string
+                    // Step 6: Format the result string
                     result = $"⬛ `{correctPositions}` ⬜ `{misplacedColors}` 🟫 `{incorrectColors}`";
                     break;
             }
