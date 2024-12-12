@@ -93,9 +93,9 @@
       },
       "simple-ciphers": {
         "type": "Direct",
-        "requested": "[2.3.0, )",
-        "resolved": "2.3.0",
-        "contentHash": "S6g118fR5rVOSzutTmhAe0ULMzK9lSpWHhggNn81lh2UMkAOtYCbYDA+bWYELrF07J6rG+dobfnPsMbkCReijA=="
+        "requested": "[2.4.0, )",
+        "resolved": "2.4.0",
+        "contentHash": "1OQXcOXsxffFHviDnmtucOi6GoH2ZjGlXQVZyc7EGZRz8tLgJny2o3zHhUN7eOZ+fDIu63pIEsmVrnsbHSbs3g=="
       },
       "SkiaSharp": {
         "type": "Direct",

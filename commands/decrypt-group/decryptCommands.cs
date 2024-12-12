@@ -46,9 +46,9 @@ namespace Commands
         {
             await DeferAsync(ephemeral: true);
 
-            if (key.Any(char.IsDigit))
+            if (key.Any(char.IsLetter) == false)
             {
-                await FollowupAsync(text: "❌ The message *cannot* be decrypted because the key contains numbers.", ephemeral: true);
+                await FollowupAsync(text: "❌ The message *cannot* be encrypted because the key contains non-alphabetic characters.", ephemeral: true);
             }
             else
             {
@@ -60,7 +60,15 @@ namespace Commands
         public async Task Binary([Summary("message", "the text you want to decrypt")] string message)
         {
             await DeferAsync(ephemeral: true);
-            await Decrypt.SendDecryptMessage(Context.Interaction, Decryption.Binary(message));
+
+            if (message.Any(c => c != '0' && c != '1'))
+            {
+                await FollowupAsync(text: "❌ The message *cannot* be decrypted because the message contains non-binary characters.", ephemeral: true);
+            }
+            else
+            {
+                await Decrypt.SendDecryptMessage(Context.Interaction, Decryption.Binary(message));
+            }
         }
     }
 }
