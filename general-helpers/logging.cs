@@ -13,6 +13,13 @@ namespace Debug
     {
         private static readonly ulong logChannelId = 1160105468082004029;
         private static readonly ulong devLogChannelId = 1196575302143459388;
+        private static readonly ulong feedbackChannelId = 1301279825264115832;
+
+        public static readonly Lazy<SocketTextChannel> feedbackChannel = new(() =>
+        {
+            // Fetch the channel only once when first accessed
+            return (SocketTextChannel)Bot.Client.GetGuild(Bot.supportServerId).GetChannel(feedbackChannelId);
+        });
 
         private static readonly Lazy<SocketTextChannel> logChannel = new(() =>
         {
@@ -50,7 +57,7 @@ namespace Debug
                 // Calculate the maximum length for the non-error section
                 int overMaxLengthBy = message.Length + " | **ERR TOO LONG**".Length - 2000;
                 int maxErrorReasonLength = errorReason.Length - overMaxLengthBy;
-                
+
                 errorReason = errorReason[..maxErrorReasonLength];
 
                 message = $"`{DateTime.Now:dd/MM. H:mm:ss} | {FormatPerformance(cpuUsage, ramUsage)} | Location: {location} | User: {user.GlobalName}, {user.Id}`\n```{commandUsage}```{(errorReason == null ? "" : $"Error: ```cs\n{errorReason}```")}Command type: **{commandType}** | Method name in code: **{methodName}** | **ERR TOO LONG**";
@@ -76,7 +83,7 @@ namespace Debug
                 // Calculate the maximum length for the non-error section
                 int overMaxLengthBy = message.Length + " | **ERR TOO LONG**".Length - 2000;
                 int maxErrorReasonLength = errorReason.Length - overMaxLengthBy;
-                
+
                 errorReason = errorReason[..maxErrorReasonLength];
 
                 message = $"`{DateTime.Now:dd/MM. H:mm:ss} | {FormatPerformance(cpuUsage, ramUsage)} | Location: {location} | User: {user.GlobalName}, {user.Id}`\nError: ```cs\n{errorReason}``` | **ERR TOO LONG**";
@@ -94,7 +101,7 @@ namespace Debug
                 formattedReasons.Append($"{reason}, ");
             }
 
-            await logChannel.Value.SendMessageAsync($"`Location: {guildName}`\n**Reason(s):** {formattedReasons}");
+            await feedbackChannel.Value.SendMessageAsync($"`Location: {guildName}`\n**Reason(s):** {formattedReasons}");
         }
 
         public static async Task LogServerUseToDiscord(RestTextChannel channel, IInteractionContext ctx, SlashCommandInfo info, string errorReason = null)
