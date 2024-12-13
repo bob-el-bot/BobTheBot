@@ -80,7 +80,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/mastermind new-game [mode]` Play a game of Mastermind, the rules will shared upon usage.
 - `/mastermind guess` Make a guess in a game of Mastermind.
 
-### 👤 Profile Commands
+### 👤 Profile Commands:
 - `/profile display [user]` Displays the specified user's profile.
 - `/profile confessions-toggle [open]` Configure if you want to receive messages sent with `/confess`.
 - `/profile punishments` See all active punishments on your account.
