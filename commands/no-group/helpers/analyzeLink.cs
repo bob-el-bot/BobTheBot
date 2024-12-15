@@ -269,11 +269,20 @@ namespace Commands.Helpers
 
             return trail;
         }
-
         private static bool HasRickRoll(string url)
         {
-            return url.Contains("https://www.youtube.com/watch?v=dQw4w9WgXcQ") ||
-                   url.Contains("https://www.youtube.com/watch?v=Yb6dZ1IFlKc");
+            if (string.IsNullOrWhiteSpace(url))
+                return false;
+
+            // Extract video ID using a regex
+            var videoIdMatch = Regex.Match(url, @"(?:v=|\/)([a-zA-Z0-9_-]{11})");
+            if (!videoIdMatch.Success)
+                return false;
+
+            string videoId = videoIdMatch.Groups[1].Value;
+
+            // Check if the video ID matches known RickRoll IDs
+            return videoId == "dQw4w9WgXcQ" || videoId == "Yb6dZ1IFlKc";
         }
 
         private static bool IsGitHubRepository(string url)
