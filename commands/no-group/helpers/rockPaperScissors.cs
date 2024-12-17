@@ -16,6 +16,7 @@ namespace Commands.Helpers
         // -1 = null |  0 = rock | 1 = paper | 2 = scissors
         public int Player1Choice { get; set; } = -1;
         public int Player2Choice { get; set; } = -1;
+        private static readonly Random random = new();
 
         public RockPaperScissors(IUser player1, IUser player2) : base(GameType.RockPaperScissors, onePerChannel, TimeSpan.FromMinutes(5), player1, player2)
         {
@@ -81,7 +82,7 @@ namespace Commands.Helpers
                     await Challenge.UpdateUserStats(this, outcome);
                 }
 
-                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateEmbed(Challenge.CreateFinalTitle(this, outcome), Challenge.DefaultColor, Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome)); x.Components = null; });
+                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateEmbed(Challenge.CreateFinalTitle(this, outcome), GetColor(outcome), Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome)); x.Components = null; });
             }
             catch (Exception)
             {
@@ -105,7 +106,7 @@ namespace Commands.Helpers
                 }
 
                 string[] options = { "🪨", "📃", "✂️" };
-                await interaction.UpdateAsync(x => { x.Embed = Challenge.CreateEmbed($"{Challenge.CreateFinalTitle(this, outcome)}\n{options[Player1Choice]} **VS** {options[Player2Choice]}", Challenge.DefaultColor, Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome)); x.Components = null; });
+                await interaction.UpdateAsync(x => { x.Embed = Challenge.CreateEmbed($"{Challenge.CreateFinalTitle(this, outcome)}\n{options[Player1Choice]} **VS** {options[Player2Choice]}", GetColor(outcome), Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome)); x.Components = null; });
             }
             catch (Exception)
             {
@@ -132,9 +133,19 @@ namespace Commands.Helpers
             }
         }
 
+        private static Color GetColor(Challenge.WinCases outcome)
+        {
+            return outcome switch
+            {
+                Challenge.WinCases.Player1 => Challenge.Player1Color,
+                Challenge.WinCases.Player2 => Challenge.Player2Color,
+                Challenge.WinCases.Tie => Challenge.BothPlayersColor,
+                _ => Challenge.DefaultColor,
+            };
+        }
+
         private void BotPlay()
         {
-            Random random = new();
             Player2Choice = random.Next(0, 3);
         }
     }
