@@ -83,7 +83,7 @@ namespace Commands.Helpers
                     await Challenge.UpdateUserStats(this, outcome);
                 }
 
-                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"{Challenge.CreateFinalTitle(this, outcome)}\n{Connect4Methods.GetGrid(Grid)}", Challenge.GetFinalThumnnailUrl(Player1, Player2, outcome)); x.Components = Connect4Methods.GetButtons(this, true).Build(); });
+                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"{Challenge.CreateFinalTitle(this, outcome)}\n{Connect4Methods.GetGrid(Grid)}", Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome)); x.Components = Connect4Methods.GetButtons(this, true).Build(); });
             }
             catch (Exception)
             {
@@ -105,7 +105,7 @@ namespace Commands.Helpers
 
                 properties = (x) =>
                 {
-                    x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"{Challenge.CreateFinalTitle(this, outcome)}\n{Connect4Methods.GetGrid(Grid)}", Challenge.GetFinalThumnnailUrl(Player1, Player2, outcome));
+                    x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"{Challenge.CreateFinalTitle(this, outcome)}\n{Connect4Methods.GetGrid(Grid)}", Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome));
                     x.Components = Connect4Methods.GetButtons(this).Build();
                 };
 
@@ -192,7 +192,7 @@ namespace Commands.Helpers
 
                 properties = (x) =>
                 {
-                    x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"{Challenge.CreateFinalTitle(this, outcome)}\n{Connect4Methods.GetGrid(Grid)}", Challenge.GetFinalThumnnailUrl(Player1, Player2, outcome));
+                    x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"{Challenge.CreateFinalTitle(this, outcome)}\n{Connect4Methods.GetGrid(Grid)}", Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome));
                     x.Components = Connect4Methods.GetButtons(this).Build();
                 };
 

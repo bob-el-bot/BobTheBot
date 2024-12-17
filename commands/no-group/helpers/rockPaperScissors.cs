@@ -81,7 +81,7 @@ namespace Commands.Helpers
                     await Challenge.UpdateUserStats(this, outcome);
                 }
 
-                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateEmbed(Challenge.CreateFinalTitle(this, outcome), Challenge.DefaultColor, Challenge.GetFinalThumnnailUrl(Player1, Player2, outcome)); x.Components = null; });
+                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateEmbed(Challenge.CreateFinalTitle(this, outcome), Challenge.DefaultColor, Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome)); x.Components = null; });
             }
             catch (Exception)
             {
@@ -105,7 +105,7 @@ namespace Commands.Helpers
                 }
 
                 string[] options = { "🪨", "📃", "✂️" };
-                await interaction.UpdateAsync(x => { x.Embed = Challenge.CreateEmbed($"{Challenge.CreateFinalTitle(this, outcome)}\n{options[Player1Choice]} **VS** {options[Player2Choice]}", Challenge.DefaultColor, Challenge.GetFinalThumnnailUrl(Player1, Player2, outcome)); x.Components = null; });
+                await interaction.UpdateAsync(x => { x.Embed = Challenge.CreateEmbed($"{Challenge.CreateFinalTitle(this, outcome)}\n{options[Player1Choice]} **VS** {options[Player2Choice]}", Challenge.DefaultColor, Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome)); x.Components = null; });
             }
             catch (Exception)
             {
