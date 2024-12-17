@@ -189,7 +189,7 @@ namespace Commands.Helpers
 
             try
             {
-                await component.ModifyOriginalResponseAsync(x => { x.Embed = TriviaMethods.CreateFinalEmbed(this, thumbnailUrl: Challenge.GetFinalThumnnailUrl(Player1, Player2, outcome)); x.Components = TriviaMethods.GetButtons(Id, true).Build(); });
+                await component.ModifyOriginalResponseAsync(x => { x.Embed = TriviaMethods.CreateFinalEmbed(this, thumbnailUrl: Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome)); x.Components = TriviaMethods.GetButtons(Id, true).Build(); });
             }
             catch (Exception)
             {
@@ -214,7 +214,7 @@ namespace Commands.Helpers
 
             try
             {
-                await Message.ModifyAsync(x => { x.Embed = TriviaMethods.CreateFinalEmbed(this, true, Challenge.GetFinalThumnnailUrl(Player1, Player2, outcome)); x.Components = TriviaMethods.GetButtons(Id, true).Build(); });
+                await Message.ModifyAsync(x => { x.Embed = TriviaMethods.CreateFinalEmbed(this, true, Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome)); x.Components = TriviaMethods.GetButtons(Id, true).Build(); });
             }
             catch (Exception)
             {

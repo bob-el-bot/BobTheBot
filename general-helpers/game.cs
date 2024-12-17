@@ -20,6 +20,8 @@ namespace Games
         Trivia,
         [ChoiceDisplay("Connect 4")]
         Connect4,
+        [ChoiceDisplay("Wordle")]
+        Wordle,
     }
 
     public enum GameState

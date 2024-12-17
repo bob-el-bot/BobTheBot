@@ -32,6 +32,14 @@ namespace Challenges
         /// The color for messages involving both players (Purple).
         /// </summary>
         public static readonly Color BothPlayersColor = Color.Purple;
+        /// <summary>
+        /// The color for when a single player game is won (Green).
+        /// </summary>
+        public static readonly Color SinglePlayerWinColor = Color.Green;
+        /// <summary>
+        /// The color for when a single player game is lost (Red).
+        /// </summary>
+        public static readonly Color SinglePlayerLoseColor = Color.Red;
 
         // Caches
         public static Dictionary<ulong, Games.Game> Games { get; } = new();
@@ -39,6 +47,7 @@ namespace Challenges
         public static Dictionary<ulong, TicTacToe> TicTacToeGames { get; } = new();
         public static Dictionary<ulong, Trivia> TriviaGames { get; } = new();
         public static Dictionary<ulong, Connect4> Connect4Games { get; set; } = new();
+        public static Dictionary<ulong, Wordle> WordleGames { get; set; } = new();
         public static Dictionary<ulong, uint?> UserChallenges { get; } = new();
 
         /// <summary>
@@ -124,6 +133,9 @@ namespace Challenges
                 case GameType.Connect4:
                     Connect4Games.Add(game.Id, (Connect4)game);
                     break;
+                case GameType.Wordle:
+                    WordleGames.Add(game.Id, (Wordle)game);
+                    break;
                 default:
                     break;
             }
@@ -150,6 +162,9 @@ namespace Challenges
                     break;
                 case GameType.Connect4:
                     Connect4Games.Remove(game.Id);
+                    break;
+                case GameType.Wordle:
+                    WordleGames.Remove(game.Id);
                     break;
                 default:
                     break;
@@ -225,9 +240,26 @@ namespace Challenges
         /// <param name="isPlayer1Turn">Flag indicating if it's player 1's turn.</param>
         /// <param name="description">Description for the embed.</param>
         /// <returns>The created embed.</returns>
-        public static Embed CreateTurnBasedEmbed(bool isPlayer1Turn, string description, string thumbnailUrl = "")
+        public static Embed CreateTurnBasedEmbed(bool isPlayer1Turn, string description, string thumbnailUrl = "", WinCases winner = WinCases.None)
         {
-            return CreateEmbed(description, isPlayer1Turn ? Player1Color : Player2Color, thumbnailUrl);
+            return CreateEmbed(description, GetTurnBasedColor(isPlayer1Turn, winner), thumbnailUrl);
+        }
+
+        /// <summary>
+        /// Gets the color for the turn-based game embed based on the turn and winner.
+        /// </summary>
+        /// <param name="isPlayer1Turn">Flag indicating if it's player 1's turn.</param>
+        /// <param name="winner">The winner of the game.</param>
+        /// <returns>The color for the embed.</returns>
+        private static Color GetTurnBasedColor(bool isPlayer1Turn, WinCases winner)
+        {
+            return winner switch
+            {
+                WinCases.Player1 => Player1Color,
+                WinCases.Player2 => Player2Color,
+                WinCases.Tie => BothPlayersColor,
+                _ => isPlayer1Turn ? Player1Color : Player2Color,
+            };
         }
 
         /// <summary>
@@ -282,18 +314,20 @@ namespace Challenges
         /// <param name="player1">The first player involved in the match.</param>
         /// <param name="player2">The second player involved in the match.</param>
         /// <param name="winner">The result of the match indicating the winner.</param>
+        /// <param name="singlePlayer">Flag indicating if the game is single player.</param>
         /// <returns>
         /// A string representing the thumbnail URL of the winning player's avatar. 
         /// If there is a tie, an empty string is returned. 
         /// If the winner is not specified, an empty string is returned.
         /// </returns>
-        public static string GetFinalThumnnailUrl(IUser player1, IUser player2, WinCases winner)
+        public static string GetFinalThumbnailUrl(IUser player1, IUser player2, WinCases winner, bool singlePlayer = false)
         {
-            return winner switch
+            return (singlePlayer, winner) switch
             {
-                WinCases.Player2 => player2.GetDisplayAvatarUrl(),
-                WinCases.Tie => "",
-                WinCases.Player1 => player1.GetDisplayAvatarUrl(),
+                (true, WinCases.Player1) => player1.GetDisplayAvatarUrl(),
+                (_, WinCases.Player1) => player1.GetDisplayAvatarUrl(),
+                (_, WinCases.Player2) => player2.GetDisplayAvatarUrl(),
+                (_, WinCases.Tie) => "",
                 _ => "",
             };
         }
