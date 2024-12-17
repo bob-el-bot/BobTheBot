@@ -425,6 +425,30 @@ namespace Commands.Helpers
                             }
                         }
                     },
+                    new CommandInfo
+                    {
+                        Name = "wordle new-game",
+                        InheritGroupName = false,
+                        Description =
+                            "Play a game of Wordle. You may only have one game per channel.",
+                        Url = "https://docs.bobthebot.net/#wordle-new-game",
+                    },
+                    new CommandInfo
+                    {
+                        Name = "wordle guess",
+                        InheritGroupName = false,
+                        Description =
+                            "Make a guess in a game of Wordle.",
+                        Url = "https://docs.bobthebot.net/#wordle-guess",
+                        Parameters = new[]
+                        {
+                            new ParameterInfo
+                            {
+                                Name = "word",
+                                Description = "Your 5 letter, valid word, guess."
+                            }
+                        }
+                    },
                 }
             },
             new() {

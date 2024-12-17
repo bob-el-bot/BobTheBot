@@ -5,7 +5,6 @@ using Challenges;
 using Discord;
 using Discord.WebSocket;
 using Games;
-using Time.Timestamps;
 
 namespace Commands.Helpers
 {
