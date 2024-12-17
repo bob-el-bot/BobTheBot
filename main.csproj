@@ -23,6 +23,12 @@
     <PackageReference Include="UnitsNet" Version="5.60.0" />
     <Reference Include="System.Net.Http" />
     <PackageReference Include="ColorHelper" Version="1.8.1" />
+        <None Update="commands/wordle-group/helpers/wordlist.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="commands/wordle-group/helpers/answerlist.txt">
+        <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
