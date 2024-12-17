@@ -240,9 +240,26 @@ namespace Challenges
         /// <param name="isPlayer1Turn">Flag indicating if it's player 1's turn.</param>
         /// <param name="description">Description for the embed.</param>
         /// <returns>The created embed.</returns>
-        public static Embed CreateTurnBasedEmbed(bool isPlayer1Turn, string description, string thumbnailUrl = "")
+        public static Embed CreateTurnBasedEmbed(bool isPlayer1Turn, string description, string thumbnailUrl = "", WinCases winner = WinCases.None)
         {
-            return CreateEmbed(description, isPlayer1Turn ? Player1Color : Player2Color, thumbnailUrl);
+            return CreateEmbed(description, GetTurnBasedColor(isPlayer1Turn, winner), thumbnailUrl);
+        }
+
+        /// <summary>
+        /// Gets the color for the turn-based game embed based on the turn and winner.
+        /// </summary>
+        /// <param name="isPlayer1Turn">Flag indicating if it's player 1's turn.</param>
+        /// <param name="winner">The winner of the game.</param>
+        /// <returns>The color for the embed.</returns>
+        private static Color GetTurnBasedColor(bool isPlayer1Turn, WinCases winner)
+        {
+            return winner switch
+            {
+                WinCases.Player1 => Player1Color,
+                WinCases.Player2 => Player2Color,
+                WinCases.Tie => BothPlayersColor,
+                _ => isPlayer1Turn ? Player1Color : Player2Color,
+            };
         }
 
         /// <summary>
