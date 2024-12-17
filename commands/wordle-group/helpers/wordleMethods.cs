@@ -13,10 +13,10 @@ namespace Commands.Helpers
     public static class WordleMethods
     {
         private static readonly HashSet<string> validWords = new(
-            File.ReadLines(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "commands/wordle-group/helpers/wordlist.txt"))
+            File.ReadLines(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "commands/wordle-group/helpers/wordList.txt"))
         );
         private static readonly HashSet<string> possibleAnswers = new(
-            File.ReadLines(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "commands/wordle-group/helpers/answerlist.txt"))
+            File.ReadLines(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "commands/wordle-group/helpers/answerList.txt"))
         );
 
         private static readonly Random random = new();
