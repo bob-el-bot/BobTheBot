@@ -25,6 +25,10 @@ RUN apt-get update && \
 # Set the working directory to the current directory
 WORKDIR /app
 
+# Copy the wordlist for Wordle
+COPY ./commands/wordle-group/helpers/wordlist.txt /app/commands/wordle-group/helpers/wordlist.txt
+COPY ./commands/wordle-group/helpers/answerlist.txt /app/commands/wordle-group/helpers/answerlist.txt
+
 # Copy the built application from the build stage
 COPY --from=build /app/out .
 
