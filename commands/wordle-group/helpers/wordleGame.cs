@@ -41,7 +41,6 @@ namespace Commands.Helpers
 
             // Get a word
             Word = WordleMethods.GetRandomWord();
-            Console.WriteLine(Word);
 
             await Message.ModifyAsync(x => { x.Content = null; x.Embed = WordleMethods.CreateEmbed(this); });
         }
