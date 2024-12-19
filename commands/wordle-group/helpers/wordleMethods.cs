@@ -146,7 +146,7 @@ namespace Commands.Helpers
                 stringBuilder.AppendLine($"### 💡 {game.Player1.Mention}'s Wordle Expired!");
                 stringBuilder.AppendLine($"**Answer:** {GetFormattedGuess(game.Word)}");
             }
-            else if (game.GuessesLeft > 0)
+            else if (game.Word == game.Guesses.Last().Guess)
             {
                 stringBuilder.AppendLine($"### 💡 {game.Player1.Mention} Guessed the Wordle in: {GuessCount - game.GuessesLeft}!");
                 stringBuilder.AppendLine(GetCongrats());

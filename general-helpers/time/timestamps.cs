@@ -85,9 +85,6 @@ namespace Time.Timestamps
             // Create DateTimeOffset with the correct offset for the timezone
             var dateTimeOffset = new DateTimeOffset(adjustedDateTime, timeZoneInfo.GetUtcOffset(adjustedDateTime));
 
-            // Log the DateTimeOffset after conversion
-            Console.WriteLine("FromDateTime() after gone to DateTimeOffset: " + dateTimeOffset);
-
             // Return the formatted timestamp string
             return $"<t:{dateTimeOffset.ToUnixTimeSeconds()}:{(char)format}>";
         }
