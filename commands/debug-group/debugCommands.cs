@@ -32,8 +32,8 @@ namespace Commands
         public class LogGroup : InteractionModuleBase<SocketInteractionContext>
         {
             private static readonly ulong DebugServerCategoryId = 1181420597138427967;
-            public static Dictionary<ulong, IGuild> ServersToLog { get; set; } = new();
-            public static Dictionary<ulong, RestTextChannel> ServerLogChannels { get; set; } = new();
+            public static Dictionary<ulong, IGuild> ServersToLog { get; set; } = [];
+            public static Dictionary<ulong, RestTextChannel> ServerLogChannels { get; set; } = [];
             public static bool LogEverything { get; set; } = false;
 
             [SlashCommand("server", "Log all usage of Bob from a specific server (toggleable).")]
@@ -310,6 +310,44 @@ namespace Commands
                 }
             }
 
+            [SlashCommand("set-user-message-total", "Edit the scheduled message total.")]
+            public async Task SetUserMessageTotal(int value, IUser user = null, string userId = null)
+            {
+                await DeferAsync();
+
+                bool conversionResult = ulong.TryParse(userId, out ulong parsedId);
+
+                if (user == null && userId == null)
+                {
+                    await FollowupAsync(text: $"❌ You **must** specify a `user` **or** a `userId`.");
+                    return;
+                }
+
+                IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
+
+                if (discordUser.IsBot)
+                {
+                    await FollowupAsync(text: $"❌ You **cannot** perform this action on bots.");
+                }
+                else if (user != null && conversionResult != false && user.Id != parsedId)
+                {
+                    await FollowupAsync(text: $"❌ The given `user` **and** `userId` must have matching IDs.");
+                }
+                else if (value < 0)
+                {
+                    await FollowupAsync(text: $"❌ The given `value` must be greater than 0 (The field is a `uint`).");
+                }
+                else
+                {
+                    using var context = new BobEntities();
+                    User dbUser = await context.GetUser(user == null ? parsedId : user.Id);
+                    dbUser.TotalScheduledMessages = (uint)value;
+                    await context.UpdateUser(dbUser);
+
+                    await FollowupAsync(text: $"✅ `Announcement Count of User: {discordUser.GlobalName}, {discordUser.Id} updated.`\n{UserDebugging.GetUserPropertyString(dbUser)}");
+                }
+            }
+
             [SlashCommand("give-user-badge", "Gives the given user the given badge.")]
             public async Task GiveUserBadge(Badges.Badges badge, IUser user = null, string userId = null)
             {
@@ -392,7 +430,7 @@ namespace Commands
                     return;
                 }
 
-                IGuild discordServer = Bot.Client.GetGuild(parsedId);
+                SocketGuild discordServer = Bot.Client.GetGuild(parsedId);
 
                 if (discordServer == null)
                 {

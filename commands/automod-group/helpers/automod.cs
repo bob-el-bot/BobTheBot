@@ -41,29 +41,29 @@ namespace Commands.Helpers
         public static class Patterns
         {
             public static readonly string[] LinkPatterns =
-            {
+            [
                 @"(http|https|ftp|ftps):\/\/([\w.-]+)\.([a-zA-Z]{2,})([\w\.\&\?\:\%\=\#\/\-]*)?"
-            };
+            ];
 
             public static readonly string[] StrictPhoneNumberPatterns =
-            {
+            [
                 @"^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$"
-            };
+            ];
 
             public static readonly string[] RelaxedPhoneNumberPatterns =
-            {
+            [
                 @"^\s*(?:\+?(\d{1,3}))?[-. (]*\d{1,3}[-. )]+\d{1,3}[-. ]+\d{1,4}(?: *x(\d+))?\s*$"
-            };
+            ];
 
             public static readonly string[] ZalgoTextPatterns =
-            {
+            [
                 @"[\u0300-\u036F\u0489\u1AB0-\u1AFF\u1DC0-\u1DFF\u20D0-\u20FF\u2CEF-\u2CF1\u2DE0-\u2DFF\uA66F-\uA67F\uFE20-\uFE2F]"
-            };
+            ];
 
             public static readonly string[] InviteLinkPatterns =
-            {
+            [
                 @"\b(?:https?://)?(?:www\.)?(?:discord\.(?:gg|io|me|li|com(?:/invite)?))/?(?:invite/)?([a-zA-Z0-9-]+)\b"
-            };
+            ];
         }
     }
 }

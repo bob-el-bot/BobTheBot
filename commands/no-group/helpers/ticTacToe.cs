@@ -8,7 +8,7 @@ using Time.Timestamps;
 
 namespace Commands.Helpers
 {
-    public class TicTacToe : Games.Game
+    public class TicTacToe(IUser player1, IUser player2) : Games.Game(GameType.TicTacToe, onePerChannel, TimeSpan.FromMinutes(5), player1, player2)
     {
         public override string Title { get; } = "Tic Tac Toe";
         private static readonly bool onePerChannel = false;
@@ -16,11 +16,6 @@ namespace Commands.Helpers
         public int[,] Grid { get; set; } = new int[3, 3];
         public bool IsPlayer1Turn { get; set; }
         public int Turns { get; set; }
-
-        public TicTacToe(IUser player1, IUser player2) : base(GameType.TicTacToe, onePerChannel, TimeSpan.FromMinutes(5), player1, player2)
-        {
-
-        }
 
         public override async Task StartBotGame(SocketInteraction interaction)
         {

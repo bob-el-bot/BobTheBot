@@ -87,12 +87,12 @@ namespace Commands
             // Check permissions
             if (!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageChannels)
             {
-                await RespondAsync(text: "❌ Ask an admin or mod to configure this for you.\n- Permission(s) needed: `Manage Channels`\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await RespondAsync(text: "❌ Ask an admin or mod to configure this for you.\n- Permission(s) needed: `Manage Channels`.", ephemeral: true);
             }
             // Check if Bob has permission to send messages in given channel
             else if (!permissions.SendMessages || !permissions.ViewChannel || !permissions.EmbedLinks)
             {
-                await RespondAsync(text: $"❌ Bob is either missing permissions to view, send messages, *or* embed links in the channel <#{channel.Id}>.\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`, and `Embed Links`.\n- Use `/quote channel` to set a new channel.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await RespondAsync(text: $"❌ Bob is either missing permissions to view, send messages, *or* embed links in the channel <#{channel.Id}>.\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`, and `Embed Links`.\n- Use `/quote channel` to set a new channel.", ephemeral: true);
             }
             else
             {
@@ -122,7 +122,7 @@ namespace Commands
             // Check if the user has manage channels permissions.
             if (!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageChannels)
             {
-                await FollowupAsync(text: $"❌ Ask an admin or mod to configure this for you.\n- Permission(s) needed: `Manage Channels`\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await FollowupAsync(text: $"❌ Ask an admin or mod to configure this for you.\n- Permission(s) needed: `Manage Channels`.", ephemeral: true);
             }
             // Check if the user has premium.
             else if (Premium.IsPremium(Context.Interaction.Entitlements) == false)
@@ -167,7 +167,7 @@ namespace Commands
             // Check if the user has manage channels permissions.
             if (!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageChannels)
             {
-                await FollowupAsync(text: $"❌ Ask an admin or mod to configure this for you.\n- Permission(s) needed: `Manage Channels`\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await FollowupAsync(text: $"❌ Ask an admin or mod to configure this for you.\n- Permission(s) needed: `Manage Channels`.", ephemeral: true);
             }
             // Check if the user has premium.
             else if (Premium.IsPremium(Context.Interaction.Entitlements) == false)

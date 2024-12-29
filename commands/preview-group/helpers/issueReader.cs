@@ -37,7 +37,7 @@ namespace Commands.Helpers
             issueInfo.Comments = (int)jsonData["comments"];
             issueInfo.Description = jsonData["body"]?.ToString();
             var labels = jsonData["labels"].AsArray();
-            issueInfo.Labels = new();
+            issueInfo.Labels = [];
             foreach (var label in labels)
             {
                 JsonObject labelData = JsonNode.Parse(label.ToString()).AsObject();

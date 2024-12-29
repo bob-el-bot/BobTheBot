@@ -12,7 +12,7 @@ using Games;
 
 namespace Commands.Helpers
 {
-    public class Trivia : Games.Game
+    public class Trivia(IUser player1, IUser player2) : Games.Game(GameType.Trivia, onePerChannel, TimeSpan.FromMinutes(5), player1, player2)
     {
         public override string Title { get; } = "Trivia";
         private static readonly bool onePerChannel = false;
@@ -23,12 +23,7 @@ namespace Commands.Helpers
         public int Player2Points { get; set; }
         public string Player2Answer { get; set; }
         public string Player2Chart { get; set; }
-        public List<Question> Questions { get; set; } = new();
-
-        public Trivia(IUser player1, IUser player2) : base(GameType.Trivia, onePerChannel, TimeSpan.FromMinutes(5), player1, player2)
-        {
-
-        }
+        public List<Question> Questions { get; set; } = [];
 
         public override async Task StartBotGame(SocketInteraction interaction)
         {

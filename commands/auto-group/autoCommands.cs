@@ -26,7 +26,7 @@ namespace Commands
             var userPerms = fetchedUser.GetPermissions(givenNewsChannel);
             if (userPerms.SendMessages == false)
             {
-                await FollowupAsync(text: $"❌ You do not have the **Send Messages** permission in {givenNewsChannel.Mention}\n- Try asking a user with the permission **Send Messages**.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await FollowupAsync(text: $"❌ You do not have the `Send Messages` permission in {givenNewsChannel.Mention}\n- Try asking an admin.\n- Try asking a user with the permission `Send Messages`.", ephemeral: true);
             }
             // Check if the user has premium.
             else if (publish == true && Premium.IsPremium(Context.Interaction.Entitlements) == false)
@@ -57,7 +57,7 @@ namespace Commands
                     var botPerms = fetchedBot.GetPermissions(givenNewsChannel);
                     if (botPerms.SendMessages == false)
                     {
-                        await FollowupAsync(text: $"❌ Bob knows to auto publish now, but you **need** to give Bob the **Send Messages** permission in {givenNewsChannel.Mention} settings for this to take effect.", ephemeral: true);
+                        await FollowupAsync(text: $"❌ Bob knows to auto publish now, but you **need** to give Bob the `Send Messages` permission in {givenNewsChannel.Mention} settings for this to take effect.", ephemeral: true);
                     }
                     else
                     {

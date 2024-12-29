@@ -103,17 +103,17 @@ namespace Commands.Helpers
             return embed.Build();
         }
 
-        static readonly List<string> UserAgents = new()
-        {
+        static readonly List<string> UserAgents =
+        [
             "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.85 Safari/537.36",
             "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.85 Safari/537.36",
             "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240",
             "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit/600.8.9 (KHTML, like Gecko) Version/7.1.8 Safari/537.85.17",
-        };
+        ];
 
         private static async Task<List<LinkInfo>> GetUrlTrail(string link)
         {
-            List<LinkInfo> trail = new();
+            List<LinkInfo> trail = [];
             int redirectCount = 0;
             Random random = new();
             string actualTlsVersion = string.Empty;
@@ -332,7 +332,7 @@ namespace Commands.Helpers
         private static bool ContainsShortenedDomain(string url)
         {
             // List of common URL shortener domains
-            string[] shortenerDomains = { "dis.gd", "v.gd", "ow.ly", "bl.ink", "3.ly", "tiny.cc", "bit.ly", "tinyurl.com", "goo.gl", "shorturl.at", "t.ly", "youtu.be", "y2u.be", "t.co", "short.gy", "snip.ly", "Buff.ly", "redd.it", "rb.gy", "msha.ke", "trib.al", "is.gd" };
+            string[] shortenerDomains = ["dis.gd", "v.gd", "ow.ly", "bl.ink", "3.ly", "tiny.cc", "bit.ly", "tinyurl.com", "goo.gl", "shorturl.at", "t.ly", "youtu.be", "y2u.be", "t.co", "short.gy", "snip.ly", "Buff.ly", "redd.it", "rb.gy", "msha.ke", "trib.al", "is.gd"];
 
             if (Uri.TryCreate(url, UriKind.Absolute, out Uri uri))
             {

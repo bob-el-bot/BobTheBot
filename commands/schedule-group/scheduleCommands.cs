@@ -55,7 +55,7 @@ namespace Commands
                 if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)channel).SendMessages ||
                     !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)channel).ViewChannel)
                 {
-                    await FollowupAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{channel.Id}>\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    await FollowupAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{channel.Id}>\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`.", ephemeral: true);
                     return;
                 }
 
@@ -141,7 +141,7 @@ namespace Commands
                 if (!Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)channel).SendMessages ||
                     !Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)channel).ViewChannel)
                 {
-                    await FollowupAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{channel.Id}>\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    await FollowupAsync(text: $"❌ Bob either does not have permission to view *or* send messages in the channel <#{channel.Id}>\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`.", ephemeral: true);
                     return;
                 }
 
@@ -200,7 +200,7 @@ namespace Commands
         [SlashCommand("edit", "Bob will allow you to edit any messages or announcements you have scheduled.")]
         public async Task EditScheduledItem([Summary("id", "The ID of the scheduled message or announcement.")] string id)
         {
-            await DeferAsync();
+            await DeferAsync(ephemeral: true);
 
             if (!ulong.TryParse(id, out ulong parsedId))
             {
@@ -210,10 +210,7 @@ namespace Commands
 
             using var context = new BobEntities();
             IScheduledItem scheduledItem = await context.GetScheduledMessage(parsedId);
-            if (scheduledItem == null)
-            {
-                scheduledItem = await context.GetScheduledAnnouncement(parsedId);
-            }
+            scheduledItem ??= await context.GetScheduledAnnouncement(parsedId);
 
             if (scheduledItem == null)
             {
@@ -340,13 +337,20 @@ namespace Commands
         [ComponentInteraction("deleteMessageButton:*", true)]
         public async Task DeleteMessageButtonHandler(string id)
         {
-            await DeferAsync();
+            await DeferAsync(ephemeral: true);
 
             var originalResponse = await Context.Interaction.GetOriginalResponseAsync();
             var messageId = Convert.ToUInt64(id);
 
             using var context = new BobEntities();
             await context.RemoveScheduledMessage(messageId);
+
+            User user = await context.GetUser(Context.User.Id);
+            if (user.TotalScheduledMessages > 0)
+            {
+                user.TotalScheduledMessages -= 1;
+            }
+            await context.UpdateUser(user);
 
             // Cancel the corresponding task if it exists
             if (ScheduledTasks.TryGetValue(messageId, out var cts))
@@ -373,13 +377,20 @@ namespace Commands
         [ComponentInteraction("deleteAnnounceButton:*", true)]
         public async Task DeleteAnnouncementButtonHandler(string id)
         {
-            await DeferAsync();
+            await DeferAsync(ephemeral: true);
 
             var originalResponse = await Context.Interaction.GetOriginalResponseAsync();
             var announcementId = Convert.ToUInt64(id);
 
             using var context = new BobEntities();
             await context.RemoveScheduledAnnouncement(announcementId);
+
+            User user = await context.GetUser(Context.User.Id);
+            if (user.TotalScheduledAnnouncements > 0)
+            {
+                user.TotalScheduledAnnouncements -= 1;
+            }
+            await context.UpdateUser(user);
 
             // Cancel the corresponding task if it exists
             if (ScheduledTasks.TryGetValue(announcementId, out var cts))

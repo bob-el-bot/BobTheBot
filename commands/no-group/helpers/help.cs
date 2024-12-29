@@ -201,15 +201,15 @@ namespace Commands.Helpers
         };
 
         public static readonly CommandInfoGroup[] CommandGroups =
-        {
+        [
             new() {
                 Title = "Randomly Generated (RNG)",
                 Description = "An assortment of commands which respond with random results.",
                 Name = "random",
                 Emoji = "🎲",
                 Url = "https://docs.bobthebot.net/#rng",
-                Commands = new[]
-                {
+                Commands =
+                [
                     new CommandInfo
                     {
                         Name = "color",
@@ -223,14 +223,14 @@ namespace Commands.Helpers
                         InheritGroupName = true,
                         Description = "Roll a die with a specified # of sides.",
                         Url = "https://docs.bobthebot.net/#random-dice-roll",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "sides",
                                 Description = "The number of sides you want the dice to have (atleast **0**)"
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -245,15 +245,15 @@ namespace Commands.Helpers
                         InheritGroupName = true,
                         Description = "Get a random quote.",
                         Url = "https://docs.bobthebot.net/#random-quote",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "prompt",
                                 Description =
                                     "This is optional, use `/quote-prompts` to view all valid prompts."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -275,14 +275,14 @@ namespace Commands.Helpers
                         InheritGroupName = true,
                         Description = "Get an 8 ball response to a prompt.",
                         Url = "https://docs.bobthebot.net/#random-8ball",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "prompt",
                                 Description = "The prompt for the magic 8ball."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -297,8 +297,8 @@ namespace Commands.Helpers
                         InheritGroupName = true,
                         Description = "Get a random date between the inputted years.",
                         Url = "https://docs.bobthebot.net/#random-date",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "earliestYear",
@@ -311,7 +311,7 @@ namespace Commands.Helpers
                                 Description =
                                     "The latest year you want the date to occur in (must be bigger than earliestYear)"
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -320,30 +320,30 @@ namespace Commands.Helpers
                         Description = "Get a random piece of advice.",
                         Url = "https://docs.bobthebot.net/#random-advice",
                     },
-                }
+                ]
             },
             new() {
                 Title = "Games",
                 Description = "An assortment of games to play with or without friends.",
                 Emoji = "🎮",
                 Url = "https://docs.bobthebot.net/#games",
-                Commands = new[]
-                {
+                Commands =
+                [
                     new CommandInfo
                     {
                         Name = "trivia",
                         InheritGroupName = false,
                         Description = "Play a game of trivia with or without someone.",
                         Url = "https://docs.bobthebot.net/#trivia",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "opponent",
                                 Description =
                                     "The user you wish to play. Leave empty to play alone."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -351,15 +351,15 @@ namespace Commands.Helpers
                         InheritGroupName = false,
                         Description = "Play Bob or a user in a game of Connect 4.",
                         Url = "https://docs.bobthebot.net/#connect4",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "opponent",
                                 Description =
                                     "The user you wish to play. Leave empty to play alone."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -367,15 +367,15 @@ namespace Commands.Helpers
                         InheritGroupName = false,
                         Description = "Play Bob or a user in a game of Tic Tac Toe.",
                         Url = "https://docs.bobthebot.net/#tic-tac-toe",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "opponent",
                                 Description =
                                     "The user you wish to play, leave empty to verse a bot."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -383,15 +383,15 @@ namespace Commands.Helpers
                         InheritGroupName = false,
                         Description = "Play Bob or a user in a game of Rock Paper Scissors.",
                         Url = "https://docs.bobthebot.net/#rock-paper-scissors",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "opponent",
                                 Description =
                                     "The user you wish to play, leave empty to verse a bot."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -400,14 +400,14 @@ namespace Commands.Helpers
                         Description =
                             "Play a game of Mastermind, the rules will shared upon usage. You may only have one game per channel.",
                         Url = "https://docs.bobthebot.net/#mastermind-new-game",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "mode",
                                 Description = "Choose between: Classic | Positional feedback (⬛⬜🟫⬜) and Numeric | Aggregate feedback (Correct: 1, Misplaced: 2, Incorrect: 1)"
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -416,14 +416,14 @@ namespace Commands.Helpers
                         Description =
                             "Make a guess in a game of Mastermind.",
                         Url = "https://docs.bobthebot.net/#mastermind-guess",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "color * 4",
                                 Description = "Your guess for the colors in the code."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -440,16 +440,16 @@ namespace Commands.Helpers
                         Description =
                             "Make a guess in a game of Wordle.",
                         Url = "https://docs.bobthebot.net/#wordle-guess",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "word",
                                 Description = "Your 5 letter, valid word, guess."
                             }
-                        }
+                        ]
                     },
-                }
+                ]
             },
             new() {
                 Title = "Profiles",
@@ -457,22 +457,22 @@ namespace Commands.Helpers
                 Description = "Commands related to user profiles.",
                 Emoji = "👤",
                 Url = "https://docs.bobthebot.net#profile",
-                Commands = new[]
-                {
+                Commands =
+                [
                     new CommandInfo
                     {
                         Name = "display",
                         InheritGroupName = true,
                         Description = "Displays the specified user's profile.",
                         Url = "https://docs.bobthebot.net#profile-display",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "user",
                                 Description = "User whose profile to display. If left empty it display your own."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -480,14 +480,14 @@ namespace Commands.Helpers
                         InheritGroupName = true,
                         Description = "Configure if you want to receive messages sent with `/confess`.",
                         Url = "https://docs.bobthebot.net#profile-confessions-toggle",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "open",
                                 Description = "Enable or disable receiving messages sent via `/confess`. Choose from: True, False."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -502,14 +502,14 @@ namespace Commands.Helpers
                         InheritGroupName = true,
                         Description = "Sets your profile color.",
                         Url = "https://docs.bobthebot.net#profile-set-color",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "color",
                                 Description = "A color name (like \"purple\"), or a valid hex code (like \"#8D52FD\") or valid RGB code (like \"141, 82, 253\")."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -517,16 +517,16 @@ namespace Commands.Helpers
                         InheritGroupName = true,
                         Description = "Shows how to unlock the given badge.",
                         Url = "https://docs.bobthebot.net#profile-badge-info",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "badge",
                                 Description = "The (optional) badge you want to learn about. If left empty, information for all badges will be shown."
                             }
-                        }
+                        ]
                     }
-                }
+                ]
             },
             new() {
                 Title = "Quoting",
@@ -534,16 +534,16 @@ namespace Commands.Helpers
                 Description = "Commands related to quoting.",
                 Emoji = "🖊️",
                 Url = "https://docs.bobthebot.net#quoting",
-                Commands = new[]
-                {
+                Commands =
+                [
                     new CommandInfo
                     {
                         Name = "new",
                         InheritGroupName = true,
                         Description = "Formats and shares the quote in designated channel.",
                         Url = "https://docs.bobthebot.net#quote-new",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "quote",
@@ -559,7 +559,7 @@ namespace Commands.Helpers
                                 Name = "tag * 3",
                                 Description = "You can optionally add a tag to make searching them easier."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -567,14 +567,14 @@ namespace Commands.Helpers
                         InheritGroupName = true,
                         Description = "Sets the quote channel for the server.",
                         Url = "https://docs.bobthebot.net#quote-channel",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "channel",
                                 Description = "The text channel you want to use as the quotes channel for the server."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -582,14 +582,14 @@ namespace Commands.Helpers
                         InheritGroupName = true,
                         Description = "Sets the maximum quote length for the server (Discord has a limit of **4096**).",
                         Url = "https://docs.bobthebot.net#quote-set-max-length",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "length",
                                 Description = "The amount of characters you want, at most, in a quote."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -597,16 +597,16 @@ namespace Commands.Helpers
                         InheritGroupName = true,
                         Description = "Sets the minimum quote length for the server (must be atleast **0**).",
                         Url = "https://docs.bobthebot.net#quote-set-min-length",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "length",
                                 Description = "The amount of characters you want, at least, in a quote."
                             }
-                        }
+                        ]
                     }
-                }
+                ]
             },
             new() {
                 Title = "Welcoming",
@@ -614,22 +614,22 @@ namespace Commands.Helpers
                 Description = "Commands related to welcoming new users.",
                 Emoji = "👋",
                 Url = "https://docs.bobthebot.net#welcome",
-                Commands = new[]
-                {
+                Commands =
+                [
                     new CommandInfo
                     {
                         Name = "toggle",
                         InheritGroupName = true,
                         Description = "Bob will send welcome messages to new server members.",
                         Url = "https://docs.bobthebot.net#welcome-toggle",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "welcome",
                                 Description = "Enable or disable welcome messages. Choose from: True, False."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -637,14 +637,14 @@ namespace Commands.Helpers
                         InheritGroupName = true,
                         Description = "Set a custom message to welcome new users with.",
                         Url = "https://docs.bobthebot.net#welcome-set-message",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "message",
                                 Description = "The message you want sent to welcome users to your server. Type @ where you want a ping and/or mention to be."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -653,7 +653,7 @@ namespace Commands.Helpers
                         Description = "Bob will stop using the custom message to welcome users.",
                         Url = "https://docs.bobthebot.net#welcome-remove-message",
                     }
-                }
+                ]
             },
             new() {
                 Title = "Scheduling",
@@ -661,16 +661,16 @@ namespace Commands.Helpers
                 Name = "schedule",
                 Emoji = "🕖",
                 Url = "https://docs.bobthebot.net/#schedule",
-                Commands = new[]
-                {
+                Commands =
+                [
                     new CommandInfo
                     {
                         Name = "message",
                         InheritGroupName = true,
                         Description = "Bob will send your message at a specified time.",
                         Url = "https://docs.bobthebot.net/#schedule-message",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "message",
@@ -706,7 +706,7 @@ namespace Commands.Helpers
                                 Name = "timezone",
                                 Description = "Your timezone."
                             }
-                        },
+                        ],
                     },
                     new CommandInfo
                     {
@@ -714,8 +714,8 @@ namespace Commands.Helpers
                         InheritGroupName = true,
                         Description = "Bob will send an embed at a specified time.",
                         Url = "https://docs.bobthebot.net/#schedule-announcement",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "title",
@@ -761,7 +761,7 @@ namespace Commands.Helpers
                                 Name = "timezone",
                                 Description = "Your timezone."
                             }
-                        },
+                        ],
                     },
                     new CommandInfo
                     {
@@ -769,16 +769,16 @@ namespace Commands.Helpers
                         InheritGroupName = true,
                         Description = "Bob will allow you to edit any messages or announcements you have scheduled.",
                         Url = "https://docs.bobthebot.net/#schedule-edit",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "id",
                                 Description = "The ID of the scheduled message or announcement."
                             }
-                        },
+                        ],
                     }
-                }
+                ]
             },
             new() {
                 Title = "Auto",
@@ -786,16 +786,16 @@ namespace Commands.Helpers
                 Description = "Commands related to automatic actions.",
                 Emoji = "🖨️",
                 Url = "https://docs.bobthebot.net#auto",
-                Commands = new[]
-                {
+                Commands =
+                [
                     new CommandInfo
                     {
                         Name = "publish-announcements",
                         InheritGroupName = true,
                         Description = "Bob will publish all messages sent in the given channel.",
                         Url = "https://docs.bobthebot.net#auto-publish-announcements",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "publish",
@@ -806,7 +806,7 @@ namespace Commands.Helpers
                                 Name = "channel",
                                 Description = "The announcement channel to publish announcements in."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -814,14 +814,14 @@ namespace Commands.Helpers
                         InheritGroupName = true,
                         Description = "Bob will preview all valid github links (code files, issues, and pull requests).",
                         Url = "https://docs.bobthebot.net#auto-preview-github",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "preview",
                                 Description = "Enable or disable GitHub link previews. Choose from: True, False."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -830,16 +830,16 @@ namespace Commands.Helpers
                         Description =
                             "Bob will preview all valid Discord message links.",
                         Url = "https://docs.bobthebot.net#auto-preview-messages",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "preview",
                                 Description = "Enable or disable message link previews. Choose from: True, False."
                             }
-                        }
+                        ]
                     }
-                }
+                ]
             },
             new() {
                 Title = "Encryption",
@@ -847,8 +847,8 @@ namespace Commands.Helpers
                 Description = "Commands related to encrypting messages.",
                 Emoji = "🔒",
                 Url = "https://docs.bobthebot.net#encrypt",
-                Commands = new[]
-                {
+                Commands =
+                [
                     new CommandInfo
                     {
                         Name = "a1z26",
@@ -856,14 +856,14 @@ namespace Commands.Helpers
                         Description =
                             "Encrypts your message by swapping letters to their corresponding number.",
                         Url = "https://docs.bobthebot.net#encrypt-a1z26",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "message",
                                 Description = "The message to encrypt."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -872,14 +872,14 @@ namespace Commands.Helpers
                         Description =
                             "Encrypts your message by representing each character in binary.",
                         Url = "https://docs.bobthebot.net#encrypt-binary",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "message",
                                 Description = "The message to encrypt."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -888,14 +888,14 @@ namespace Commands.Helpers
                         Description =
                             "Encrypts your message by swapping letters to their opposite position.",
                         Url = "https://docs.bobthebot.net#encrypt-atbash",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "message",
                                 Description = "The message to encrypt."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -904,8 +904,8 @@ namespace Commands.Helpers
                         Description =
                             "Encrypts your message by shifting the letters the specified amount.",
                         Url = "https://docs.bobthebot.net#encrypt-caesar",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "message",
@@ -916,7 +916,7 @@ namespace Commands.Helpers
                                 Name = "shift",
                                 Description = "The number of positions to shift each letter."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -924,14 +924,14 @@ namespace Commands.Helpers
                         InheritGroupName = true,
                         Description = "Encrypts your message using Morse code.",
                         Url = "https://docs.bobthebot.net#encrypt-morse",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "message",
                                 Description = "The message to encrypt."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -939,8 +939,8 @@ namespace Commands.Helpers
                         InheritGroupName = true,
                         Description = "Encrypts your message using a specified key.",
                         Url = "https://docs.bobthebot.net#encrypt-vigenere",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "message",
@@ -951,9 +951,9 @@ namespace Commands.Helpers
                                 Name = "key",
                                 Description = "The key to use for encryption."
                             }
-                        }
+                        ]
                     }
-                }
+                ]
             },
             new() {
                 Title = "Decryption",
@@ -961,8 +961,8 @@ namespace Commands.Helpers
                 Description = "Commands related to decrypting messages.",
                 Emoji = "🔓",
                 Url = "https://docs.bobthebot.net#decrypt",
-                Commands = new[]
-                {
+                Commands =
+                [
                     new CommandInfo
                     {
                         Name = "a1z26",
@@ -970,14 +970,14 @@ namespace Commands.Helpers
                         Description =
                             "Decrypts your message by swapping numbers to their corresponding letters.",
                         Url = "https://docs.bobthebot.net#decrypt-a1z26",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "message",
                                 Description = "The message to decrypt."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -986,14 +986,14 @@ namespace Commands.Helpers
                         Description =
                             "Decrypts your message byswapping binary representations to their corresponding characters.",
                         Url = "https://docs.bobthebot.net#decrypt-binary",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "message",
                                 Description = "The message to decrypt."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -1002,14 +1002,14 @@ namespace Commands.Helpers
                         Description =
                             "Decrypts your message by swapping letters to their opposite position.",
                         Url = "https://docs.bobthebot.net#decrypt-atbash",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "message",
                                 Description = "The message to decrypt."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -1018,8 +1018,8 @@ namespace Commands.Helpers
                         Description =
                             "Decrypts your message by shifting the letters the specified amount.",
                         Url = "https://docs.bobthebot.net#decrypt-caesar",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "message",
@@ -1030,7 +1030,7 @@ namespace Commands.Helpers
                                 Name = "shift",
                                 Description = "The number of positions to shift each letter."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -1038,14 +1038,14 @@ namespace Commands.Helpers
                         InheritGroupName = true,
                         Description = "Decrypts your message using Morse code.",
                         Url = "https://docs.bobthebot.net#decrypt-morse",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "message",
                                 Description = "The message to decrypt."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -1053,8 +1053,8 @@ namespace Commands.Helpers
                         InheritGroupName = true,
                         Description = "Decrypts your message using a specified key.",
                         Url = "https://docs.bobthebot.net#decrypt-vigenere",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "message",
@@ -1065,25 +1065,25 @@ namespace Commands.Helpers
                                 Name = "key",
                                 Description = "The key to use for decryption."
                             }
-                        }
+                        ]
                     }
-                }
+                ]
             },
             new() {
                 Title = "Other",
                 Description = "Miscellaneous commands.",
                 Emoji = "✨",
                 Url = "https://docs.bobthebot.net#other",
-                Commands = new[]
-                {
+                Commands =
+                [
                     new CommandInfo
                     {
                         Name = "fonts",
                         InheritGroupName = false,
                         Description = "Change your text to a different font.",
                         Url = "https://docs.bobthebot.net#fonts",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "text",
@@ -1095,7 +1095,7 @@ namespace Commands.Helpers
                                 Description =
                                     "The font to use (choose from: 𝖒𝖊𝖉𝖎𝖊𝖛𝖆𝖑, 𝓯𝓪𝓷𝓬𝔂, 𝕠𝕦𝕥𝕝𝕚𝕟𝕖𝕕, s̷l̷̷a̷s̷h̷e̷d̷, ɟןıddǝp, and 🄱🄾🅇🄴🄳)."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -1103,8 +1103,8 @@ namespace Commands.Helpers
                         InheritGroupName = false,
                         Description = "Have Bob DM a user a message.",
                         Url = "https://docs.bobthebot.net#confess",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "message",
@@ -1120,7 +1120,7 @@ namespace Commands.Helpers
                                 Name = "signoff",
                                 Description = "Optional signoff for the message."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -1128,8 +1128,8 @@ namespace Commands.Helpers
                         InheritGroupName = false,
                         Description = "Have a fancy embed message sent.",
                         Url = "https://docs.bobthebot.net#announce",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "title",
@@ -1145,7 +1145,7 @@ namespace Commands.Helpers
                                 Name = "color",
                                 Description = "A color name (like \"purple\"), or a valid hex code (like \"#8D52FD\") or valid RGB code (like \"141, 82, 253\")."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -1153,15 +1153,15 @@ namespace Commands.Helpers
                         InheritGroupName = false,
                         Description = "Create a poll.",
                         Url = "https://docs.bobthebot.net#poll",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo { Name = "prompt", Description = "The poll prompt." },
                             new ParameterInfo
                             {
                                 Name = "option * 4",
                                 Description = "2-4 options for the poll."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -1169,14 +1169,14 @@ namespace Commands.Helpers
                         InheritGroupName = false,
                         Description = "See how good of a match 2 users are.",
                         Url = "https://docs.bobthebot.net#ship",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "user * 2",
                                 Description = "The users to check compatibility for. If left empty Bob will choose a random user."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -1184,14 +1184,14 @@ namespace Commands.Helpers
                         InheritGroupName = false,
                         Description = "Show your friends some love with a hug.",
                         Url = "https://docs.bobthebot.net#hug",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "user * 5",
                                 Description = "The users to hug."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -1207,7 +1207,7 @@ namespace Commands.Helpers
                         Description = "Get a link to review Bob on Top.GG",
                         Url = "https://docs.bobthebot.net#review",
                     },
-                }
+                ]
             },
             new() {
                 Title = "Preview",
@@ -1215,22 +1215,22 @@ namespace Commands.Helpers
                 Description = "Commands to preview content from various sources.",
                 Emoji = "🔎",
                 Url = "https://docs.bobthebot.net#preview",
-                Commands = new[]
-                {
+                Commands =
+                [
                     new CommandInfo
                     {
                         Name = "code",
                         InheritGroupName = true,
                         Description = "Preview specific lines of code from a file on GitHub.",
                         Url = "https://docs.bobthebot.net#preview-code",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "link",
                                 Description = "The GitHub file link you want to share. Character indicators are ignored. Valid formats include: `https://github.com/bob-el-bot/website/blob/main/index.html#L15` and `https://github.com/bob-el-bot/website/blob/main/index.html#L15-L18`"
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -1238,14 +1238,14 @@ namespace Commands.Helpers
                         InheritGroupName = true,
                         Description = "Preview a pull request from GitHub right on Discord.",
                         Url = "https://docs.bobthebot.net#preview-pull-request",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "link",
                                 Description = "The link to the GitHub pull request. Valid formats include: `https://github.com/bob-el-bot/BobTheBot/pull/149`"
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -1253,14 +1253,14 @@ namespace Commands.Helpers
                         InheritGroupName = true,
                         Description = "Preview an issue from GitHub right on Discord.",
                         Url = "https://docs.bobthebot.net#preview-issue",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "link",
                                 Description = "The link to the GitHub issue. `https://github.com/bob-el-bot/BobTheBot/issues/153`"
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -1268,14 +1268,14 @@ namespace Commands.Helpers
                         InheritGroupName = true,
                         Description = "Preview a Discord message from any server Bob is in.",
                         Url = "https://docs.bobthebot.net#preview-message",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "link",
                                 Description = "The link to the Discord message. Valid formats include: `https://discord.com/channels/1058077635692994651/1058081599222186074/1111715651476799619`"
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -1283,16 +1283,16 @@ namespace Commands.Helpers
                         InheritGroupName = true,
                         Description = "Preview what a color looks like, and get more information.",
                         Url = "https://docs.bobthebot.net#preview-color",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "color",
                                 Description = "A color name (like \"purple\"), or a valid hex code (like \"#8D52FD\") or valid RGB code (like \"141, 82, 253\")."
                             }
-                        }
+                        ]
                     }
-                }
+                ]
             },
             new() {
                 Title = "Convert",
@@ -1300,16 +1300,16 @@ namespace Commands.Helpers
                 Description = "Commands related to conversions.",
                 Emoji = "↔️",
                 Url = "https://docs.bobthebot.net#convert",
-                Commands = new[]
-                {
+                Commands =
+                [
                     new CommandInfo
                     {
                         Name = "units",
                         InheritGroupName = true,
                         Description = "Bob will convert one unit to another for you.",
                         Url = "https://docs.bobthebot.net#convert-units",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "unit-type",
@@ -1330,7 +1330,7 @@ namespace Commands.Helpers
                                 Name = "to-unit",
                                 Description = "The unit you want to convert to (to see specifics use the command with a random value for this field)."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -1338,8 +1338,8 @@ namespace Commands.Helpers
                         InheritGroupName = true,
                         Description = "Bob will convert a time from one timezone to another.",
                         Url = "https://docs.bobthebot.net#convert-timezones",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "month",
@@ -1370,7 +1370,7 @@ namespace Commands.Helpers
                                 Name = "to-timezone",
                                 Description = "The timezone of the time you want to convert to."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -1378,8 +1378,8 @@ namespace Commands.Helpers
                         InheritGroupName = true,
                         Description = "Bob will convert a link or text to a QR code.",
                         Url = "https://docs.bobthebot.net#convert-qr-code",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "content",
@@ -1390,9 +1390,9 @@ namespace Commands.Helpers
                                 Name = "error-correction-level",
                                 Description = "The error correction level of the QR code. Choose from: L, M, Q, H."
                             },
-                        }
+                        ]
                     },
-                }
+                ]
             },
             new() {
                 Title = "Auto Moderation",
@@ -1400,22 +1400,22 @@ namespace Commands.Helpers
                 Description = "Commands related to auto moderation.",
                 Emoji = "⚖️",
                 Url = "https://docs.bobthebot.net#automod",
-                Commands = new[]
-                {
+                Commands =
+                [
                     new CommandInfo
                     {
                         Name = "phone-numbers",
                         InheritGroupName = true,
                         Description = "Add phone number auto moderation. Prevent phone numbers from being sent in this server.",
                         Url = "https://docs.bobthebot.net#automod-phone-numbers",
-                        Parameters = new[]
-                        {
+                        Parameters =
+                        [
                             new ParameterInfo
                             {
                                 Name = "strict",
                                 Description = "If checked (true) numbers like 1234567890 will be blocked. Otherwise only formatted phone numbers will be."
                             }
-                        }
+                        ]
                     },
                     new CommandInfo
                     {
@@ -1445,15 +1445,15 @@ namespace Commands.Helpers
                         Description = "Add invite link auto moderation. Prevent invites from being sent in this server.",
                         Url = "https://docs.bobthebot.net#automod-links-invite-links",
                     },
-                }
+                ]
             },
             new() {
                 Title = "Informational / Help",
                 Description = "Commands to get information and help about the bot.",
                 Emoji = "🗄️",
                 Url = "https://docs.bobthebot.net#info",
-                Commands = new[]
-                {
+                Commands =
+                [
                     new CommandInfo
                     {
                         Name = "premium",
@@ -1504,8 +1504,8 @@ namespace Commands.Helpers
                         Description = "Sends an invite to Bob's support Server.",
                         Url = "https://docs.bobthebot.net#support"
                     }
-                }
+                ]
             }
-        };
+        ];
     }
 }

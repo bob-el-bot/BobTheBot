@@ -169,7 +169,7 @@ namespace Commands.Helpers
         /// <returns>A string containing a congratulatory message.</returns>
         public static string GetCongrats()
         {
-            string[] congrats = { "*You* did it!", "*You* solved it!", "Great job! *you* got it!" };
+            string[] congrats = ["*You* did it!", "*You* solved it!", "Great job! *you* got it!"];
             return congrats[random.Next(0, congrats.Length)];
         }
     }

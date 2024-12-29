@@ -90,7 +90,7 @@ namespace Commands
             StringBuilder response = new();
             response.Append(Context.User.Mention + " *hugs* " + person1.Mention);
 
-            SocketUser[] people = { person2, person3, person4, person5 };
+            SocketUser[] people = [person2, person3, person4, person5];
 
             for (int i = 0; i < people.Length; i++)
             {
@@ -139,7 +139,7 @@ namespace Commands
 
             if (game == null)
             {
-                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use `/tic-tac-toe` to start a new game.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use `/tic-tac-toe` to start a new game.", ephemeral: true);
             }
             else
             {
@@ -148,11 +148,11 @@ namespace Commands
 
                 if (!isPlayer1 && !isPlayer2)
                 {
-                    await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.", ephemeral: true);
                 }
                 else if (game.IsPlayer1Turn && !isPlayer1 || !game.IsPlayer1Turn && isPlayer1)
                 {
-                    await component.RespondAsync(text: $"❌ It is **not** your turn.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    await component.RespondAsync(text: $"❌ It is **not** your turn.", ephemeral: true);
                 }
                 else
                 {
@@ -160,7 +160,7 @@ namespace Commands
 
                     // Prepare Position
                     string[] coords = coordinate.Split('-');
-                    int[] position = { Convert.ToInt16(coords[0]), Convert.ToInt16(coords[1]) };
+                    int[] position = [Convert.ToInt16(coords[0]), Convert.ToInt16(coords[1])];
 
                     // Check if the chosen move is valid and within bounds
                     if (game.Grid[position[0], position[1]] == 0)
@@ -220,7 +220,7 @@ namespace Commands
 
             if (game == null)
             {
-                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use `/trivia` to start a new game.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use `/trivia` to start a new game.", ephemeral: true);
             }
             else
             {
@@ -229,11 +229,11 @@ namespace Commands
 
                 if (!isPlayer1 && !isPlayer2)
                 {
-                    await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.", ephemeral: true);
                 }
                 else if (game.Player1Answer != null && isPlayer1 || game.Player2Answer != null && isPlayer2)
                 {
-                    await component.RespondAsync(text: $"❌ You have already answered.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    await component.RespondAsync(text: $"❌ You have already answered.", ephemeral: true);
                 }
                 else
                 {
@@ -288,7 +288,7 @@ namespace Commands
 
             if (game == null)
             {
-                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use `/rock-paper-scissors` to start a new game.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use `/rock-paper-scissors` to start a new game.", ephemeral: true);
             }
             else
             {
@@ -298,11 +298,11 @@ namespace Commands
 
                 if (!isPlayer1 && !isPlayer2)
                 {
-                    await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.", ephemeral: true);
                 }
                 else if ((isPlayer1 && game.Player1Choice != -1) || (isPlayer2 && game.Player2Choice != -1))
                 {
-                    await component.RespondAsync(text: $"❌ You **cannot** change your choice.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    await component.RespondAsync(text: $"❌ You **cannot** change your choice.", ephemeral: true);
                 }
                 else
                 {
@@ -321,7 +321,7 @@ namespace Commands
                     }
                     else
                     {
-                        string[] options = { "🪨", "📃", "✂️" };
+                        string[] options = ["🪨", "📃", "✂️"];
                         await component.RespondAsync($"You picked {options[choice]}", ephemeral: true);
                     }
                 }
@@ -364,7 +364,7 @@ namespace Commands
 
             if (game == null)
             {
-                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use `/connect4` to start a new game.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use `/connect4` to start a new game.", ephemeral: true);
             }
             else
             {
@@ -373,11 +373,11 @@ namespace Commands
 
                 if (!isPlayer1 && !isPlayer2)
                 {
-                    await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.", ephemeral: true);
                 }
                 else if (game.IsPlayer1Turn && !isPlayer1 || !game.IsPlayer1Turn && isPlayer1)
                 {
-                    await component.RespondAsync(text: $"❌ It is **not** your turn.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    await component.RespondAsync(text: $"❌ It is **not** your turn.", ephemeral: true);
                 }
                 else
                 {
@@ -425,13 +425,13 @@ namespace Commands
             Challenge.Games.TryGetValue(Convert.ToUInt64(Id), out Games.Game challenge);
             if (challenge == null)
             {
-                await Context.Interaction.RespondAsync(text: $"❌ This challenge no longer exists.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await Context.Interaction.RespondAsync(text: $"❌ This challenge no longer exists.", ephemeral: true);
             }
             else
             {
                 if (Context.Interaction.User.Id != challenge.Player2.Id)
                 {
-                    await Context.Interaction.RespondAsync(text: $"❌ **Only** {challenge.Player2.Mention} can **accept** this challenge.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    await Context.Interaction.RespondAsync(text: $"❌ **Only** {challenge.Player2.Mention} can **accept** this challenge.", ephemeral: true);
                 }
                 else
                 {
@@ -453,13 +453,13 @@ namespace Commands
 
             if (challenge == null)
             {
-                await Context.Interaction.RespondAsync(text: $"❌ This challenge no longer exists.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await Context.Interaction.RespondAsync(text: $"❌ This challenge no longer exists.", ephemeral: true);
             }
             else
             {
                 if (Context.Interaction.User.Id != challenge.Player2.Id)
                 {
-                    await component.RespondAsync(text: $"❌ **Only** {challenge.Player2.Mention} can **decline** this challenge.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    await component.RespondAsync(text: $"❌ **Only** {challenge.Player2.Mention} can **decline** this challenge.", ephemeral: true);
                 }
                 else
                 {
@@ -578,7 +578,7 @@ namespace Commands
             ChannelPermissions permissions = Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel);
             if (!Context.Interaction.IsDMInteraction && (!permissions.SendMessages || !permissions.ViewChannel || !permissions.EmbedLinks))
             {
-                await RespondAsync(text: $"❌ Bob is either missing permissions to view, send messages, *or* embed links in the channel <#{Context.Channel.Id}>\n- Try giving Bob the following pemrissions: `View Channel`, `Embed Links`, and `Send Messages`.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await RespondAsync(text: $"❌ Bob is either missing permissions to view, send messages, *or* embed links in the channel <#{Context.Channel.Id}>\n- Try giving Bob the following pemrissions: `View Channel`, `Embed Links`, and `Send Messages`.", ephemeral: true);
             }
             else if (finalColor == null)
             {
@@ -864,7 +864,7 @@ namespace Commands
             // Check if Bob has permission to send messages in given channel
             if (!permissions.SendMessages || !permissions.ViewChannel || !permissions.EmbedLinks || !permissions.AddReactions)
             {
-                await RespondAsync(text: $"❌ Bob is either missing permissions to view, send messages, add reactions, *or* embed links in the channel <#{Context.Channel.Id}>.\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`, `Add Reactions`, and `Embed Links`.\n- Use `/quote channel` to set a new channel.\n- If you think this is a mistake join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await RespondAsync(text: $"❌ Bob is either missing permissions to view, send messages, add reactions, *or* embed links in the channel <#{Context.Channel.Id}>.\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`, `Add Reactions`, and `Embed Links`.", ephemeral: true);
             }
             else
             {
@@ -885,8 +885,8 @@ namespace Commands
                     }
                 };
 
-                string[] possibleOptions = { option1, option2, option3, option4 };
-                string[] optionLabels = { "1️⃣", "2️⃣", "3️⃣", "4️⃣" };
+                string[] possibleOptions = [option1, option2, option3, option4];
+                string[] optionLabels = ["1️⃣", "2️⃣", "3️⃣", "4️⃣"];
                 int index = 0;
                 foreach (string option in possibleOptions)
                 {

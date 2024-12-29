@@ -11,7 +11,7 @@ namespace Commands.Helpers
     public static class MasterMindMethods
     {
         // List of currently active Master Mind games
-        public static List<MasterMindGame> CurrentGames { get; set; } = new();
+        public static List<MasterMindGame> CurrentGames { get; set; } = [];
 
         // Random number generator for various game elements
         private static readonly Random random = new();
@@ -58,8 +58,8 @@ namespace Commands.Helpers
         }
 
         // Predefined difficulty options for the game
-        private static readonly List<SelectOptionBuilder> Difficulty = new()
-        {
+        private static readonly List<SelectOptionBuilder> Difficulty =
+        [
             new SelectOptionBuilder
             {
                 Label = "Easy (10 attempts)",
@@ -81,7 +81,7 @@ namespace Commands.Helpers
                 Description = "6 attempts",
                 Emote = new Emoji("💀")
             }
-        };
+        ];
 
         /// <summary>
         /// Creates a select menu for choosing the game difficulty.
@@ -158,7 +158,7 @@ Good luck cracking the code!");
         /// <returns>A string containing a congratulatory message.</returns>
         public static string GetCongrats()
         {
-            string[] congrats = { "*You* did it!", "*You* solved it!", "Great job! *you* beat it!" };
+            string[] congrats = ["*You* did it!", "*You* solved it!", "Great job! *you* beat it!"];
             return congrats[random.Next(0, congrats.Length)];
         }
 
@@ -172,7 +172,7 @@ Good luck cracking the code!");
 
             for (int i = 0; i < key.Length; i++)
             {
-                key[i] = (Color)random.Next(0, Enum.GetValues(typeof(Color)).Length);
+                key[i] = (Color)random.Next(0, Enum.GetValues<Color>().Length);
             }
 
             return key;

@@ -28,14 +28,14 @@ namespace Commands
                 // Ensure system channel is set
                 if (systemChannel == null)
                 {
-                    await FollowupAsync("❌ You **need** to set a *System Messages* channel in settings for Bob to greet users.", ephemeral: true);
+                    await FollowupAsync("❌ You **need** to set a **System Messages** channel in settings for Bob to greet users.", ephemeral: true);
                     return;
                 }
 
                 // Check user permissions for managing the system channel
                 if (!discordUser.GetPermissions(systemChannel).ManageChannel)
                 {
-                    await FollowupAsync($"❌ You do not have permissions to manage <#{systemChannel.Id}>.\n- Ask a user with **Manage Channel** permission.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    await FollowupAsync($"❌ You do not have permissions to manage <#{systemChannel.Id}>.\n- Ask a user with `Manage Channel` permission.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
                     return;
                 }
             }
@@ -47,7 +47,7 @@ namespace Commands
                 var bobPermissions = Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions(systemChannel);
                 if (!bobPermissions.SendMessages || !bobPermissions.ViewChannel)
                 {
-                    await FollowupAsync($"❌ Bob cannot view or send messages in <#{systemChannel.Id}>.\n- Give Bob `View Channel` and `Send Messages` permissions.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    await FollowupAsync($"❌ Bob cannot view or send messages in <#{systemChannel.Id}>.\n- Give Bob `View Channel` and `Send Messages` permissions.", ephemeral: true);
                     return;
                 }
             }
@@ -67,7 +67,7 @@ namespace Commands
             if (welcome)
             {
                 await FollowupAsync(systemChannel == null
-                    ? "❌ Bob knows to welcome users now, but you **need** to set a *System Messages* channel in settings for this to take effect."
+                    ? "❌ Bob knows to welcome users now, but you **need** to set a **System Messages** channel in settings for this to take effect."
                     : $"✅ Bob will now greet people in <#{systemChannel.Id}>", ephemeral: true);
             }
             else
@@ -94,7 +94,7 @@ namespace Commands
 
                 if (!discordUser.GetPermissions(systemChannel).ManageChannel)
                 {
-                    await FollowupAsync($"❌ You do not have permissions to manage <#{systemChannel.Id}> (The system channel where welcome messages are sent)\n- Try asking a user with the permission **Manage Channel**.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    await FollowupAsync($"❌ You do not have permissions to manage <#{systemChannel.Id}> (The system channel where welcome messages are sent)\n- Try asking a user with the permission `Manage Channel`.", ephemeral: true);
                     return;
                 }
             }
@@ -128,7 +128,7 @@ namespace Commands
             {
                 if (systemChannel == null)
                 {
-                    await FollowupAsync($"❌ Bob knows to welcome users now, and what to say, but you **need** to set a *System Messages* channel in settings for this to take effect.\nYour welcome message will look like so:\n\n{Welcome.FormatCustomMessage(message, Context.User.Mention)}", ephemeral: true);
+                    await FollowupAsync($"❌ Bob knows to welcome users now, and what to say, but you **need** to set a **System Messages** channel in settings for this to take effect.\nYour welcome message will look like so:\n\n{Welcome.FormatCustomMessage(message, Context.User.Mention)}", ephemeral: true);
                 }
                 else
                 {
@@ -159,7 +159,7 @@ namespace Commands
 
                 if (!discordUser.GetPermissions(systemChannel).ManageChannel)
                 {
-                    await FollowupAsync($"❌ You do not have permissions to manage <#{systemChannel.Id}> (The system channel where welcome messages are sent)\n- Try asking a user with the permission **Manage Channel**.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    await FollowupAsync($"❌ You do not have permissions to manage <#{systemChannel.Id}> (The system channel where welcome messages are sent)\n- Try asking a user with the permission `Manage Channel`.", ephemeral: true);
                     return;
                 }
             }

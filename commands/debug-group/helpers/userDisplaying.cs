@@ -23,7 +23,7 @@ namespace Commands.Helpers
                     fieldName = fieldName.Replace(">k__BackingField", "");
                 }
 
-                if (fieldName.StartsWith("<"))
+                if (fieldName.StartsWith('<'))
                 {
                     fieldName = fieldName.Replace("<", "");
                 }

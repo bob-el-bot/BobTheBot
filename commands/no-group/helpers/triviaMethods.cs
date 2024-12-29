@@ -67,6 +67,7 @@ namespace Commands.Helpers
         private static readonly SemaphoreSlim requestSemaphore = new(1, 1);
         private static readonly Random random = new();
         private static readonly Queue<Question> questions = new();
+        private static readonly string[] selector = ["🇦", "🇧", "🇨", "🇩"];
 
         /// <summary>
         /// Fetches new questions from the trivia API and populates the question queue.
@@ -144,7 +145,7 @@ namespace Commands.Helpers
         {
             var finalText = new StringBuilder()
                 .AppendLine($"**{question.QuestionText}**\n")
-                .AppendJoin('\n', question.Answers.Select((a, i) => $"{new[] { "🇦", "🇧", "🇨", "🇩" }[i]} {a}"))
+                .AppendJoin('\n', question.Answers.Select((a, i) => $"{selector[i]} {a}"))
                 .AppendLine();
 
             return finalText.ToString();

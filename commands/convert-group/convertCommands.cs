@@ -77,7 +77,7 @@ namespace Commands
         {
             await DeferAsync();
 
-            var unitType = (UnitConversion.UnitType)Enum.Parse(typeof(UnitConversion.UnitType), type);
+            var unitType = Enum.Parse<UnitConversion.UnitType>(type);
 
             await Feedback.Suggestion.SuggestUnitToDiscord(Context, unitType, modal.Content);
 

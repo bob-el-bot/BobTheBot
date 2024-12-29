@@ -40,6 +40,8 @@ public static class Bot
     public const ulong supportServerId = 1058077635692994651;
     public static readonly ulong systemLogChannelId = 1160105468082004029;
 
+    private static readonly string[] statuses = { "/help | Games!", "/help | Premium! ❤︎", "/help | Scheduling!", "/help | Automod!", "/help | bobthebot.net", "/help | RNG!", "/help | Quotes!", "/help | Confessions!" };
+
     public static async Task Main()
     {
         if (Token is null)
@@ -147,7 +149,6 @@ public static class Bot
             Console.WriteLine(e);
         }
 
-        string[] statuses = { "/help | Games!", "/help | Premium! ❤︎", "/help | Scheduling!", "/help | Automod!", "/help | bobthebot.net", "/help | RNG!", "/help | Quotes!", "/help | Confessions!" };
         int index = 0;
 
         _ = Task.Run(() =>
@@ -415,7 +416,7 @@ public static class Bot
                     }
                     break;
                 case InteractionCommandError.Exception:
-                    await ctx.Interaction.FollowupAsync($"❌ Something went wrong...\n- Ensure Bob has the **View Channel** and **Send Messages** permissions.\n- Try again later.\n- The developers have been notified.\n- Or, join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ) and let us know about it.", ephemeral: true);
+                    await ctx.Interaction.FollowupAsync($"❌ Something went wrong...\n- Ensure Bob has the `View Channel` and `Send Messages` permissions.\n- Try again later.\n- The developers have been notified.\n- Or, join [Bob's Official Server](https://discord.gg/HvGMRZD8jQ) and let us know about it.", ephemeral: true);
 
                     var executionResult = (ExecuteResult)res;
                     Console.WriteLine($"Error: {executionResult.Exception}");

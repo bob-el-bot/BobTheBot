@@ -10,7 +10,13 @@ namespace Commands.Helpers
     /// <summary>
     /// Represents a single game of Master Mind, containing game logic and state.
     /// </summary>
-    public class MasterMindGame
+    /// <remarks>
+    /// Initializes a new instance of the <see cref="MasterMindGame"/> class.
+    /// </remarks>
+    /// <param name="Id">The unique identifier for the game.</param>
+    /// <param name="StartUser">The user who started the game.</param>
+    /// <param name="mode">The game mode selected by the player.</param>
+    public class MasterMindGame(ulong Id, IUser StartUser, MasterMindMethods.GameMode mode)
     {
         /// <summary>
         /// The secret key (code) that players attempt to guess.
@@ -20,12 +26,12 @@ namespace Commands.Helpers
         /// <summary>
         /// A collection of previous guesses and their associated results.
         /// </summary>
-        public List<(string Result, MasterMindMethods.Color[] Guess)> Guesses { get; set; }
+        public List<(string Result, MasterMindMethods.Color[] Guess)> Guesses { get; set; } = [];
 
         /// <summary>
         /// A unique identifier for the game instance.
         /// </summary>
-        public ulong Id { get; set; }
+        public ulong Id { get; set; } = Id;
 
         /// <summary>
         /// Indicates whether the game has started.
@@ -40,7 +46,7 @@ namespace Commands.Helpers
         /// <summary>
         /// The user who initiated the game.
         /// </summary>
-        public IUser StartUser { get; set; }
+        public IUser StartUser { get; set; } = StartUser;
 
         /// <summary>
         /// The Discord message used for game interaction.
@@ -50,21 +56,7 @@ namespace Commands.Helpers
         /// <summary>
         /// The game mode selected by the player.
         /// </summary>
-        public GameMode Mode { get; set; }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="MasterMindGame"/> class.
-        /// </summary>
-        /// <param name="Id">The unique identifier for the game.</param>
-        /// <param name="StartUser">The user who started the game.</param>
-        /// <param name="mode">The game mode selected by the player.</param>
-        public MasterMindGame(ulong Id, IUser StartUser, GameMode mode)
-        {
-            this.Id = Id;
-            this.StartUser = StartUser;
-            this.Mode = mode;
-            Guesses = new();
-        }
+        public GameMode Mode { get; set; } = mode;
 
         /// <summary>
         /// Generates a string representation of the result for a player's guess.

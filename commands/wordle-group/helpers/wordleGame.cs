@@ -8,19 +8,14 @@ using Games;
 
 namespace Commands.Helpers
 {
-    public class Wordle : Games.Game
+    public class Wordle(IUser player1, IUser player2) : Games.Game(GameType.Wordle, onePerChannel, TimeSpan.FromMinutes(10), player1, player2)
     {
         public override string Title { get; } = "Wordle";
         private static readonly bool onePerChannel = true;
 
         public string Word { get; set; }
-        public List<(string Result, string Guess)> Guesses { get; set; }
+        public List<(string Result, string Guess)> Guesses { get; set; } = [];
         public int GuessesLeft { get; set; } = WordleMethods.GuessCount;
-
-        public Wordle(IUser player1, IUser player2) : base(GameType.Wordle, onePerChannel, TimeSpan.FromMinutes(10), player1, player2)
-        {
-            Guesses = new();
-        }
 
         public override async Task StartBotGame(SocketInteraction interaction)
         {
