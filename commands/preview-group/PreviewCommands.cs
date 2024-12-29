@@ -226,7 +226,7 @@ namespace Commands
                 }
                 else
                 {
-                    await RespondAsync(text: "❌ Unable to fetch message preview.\n- This probably means Bob is not in the server of the given message.\n- It could mean that Bob needs the permissions **View Channel** or **View Message History** in the channel of the given message.\n- It could also mean the message has no text, and no embed with a title or description.", ephemeral: true);
+                    await RespondAsync(text: "❌ Unable to fetch message preview.\n- This probably means Bob is not in the server of the given message.\n- It could mean that Bob needs the permissions `View Channel` or `View Message History` in the channel of the given message.\n- It could also mean the message has no text, and no embed with a title or description.", ephemeral: true);
                 }
             }
             catch
