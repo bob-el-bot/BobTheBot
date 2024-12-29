@@ -153,7 +153,7 @@ namespace Commands
 
             try
             {
-                content = await GetFromAPI($"https://api.quotable.io/quotes/random?tags={prompt}", AcceptTypes.application_json);
+                content = await GetFromAPI($"http://api.quotable.io/quotes/random?tags={prompt}", AcceptTypes.application_json);
             }
             catch (HttpRequestException ex)
             {
@@ -177,7 +177,7 @@ namespace Commands
             else
             {
                 // Respond if no quotes match the prompt
-                await RespondAsync(text: $"❌ The prompt: {prompt} was not recognized. Use `/quote-prompts` to see all valid prompts.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await RespondAsync(text: $"❌ The prompt: {prompt} was not recognized. Use `/quote-prompts` to see all valid prompts.", ephemeral: true);
             }
         }
 
