@@ -56,7 +56,7 @@ namespace Commands
                 int year = random.Next(earliestYear, latestYear + 1);
 
                 // Pick Month
-                (string name, int days)[] months = { ("January", 31), ("February", 28), ("March", 31), ("April", 30), ("May", 31), ("June", 30), ("July", 31), ("August", 31), ("September", 30), ("October", 31), ("November", 30), ("December", 31) };
+                (string name, int days)[] months = [("January", 31), ("February", 28), ("March", 31), ("April", 30), ("May", 31), ("June", 30), ("July", 31), ("August", 31), ("September", 30), ("October", 31), ("November", 30), ("December", 31)];
                 (string name, int days) = months[random.Next(0, months.Length)];
 
                 // Pick Day
@@ -70,7 +70,7 @@ namespace Commands
         public async Task Magic8Ball(string prompt)
         {
             // Possible Answers
-            string[] results = { "'no'", "'yes'", "'maybe'", "'ask again'", "'probably not'", "'affirmative'", "'it is certain'", "'very doubtful'", "'regretfully.. yes'", "'try again later...'" };
+            string[] results = ["'no'", "'yes'", "'maybe'", "'ask again'", "'probably not'", "'affirmative'", "'it is certain'", "'very doubtful'", "'regretfully.. yes'", "'try again later...'"];
 
             // Respond
             string formattedText = $"🎱 **{results[random.Next(0, results.Length)]}** in response to {prompt}";
@@ -87,11 +87,7 @@ namespace Commands
         [SlashCommand("choose", "Can't make up your mind? Bob can for you!")]
         public async Task Pick(string option1, string option2, string option3 = "", string option4 = "", string option5 = "")
         {
-            List<string> choices = new()
-        {
-            option1,
-            option2
-        };
+            List<string> choices =[ option1, option2 ];
             AddChoice(option3, choices);
             AddChoice(option4, choices);
             AddChoice(option5, choices);
@@ -255,7 +251,7 @@ namespace Commands
             var jsonData = JsonNode.Parse(content).AsObject();
             var image = jsonData["url"].ToString();
 
-            string[] dogEmojis = { "🐕", "🐶", "🐕‍🦺", "🐩" };
+            string[] dogEmojis = ["🐕", "🐶", "🐕‍🦺", "🐩"];
 
             await RespondAsync(text: $"{dogEmojis[random.Next(0, dogEmojis.Length)]}[dog]({image})");
         }

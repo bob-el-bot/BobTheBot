@@ -90,7 +90,7 @@ namespace Commands
             StringBuilder response = new();
             response.Append(Context.User.Mention + " *hugs* " + person1.Mention);
 
-            SocketUser[] people = { person2, person3, person4, person5 };
+            SocketUser[] people = [person2, person3, person4, person5];
 
             for (int i = 0; i < people.Length; i++)
             {
@@ -160,7 +160,7 @@ namespace Commands
 
                     // Prepare Position
                     string[] coords = coordinate.Split('-');
-                    int[] position = { Convert.ToInt16(coords[0]), Convert.ToInt16(coords[1]) };
+                    int[] position = [Convert.ToInt16(coords[0]), Convert.ToInt16(coords[1])];
 
                     // Check if the chosen move is valid and within bounds
                     if (game.Grid[position[0], position[1]] == 0)
@@ -321,7 +321,7 @@ namespace Commands
                     }
                     else
                     {
-                        string[] options = { "🪨", "📃", "✂️" };
+                        string[] options = ["🪨", "📃", "✂️"];
                         await component.RespondAsync($"You picked {options[choice]}", ephemeral: true);
                     }
                 }
@@ -885,8 +885,8 @@ namespace Commands
                     }
                 };
 
-                string[] possibleOptions = { option1, option2, option3, option4 };
-                string[] optionLabels = { "1️⃣", "2️⃣", "3️⃣", "4️⃣" };
+                string[] possibleOptions = [option1, option2, option3, option4];
+                string[] optionLabels = ["1️⃣", "2️⃣", "3️⃣", "4️⃣"];
                 int index = 0;
                 foreach (string option in possibleOptions)
                 {
