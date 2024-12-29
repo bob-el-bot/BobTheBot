@@ -37,7 +37,7 @@ namespace Commands.Helpers
             Expired += Challenge.ExpireGame;
 
             // Format Message
-            var components = new ComponentBuilder().WithButton(label: "🪨 Rock", customId: $"rps:0:{Id}", style: ButtonStyle.Secondary)
+            var components = new ComponentBuilder().WithButton(label: "Rock", emote: Emote.Parse("<:rock:1323055527290474588>"), customId: $"rps:0:{Id}", style: ButtonStyle.Secondary)
             .WithButton(label: "📃 Paper", customId: $"rps:1:{Id}", style: ButtonStyle.Secondary)
             .WithButton(label: "✂️ Scissors", customId: $"rps:2:{Id}", style: ButtonStyle.Secondary);
 
@@ -53,7 +53,7 @@ namespace Commands.Helpers
             UpdateExpirationTime(TimeSpan.FromMinutes(1));
 
             // Format Message
-            var components = new ComponentBuilder().WithButton(label: "🪨 Rock", customId: $"rps:0:{Id}", style: ButtonStyle.Secondary)
+            var components = new ComponentBuilder().WithButton(label: "Rock", emote: Emote.Parse("<:rock:1323055527290474588>"), customId: $"rps:0:{Id}", style: ButtonStyle.Secondary)
             .WithButton(label: "📃 Paper", customId: $"rps:1:{Id}", style: ButtonStyle.Secondary)
             .WithButton(label: "✂️ Scissors", customId: $"rps:2:{Id}", style: ButtonStyle.Secondary);
 
