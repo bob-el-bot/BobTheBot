@@ -153,7 +153,7 @@ namespace Commands
 
             try
             {
-                content = await GetFromAPI($"https://api.quotable.io/quotes/random?tags={prompt}", AcceptTypes.application_json);
+                content = await GetFromAPI($"http://api.quotable.io/quotes/random?tags={prompt}", AcceptTypes.application_json);
             }
             catch (HttpRequestException ex)
             {
