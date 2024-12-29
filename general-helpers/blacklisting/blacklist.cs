@@ -85,7 +85,7 @@ namespace Moderation
                     Placeholder = "Punish for...",
                 };
 
-                foreach (var time in Enum.GetValues(typeof(Punishment)))
+                foreach (var time in Enum.GetValues<Punishment>())
                 {
                     selectMenu.AddOption(new SelectMenuOptionBuilder
                     {

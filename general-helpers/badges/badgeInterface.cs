@@ -15,7 +15,7 @@ namespace BadgeInterface
     /// <summary>
     /// Provides methods for managing user badges.
     /// </summary>
-    public static class Badge
+    public static partial class Badge
     {
         /// <summary>
         /// Retrieves information about all available badges.
@@ -25,7 +25,7 @@ namespace BadgeInterface
         {
             StringBuilder stringBuilder = new();
 
-            foreach (Badges.Badges badge in Enum.GetValues(typeof(Badges.Badges)))
+            foreach (Badges.Badges badge in Enum.GetValues<Badges.Badges>())
             {
                 stringBuilder.AppendLine($"**{GetBadgeEmoji(badge)} {GetBadgeDisplayName(badge)}** - {GetBadgeInfoString(badge)}\n");
             }
@@ -103,9 +103,9 @@ namespace BadgeInterface
         /// <returns>A list of badges that the user has earned.</returns>
         public static List<Badges.Badges> GetUserBadges(ulong userBadges)
         {
-            List<Badges.Badges> userBadgesList = new();
+            List<Badges.Badges> userBadgesList = [];
 
-            foreach (Badges.Badges badge in Enum.GetValues(typeof(Badges.Badges)))
+            foreach (Badges.Badges badge in Enum.GetValues<Badges.Badges>())
             {
                 if ((userBadges & (ulong)badge) == (ulong)badge)
                 {
@@ -203,7 +203,7 @@ namespace BadgeInterface
         private static int GetBadgeTier(Badges.Badges badge)
         {
             string badgeName = badge.ToString();
-            Match match = Regex.Match(badgeName, @"\d$");
+            Match match = MyRegex().Match(badgeName);
             if (match.Success)
             {
                 return Convert.ToInt32(match.Value);
@@ -327,5 +327,8 @@ namespace BadgeInterface
 
             return users;
         }
+
+        [GeneratedRegex(@"\d$")]
+        private static partial Regex MyRegex();
     }
 }

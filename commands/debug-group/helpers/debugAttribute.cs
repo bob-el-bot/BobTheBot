@@ -5,14 +5,9 @@ using Discord.Interactions;
 
 namespace Commands.Attributes
 {
-    public class RequireGuildAttribute : PreconditionAttribute
+    public class RequireGuildAttribute(ulong gId) : PreconditionAttribute
     {
-        public RequireGuildAttribute(ulong gId)
-        {
-            GuildId = gId;
-        }
-
-        public ulong? GuildId { get; }
+        public ulong? GuildId { get; } = gId;
 
         public override Task<PreconditionResult> CheckRequirementsAsync(IInteractionContext context, ICommandInfo commandInfo, IServiceProvider services)
         {

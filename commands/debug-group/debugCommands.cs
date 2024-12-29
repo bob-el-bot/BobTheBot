@@ -32,8 +32,8 @@ namespace Commands
         public class LogGroup : InteractionModuleBase<SocketInteractionContext>
         {
             private static readonly ulong DebugServerCategoryId = 1181420597138427967;
-            public static Dictionary<ulong, IGuild> ServersToLog { get; set; } = new();
-            public static Dictionary<ulong, RestTextChannel> ServerLogChannels { get; set; } = new();
+            public static Dictionary<ulong, IGuild> ServersToLog { get; set; } = [];
+            public static Dictionary<ulong, RestTextChannel> ServerLogChannels { get; set; } = [];
             public static bool LogEverything { get; set; } = false;
 
             [SlashCommand("server", "Log all usage of Bob from a specific server (toggleable).")]
@@ -392,7 +392,7 @@ namespace Commands
                     return;
                 }
 
-                IGuild discordServer = Bot.Client.GetGuild(parsedId);
+                SocketGuild discordServer = Bot.Client.GetGuild(parsedId);
 
                 if (discordServer == null)
                 {

@@ -124,13 +124,13 @@ namespace Commands.Helpers
             }
 
             // Directions: horizontal, vertical, diagonal (bottom-left to top-right), diagonal (top-left to bottom-right)
-            int[][] directions = new int[][]
-            {
-                new [] { 1, 0 },   // Horizontal
-                new [] { 0, 1 },   // Vertical
-                new [] { 1, 1 },   // Diagonal (bottom-left to top-right)
-                new [] { 1, -1 }   // Diagonal (top-left to bottom-right)
-            };
+            int[][] directions =
+            [
+                [1, 0],   // Horizontal
+                [0, 1],   // Vertical
+                [1, 1],   // Diagonal (bottom-left to top-right)
+                [1, -1]   // Diagonal (top-left to bottom-right)
+            ];
 
             foreach (var dir in directions)
             {
@@ -163,24 +163,6 @@ namespace Commands.Helpers
             }
 
             return 0;
-        }
-
-        private static int CountConsecutiveTokens(int[,] grid, int startCol, int startRow, int colDir, int rowDir, int player)
-        {
-            int count = 0;
-            int columns = grid.GetLength(0);
-            int rows = grid.GetLength(1);
-            int col = startCol + colDir;
-            int row = startRow + rowDir;
-
-            while (col >= 0 && col < columns && row >= 0 && row < rows && grid[col, row] == player)
-            {
-                count++;
-                col += colDir;
-                row += rowDir;
-            }
-
-            return count;
         }
 
         /// <summary>
@@ -278,7 +260,7 @@ namespace Commands.Helpers
                         if (score > bestScore)
                         {
                             bestScore = score;
-                            bestMove = new[] { col, row };
+                            bestMove = [col, row];
                         }
                         alpha = Math.Max(alpha, score);
                     }
@@ -287,7 +269,7 @@ namespace Commands.Helpers
                         if (score < bestScore)
                         {
                             bestScore = score;
-                            bestMove = new[] { col, row };
+                            bestMove = [col, row];
                         }
                         beta = Math.Min(beta, score);
                     }
@@ -309,13 +291,13 @@ namespace Commands.Helpers
             int opponent = player == 1 ? 2 : 1;            // The opponent player
 
             // Define directions to check: horizontal, vertical, diagonal (both directions)
-            int[][] directions = new int[][]
-            {
-                new[] { 1, 0 }, // Horizontal
-                new[] { 0, 1 }, // Vertical
-                new[] { 1, 1 }, // Diagonal (bottom-left to top-right)
-                new[] { 1, -1 } // Diagonal (top-left to bottom-right)
-            };
+            int[][] directions =
+            [
+                [1, 0], // Horizontal
+                [0, 1], // Vertical
+                [1, 1], // Diagonal (bottom-left to top-right)
+                [1, -1] // Diagonal (top-left to bottom-right)
+            ];
 
             foreach (var dir in directions)
             {
@@ -431,7 +413,7 @@ namespace Commands.Helpers
         private static int[] GetRandomValidMove(int[,] grid)
         {
             int columns = grid.GetLength(0);
-            List<int> validCols = new();
+            List<int> validCols = [];
 
             for (int col = 0; col < columns; col++)
             {
@@ -442,7 +424,7 @@ namespace Commands.Helpers
             }
 
             int selectedCol = validCols[random.Next(validCols.Count)];
-            return new[] { selectedCol, GetNextAvailableRow(grid, selectedCol) };
+            return [selectedCol, GetNextAvailableRow(grid, selectedCol)];
         }
     }
 }

@@ -1,14 +1,8 @@
 namespace Commands.Helpers
 {
-    public class HeartLevel
+    public class HeartLevel(string heart, int min)
     {
-        public string Heart { get; set; }
-        public int Min { get; set; }
-
-        public HeartLevel(string heart, int min)
-        {
-            this.Heart = heart;
-            this.Min = min;
-        }
+        public string Heart { get; set; } = heart;
+        public int Min { get; set; } = min;
     }
 }

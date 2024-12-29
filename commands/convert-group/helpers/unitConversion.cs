@@ -65,18 +65,18 @@ namespace Commands.Helpers
         {
             return unitType switch
             {
-                UnitType.Length => $"{string.Join(", ", Enum.GetNames(typeof(LengthUnit)))}.\n- Plural forms are accepted such as meters.\n- Abbreviated forms are accepted like m (these are case sensitive).",
-                UnitType.Mass => $"{string.Join(", ", Enum.GetNames(typeof(MassUnit)))}.\n- Plural forms are accepted such as kilograms.\n- Abbreviated forms are accepted like kg (these are case sensitive).",
-                UnitType.Volume => $"{string.Join(", ", Enum.GetNames(typeof(VolumeUnit)))}.\n- Plural forms are accepted such as liters.\n- Abbreviated forms are accepted like L (these are case sensitive).\n- Special characters are also accepted like m³",
-                UnitType.Area => $"{string.Join(", ", Enum.GetNames(typeof(AreaUnit)))}.\n- Plural forms are accepted such as square meters.\n- Abbreviated forms are accepted like sq m (these are case sensitive).\n- Special characters are also accepted like m²",
-                UnitType.Time => $"{string.Join(", ", Enum.GetNames(typeof(DurationUnit)))}.\n- Plural forms are accepted such as seconds.\n- Abbreviated forms are accepted like s (these are case sensitive).",
-                UnitType.Temperature => $"{string.Join(", ", Enum.GetNames(typeof(TemperatureUnit)))}.\n- Plural forms are accepted such as degrees Celsius.\n- Abbreviated forms are accepted like C (these are case sensitive).\n- Special characters are also accepted like °C",
-                UnitType.Pressure => $"{string.Join(", ", Enum.GetNames(typeof(PressureUnit)))}.\n- Plural forms are accepted such as pascals.\n- Abbreviated forms are accepted like Pa (these are case sensitive).",
-                UnitType.Speed => $"{string.Join(", ", Enum.GetNames(typeof(SpeedUnit)))}.\n- Plural forms are accepted such as meters per second.\n- Abbreviated forms are accepted like m/s (these are case sensitive).",
-                UnitType.Energy => $"{string.Join(", ", Enum.GetNames(typeof(EnergyUnit)))}.\n- Plural forms are accepted such as joules.\n- Abbreviated forms are accepted like J (these are case sensitive).",
-                UnitType.Storage => $"{string.Join(", ", Enum.GetNames(typeof(InformationUnit)))}.\n- Plural forms are accepted such as bytes.\n- Abbreviated forms are accepted like B (these are case sensitive).",
-                UnitType.Angle => $"{string.Join(", ", Enum.GetNames(typeof(AngleUnit)))}.\n- Plural forms are accepted such as degrees.\n- Abbreviated forms are accepted like deg (these are case sensitive).\n- Special characters are also accepted like °.",
-                UnitType.Frequency => $"{string.Join(", ", Enum.GetNames(typeof(FrequencyUnit)))}.\n- Plural forms are accepted such as hertz.\n- Abbreviated forms are accepted like Hz (these are case sensitive).",
+                UnitType.Length => $"{string.Join(", ", Enum.GetNames<LengthUnit>())}.\n- Plural forms are accepted such as meters.\n- Abbreviated forms are accepted like m (these are case sensitive).",
+                UnitType.Mass => $"{string.Join(", ", Enum.GetNames<MassUnit>())}.\n- Plural forms are accepted such as kilograms.\n- Abbreviated forms are accepted like kg (these are case sensitive).",
+                UnitType.Volume => $"{string.Join(", ", Enum.GetNames<VolumeUnit>())}.\n- Plural forms are accepted such as liters.\n- Abbreviated forms are accepted like L (these are case sensitive).\n- Special characters are also accepted like m³",
+                UnitType.Area => $"{string.Join(", ", Enum.GetNames<AreaUnit>())}.\n- Plural forms are accepted such as square meters.\n- Abbreviated forms are accepted like sq m (these are case sensitive).\n- Special characters are also accepted like m²",
+                UnitType.Time => $"{string.Join(", ", Enum.GetNames<DurationUnit>())}.\n- Plural forms are accepted such as seconds.\n- Abbreviated forms are accepted like s (these are case sensitive).",
+                UnitType.Temperature => $"{string.Join(", ", Enum.GetNames<TemperatureUnit>())}.\n- Plural forms are accepted such as degrees Celsius.\n- Abbreviated forms are accepted like C (these are case sensitive).\n- Special characters are also accepted like °C",
+                UnitType.Pressure => $"{string.Join(", ", Enum.GetNames<PressureUnit>())}.\n- Plural forms are accepted such as pascals.\n- Abbreviated forms are accepted like Pa (these are case sensitive).",
+                UnitType.Speed => $"{string.Join(", ", Enum.GetNames<SpeedUnit>())}.\n- Plural forms are accepted such as meters per second.\n- Abbreviated forms are accepted like m/s (these are case sensitive).",
+                UnitType.Energy => $"{string.Join(", ", Enum.GetNames<EnergyUnit>())}.\n- Plural forms are accepted such as joules.\n- Abbreviated forms are accepted like J (these are case sensitive).",
+                UnitType.Storage => $"{string.Join(", ", Enum.GetNames<InformationUnit>())}.\n- Plural forms are accepted such as bytes.\n- Abbreviated forms are accepted like B (these are case sensitive).",
+                UnitType.Angle => $"{string.Join(", ", Enum.GetNames<AngleUnit>())}.\n- Plural forms are accepted such as degrees.\n- Abbreviated forms are accepted like deg (these are case sensitive).\n- Special characters are also accepted like °.",
+                UnitType.Frequency => $"{string.Join(", ", Enum.GetNames<FrequencyUnit>())}.\n- Plural forms are accepted such as hertz.\n- Abbreviated forms are accepted like Hz (these are case sensitive).",
                 _ => "No valid units available.",
             };
         }

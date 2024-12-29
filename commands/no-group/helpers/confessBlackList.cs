@@ -27,7 +27,7 @@ namespace Commands.Helpers
     /// <summary>
     /// Provides methods for filtering messages for banned words and other criteria.
     /// </summary>
-    public static class ConfessFiltering
+    public static partial class ConfessFiltering
     {
         /// <summary>
         /// Warning message to be appended when a link is detected in the message.
@@ -38,10 +38,10 @@ namespace Commands.Helpers
         /// </summary>
         public static readonly string notificationMessage = "**Someone sent you a message:**";
 
-        private static readonly Regex UrlRegex = new(
-            @"(http|https|ftp|ftps):\/\/([\w.-]+)\.([a-zA-Z]{2,})([\w\.\&\?\:\%\=\#\/\-]*)?",
-            RegexOptions.IgnoreCase | RegexOptions.Compiled
-        );
+        [GeneratedRegex(@"(http|https|ftp|ftps):\/\/([\w\p{L}\p{N}\.-]+)\.([\p{L}\p{N}]{2,})([^\s]*)?", RegexOptions.IgnoreCase | RegexOptions.Compiled, "en-US")]
+        private static partial Regex GetUrlRegex();
+
+        private static readonly Regex UrlRegex = GetUrlRegex();
 
         /// <summary>
         /// Determines whether the provided string is considered "blank."
@@ -93,8 +93,8 @@ namespace Commands.Helpers
         /// <returns>A <see cref="FilterResult"/> containing the lists of blacklisted words and words to censor.</returns>
         public static FilterResult ContainsBannedWords(string message)
         {
-            List<string> foundWords = new();
-            List<string> wordsToMarkSpoilers = new();
+            List<string> foundWords = [];
+            List<string> wordsToMarkSpoilers = [];
 
             foreach (string word in message.Split(' ', StringSplitOptions.RemoveEmptyEntries))
             {
@@ -209,7 +209,7 @@ namespace Commands.Helpers
             "son-of-a-bitch"
         };
 
-        public static readonly HashSet<string> MaliciousWords = new (StringComparer.OrdinalIgnoreCase)
+        public static readonly HashSet<string> MaliciousWords = new(StringComparer.OrdinalIgnoreCase)
         {
             "BobTheBot",
         };

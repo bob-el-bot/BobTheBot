@@ -8,7 +8,7 @@ using Time.Timestamps;
 
 namespace Commands.Helpers
 {
-    public class RockPaperScissors : Games.Game
+    public class RockPaperScissors(IUser player1, IUser player2) : Games.Game(GameType.RockPaperScissors, onePerChannel, TimeSpan.FromMinutes(5), player1, player2)
     {
         public override string Title { get; } = "Rock Paper Scissors";
         private static readonly bool onePerChannel = false;
@@ -17,11 +17,6 @@ namespace Commands.Helpers
         public int Player1Choice { get; set; } = -1;
         public int Player2Choice { get; set; } = -1;
         private static readonly Random random = new();
-
-        public RockPaperScissors(IUser player1, IUser player2) : base(GameType.RockPaperScissors, onePerChannel, TimeSpan.FromMinutes(5), player1, player2)
-        {
-
-        }
 
         public override async Task StartBotGame(SocketInteraction interaction)
         {
@@ -105,7 +100,7 @@ namespace Commands.Helpers
                     await Challenge.UpdateUserStats(this, outcome);
                 }
 
-                string[] options = { "🪨", "📃", "✂️" };
+                string[] options = ["🪨", "📃", "✂️"];
                 await interaction.UpdateAsync(x => { x.Embed = Challenge.CreateEmbed($"{Challenge.CreateFinalTitle(this, outcome)}\n{options[Player1Choice]} **VS** {options[Player2Choice]}", GetColor(outcome), Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome)); x.Components = null; });
             }
             catch (Exception)

@@ -210,10 +210,7 @@ namespace Commands
 
             using var context = new BobEntities();
             IScheduledItem scheduledItem = await context.GetScheduledMessage(parsedId);
-            if (scheduledItem == null)
-            {
-                scheduledItem = await context.GetScheduledAnnouncement(parsedId);
-            }
+            scheduledItem ??= await context.GetScheduledAnnouncement(parsedId);
 
             if (scheduledItem == null)
             {

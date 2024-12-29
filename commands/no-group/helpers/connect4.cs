@@ -8,7 +8,7 @@ using Time.Timestamps;
 
 namespace Commands.Helpers
 {
-    public class Connect4 : Games.Game
+    public class Connect4(IUser player1, IUser player2) : Games.Game(GameType.Connect4, onePerChannel, TimeSpan.FromMinutes(5), player1, player2)
     {
         public override string Title { get; } = "Connect 4";
         private static readonly bool onePerChannel = false;
@@ -18,11 +18,6 @@ namespace Commands.Helpers
         public int LastMoveRow { get; set; }
         public bool IsPlayer1Turn { get; set; }
         public int Turns { get; set; }
-
-        public Connect4(IUser player1, IUser player2) : base(GameType.Connect4, onePerChannel, TimeSpan.FromMinutes(5), player1, player2)
-        {
-
-        }
 
         public override async Task StartBotGame(SocketInteraction interaction)
         {

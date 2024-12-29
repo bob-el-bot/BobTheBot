@@ -8,7 +8,7 @@ namespace Commands.Helpers
     {
         public static string FormatDescription(string description)
         {
-            string[] delimiters = { " - ", "### ", };
+            string[] delimiters = [" - ", "### ",];
             string pattern = string.Join("|", Array.ConvertAll(delimiters, Regex.Escape));
             string[] lines = Regex.Split(description, "(?=" + pattern + ")");
 

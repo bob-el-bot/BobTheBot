@@ -26,7 +26,7 @@ namespace Commands.Helpers
     public static class Schedule
     {
         // Dictionary to keep track of scheduled tasks using their message ID
-        public static readonly Dictionary<ulong, CancellationTokenSource> ScheduledTasks = new();
+        public static readonly Dictionary<ulong, CancellationTokenSource> ScheduledTasks = [];
 
         private static readonly TimeSpan MaxDelay = TimeSpan.FromDays(30);
 
@@ -134,12 +134,11 @@ namespace Commands.Helpers
             try
             {
                 using var context = new BobEntities();
-                var channel = Bot.Client.GetChannel(scheduledItem.ChannelId) as IMessageChannel;
 
                 var dbUser = await context.GetUser(scheduledItem.UserId);
                 bool userChanged = false; // Flag to track if user properties change
 
-                if (channel == null)
+                if (Bot.Client.GetChannel(scheduledItem.ChannelId) is not IMessageChannel channel)
                 {
                     Console.WriteLine($"Channel with ID: {scheduledItem.ChannelId} not found.");
                     if (dbUser.TotalScheduledMessages > 0)

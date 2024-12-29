@@ -50,7 +50,7 @@ public static class CachedUsers
     public static SocketUser GetRandomMember(SocketInteractionContext ctx)
     {
         var members = GetMembers(ctx);
-        if (members.Any())
+        if (members.Count != 0)
         {
             var random = new Random();
             return members[random.Next(members.Count)];
@@ -81,6 +81,6 @@ public static class CachedUsers
         }
 
         // Default fallback if no context found (this case should never be hit if context is valid)
-        return new List<SocketUser>();
+        return [];
     }
 }
