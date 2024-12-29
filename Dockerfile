@@ -1,5 +1,5 @@
 # Use the official .NET image as a base image for building the app
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -15,7 +15,7 @@ COPY . ./
 RUN dotnet publish -c Release -o out
 
 # Use a runtime-only .NET image for the final image (smaller size)
-FROM mcr.microsoft.com/dotnet/runtime:6.0
+FROM mcr.microsoft.com/dotnet/runtime:9.0
 
 # Install necessary Linux packages (for fonts and graphical capabilities)
 RUN apt-get update && \
