@@ -8,6 +8,7 @@ using System.Security.Authentication;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Web;
 using Discord;
 using HtmlAgilityPack;
 
@@ -147,7 +148,6 @@ namespace Commands.Helpers
             List<LinkInfo> trail = [];
             int redirectCount = 0;
             Random random = new();
-            string actualTlsVersion = string.Empty;
 
             while (redirectCount <= maximumRedirectCount && !string.IsNullOrWhiteSpace(link))
             {
@@ -174,9 +174,6 @@ namespace Commands.Helpers
                     using var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
                     bool hasCookies = response.Headers.TryGetValues("Set-Cookie", out _);
 
-                    // Capture the TLS version from the response
-                    actualTlsVersion = response.Version.ToString(); // This captures the version used for the response
-
                     if (response.IsSuccessStatusCode)
                     {
                         string code = await response.Content.ReadAsStringAsync();
@@ -184,6 +181,7 @@ namespace Commands.Helpers
                         doc.LoadHtml(code);
 
                         string jsRedirect = GetJavaScriptRedirectLink(code);
+                        string urlRedirect = GetUrlRedirectInformation(link);
                         HtmlNode metaTag = doc.DocumentNode.SelectSingleNode("//meta[@http-equiv='refresh']");
 
                         // Process various cases
@@ -230,6 +228,21 @@ namespace Commands.Helpers
                                 IsShortened = IsShortenedUrl(link, true)
                             });
                             link = jsRedirect;
+                            redirectCount++;
+                        }
+                        else if (urlRedirect != null)
+                        {
+                            trail.Add(new LinkInfo
+                            {
+                                Link = $"{link}",
+                                StatusCode = response.StatusCode,
+                                SpecialCase = "URL Redirect",
+                                ContainsCookies = hasCookies,
+                                IsRickRoll = HasRickRoll(link),
+                                IsRedirect = true,
+                                IsShortened = IsShortenedUrl(link, true)
+                            });
+                            link = urlRedirect;
                             redirectCount++;
                         }
                         else
@@ -281,7 +294,6 @@ namespace Commands.Helpers
                     // Log the exception or handle it appropriately
                     Console.WriteLine($"Exception while processing link {link}: {ex.Message}");
                     Console.WriteLine($"Inner exception: {ex.InnerException?.Message}");
-                    Console.WriteLine($"Actual TLS Version: {actualTlsVersion}");
                     link = null;
                 }
             }
@@ -300,12 +312,16 @@ namespace Commands.Helpers
         private static bool HasRickRoll(string url)
         {
             if (string.IsNullOrWhiteSpace(url))
+            {
                 return false;
+            }
 
             // Extract video ID using a regex
             var videoIdMatch = Regex.Match(url, @"(?:v=|\/)([a-zA-Z0-9_-]{11})");
             if (!videoIdMatch.Success)
+            {
                 return false;
+            }
 
             string videoId = videoIdMatch.Groups[1].Value;
 
@@ -318,6 +334,47 @@ namespace Commands.Helpers
             // GitHub repository URL pattern (example)
             string gitHubRepoPattern = @"https://github.com/.*/.*";
             return Regex.IsMatch(url, gitHubRepoPattern);
+        }
+
+        private static string GetUrlRedirectInformation(string url)
+        {
+            try
+            {
+                // Parse the URL
+                Uri uri = new(url);
+                string query = uri.Query;
+
+                if (string.IsNullOrEmpty(query))
+                {
+                    return null;
+                }
+
+                // Parse query parameters
+                var queryParameters = HttpUtility.ParseQueryString(query);
+
+                // Check for common redirect keywords
+                foreach (string key in queryParameters.AllKeys)
+                {
+                    if (key != null && key.Contains("redirect", StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        // Return the value associated with the redirect key
+                        return queryParameters[key];
+                    }
+
+                    // Correct check for the 'q' parameter (destination URL in YouTube)
+                    if (key.Equals("q", StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        return queryParameters[key];
+                    }
+                }
+
+                return null; // No redirect information found
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error analyzing URL: {ex.Message}");
+                return null;
+            }
         }
 
         private static string GetJavaScriptRedirectLink(string htmlContent)
