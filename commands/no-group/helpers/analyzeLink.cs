@@ -3,17 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Security;
-using System.Security.Authentication;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Web;
 using Discord;
 using HtmlAgilityPack;
 
 namespace Commands.Helpers
 {
-    public class Analyze
+    public partial class Analyze
     {
         public static readonly int maximumRedirectCount = 4;
 
@@ -86,9 +85,40 @@ namespace Commands.Helpers
                 linkCount++;
             }
 
+            string title = "🕵️ Analysis of ";
+            int maxLength = 256;
+
+            // Calculate available space for the title
+            int linkLengthWithBrackets = link.Length + 2; // Account for "< >"
+            int availableSpace = maxLength - linkLengthWithBrackets;
+
+            if (availableSpace < 0)
+            {
+                // If the link alone exceeds the max length, truncate the link
+                int maxLinkLength = maxLength - 5; // Reserve space for "<...>"
+                if (maxLinkLength > 0)
+                {
+                    link = link[..Math.Min(maxLinkLength, link.Length)] + "..."; // Truncate and indicate with "..."
+                }
+                else
+                {
+                    throw new ArgumentException("The provided link is too long to fit within the title constraints.");
+                }
+                availableSpace = 0; // No space left for the title
+            }
+
+            // Truncate the title if necessary
+            if (title.Length > availableSpace)
+            {
+                title = title[..availableSpace];
+            }
+
+            // Construct the final title with the link wrapped in <>
+            title += $"{link}";
+
             var embed = new EmbedBuilder
             {
-                Title = $"🕵️ Analysis of <{link}>",
+                Title = title,
                 Description = description.ToString(),
                 Footer = new EmbedFooterBuilder
                 {
@@ -116,7 +146,6 @@ namespace Commands.Helpers
             List<LinkInfo> trail = [];
             int redirectCount = 0;
             Random random = new();
-            string actualTlsVersion = string.Empty;
 
             while (redirectCount <= maximumRedirectCount && !string.IsNullOrWhiteSpace(link))
             {
@@ -143,18 +172,8 @@ namespace Commands.Helpers
                     using var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
                     bool hasCookies = response.Headers.TryGetValues("Set-Cookie", out _);
 
-                    // Capture the TLS version from the response
-                    actualTlsVersion = response.Version.ToString(); // This captures the version used for the response
-
                     if (response.IsSuccessStatusCode)
                     {
-                        string code = await response.Content.ReadAsStringAsync();
-                        HtmlDocument doc = new();
-                        doc.LoadHtml(code);
-
-                        string jsRedirect = GetJavaScriptRedirectLink(code);
-                        HtmlNode metaTag = doc.DocumentNode.SelectSingleNode("//meta[@http-equiv='refresh']");
-
                         // Process various cases
                         if (IsGitHubRepository(link))
                         {
@@ -168,8 +187,13 @@ namespace Commands.Helpers
                                 Failed = false
                             });
                             link = null;
+                            continue;
                         }
-                        else if (metaTag != null)
+
+                        HtmlDocument doc = new();
+                        HtmlNode metaTag = doc.DocumentNode.SelectSingleNode("//meta[@http-equiv='refresh']");
+
+                        if (metaTag != null)
                         {
                             string content = metaTag.GetAttributeValue("content", "");
                             string url = GetUrlFromContent(content);
@@ -185,8 +209,14 @@ namespace Commands.Helpers
                             });
                             link = url;
                             redirectCount++;
+                            continue;
                         }
-                        else if (jsRedirect != null)
+
+                        string code = await response.Content.ReadAsStringAsync();
+                        doc.LoadHtml(code);
+                        string jsRedirect = GetJavaScriptRedirectLink(code);
+
+                        if (jsRedirect != null)
                         {
                             trail.Add(new LinkInfo
                             {
@@ -200,21 +230,39 @@ namespace Commands.Helpers
                             });
                             link = jsRedirect;
                             redirectCount++;
+                            continue;
                         }
-                        else
+
+                        string urlRedirect = GetUrlRedirectInformation(link);
+
+                        if (urlRedirect != null)
                         {
-                            bool isRedirect = (int)response.StatusCode >= 300 && (int)response.StatusCode <= 308;
                             trail.Add(new LinkInfo
                             {
                                 Link = $"{link}",
                                 StatusCode = response.StatusCode,
+                                SpecialCase = "URL Redirect",
                                 ContainsCookies = hasCookies,
                                 IsRickRoll = HasRickRoll(link),
-                                IsRedirect = isRedirect,
-                                IsShortened = IsShortenedUrl(link, isRedirect)
+                                IsRedirect = true,
+                                IsShortened = IsShortenedUrl(link, true)
                             });
-                            link = null;
+                            link = urlRedirect;
+                            redirectCount++;
+                            continue;
                         }
+
+                        bool isRedirect = (int)response.StatusCode >= 300 && (int)response.StatusCode <= 308;
+                        trail.Add(new LinkInfo
+                        {
+                            Link = $"{link}",
+                            StatusCode = response.StatusCode,
+                            ContainsCookies = hasCookies,
+                            IsRickRoll = HasRickRoll(link),
+                            IsRedirect = isRedirect,
+                            IsShortened = IsShortenedUrl(link, isRedirect)
+                        });
+                        link = null;
                     }
                     else
                     {
@@ -250,7 +298,6 @@ namespace Commands.Helpers
                     // Log the exception or handle it appropriately
                     Console.WriteLine($"Exception while processing link {link}: {ex.Message}");
                     Console.WriteLine($"Inner exception: {ex.InnerException?.Message}");
-                    Console.WriteLine($"Actual TLS Version: {actualTlsVersion}");
                     link = null;
                 }
             }
@@ -269,12 +316,16 @@ namespace Commands.Helpers
         private static bool HasRickRoll(string url)
         {
             if (string.IsNullOrWhiteSpace(url))
+            {
                 return false;
+            }
 
             // Extract video ID using a regex
-            var videoIdMatch = Regex.Match(url, @"(?:v=|\/)([a-zA-Z0-9_-]{11})");
+            var videoIdMatch = MyRegex().Match(url);
             if (!videoIdMatch.Success)
+            {
                 return false;
+            }
 
             string videoId = videoIdMatch.Groups[1].Value;
 
@@ -287,6 +338,47 @@ namespace Commands.Helpers
             // GitHub repository URL pattern (example)
             string gitHubRepoPattern = @"https://github.com/.*/.*";
             return Regex.IsMatch(url, gitHubRepoPattern);
+        }
+
+        private static string GetUrlRedirectInformation(string url)
+        {
+            try
+            {
+                // Parse the URL
+                Uri uri = new(url);
+                string query = uri.Query;
+
+                if (string.IsNullOrEmpty(query))
+                {
+                    return null;
+                }
+
+                // Parse query parameters
+                var queryParameters = HttpUtility.ParseQueryString(query);
+
+                // Check for common redirect keywords
+                foreach (string key in queryParameters.AllKeys)
+                {
+                    if (key != null && key.Contains("redirect", StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        // Return the value associated with the redirect key
+                        return queryParameters[key];
+                    }
+
+                    // Correct check for the 'q' parameter (destination URL in YouTube)
+                    if (key.Equals("q", StringComparison.CurrentCultureIgnoreCase))
+                    {
+                        return queryParameters[key];
+                    }
+                }
+
+                return null; // No redirect information found
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error analyzing URL: {ex.Message}");
+                return null;
+            }
         }
 
         private static string GetJavaScriptRedirectLink(string htmlContent)
@@ -357,5 +449,8 @@ namespace Commands.Helpers
             }
             return string.Empty;
         }
+
+        [GeneratedRegex(@"(?:v=|\/)([a-zA-Z0-9_-]{11})")]
+        private static partial Regex MyRegex();
     }
 }
