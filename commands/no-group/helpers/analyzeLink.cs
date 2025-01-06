@@ -86,9 +86,40 @@ namespace Commands.Helpers
                 linkCount++;
             }
 
+            string title = "🕵️ Analysis of ";
+            int maxLength = 256;
+
+            // Calculate available space for the title
+            int linkLengthWithBrackets = link.Length + 2; // Account for "< >"
+            int availableSpace = maxLength - linkLengthWithBrackets;
+
+            if (availableSpace < 0)
+            {
+                // If the link alone exceeds the max length, truncate the link
+                int maxLinkLength = maxLength - 5; // Reserve space for "<...>"
+                if (maxLinkLength > 0)
+                {
+                    link = link[..Math.Min(maxLinkLength, link.Length)] + "..."; // Truncate and indicate with "..."
+                }
+                else
+                {
+                    throw new ArgumentException("The provided link is too long to fit within the title constraints.");
+                }
+                availableSpace = 0; // No space left for the title
+            }
+
+            // Truncate the title if necessary
+            if (title.Length > availableSpace)
+            {
+                title = title[..availableSpace];
+            }
+
+            // Construct the final title with the link wrapped in <>
+            title += $"{link}";
+
             var embed = new EmbedBuilder
             {
-                Title = $"🕵️ Analysis of <{link}>",
+                Title = title,
                 Description = description.ToString(),
                 Footer = new EmbedFooterBuilder
                 {
