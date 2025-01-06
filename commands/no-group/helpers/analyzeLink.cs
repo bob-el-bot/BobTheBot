@@ -14,7 +14,7 @@ using HtmlAgilityPack;
 
 namespace Commands.Helpers
 {
-    public class Analyze
+    public partial class Analyze
     {
         public static readonly int maximumRedirectCount = 4;
 
@@ -317,7 +317,7 @@ namespace Commands.Helpers
             }
 
             // Extract video ID using a regex
-            var videoIdMatch = Regex.Match(url, @"(?:v=|\/)([a-zA-Z0-9_-]{11})");
+            var videoIdMatch = MyRegex().Match(url);
             if (!videoIdMatch.Success)
             {
                 return false;
@@ -445,5 +445,8 @@ namespace Commands.Helpers
             }
             return string.Empty;
         }
+
+        [GeneratedRegex(@"(?:v=|\/)([a-zA-Z0-9_-]{11})")]
+        private static partial Regex MyRegex();
     }
 }
