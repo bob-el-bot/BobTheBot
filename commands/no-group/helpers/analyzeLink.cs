@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Net.Security;
-using System.Security.Authentication;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -176,14 +174,6 @@ namespace Commands.Helpers
 
                     if (response.IsSuccessStatusCode)
                     {
-                        string code = await response.Content.ReadAsStringAsync();
-                        HtmlDocument doc = new();
-                        doc.LoadHtml(code);
-
-                        string jsRedirect = GetJavaScriptRedirectLink(code);
-                        string urlRedirect = GetUrlRedirectInformation(link);
-                        HtmlNode metaTag = doc.DocumentNode.SelectSingleNode("//meta[@http-equiv='refresh']");
-
                         // Process various cases
                         if (IsGitHubRepository(link))
                         {
@@ -197,8 +187,13 @@ namespace Commands.Helpers
                                 Failed = false
                             });
                             link = null;
+                            continue;
                         }
-                        else if (metaTag != null)
+
+                        HtmlDocument doc = new();
+                        HtmlNode metaTag = doc.DocumentNode.SelectSingleNode("//meta[@http-equiv='refresh']");
+
+                        if (metaTag != null)
                         {
                             string content = metaTag.GetAttributeValue("content", "");
                             string url = GetUrlFromContent(content);
@@ -214,8 +209,14 @@ namespace Commands.Helpers
                             });
                             link = url;
                             redirectCount++;
+                            continue;
                         }
-                        else if (jsRedirect != null)
+
+                        string code = await response.Content.ReadAsStringAsync();
+                        doc.LoadHtml(code);
+                        string jsRedirect = GetJavaScriptRedirectLink(code);
+
+                        if (jsRedirect != null)
                         {
                             trail.Add(new LinkInfo
                             {
@@ -229,8 +230,12 @@ namespace Commands.Helpers
                             });
                             link = jsRedirect;
                             redirectCount++;
+                            continue;
                         }
-                        else if (urlRedirect != null)
+
+                        string urlRedirect = GetUrlRedirectInformation(link);
+
+                        if (urlRedirect != null)
                         {
                             trail.Add(new LinkInfo
                             {
@@ -244,21 +249,20 @@ namespace Commands.Helpers
                             });
                             link = urlRedirect;
                             redirectCount++;
+                            continue;
                         }
-                        else
+
+                        bool isRedirect = (int)response.StatusCode >= 300 && (int)response.StatusCode <= 308;
+                        trail.Add(new LinkInfo
                         {
-                            bool isRedirect = (int)response.StatusCode >= 300 && (int)response.StatusCode <= 308;
-                            trail.Add(new LinkInfo
-                            {
-                                Link = $"{link}",
-                                StatusCode = response.StatusCode,
-                                ContainsCookies = hasCookies,
-                                IsRickRoll = HasRickRoll(link),
-                                IsRedirect = isRedirect,
-                                IsShortened = IsShortenedUrl(link, isRedirect)
-                            });
-                            link = null;
-                        }
+                            Link = $"{link}",
+                            StatusCode = response.StatusCode,
+                            ContainsCookies = hasCookies,
+                            IsRickRoll = HasRickRoll(link),
+                            IsRedirect = isRedirect,
+                            IsShortened = IsShortenedUrl(link, isRedirect)
+                        });
+                        link = null;
                     }
                     else
                     {
