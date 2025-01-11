@@ -116,6 +116,9 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/decrypt vigenere [message] [key]` Decrypts your message using a specified key.
 - `/decrypt binary [message]` Decrypts your message using binary.
 
+### 🪄 Generate commands:
+- `/generate youtube-comment [comment] [username] [likes] [time] [time-unit] [theme]` Bob will generate a Youtube comment image!
+
 ### ✨ Miscellaneous commands: 
 - `/fonts [text] [font]` Change your text to a different font.
     - `[font]` choices: 𝖒𝖊𝖉𝖎𝖊𝖛𝖆𝖑, 𝓯𝓪𝓷𝓬𝔂, 𝕠𝕦𝕥𝕝𝕚𝕟𝕖𝕕, s̷l̷̷a̷s̷h̷e̷d̷, ɟןıddǝp, and 🄱🄾🅇🄴🄳.

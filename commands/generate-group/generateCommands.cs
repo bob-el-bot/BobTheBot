@@ -15,12 +15,12 @@ namespace Commands
     public class GenerateGroup : InteractionModuleBase<SocketInteractionContext>
     {
         [SlashCommand("youtube-comment", "Bob will generate a Youtube comment image!")]
-        public async Task YoutubeComment([Summary("comment", "The comment content")] string comment,
+        public async Task YoutubeComment([Summary("comment", "The comment content.")] string comment,
             [Summary("username", "The username for the commenter. Defaults to your Discord username.")][MinLength(1)][MaxLength(50)] string username = "",
             [Summary("avatar-url", "The URL of an image you want to have as the profile picture. Defaults to your Discord PFP.")] string avatarUrl = "",
             [Summary("likes", "The like count for the comment. Defaults to 1000.")][MinValue(0)][MaxValue(999999999)] int likes = 1000,
             [Summary("time", "The amount of time of the specified unit. Defaults to 1.")][MinValue(0)][MaxValue(999999999)] int time = 1,
-            [Summary("time-unit", "The unit of time. Defaults to Hour")] YouTubeCommentImageGenerator.TimeUnit timeUnit = YouTubeCommentImageGenerator.TimeUnit.Hour,
+            [Summary("time-unit", "The unit of time. Defaults to Hour.")] YouTubeCommentImageGenerator.TimeUnit timeUnit = YouTubeCommentImageGenerator.TimeUnit.Hour,
             [Summary("theme", "The theme of the comment. Defaults to Dark.")] YouTubeCommentImageGenerator.Theme theme = YouTubeCommentImageGenerator.Theme.Dark)
         {
             await DeferAsync();
