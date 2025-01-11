@@ -51,7 +51,7 @@ namespace Commands.Helpers
             }
 
             // Load like icon from local file
-            SKBitmap likeIconBitmap = LoadImageFromFile(@"commands\generate-group\helpers\youtube-like.png");
+            SKBitmap likeIconBitmap = LoadImageFromFile("commands/generate-group/helpers/youtube-like.png");
 
             // Create a high-resolution canvas
             int scaleFactor = 2; // Scale factor for high resolution
@@ -243,8 +243,9 @@ namespace Commands.Helpers
         /// <returns>The SKBitmap image loaded from the file.</returns>
         private static SKBitmap LoadImageFromFile(string filePath)
         {
-            using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+            using var stream = new FileStream(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, filePath), FileMode.Open, FileAccess.Read);
             return SKBitmap.Decode(stream);
+
         }
 
         /// <summary>
