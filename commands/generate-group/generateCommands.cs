@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Commands.Helpers;
+using Debug;
 using Discord;
 using Discord.Interactions;
 using SkiaSharp;
@@ -44,18 +45,24 @@ namespace Commands
                 // Generate the image
                 var image = await YouTubeCommentImageGenerator.GenerateYouTubeCommentImage($"@{username}", avatarUrl, comment, time, timeUnit, likes, theme);
 
+                if (image == null)
+                {
+                    await FollowupAsync($"❌ An error occurred while getting your provided avatar URL `{avatarUrl}`.", ephemeral: true);
+                    return;
+                }
+
                 // Convert the generated image to a memory stream
                 using var ms = new MemoryStream();
                 image.Encode(ms, SKEncodedImageFormat.Png, 100);
-                ms.Seek(0, SeekOrigin.Begin); // Rewind the stream before sending
+                // Rewind the stream before sending
+                ms.Seek(0, SeekOrigin.Begin);
 
                 // Send the image as a Discord message attachment
                 await FollowupWithFileAsync(ms, "youtube_comment.png");
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                // Handle any errors that occur
-                await FollowupAsync($"❌ An error occurred: {e.Message}", ephemeral: true);
+                await Logger.HandleUnexpectedError(Context, ex, true); 
             }
         }
     }
