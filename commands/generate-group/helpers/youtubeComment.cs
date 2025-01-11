@@ -10,12 +10,18 @@ namespace Commands.Helpers
 {
     public static class YouTubeCommentImageGenerator
     {
+        /// <summary>
+        /// The theme of the comment image (light or dark).
+        /// </summary>
         public enum Theme
         {
             Light,
             Dark
         }
 
+        /// <summary>
+        /// The unit of time for the timeAgo value (second, minute, hour, day, week, month, year).
+        /// </summary>
         public enum TimeUnit
         {
             Second,
@@ -26,8 +32,6 @@ namespace Commands.Helpers
             Month,
             Year
         }
-
-        private static readonly HttpClient client = new();
 
         /// <summary>
         /// Generate a YouTube comment image with the specified details.

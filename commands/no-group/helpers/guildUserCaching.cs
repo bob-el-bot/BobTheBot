@@ -7,80 +7,86 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.Extensions.Caching.Memory;
 
-public static class CachedUsers
+namespace Commands.Helpers
 {
-    private static readonly MemoryCache Cache = new(new MemoryCacheOptions());
-    private static readonly ConcurrentDictionary<ulong, Task> OnGoingDownloads = new();
-
     /// <summary>
-    /// Adds a guild ID to the cache with a 1-hour expiration. 
-    /// If the guild ID is not already in the cache, it triggers a download of all users in the guild.
-    /// Subsequent calls for the same guild will wait for the ongoing download to complete if already in progress.
-    /// If the context is not in a guild, it will do nothing.
+    /// A cache for guild users.
     /// </summary>
-    /// <param name="ctx">The context to add the guild ID from.</param>
-    public static async Task AddGuildUsersAsync(SocketInteractionContext ctx)
+    public static class CachedUsers
     {
-        if (ctx.Guild != null) // Guild context
+        private static readonly MemoryCache Cache = new(new MemoryCacheOptions());
+        private static readonly ConcurrentDictionary<ulong, Task> OnGoingDownloads = new();
+
+        /// <summary>
+        /// Adds a guild ID to the cache with a 1-hour expiration. 
+        /// If the guild ID is not already in the cache, it triggers a download of all users in the guild.
+        /// Subsequent calls for the same guild will wait for the ongoing download to complete if already in progress.
+        /// If the context is not in a guild, it will do nothing.
+        /// </summary>
+        /// <param name="ctx">The context to add the guild ID from.</param>
+        public static async Task AddGuildUsersAsync(SocketInteractionContext ctx)
         {
-            if (!Cache.TryGetValue(ctx.Guild.Id, out _))
+            if (ctx.Guild != null) // Guild context
             {
-                var downloadTask = OnGoingDownloads.GetOrAdd(ctx.Guild.Id, async _ =>
+                if (!Cache.TryGetValue(ctx.Guild.Id, out _))
                 {
-                    var guild = Bot.Client.GetGuild(ctx.Guild.Id);
-                    if (guild != null)
+                    var downloadTask = OnGoingDownloads.GetOrAdd(ctx.Guild.Id, async _ =>
                     {
-                        await guild.DownloadUsersAsync();
-                    }
+                        var guild = Bot.Client.GetGuild(ctx.Guild.Id);
+                        if (guild != null)
+                        {
+                            await guild.DownloadUsersAsync();
+                        }
 
-                    Cache.Set(ctx.Guild.Id, true, TimeSpan.FromHours(1)); // Add to cache after completion
-                    OnGoingDownloads.TryRemove(ctx.Guild.Id, out Task _); // Clean up
-                });
+                        Cache.Set(ctx.Guild.Id, true, TimeSpan.FromHours(1)); // Add to cache after completion
+                        OnGoingDownloads.TryRemove(ctx.Guild.Id, out Task _); // Clean up
+                    });
 
-                await downloadTask;
+                    await downloadTask;
+                }
             }
         }
-    }
 
-    /// <summary>
-    /// Gets a random member from a specified Guild, DM, or Group DM context.
-    /// </summary>
-    /// <param name="ctx">The context to get the random member from.</param>
-    /// <returns>A random member (SocketUser) from the context.</returns>
-    public static SocketUser GetRandomMember(SocketInteractionContext ctx)
-    {
-        var members = GetMembers(ctx);
-        if (members.Count != 0)
+        /// <summary>
+        /// Gets a random member from a specified Guild, DM, or Group DM context.
+        /// </summary>
+        /// <param name="ctx">The context to get the random member from.</param>
+        /// <returns>A random member (SocketUser) from the context.</returns>
+        public static SocketUser GetRandomMember(SocketInteractionContext ctx)
         {
-            var random = new Random();
-            return members[random.Next(members.Count)];
+            var members = GetMembers(ctx);
+            if (members.Count != 0)
+            {
+                var random = new Random();
+                return members[random.Next(members.Count)];
+            }
+
+            // Fallback: return the user who called the command (just in case)
+            return ctx.User;
         }
 
-        // Fallback: return the user who called the command (just in case)
-        return ctx.User;
-    }
+        /// <summary>
+        /// Helper method to retrieve the list of members from the context.
+        /// </summary>
+        /// <param name="ctx">The context to retrieve members from.</param>
+        /// <returns>A list of members (SocketUser).</returns>
+        private static List<SocketUser> GetMembers(SocketInteractionContext ctx)
+        {
+            if (ctx.Guild != null) // In a guild context
+            {
+                return ctx.Guild.Users.Cast<SocketUser>().ToList();
+            }
+            else if (ctx.Channel is SocketGroupChannel groupChannel) // In a group DM context
+            {
+                return groupChannel.Users.Cast<SocketUser>().ToList();
+            }
+            else if (ctx.Channel is SocketDMChannel dmChannel) // In a single DM context
+            {
+                return dmChannel.Users.ToList();
+            }
 
-    /// <summary>
-    /// Helper method to retrieve the list of members from the context.
-    /// </summary>
-    /// <param name="ctx">The context to retrieve members from.</param>
-    /// <returns>A list of members (SocketUser).</returns>
-    private static List<SocketUser> GetMembers(SocketInteractionContext ctx)
-    {
-        if (ctx.Guild != null) // In a guild context
-        {
-            return ctx.Guild.Users.Cast<SocketUser>().ToList();
+            // Default fallback if no context found (this case should never be hit if context is valid)
+            return [];
         }
-        else if (ctx.Channel is SocketGroupChannel groupChannel) // In a group DM context
-        {
-            return groupChannel.Users.Cast<SocketUser>().ToList();
-        }
-        else if (ctx.Channel is SocketDMChannel dmChannel) // In a single DM context
-        {
-            return dmChannel.Users.ToList();
-        }
-
-        // Default fallback if no context found (this case should never be hit if context is valid)
-        return [];
     }
 }
