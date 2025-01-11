@@ -1069,6 +1069,57 @@ namespace Commands.Helpers
                     }
                 ]
             },
+            new() 
+            {
+                Title = "Generate",
+                Name = "generate",
+                Description = "All commands relevant to generation.",
+                Emoji = "🪄",
+                Url = "https://docs.bobthebot.net#generate",
+                Commands =
+                [
+                    new CommandInfo
+                    {
+                        Name = "youtube-comment",
+                        InheritGroupName = true,
+                        Description = "Bob will generate a Youtube comment image!",
+                        Url = "https://docs.bobthebot.net#generate-youtube-comment",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "comment",
+                                Description = "The username for the commenter (between 1 and 50 characters). Defaults to your Discord username."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "avatar-url",
+                                Description = "The URL of an image you want to have as the profile picture. Defaults to your Discord PFP."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "likes",
+                                Description = "The like count for the comment (between 0 and 999,999,999). Defaults to 1000."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "time",
+                                Description = "The amount of time of the specified unit (between 0 and 999,999,999). Defaults to 1."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "time-unit",
+                                Description = "The unit of time (choose from: Second, Minute, Hour, Day, Week, Month, Year). Defaults to Hour."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "theme",
+                                Description = "The theme of the comment (choose from Dark, Light). Defaults to Dark."
+                            }
+                        ]
+                    }
+                ]
+            },
             new() {
                 Title = "Other",
                 Description = "Miscellaneous commands.",
