@@ -43,15 +43,14 @@ namespace Commands.Helpers
         public static async Task<SKBitmap> GenerateYouTubeCommentImage(string username, string avatarUrl, string comment, int timeAgo, TimeUnit timeUnit, int likesCount, Theme theme)
         {
             // Load the avatar and like icon images from URLs and file paths
-            SKBitmap avatarBitmap = await LoadImageFromUrl(avatarUrl);
-
+            SKBitmap avatarBitmap = await ImageCache.GetImageFromUrl(avatarUrl);
             if (avatarBitmap == null)
             {
                 return null;
             }
 
-            // Load like icon from local file
-            SKBitmap likeIconBitmap = LoadImageFromFile("commands/generate-group/helpers/youtube-like.png");
+            SKBitmap likeIconBitmap = ImageCache.GetLikeIcon();
+            SKBitmap dislikeIconBitmap = ImageCache.GetDislikeIcon();
 
             // Create a high-resolution canvas
             int scaleFactor = 2; // Scale factor for high resolution
@@ -165,13 +164,10 @@ namespace Commands.Helpers
 
             // Draw the dislike icon
             float dislikeIconX = likeIconX + 74; // Fixed spacing from the like icon
-            canvas.Save();
-            canvas.RotateDegrees(180, dislikeIconX + likeIconSize / 2, likeIconY + likeIconSize / 2); // Rotate around the center
-            canvas.DrawBitmap(likeIconBitmap, new SKRect(dislikeIconX, likeIconY, dislikeIconX + likeIconSize, likeIconY + likeIconSize), new SKPaint
+            canvas.DrawBitmap(dislikeIconBitmap, new SKRect(dislikeIconX, likeIconY, dislikeIconX + likeIconSize, likeIconY + likeIconSize), new SKPaint
             {
                 ColorFilter = SKColorFilter.CreateBlendMode(subTextColor, SKBlendMode.SrcIn)
             });
-            canvas.Restore();
 
             // Draw the "Reply" text
             SKPaint replyPaint = new()
