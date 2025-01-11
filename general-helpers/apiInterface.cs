@@ -47,7 +47,7 @@ namespace ApiInteractions
         }
 
         /// <summary>
-        /// Sends a GET request to the specified URL.
+        /// Sends a GET request to the specified URL and returns the response content as a string.
         /// </summary>
         /// <param name="link">The URL to send the request to.</param>
         /// <param name="accept">The type of content to accept in the response.</param>
@@ -57,22 +57,54 @@ namespace ApiInteractions
         {
             // Formulate Request
             HttpRequestMessage request = new(HttpMethod.Get, link);
-            MediaTypeWithQualityHeaderValue acceptValue = new((accept == AcceptTypes.application_json) ? "application/json" : (accept == AcceptTypes.text_plain) ? "text/plain" : "image/*");
+            MediaTypeWithQualityHeaderValue acceptValue = new(
+                (accept == AcceptTypes.application_json) ? "application/json" :
+                (accept == AcceptTypes.text_plain) ? "text/plain" :
+                "image/*"
+            );
 
-            request.Headers.UserAgent.Add(productValue);
-            request.Headers.UserAgent.Add(commentValue);
+            request.Headers.UserAgent.Add(new ProductInfoHeaderValue("MyApp", "1.0"));
             request.Headers.Accept.Add(acceptValue);
 
-            // if authentication is given, use it.
-            if (token != null)
+            // Add authentication token if provided
+            if (!string.IsNullOrEmpty(token))
             {
-                request.Headers.Authorization = new AuthenticationHeaderValue(token);
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
             }
 
-            // Send Request (Get The Quote)
-            var resp = await Client.SendAsync(request);
-            // Read In Content
-            return await resp.Content.ReadAsStringAsync();
+            // Send the request
+            var response = await Client.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+
+            // Return content as string
+            return await response.Content.ReadAsStringAsync();
+        }
+
+        /// <summary>
+        /// Sends a GET request to the specified URL and returns the response content as a byte array (for images).
+        /// </summary>
+        /// <param name="link">The URL to send the request to.</param>
+        /// <param name="token">Optional. The authentication token to include in the request header.</param>
+        /// <returns>Returns the response content as a byte array.</returns>
+        public static async Task<byte[]> GetFromAPI(string link, string token = null)
+        {
+            // Formulate Request
+            HttpRequestMessage request = new(HttpMethod.Get, link);
+            request.Headers.UserAgent.Add(new ProductInfoHeaderValue("MyApp", "1.0"));
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("image/*"));
+
+            // Add authentication token if provided
+            if (!string.IsNullOrEmpty(token))
+            {
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            }
+
+            // Send the request
+            var response = await Client.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+
+            // Return content as byte array
+            return await response.Content.ReadAsByteArrayAsync();
         }
 
         /// <summary>
