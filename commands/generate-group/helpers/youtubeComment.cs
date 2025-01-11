@@ -39,7 +39,7 @@ namespace Commands.Helpers
         /// <param name="timeUnit">The unit of time for the timeAgo value.</param>
         /// <param name="likesCount">The number of likes on the comment.</param>
         /// <param name="theme">The theme of the comment image (light or dark).</param>
-        /// <returns>A Task representing the asynchronous operation that returns the generated SKBitmap image.</returns>
+        /// <returns>A Task representing the asynchronous operation that returns the generated SKBitmap image. Returns null if the given avatarUrl gets a null image.</returns>
         public static async Task<SKBitmap> GenerateYouTubeCommentImage(string username, string avatarUrl, string comment, int timeAgo, TimeUnit timeUnit, int likesCount, Theme theme)
         {
             // Load the avatar and like icon images from URLs and file paths
@@ -50,7 +50,8 @@ namespace Commands.Helpers
                 return null;
             }
 
-            SKBitmap likeIconBitmap = LoadImageFromFile("./youtube-like.png"); // Load like icon from local file
+            // Load like icon from local file
+            SKBitmap likeIconBitmap = LoadImageFromFile(@"commands\generate-group\helpers\youtube-like.png");
 
             // Create a high-resolution canvas
             int scaleFactor = 2; // Scale factor for high resolution
@@ -66,7 +67,7 @@ namespace Commands.Helpers
             // Define theme colors
             SKColor backgroundColor = isDarkTheme ? new SKColor(15, 15, 15) : SKColors.White;
             SKColor textColor = isDarkTheme ? SKColors.White : SKColors.Black;
-            SKColor subTextColor = isDarkTheme ? SKColors.Gray : new SKColor(170, 170, 170);
+            SKColor subTextColor = isDarkTheme ? new SKColor(96, 96, 96) : new SKColor(170, 170, 170);
 
             canvas.Clear(backgroundColor); // Set background color
 
@@ -240,12 +241,19 @@ namespace Commands.Helpers
         /// </summary>
         /// <param name="filePath">The file path of the image.</param>
         /// <returns>The SKBitmap image loaded from the file.</returns>
-        public static SKBitmap LoadImageFromFile(string filePath)
+        private static SKBitmap LoadImageFromFile(string filePath)
         {
             using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
             return SKBitmap.Decode(stream);
         }
 
+        /// <summary>
+        /// Wrap text to fit within a specified width.
+        /// </summary>
+        /// <param name="text">The text to wrap.</param>
+        /// <param name="maxWidth">The maximum width for each line.</param>
+        /// <param name="paint">The SKPaint object used to measure the text width.</param>
+        /// <returns>A list of wrapped lines.</returns>
         private static List<string> WrapText(string text, float maxWidth, SKPaint paint)
         {
             var lines = new List<string>();
@@ -309,7 +317,7 @@ namespace Commands.Helpers
         /// </summary>
         /// <param name="count">The like count to format.</param>
         /// <returns>The formatted like count.</returns>
-        public static string FormatLikeCount(int count)
+        private static string FormatLikeCount(int count)
         {
             if (count == 0)
             {
@@ -343,7 +351,7 @@ namespace Commands.Helpers
         /// <param name="timeValue">The amount of time.</param>
         /// <param name="unit">The unit of time.</param>
         /// <returns>The formatted time string.</returns>
-        public static string GetTimeAgoString(int timeValue, TimeUnit unit)
+        private static string GetTimeAgoString(int timeValue, TimeUnit unit)
         {
             // Pluralize the unit based on the timeValue
             string unitString = timeValue == 1 ? unit.ToString().ToLower() : $"{unit.ToString().ToLower()}s";
