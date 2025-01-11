@@ -188,63 +188,6 @@ namespace Commands.Helpers
         }
 
         /// <summary>
-        /// Load an image from a URL.
-        /// </summary>
-        /// <param name="url">The URL of the image.</param>
-        /// <returns>The SKBitmap image loaded from the URL, or null if an error occurs.</returns>
-        private static async Task<SKBitmap> LoadImageFromUrl(string url)
-        {
-            try
-            {
-                // Ensure the URL is valid
-                if (string.IsNullOrWhiteSpace(url))
-                {
-                    throw new ArgumentException("The URL cannot be null or empty.", nameof(url));
-                }
-
-                // Fetch the image bytes from the URL
-                byte[] imageBytes = await client.GetByteArrayAsync(url);
-
-                // Create a memory stream from the byte array
-                using var stream = new MemoryStream(imageBytes);
-
-                // Decode the image into SKBitmap
-                SKBitmap bitmap = SKBitmap.Decode(stream) ?? throw new Exception("Failed to decode the image from the stream.");
-                return bitmap;
-            }
-            catch (HttpRequestException httpEx)
-            {
-                // Handle network errors (e.g., invalid URL or server issues)
-                Console.WriteLine($"Network error occurred: {httpEx.Message}");
-                return null;
-            }
-            catch (ArgumentException argEx)
-            {
-                // Handle invalid argument (e.g., null or empty URL)
-                Console.WriteLine($"Argument error: {argEx.Message}");
-                return null;
-            }
-            catch (Exception ex)
-            {
-                // Catch any other unexpected errors
-                Console.WriteLine($"An unexpected error occurred: {ex.Message}");
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Load an image from a file path.
-        /// </summary>
-        /// <param name="filePath">The file path of the image.</param>
-        /// <returns>The SKBitmap image loaded from the file.</returns>
-        private static SKBitmap LoadImageFromFile(string filePath)
-        {
-            using var stream = new FileStream(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, filePath), FileMode.Open, FileAccess.Read);
-            return SKBitmap.Decode(stream);
-
-        }
-
-        /// <summary>
         /// Wrap text to fit within a specified width.
         /// </summary>
         /// <param name="text">The text to wrap.</param>
