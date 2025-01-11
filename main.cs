@@ -151,24 +151,14 @@ public static class Bot
 
         int index = 0;
 
-        _ = Task.Run(() =>
+        _ = Task.Run(async () =>
         {
-            // Status
-            _ = new Timer(async x =>
-           {
-               try
-               {
-                   if (Client.ConnectionState == ConnectionState.Connected)
-                   {
-                       await Client.SetCustomStatusAsync(statuses[index]);
-                       index = (index + 1) % statuses.Length;
-                   }
-               }
-               catch (Exception ex)
-               {
-                   Console.WriteLine($"Error setting status: {ex.Message} | {statuses[index]}");
-               }
-           }, null, TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(16));
+            var timer = new PeriodicTimer(TimeSpan.FromSeconds(16));
+            while (await timer.WaitForNextTickAsync())
+            {
+                await Client.SetCustomStatusAsync(statuses[index]);
+                index = index + 1 == statuses.Length ? 0 : index + 1;
+            }
         });
 
         _ = Task.Run(async () =>

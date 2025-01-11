@@ -10,12 +10,18 @@ namespace Commands.Helpers
 {
     public static class YouTubeCommentImageGenerator
     {
+        /// <summary>
+        /// The theme of the comment image (light or dark).
+        /// </summary>
         public enum Theme
         {
             Light,
             Dark
         }
 
+        /// <summary>
+        /// The unit of time for the timeAgo value (second, minute, hour, day, week, month, year).
+        /// </summary>
         public enum TimeUnit
         {
             Second,
@@ -26,8 +32,6 @@ namespace Commands.Helpers
             Month,
             Year
         }
-
-        private static readonly HttpClient client = new();
 
         /// <summary>
         /// Generate a YouTube comment image with the specified details.
@@ -43,15 +47,14 @@ namespace Commands.Helpers
         public static async Task<SKBitmap> GenerateYouTubeCommentImage(string username, string avatarUrl, string comment, int timeAgo, TimeUnit timeUnit, int likesCount, Theme theme)
         {
             // Load the avatar and like icon images from URLs and file paths
-            SKBitmap avatarBitmap = await LoadImageFromUrl(avatarUrl);
-
+            SKBitmap avatarBitmap = await ImageCache.GetImageFromUrl(avatarUrl);
             if (avatarBitmap == null)
             {
                 return null;
             }
 
-            // Load like icon from local file
-            SKBitmap likeIconBitmap = LoadImageFromFile("commands/generate-group/helpers/youtube-like.png");
+            SKBitmap likeIconBitmap = ImageCache.GetLikeIcon();
+            SKBitmap dislikeIconBitmap = ImageCache.GetDislikeIcon();
 
             // Create a high-resolution canvas
             int scaleFactor = 2; // Scale factor for high resolution
@@ -165,13 +168,10 @@ namespace Commands.Helpers
 
             // Draw the dislike icon
             float dislikeIconX = likeIconX + 74; // Fixed spacing from the like icon
-            canvas.Save();
-            canvas.RotateDegrees(180, dislikeIconX + likeIconSize / 2, likeIconY + likeIconSize / 2); // Rotate around the center
-            canvas.DrawBitmap(likeIconBitmap, new SKRect(dislikeIconX, likeIconY, dislikeIconX + likeIconSize, likeIconY + likeIconSize), new SKPaint
+            canvas.DrawBitmap(dislikeIconBitmap, new SKRect(dislikeIconX, likeIconY, dislikeIconX + likeIconSize, likeIconY + likeIconSize), new SKPaint
             {
                 ColorFilter = SKColorFilter.CreateBlendMode(subTextColor, SKBlendMode.SrcIn)
             });
-            canvas.Restore();
 
             // Draw the "Reply" text
             SKPaint replyPaint = new()
@@ -189,63 +189,6 @@ namespace Commands.Helpers
 
             // Return the high-resolution bitmap
             return bitmap;
-        }
-
-        /// <summary>
-        /// Load an image from a URL.
-        /// </summary>
-        /// <param name="url">The URL of the image.</param>
-        /// <returns>The SKBitmap image loaded from the URL, or null if an error occurs.</returns>
-        private static async Task<SKBitmap> LoadImageFromUrl(string url)
-        {
-            try
-            {
-                // Ensure the URL is valid
-                if (string.IsNullOrWhiteSpace(url))
-                {
-                    throw new ArgumentException("The URL cannot be null or empty.", nameof(url));
-                }
-
-                // Fetch the image bytes from the URL
-                byte[] imageBytes = await client.GetByteArrayAsync(url);
-
-                // Create a memory stream from the byte array
-                using var stream = new MemoryStream(imageBytes);
-
-                // Decode the image into SKBitmap
-                SKBitmap bitmap = SKBitmap.Decode(stream) ?? throw new Exception("Failed to decode the image from the stream.");
-                return bitmap;
-            }
-            catch (HttpRequestException httpEx)
-            {
-                // Handle network errors (e.g., invalid URL or server issues)
-                Console.WriteLine($"Network error occurred: {httpEx.Message}");
-                return null;
-            }
-            catch (ArgumentException argEx)
-            {
-                // Handle invalid argument (e.g., null or empty URL)
-                Console.WriteLine($"Argument error: {argEx.Message}");
-                return null;
-            }
-            catch (Exception ex)
-            {
-                // Catch any other unexpected errors
-                Console.WriteLine($"An unexpected error occurred: {ex.Message}");
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Load an image from a file path.
-        /// </summary>
-        /// <param name="filePath">The file path of the image.</param>
-        /// <returns>The SKBitmap image loaded from the file.</returns>
-        private static SKBitmap LoadImageFromFile(string filePath)
-        {
-            using var stream = new FileStream(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, filePath), FileMode.Open, FileAccess.Read);
-            return SKBitmap.Decode(stream);
-
         }
 
         /// <summary>
