@@ -8,6 +8,9 @@ using SkiaSharp;
 
 namespace Commands.Helpers
 {
+    /// <summary>
+    /// A cache for images downloaded from URLs.
+    /// </summary>
     public static class ImageCache
     {
         private static SKBitmap _likeIcon;
@@ -22,6 +25,9 @@ namespace Commands.Helpers
             GetDislikeIcon();
         }
 
+        /// <summary>
+        /// Gets the like icon.
+        /// </summary>
         public static SKBitmap GetLikeIcon()
         {
             if (_likeIcon == null)
@@ -33,16 +39,24 @@ namespace Commands.Helpers
             return _likeIcon;
         }
 
+        /// <summary>
+        /// Gets the dislike icon.
+        /// </summary>
         public static SKBitmap GetDislikeIcon()
         {
             if (_dislikeIcon == null)
             {
                 GetLikeIcon();
             }
-            
+
             return _dislikeIcon;
         }
 
+        /// <summary>
+        /// Gets an image from a URL, caching it for 5 minutes.
+        /// </summary>
+        /// <param name="url">The URL to download the image from.</param>
+        /// <returns>The downloaded image.</returns>
         public static async Task<SKBitmap> GetImageFromUrl(string url)
         {
             // Check if the image is already cached
@@ -85,12 +99,23 @@ namespace Commands.Helpers
             return await downloadTask;
         }
 
+        /// <summary>
+        /// Loads an image from a file.
+        /// </summary>
+        /// <param name="filePath">The path to the image file.</param>
+        /// <returns>The loaded image.</returns>
         private static SKBitmap LoadImageFromFile(string filePath)
         {
             using var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
             return SKBitmap.Decode(stream);
         }
 
+        /// <summary>
+        /// Pre-renders a rotated image.
+        /// </summary>
+        /// <param name="originalBitmap">The original image to rotate.</param>
+        /// <param name="angle">The angle to rotate the image by.</param>
+        /// <returns>The rotated image.</returns>
         private static SKBitmap PreRenderRotatedImage(SKBitmap originalBitmap, float angle)
         {
             var rotatedBitmap = new SKBitmap(originalBitmap.Width, originalBitmap.Height);
