@@ -1089,6 +1089,11 @@ namespace Commands.Helpers
                             new ParameterInfo
                             {
                                 Name = "comment",
+                                Description = "The comment content."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "username",
                                 Description = "The username for the commenter (between 1 and 50 characters). Defaults to your Discord username."
                             },
                             new ParameterInfo
