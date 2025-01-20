@@ -57,21 +57,17 @@ namespace PremiumInterface
         /// <param name="entitlements">The collection of entitlements for the user.</param>
         /// <returns>True if the user is entitled to premium access, otherwise false.</returns>
         public static bool IsPremium(IReadOnlyCollection<RestEntitlement> entitlements)
-        {
-            // Ensure entitlements is not null before iterating
+        {            
             if (entitlements == null) return false;
+
+            Console.WriteLine("Entitlements:");
 
             foreach (var entitlement in entitlements)
             {
-                // Ensure SkuId has a value before comparing
-                if (entitlement.SkuId != 0 && (entitlement.SkuId == 1169107771673812992 || entitlement.SkuId == 1282452500913328180))
-                {
-                    Console.WriteLine("User has premium.");
-                    return true;
-                }
+                Console.WriteLine(entitlement.SkuId);
             }
 
-            return false;
+            return entitlements.Any(x => x.SkuId == 1169107771673812992 || x.SkuId == 1282452500913328180);
         }
     }
 }
