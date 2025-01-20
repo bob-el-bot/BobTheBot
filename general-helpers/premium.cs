@@ -62,9 +62,9 @@ namespace PremiumInterface
 
             Console.WriteLine("Entitlements:");
 
-            foreach (var entitlement in entitlements)
+            foreach (var e in entitlements)
             {
-                Console.WriteLine(entitlement.SkuId);
+                Console.WriteLine($"Entitlement SKU: {e.SkuId}, EndsAt: {e.EndsAt}");
             }
 
             return entitlements.Any(x => x.SkuId == 1169107771673812992 || x.SkuId == 1282452500913328180);
