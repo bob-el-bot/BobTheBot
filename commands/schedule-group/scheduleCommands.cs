@@ -41,7 +41,7 @@ namespace Commands
             {
                 if (Premium.IsPremium(Context.Interaction.Entitlements) == false && user.TotalScheduledMessages >= Premium.MaxScheduledMessages)
                 {
-                    await FollowupAsync(text: $"✨ This is a *premium* feature.\n- You already have a scheduled message, please upgrade to premium for unlimited scheduled messages.", components: Premium.GetComponents(), ephemeral: true);
+                    await FollowupAsync(text: $"✨ This is a *premium* feature.\n- You already have a scheduled message, please upgrade to premium for unlimited scheduled messages.\n- {Premium.HasPremiumMessage}", components: Premium.GetComponents(), ephemeral: true);
                     return;
                 }
 
@@ -127,7 +127,7 @@ namespace Commands
                 // Check if the user has premium.
                 if (Premium.IsPremium(Context.Interaction.Entitlements) == false)
                 {
-                    await FollowupAsync(text: $"✨ This is a *premium* feature.", components: Premium.GetComponents(), ephemeral: true);
+                    await FollowupAsync(text: $"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}", components: Premium.GetComponents(), ephemeral: true);
                     return;
                 }
 

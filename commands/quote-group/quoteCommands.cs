@@ -127,7 +127,7 @@ namespace Commands
             // Check if the user has premium.
             else if (Premium.IsPremium(Context.Interaction.Entitlements) == false)
             {
-                await FollowupAsync(text: $"✨ This is a *premium* feature.", components: Premium.GetComponents(), ephemeral: true);
+                await FollowupAsync(text: $"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}", components: Premium.GetComponents(), ephemeral: true);
             }
             // Check if the message is within Discord's length requirements.
             else if (length > 4096)
@@ -172,7 +172,7 @@ namespace Commands
             // Check if the user has premium.
             else if (Premium.IsPremium(Context.Interaction.Entitlements) == false)
             {
-                await FollowupAsync(text: $"✨ This is a *premium* feature.", components: Premium.GetComponents(), ephemeral: true);
+                await FollowupAsync(text: $"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}", components: Premium.GetComponents(), ephemeral: true);
             }
             // Check if the message is within Discord's length requirements.
             else if (length > 4096)
