@@ -149,6 +149,7 @@ public static class Bot
             Console.WriteLine(e);
         }
 
+        // Status
         int index = 0;
 
         _ = Task.Run(async () =>
@@ -160,16 +161,10 @@ public static class Bot
                 index = index + 1 == statuses.Length ? 0 : index + 1;
             }
         });
+    
+        _ = Task.Run(Schedule.LoadAndScheduleItemsAsync<ScheduledAnnouncement>);
 
-        _ = Task.Run(async () =>
-        {
-            await Schedule.LoadAndScheduleItemsAsync<ScheduledAnnouncement>();
-        });
-
-        _ = Task.Run(async () =>
-        {
-            await Schedule.LoadAndScheduleItemsAsync<ScheduledMessage>();
-        });
+        _ = Task.Run(Schedule.LoadAndScheduleItemsAsync<ScheduledMessage>);
     }
 
     private static async Task UserJoined(SocketGuildUser user)

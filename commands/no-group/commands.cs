@@ -823,17 +823,27 @@ namespace Commands
             else
             {
                 await DeferAsync();
-
+ 
                 if (isPremium != false)
                 {
                     // Get Expiration Date
                     var expirationDate = (DateTimeOffset)Context.Interaction.Entitlements.FirstOrDefault(x => x.SkuId == 1169107771673812992).EndsAt;
 
+                    if (expirationDate == null && Context.Interaction.Entitlements.FirstOrDefault(x => x.SkuId == 1282452500913328180) != null)
+                    {
+                        expirationDate = DateTimeOffset.MaxValue;
+                    }
+
                     // Only write to DB if needed.
                     if (user.PremiumExpiration != expirationDate)
                     {
+                        Console.WriteLine($"User {Context.User.Id} has updated their premium expiration to {expirationDate} in the DB");
                         user.PremiumExpiration = expirationDate;
                         await context.UpdateUser(user);
+                    }
+                    else
+                    {
+                        Console.WriteLine($"User {Context.User.Id} has not updated their premium expiration in the DB (it is already {expirationDate})");
                     }
                 }
 

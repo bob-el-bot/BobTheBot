@@ -58,6 +58,15 @@ namespace PremiumInterface
         /// <returns>True if the user is entitled to premium access, otherwise false.</returns>
         public static bool IsPremium(IReadOnlyCollection<RestEntitlement> entitlements)
         {
+            for (int i = 0; i < entitlements.Count; i++)
+            {
+                if (entitlements.ElementAt(i).SkuId == 1169107771673812992 || entitlements.ElementAt(i).SkuId == 1282452500913328180)
+                {
+                    Console.WriteLine("User has premium.");
+                    return true;
+                }
+            }
+            if (entitlements == null) return false;
             return entitlements.Any(x => x.SkuId == 1169107771673812992 || x.SkuId == 1282452500913328180);
         }
     }
