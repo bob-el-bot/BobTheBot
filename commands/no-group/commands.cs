@@ -828,9 +828,10 @@ namespace Commands
                 {
                     // Get Expiration Date
                     var entitlement = Context.Interaction.Entitlements.FirstOrDefault(x => x.SkuId == 1169107771673812992);
+                    Console.WriteLine(entitlement);
                     var expirationDate = entitlement?.EndsAt ?? DateTimeOffset.MinValue; // Default if null
 
-                    if (expirationDate == DateTimeOffset.MinValue && Context.Interaction.Entitlements.First(x => x.SkuId == 1282452500913328180) != null)
+                    if (expirationDate == DateTimeOffset.MinValue && Context.Interaction.Entitlements.FirstOrDefault(x => x.SkuId == 1282452500913328180) != null)
                     {
                         expirationDate = DateTimeOffset.MaxValue;
                     }
