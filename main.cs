@@ -21,7 +21,6 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using DotNetEnv;
-using SQLitePCL;
 
 public static class Bot
 {
