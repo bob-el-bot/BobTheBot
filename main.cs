@@ -104,7 +104,8 @@ public static class Bot
             Service = new(Client, new InteractionServiceConfig
             {
                 UseCompiledLambda = true,
-                ThrowOnError = true
+                ThrowOnError = true,
+                AutoServiceScopes = false
             });
 
             await Service.AddModulesAsync(Assembly.GetEntryAssembly(), null);
