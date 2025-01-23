@@ -127,6 +127,23 @@ namespace Commands
         [Group("stat", "All debug commands for stats")]
         public class StatsGroup : InteractionModuleBase<SocketInteractionContext>
         {
+            [SlashCommand("entitlements", "view all app entitlements.")]
+            public async Task GetEntitlements()
+            {
+                StringBuilder response = new();
+
+                await foreach (var entitlementCollection in Bot.Client.GetEntitlementsAsync())
+                {
+                    foreach (var entitlement in entitlementCollection)
+                    {
+                        response.Append(entitlement.SkuId);
+                        Console.WriteLine(entitlement.SkuId);
+                    }
+                }
+
+                await RespondAsync(text: response.ToString());
+            }
+
             [SlashCommand("all-tables", "Shows all stats relevant to the all tables.")]
             public async Task AllTableStats()
             {

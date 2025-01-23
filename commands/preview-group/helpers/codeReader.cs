@@ -2,6 +2,7 @@ using System;
 using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using Discord.WebSocket;
 using static ApiInteractions.Interface;
 
 namespace Commands.Helpers
@@ -27,6 +28,43 @@ namespace Commands.Helpers
             string fileContent = Encoding.UTF8.GetString(fileData);
 
             return FormatResponse(fileContent, ref linkInfo.LineNumbers.Item1, ref linkInfo.LineNumbers.Item2);
+        }
+
+        public static async Task Respond(SocketInteraction interaction,  string link)
+        {
+            try
+            {
+                // Parse Link using Uri class
+                Uri uri = new(link);
+
+                // Check if the host is github.com
+                if (uri.Host.Contains("github.com") == false)
+                {
+                    throw new InvalidOperationException("Invalid GitHub link format | Host other than GitHub");
+                }
+
+                FileLinkInfo linkInfo = CreateFileLinkInfo(link, true);
+
+                string previewLines = await GetPreview(linkInfo);
+
+                // Format final response
+                string formattedLineNumbers = GetFormattedLineNumbers(linkInfo.LineNumbers);
+                string preview = $"🔎 Showing {GetFormattedLineNumbers(linkInfo.LineNumbers)} of [{linkInfo.Repository}/{linkInfo.Branch}/{linkInfo.File}](<{link}>)\n```{linkInfo.File[(linkInfo.File.IndexOf('.') + 1)..]}\n{previewLines}```";
+
+                // Check if message is too long for Discord API.
+                if (preview.Length > 2000)
+                {
+                    await interaction.RespondAsync(text: $"❌ The preview of lines {formattedLineNumbers} *cannot* be shown because it contains **{preview.Length}** characters.\n- Try previewing fewer lines.\n- Discord has a limit of **2000** characters.", ephemeral: true);
+                }
+                else
+                {
+                    await interaction.RespondAsync(text: preview);
+                }
+            }
+            catch
+            {
+                await interaction.RespondAsync(text: "❌ Your link is not valid. Here are some things to know: \n- Your link needs to start with `https://github.com/`.\n- If you preview a link with no line specificaions, Bob will automatically show as many lines as possible from the start.\n- For line specifications, put `#L15` or `#L15-L18` at the end of the link to the file. (see below).\n- If you are sharing a single line it could look like this: `https://github.com/bob-el-bot/website/blob/main/index.html#L15`\n- If you are sharing multiple lines it could look like this: `https://github.com/bob-el-bot/website/blob/main/index.html#L15-L18`\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+            }
         }
 
         /// <summary>
