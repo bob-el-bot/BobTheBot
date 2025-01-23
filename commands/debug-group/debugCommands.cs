@@ -136,8 +136,7 @@ namespace Commands
                 {
                     foreach (var entitlement in entitlementCollection)
                     {
-                        response.Append(entitlement.SkuId);
-                        Console.WriteLine(entitlement.SkuId);
+                        response.AppendLine($"{entitlement.SkuId} - {entitlement.Type} - {entitlement.EndsAt} - {entitlement.UserId}");
                     }
                 }
 
