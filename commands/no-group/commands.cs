@@ -810,6 +810,8 @@ namespace Commands
         [SlashCommand("premium", "Update your premium status or buy it!")]
         public async Task PremiumStatus()
         {
+            await DeferAsync();
+
             User user;
             using var context = new BobEntities();
             user = await context.GetUser(Context.User.Id);
@@ -818,39 +820,61 @@ namespace Commands
             bool isPremium = Premium.IsPremium(Context.Interaction.Entitlements);
             if (isPremium == false && Premium.IsValidPremium(user.PremiumExpiration) == false)
             {
-                await RespondAsync(text: "✨ You can get premium below!\n💜 *Thanks so much!*", components: Premium.GetComponents());
+                await FollowupAsync(text: "✨ You can get premium below!\n💜 *Thanks so much!*", components: Premium.GetComponents());
+            }
+            else if (isPremium == false && Premium.IsValidPremium(user.PremiumExpiration))
+            {
+                await FollowupAsync(text: "✨ You already have premium!\n💜 *Thanks so much!*", components: Premium.GetComponents());
             }
             else
             {
-                await DeferAsync();
-
-                if (isPremium)
+                await foreach (var entitlementCollection in Bot.Client.GetEntitlementsAsync(userId: Context.User.Id))
                 {
-                    // Get Expiration Date
-                    var entitlement = Context.Interaction.Entitlements.FirstOrDefault(x => x.SkuId == 1169107771673812992);
-                    var expirationDate = entitlement?.EndsAt;
-
-                    if (expirationDate == null && Context.Interaction.Entitlements.First(x => x.SkuId == 1282452500913328180) != null)
+                    if (entitlementCollection.Any(x => x.SkuId == 1282452500913328180))
                     {
-                        expirationDate = DateTimeOffset.MaxValue;
-                    }
-
-                    // Only write to DB if needed.
-                    if (user.PremiumExpiration != expirationDate && expirationDate != null)
-                    {
-                        Console.WriteLine($"User {Context.User.Id} has updated their premium expiration to {expirationDate} in the DB");
-                        user.PremiumExpiration = (DateTimeOffset) expirationDate;
+                        user.PremiumExpiration = DateTimeOffset.MaxValue;
                         await context.UpdateUser(user);
-                    }
-                    else
-                    {
-                        Console.WriteLine($"User {Context.User.Id} has not updated their premium expiration in the DB (it is already {expirationDate})");
                     }
                 }
 
-                // Respond
                 await FollowupAsync(text: "✨ Your premium status has been updated!\n**💜 Thanks so much** for your support and have fun with your new features!");
             }
+
+            // Temporarily commented out due to Discord not properly handling entitlements on their end.
+
+            // else
+            // {
+            //     await DeferAsync();
+
+            //     if (isPremium)
+            //     {
+
+
+            //         // Get Expiration Date
+            //         var entitlement = Context.Interaction.Entitlements.FirstOrDefault(x => x.SkuId == 1169107771673812992);
+            //         var expirationDate = entitlement?.EndsAt;
+
+            //         if (expirationDate == null && Context.Interaction.Entitlements.First(x => x.SkuId == 1282452500913328180) != null)
+            //         {
+            //             expirationDate = DateTimeOffset.MaxValue;
+            //         }
+
+            //         // Only write to DB if needed.
+            //         if (user.PremiumExpiration != expirationDate && expirationDate != null)
+            //         {
+            //             Console.WriteLine($"User {Context.User.Id} has updated their premium expiration to {expirationDate} in the DB");
+            //             user.PremiumExpiration = (DateTimeOffset) expirationDate;
+            //             await context.UpdateUser(user);
+            //         }
+            //         else
+            //         {
+            //             Console.WriteLine($"User {Context.User.Id} has not updated their premium expiration in the DB (it is already {expirationDate})");
+            //         }
+            //     }
+
+            //     // Respond
+            //     await FollowupAsync(text: "✨ Your premium status has been updated!\n**💜 Thanks so much** for your support and have fun with your new features!");
+            // }
         }
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]

@@ -100,7 +100,7 @@ namespace Commands
             }
 
             // Check if the user has premium.
-            if (!Premium.IsPremium(Context.Interaction.Entitlements))
+            if (await Premium.IsPremiumAsync(Context.Interaction.Entitlements, Context.User.Id) == false)
             {
                 await FollowupAsync($"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}", components: Premium.GetComponents(), ephemeral: true);
                 return;
