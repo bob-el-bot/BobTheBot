@@ -288,6 +288,14 @@ public static class Bot
                 return;
             }
 
+            if (message.Content.StartsWith("<@705680059809398804>"))
+            {
+                string response = await OpenAI.PostToOpenAI(message.Content.Replace("<@705680059809398804>", ""));
+                await message.Channel.SendMessageAsync(response);
+
+                return;
+            }
+
             // Auto Embed if GitHub Link and Server has Auto Embeds for GitHub 
             Server server;
             using var dbContext = new BobEntities();
