@@ -29,7 +29,7 @@ namespace Commands
                 await FollowupAsync(text: $"❌ You do not have the `Send Messages` permission in {givenNewsChannel.Mention}\n- Try asking an admin.\n- Try asking a user with the permission `Send Messages`.", ephemeral: true);
             }
             // Check if the user has premium.
-            else if (publish == true && Premium.IsPremium(Context.Interaction.Entitlements) == false)
+            else if (publish == true && await Premium.IsPremiumAsync(Context.Interaction.Entitlements, Context.User.Id) == false)
             {
                 await FollowupAsync(text: $"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}", components: Premium.GetComponents(), ephemeral: true);
             }
@@ -83,7 +83,7 @@ namespace Commands
             await DeferAsync(ephemeral: true);
 
             // Check if the user has premium.
-            if (preview == true && Premium.IsPremium(Context.Interaction.Entitlements) == false)
+            if (preview == true && await Premium.IsPremiumAsync(Context.Interaction.Entitlements, Context.User.Id) == false)
             {
                 await FollowupAsync(text: $"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}", components: Premium.GetComponents(), ephemeral: true);
             }
@@ -117,7 +117,7 @@ namespace Commands
             await DeferAsync(ephemeral: true);
 
             // Check if the user has premium.
-            if (preview == true && Premium.IsPremium(Context.Interaction.Entitlements) == false)
+            if (preview == true && await Premium.IsPremiumAsync(Context.Interaction.Entitlements, Context.User.Id) == false)
             {
                 await FollowupAsync(text: $"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}", components: Premium.GetComponents(), ephemeral: true);
             }

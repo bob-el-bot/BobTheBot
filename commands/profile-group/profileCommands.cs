@@ -40,7 +40,7 @@ namespace Commands
                 float connect4WinPercent = (float)Math.Round(userToDisplay.TotalConnect4Games != 0 ? userToDisplay.Connect4Wins / userToDisplay.TotalConnect4Games * 100 : 0, 2);
 
                 // Check Premium
-                bool hasPremium = Premium.IsPremium(Context.Interaction.Entitlements);
+                bool hasPremium = Premium.IsPremium(Context.Interaction.Entitlements, userToDisplay);
 
                 Color color = hasPremium ? Colors.TryGetColor(userToDisplay.ProfileColor) ?? 0x2C2F33 : 0x2C2F33;
 
@@ -119,37 +119,38 @@ namespace Commands
 
             Color? finalColor = Colors.TryGetColor(color);
 
-            // Check if the user has premium.
-            if (Premium.IsPremium(Context.Interaction.Entitlements) == false)
-            {
-                await FollowupAsync(text: $"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}", components: Premium.GetComponents(), ephemeral: true);
-            }
-            else if (finalColor == null)
+            if (finalColor == null)
             {
                 await FollowupAsync(text: $"❌ `{color}` is an invalid color. Here is a list of valid colors:\n- {Colors.GetSupportedColorsString()}.\n- Valid hex and RGB codes are also accepted.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                return;
             }
-            else
+
+            using var context = new BobEntities();
+            User user = await context.GetUser(Context.User.Id);
+
+            // Check if the user has premium.
+            if (Premium.IsPremium(Context.Interaction.Entitlements, user) == false)
             {
-                using var context = new BobEntities();
-                User user = await context.GetUser(Context.User.Id);
-
-                // Only write to DB if needed.
-                if (user.ProfileColor != color)
-                {
-                    user.ProfileColor = color;
-                    await context.UpdateUser(user);
-                }
-
-                // Create Embed
-                var embed = new EmbedBuilder
-                {
-                    Title = "⬅️ Your new profile color.",
-                    Color = finalColor,
-                };
-
-                // Respond
-                await FollowupAsync(embed: embed.Build());
+                await FollowupAsync(text: $"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}", components: Premium.GetComponents(), ephemeral: true);
+                return;
             }
+
+            // Only write to DB if needed.
+            if (user.ProfileColor != color)
+            {
+                user.ProfileColor = color;
+                await context.UpdateUser(user);
+            }
+
+            // Create Embed
+            var embed = new EmbedBuilder
+            {
+                Title = "⬅️ Your new profile color.",
+                Color = finalColor,
+            };
+
+            // Respond
+            await FollowupAsync(embed: embed.Build());
         }
 
         [SlashCommand("badge-info", "Get info about profile badges.")]

@@ -61,7 +61,7 @@ namespace Commands.Helpers
 
         public static async Task<bool> ValidateTags(string tag1, string tag2, string tag3, SocketInteractionContext context)
         {
-            if ((!string.IsNullOrWhiteSpace(tag1) || !string.IsNullOrWhiteSpace(tag2) || !string.IsNullOrWhiteSpace(tag3)) && !Premium.IsPremium(context.Interaction.Entitlements))
+            if ((!string.IsNullOrWhiteSpace(tag1) || !string.IsNullOrWhiteSpace(tag2) || !string.IsNullOrWhiteSpace(tag3)) && await Premium.IsPremiumAsync(context.Interaction.Entitlements, context.User.Id) == false)
             {
                 await context.Interaction.FollowupAsync("❌ You cannot add tags without a premium subscription.", components: Premium.GetComponents());
                 return false;

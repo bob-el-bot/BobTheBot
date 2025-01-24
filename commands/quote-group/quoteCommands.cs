@@ -125,7 +125,7 @@ namespace Commands
                 await FollowupAsync(text: $"❌ Ask an admin or mod to configure this for you.\n- Permission(s) needed: `Manage Channels`.", ephemeral: true);
             }
             // Check if the user has premium.
-            else if (Premium.IsPremium(Context.Interaction.Entitlements) == false)
+            else if (await Premium.IsPremiumAsync(Context.Interaction.Entitlements, Context.User.Id) == false)
             {
                 await FollowupAsync(text: $"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}", components: Premium.GetComponents(), ephemeral: true);
             }
@@ -170,7 +170,7 @@ namespace Commands
                 await FollowupAsync(text: $"❌ Ask an admin or mod to configure this for you.\n- Permission(s) needed: `Manage Channels`.", ephemeral: true);
             }
             // Check if the user has premium.
-            else if (Premium.IsPremium(Context.Interaction.Entitlements) == false)
+            else if (await Premium.IsPremiumAsync(Context.Interaction.Entitlements, Context.User.Id) == false)
             {
                 await FollowupAsync(text: $"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}", components: Premium.GetComponents(), ephemeral: true);
             }

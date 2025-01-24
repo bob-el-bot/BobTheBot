@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Challenges;
+using Database;
+using Database.Types;
 using Discord;
 using Discord.Rest;
 using Moderation;
@@ -57,7 +59,8 @@ namespace PremiumInterface
         /// <param name="entitlements">The collection of entitlements for the user.</param>
         /// <returns>True if the user is entitled to premium access, otherwise false.</returns>
         public static bool IsPremium(IReadOnlyCollection<RestEntitlement> entitlements)
-        {            
+        {
+
             if (entitlements == null) return false;
 
             Console.WriteLine("Entitlements:");
@@ -68,6 +71,44 @@ namespace PremiumInterface
             }
 
             return entitlements.Any(x => x.SkuId == 1169107771673812992 || x.SkuId == 1282452500913328180);
+        }
+
+        /// <summary>
+        /// Determines whether a user is entitled to premium access based on their entitlements. This variant of the method is for when the user DB object is available.
+        /// </summary>
+        /// <param name="entitlements">The collection of entitlements for the user.</param>
+        /// <param name="user">The user to check for premium access.</param>
+        /// <returns>True if the user is entitled to premium access, otherwise false.</returns>
+        public static bool IsPremium(IReadOnlyCollection<RestEntitlement> entitlements, User user)
+        {
+            // Check if entitlements is null before calling Any()
+            if (entitlements?.Any(x => x.SkuId == 1169107771673812992 || x.SkuId == 1282452500913328180) == true)
+            {
+                return true;
+            }
+
+            return IsValidPremium(user.PremiumExpiration);
+        }
+
+        /// <summary>
+        /// Determines whether a user is entitled to premium access based on their entitlements. This variant of the method is for when the user DB object is not available.
+        /// </summary>
+        /// <param name="entitlements">The collection of entitlements for the user.</param>
+        /// <param name="userId">The ID of the user to check for premium access.</param>
+        /// <returns>True if the user is entitled to premium access, otherwise false.</returns>
+        public static async Task<bool> IsPremiumAsync(IReadOnlyCollection<RestEntitlement> entitlements, ulong userId)
+        {
+            // Check if entitlements is null before calling Any()
+            if (entitlements?.Any(x => x.SkuId == 1169107771673812992 || x.SkuId == 1282452500913328180) == true)
+            {
+                return true;
+            }
+
+            User user;
+            using var context = new BobEntities();
+            user = await context.GetUser(userId);
+
+            return IsValidPremium(user.PremiumExpiration);
         }
     }
 }
