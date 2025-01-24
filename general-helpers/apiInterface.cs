@@ -23,7 +23,7 @@ namespace ApiInteractions
         /// </summary>
         public static readonly ProductInfoHeaderValue commentValue = new("(+https://github.com/Quantam-Studios/BobTheBot)");
 
-        private static readonly HttpClient Client = new();
+        public static readonly HttpClient Client = new();
 
         /// <summary>
         /// Enumeration of accept types for specifying the type of content to accept in the response.
