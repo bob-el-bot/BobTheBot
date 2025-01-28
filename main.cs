@@ -21,6 +21,7 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using DotNetEnv;
+using System.IO;
 
 public static class Bot
 {
@@ -161,7 +162,7 @@ public static class Bot
                 index = index + 1 == statuses.Length ? 0 : index + 1;
             }
         });
-    
+
         _ = Task.Run(Schedule.LoadAndScheduleItemsAsync<ScheduledAnnouncement>);
 
         _ = Task.Run(Schedule.LoadAndScheduleItemsAsync<ScheduledMessage>);
@@ -182,7 +183,20 @@ public static class Bot
                 ChannelPermissions permissions = user.Guild.GetUser(Client.CurrentUser.Id).GetPermissions(user.Guild.SystemChannel);
                 if (user.Guild.SystemChannel != null && permissions.SendMessages && permissions.ViewChannel)
                 {
-                    if (server.CustomWelcomeMessage != null && server.CustomWelcomeMessage != "")
+                    if (server.HasWelcomeImage)
+                    {
+                        WelcomeImage welcomeImage;
+                        using (var context = new BobEntities())
+                        {
+                            welcomeImage = await context.GetWelcomeImage(user.Guild.Id);
+                        }
+
+                        if (welcomeImage != null)
+                        {
+                            await user.Guild.SystemChannel.SendFileAsync(new MemoryStream(welcomeImage.Image), "welcome.webp", text: Welcome.FormatCustomMessage(server.CustomWelcomeMessage, user.Mention));
+                        }
+                    }
+                    else if (server.CustomWelcomeMessage != null && server.CustomWelcomeMessage != "")
                     {
                         await user.Guild.SystemChannel.SendMessageAsync(text: Welcome.FormatCustomMessage(server.CustomWelcomeMessage, user.Mention));
                     }
