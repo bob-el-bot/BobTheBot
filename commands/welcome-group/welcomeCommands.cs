@@ -173,7 +173,7 @@ namespace Commands
             }
 
             // Check if the image is a valid format.
-            if (attachment.ContentType != "image/png" && attachment.ContentType != "image/jpeg")
+            if (attachment.ContentType != "image/png" && attachment.ContentType != "image/jpeg" && attachment.ContentType != "image/jpg")
             {
                 await FollowupAsync("❌ The image must be in either **PNG** or **JPEG** format.", ephemeral: true);
                 return;
