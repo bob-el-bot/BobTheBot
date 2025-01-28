@@ -99,6 +99,8 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/welcome toggle [welcome]` Bob will send welcome messages to new server members.
 - `/welcome set-message [message]` Set a custom message to welcome new users with.
 - `/welcome remove-message` Bob will stop using the custom message to welcome users.
+- `/welcome set-image [image]` Set a custom image to welcome new users with.
+- `/welcome remove-image` Bob will stop using the custom image to welcome users.
 
 ### 🔒 Encryption commands:
 - `/encrypt a1z26 [message]` Encrypts your message by swapping letters to their corresponding number.

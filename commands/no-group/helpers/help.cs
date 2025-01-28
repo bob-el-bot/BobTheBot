@@ -650,9 +650,31 @@ namespace Commands.Helpers
                     {
                         Name = "remove-message",
                         InheritGroupName = true,
-                        Description = "Bob will stop using the custom message to welcome users.",
+                        Description = "Removes the custom welcome message from your server. Does not disable general welcome messages.",
                         Url = "https://docs.bobthebot.net#welcome-remove-message",
-                    }
+                    },
+                    new CommandInfo
+                    {
+                        Name = "set-image",
+                        InheritGroupName = true,
+                        Description = "Set a custom welcome image for your server!",
+                        Url = "https://docs.bobthebot.net#welcome-set-image",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "image",
+                                Description = "The image you would like to use (PNG, JPG, JPEG). It will be compressed into a WEBP, but if the compressed image is larger than Discord's 8MB limit, you must compress it yourself or choose another image."
+                            }
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "remove-image",
+                        InheritGroupName = true,
+                        Description = "Removes the custom welcome image from your server. Does not disable general welcome messages.",
+                        Url = "https://docs.bobthebot.net#welcome-remove-image",
+                    },
                 ]
             },
             new() {
