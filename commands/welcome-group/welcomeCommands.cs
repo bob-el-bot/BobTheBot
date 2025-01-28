@@ -188,7 +188,8 @@ namespace Commands
             }
             catch (Exception e)
             {
-                await FollowupAsync($"❌ The image could not be processed. Please try again with a different image.\n- {e}", ephemeral: true);
+                await FollowupAsync($"❌ The image could not be processed. Please try again with a different image.\n- Consider joining [Bob's Official Server](https://discord.gg/HvGMRZD8jQ) and let us know about it if you think this is a mistake.", ephemeral: true);
+                Console.WriteLine(e.ToString());
                 return;
             }
 
