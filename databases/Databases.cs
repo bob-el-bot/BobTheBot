@@ -14,6 +14,7 @@ namespace Database
     public class BobEntities : DbContext
     {
         public virtual DbSet<Server> Server { get; set; }
+        public virtual DbSet<WelcomeImage> WelcomeImage { get; set; }
         public virtual DbSet<User> User { get; set; }
         public virtual DbSet<NewsChannel> NewsChannel { get; set; }
         public virtual DbSet<BlackListUser> BlackListUser { get; set; }
@@ -405,6 +406,49 @@ namespace Database
                     await RemoveScheduledAnnouncement(announcement.Id);
                     break;
             }
+        }
+
+        /// <summary>
+        /// Retrieves a welcome image from the database by its ID.
+        /// </summary>
+        /// <param name="id">The unique ID of the welcome image (usually the server ID).</param>
+        /// <returns>The corresponding <see cref="WelcomeImage"/> object if found; otherwise, null.</returns>
+        public async Task<WelcomeImage> GetWelcomeImage(ulong id)
+        {
+            return await WelcomeImage.FindAsync(keyValues: id);
+        }
+
+        /// <summary>
+        /// Updates an existing welcome image in the database.
+        /// </summary>
+        /// <param name="image">The <see cref="WelcomeImage"/> entity containing updated data.</param>
+        /// <returns>A task that represents the asynchronous update operation.</returns>
+        public async Task UpdateWelcomeImage(WelcomeImage image)
+        {
+            WelcomeImage.Update(image);
+            await SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Removes a welcome image from the database.
+        /// </summary>
+        /// <param name="image">The <see cref="WelcomeImage"/> entity to remove.</param>
+        /// <returns>A task that represents the asynchronous delete operation.</returns>
+        public async Task RemoveWelcomeImage(WelcomeImage image)
+        {
+            WelcomeImage.Remove(image);
+            await SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Adds a new welcome image to the database.
+        /// </summary>
+        /// <param name="image">The <see cref="WelcomeImage"/> entity to add.</param>
+        /// <returns>A task that represents the asynchronous insert operation.</returns>
+        public async Task AddWelcomeImage(WelcomeImage image)
+        {
+            await WelcomeImage.AddAsync(image);
+            await SaveChangesAsync();
         }
     }
 }
