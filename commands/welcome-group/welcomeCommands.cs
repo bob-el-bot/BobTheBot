@@ -248,6 +248,52 @@ namespace Commands
             }
         }
 
+        [SlashCommand("remove-image", "Removes the custom welcome image from your server. Does not disable general welcome messages.")]
+        public async Task RemoveCustomWelcomeImage()
+        {
+            await DeferAsync(ephemeral: true);
+            var discordUser = Context.Guild.GetUser(Context.User.Id);
+            var systemChannel = Context.Guild.SystemChannel;
+
+            // Check if the user has manage channels permissions.
+            if (!discordUser.GuildPermissions.Administrator)
+            {
+                if (systemChannel == null)
+                {
+                    await FollowupAsync("❌ You do not have a **System Messages** channel set in your server.\n- You can change this in the **Overview** tab of your server's settings.", ephemeral: true);
+                    return;
+                }
+
+                if (!discordUser.GetPermissions(systemChannel).ManageChannel)
+                {
+                    await FollowupAsync($"❌ You do not have permissions to manage <#{systemChannel.Id}> (The system channel where welcome messages are sent)\n- Try asking a user with the permission `Manage Channel`.", ephemeral: true);
+                    return;
+                }
+            }
+            // Update server welcome information.
+            else
+            {
+                Server server;
+                using var context = new BobEntities();
+                server = await context.GetServer(Context.Guild.Id);
+
+                // Only write to DB if needed.
+                if (server.HasWelcomeImage == true)
+                {
+                    server.HasWelcomeImage = false;
+                    await context.UpdateServer(server);
+
+                    var welcomeImage = await context.GetWelcomeImage(Context.Guild.Id);
+                    if (welcomeImage != null)
+                    {
+                        await context.RemoveWelcomeImage(welcomeImage);
+                    }
+                }
+
+                await FollowupAsync(text: $"✅ Bob will no longer greet people with the custom image.", ephemeral: true);
+            }
+        }
+
         [SlashCommand("remove-message", "Removes the custom welcome message from your server. Does not disable general welcome messages.")]
         public async Task RemoveCustomWelcomeMessage()
         {
