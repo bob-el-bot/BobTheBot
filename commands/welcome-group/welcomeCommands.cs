@@ -143,7 +143,7 @@ namespace Commands
         }
 
         [SlashCommand("set-image", "Set a custom welcome image for your server!")]
-        public async Task SetCustomWelcomeImage(Attachment attachment)
+        public async Task SetCustomWelcomeImage([Summary("image", "The image you would like to use (PNG, JPG, JPEG).")] Attachment attachment)
         {
             await DeferAsync(ephemeral: true);
             var discordUser = Context.Guild.GetUser(Context.User.Id);
