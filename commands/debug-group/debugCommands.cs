@@ -156,6 +156,7 @@ namespace Commands
                 int newsChannelEntriesCount = await context.NewsChannel.CountAsync();
                 int scheduledMessageEntriesCount = await context.ScheduledMessage.CountAsync();
                 int scheduledAnnouncementEntriesCount = await context.ScheduledAnnouncement.CountAsync();
+                int welcomeImageEntriesCount = await context.WelcomeImage.CountAsync();
                 double size = await context.GetDatabaseSizeBytes();
 
                 var embed = new EmbedBuilder
@@ -168,6 +169,7 @@ namespace Commands
                     .AddField(name: "User Entries", value: $"`{userEntriesCount}`", inline: true)
                     .AddField(name: "BlackListUser Entries", value: $"`{blackListEntriesCount}`", inline: true)
                     .AddField(name: "Server Entries", value: $"`{serverEntriesCount}`", inline: true)
+                    .AddField(name: "Welcome Image Entries", value: $"`{welcomeImageEntriesCount}`", inline: true)
                     .AddField(name: "NewsChannel Entries", value: $"`{newsChannelEntriesCount}`", inline: true)
                     .AddField(name: "Scheduled Message Entries", value: $"`{scheduledMessageEntriesCount}`", inline: true)
                     .AddField(name: "Scheduled Announcement Entries", value: $"`{scheduledAnnouncementEntriesCount}`", inline: true)
