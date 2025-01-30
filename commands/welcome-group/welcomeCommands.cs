@@ -143,7 +143,7 @@ namespace Commands
         }
 
         [SlashCommand("set-image", "Set a custom welcome image for your server!")]
-        public async Task SetCustomWelcomeImage([Summary("image", "The image you would like to use (PNG, JPG, JPEG).")] Attachment attachment)
+        public async Task SetCustomWelcomeImage([Summary("image", "The image you would like to use (PNG, JPG, JPEG, WEBP).")] Attachment attachment)
         {
             await DeferAsync(ephemeral: true);
             var discordUser = Context.Guild.GetUser(Context.User.Id);
@@ -173,24 +173,35 @@ namespace Commands
             }
 
             // Check if the image is a valid format.
-            if (attachment.ContentType != "image/png" && attachment.ContentType != "image/jpeg" && attachment.ContentType != "image/jpg")
+            string contentType = attachment.ContentType.ToLower();
+            if (string.IsNullOrEmpty(attachment.ContentType) || contentType != "image/png" && contentType != "image/jpeg" && contentType != "image/jpg" && contentType != "image/webp")
             {
-                await FollowupAsync("❌ The image must be in either **PNG** or **JPEG** format.", ephemeral: true);
+                await FollowupAsync("❌ The image must be in either **PNG**, **JPG**, **JPEG**, or **WEBP** format.", ephemeral: true);
                 return;
             }
 
             var image = await GetFromAPI(attachment.Url);
-            byte[] compressedImage;
 
-            try
+            if (image == null || image.Length == 0)
             {
-                compressedImage = Welcome.ConvertToWebP(image);
-            }
-            catch (Exception e)
-            {
-                await FollowupAsync($"❌ The image could not be processed. Please try again with a different image.\n- Consider joining [Bob's Official Server](https://discord.gg/HvGMRZD8jQ) and let us know about it if you think this is a mistake.", ephemeral: true);
-                Console.WriteLine(e.ToString());
+                await FollowupAsync("❌ Failed to retrieve the image. Please try again later.", ephemeral: true);
                 return;
+            }
+
+            byte[] compressedImage = contentType == "image/webp" ? image : null;
+
+            if (compressedImage == null)
+            {
+                try
+                {
+                    compressedImage = Welcome.ConvertToWebP(image);
+                }
+                catch (Exception e)
+                {
+                    await FollowupAsync("❌ The image could not be processed. Please try again with a different image.", ephemeral: true);
+                    Console.WriteLine(e);
+                    return;
+                }
             }
 
             // Check if the image is within Discord's size requirements.
