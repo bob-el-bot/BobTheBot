@@ -48,7 +48,7 @@ namespace Bob.Commands.Helpers
             pullRequestInfo.ReviewComments = (int)jsonData["review_comments"];
             pullRequestInfo.Description = jsonData["body"]?.ToString();
             var labels = jsonData["labels"].AsArray();
-            pullRequestInfo.Labels = new();
+            pullRequestInfo.Labels = [];
             foreach (var label in labels)
             {
                 JsonObject labelData = JsonNode.Parse(label.ToString()).AsObject();

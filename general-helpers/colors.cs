@@ -106,7 +106,7 @@ namespace Bob.ColorMethods
         private static string HexStringToHex(string input)
         {
             // Remove the '#' character if present
-            if (input.StartsWith("#"))
+            if (input.StartsWith('#'))
             {
                 input = input[1..];
             }

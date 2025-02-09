@@ -42,7 +42,7 @@ namespace Bob
         public const ulong supportServerId = 1058077635692994651;
         public static readonly ulong systemLogChannelId = 1160105468082004029;
 
-        private static readonly string[] statuses = { "/help | Games!", "/help | Premium! ❤︎", "/help | Scheduling!", "/help | Automod!", "/help | bobthebot.net", "/help | RNG!", "/help | Quotes!", "/help | Confessions!" };
+        private static readonly string[] statuses = ["/help | Games!", "/help | Premium! ❤︎", "/help | Scheduling!", "/help | Automod!", "/help | bobthebot.net", "/help | RNG!", "/help | Quotes!", "/help | Confessions!"];
 
         public static async Task Main()
         {
@@ -243,7 +243,7 @@ namespace Bob
         {
             var channel = message.Channel as SocketGuildChannel;
 
-            IGuildUser fetchedBot = Client.GetGuild(channel.Guild.Id).GetUser(Client.CurrentUser.Id);
+            SocketGuildUser fetchedBot = Client.GetGuild(channel.Guild.Id).GetUser(Client.CurrentUser.Id);
             var botPerms = fetchedBot.GetPermissions(channel);
 
             // Ensure Bob can send messages in the channel.

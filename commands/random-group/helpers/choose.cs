@@ -16,7 +16,7 @@ namespace Bob.Commands.Helpers
 
         public static string GetRandomDecisionText()
         {
-            string[] responses = { "Hmm... *this* one: ", "*Definitely* this: ", "No... no... maybe... *oooo*: ", "This one caught my eye: " };
+            string[] responses = ["Hmm... *this* one: ", "*Definitely* this: ", "No... no... maybe... *oooo*: ", "This one caught my eye: "];
 
             Random random = new();
 
