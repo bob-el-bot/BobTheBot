@@ -2,17 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using BadgeInterface;
-using Commands.Helpers;
-using Database;
-using Database.Types;
+using Bob.BadgeInterface;
+using Bob.Commands.Helpers;
+using Bob.Database;
+using Bob.Database.Types;
 using Discord;
 using Discord.WebSocket;
-using Games;
-using PremiumInterface;
-using Time.Timestamps;
+using Bob.Games;
+using Bob.PremiumInterface;
+using Bob.Time.Timestamps;
 
-namespace Challenges
+namespace Bob.Challenges
 {
     public static class Challenge
     {
@@ -451,7 +451,7 @@ namespace Challenges
             player1 = UpdateSpecificGameUserStats(game.Type, player1, winner, true);
             player2 = UpdateSpecificGameUserStats(game.Type, player2, winner, false);
 
-            var updatedUsers = Badge.CheckGivingUserBadge(new List<User> { player1, player2 }, Badges.Badges.Winner3);
+            var updatedUsers = Badge.CheckGivingUserBadge(new List<User> { player1, player2 }, Bob.Badges.Badges.Winner3);
 
             await context.UpdateUsers(updatedUsers);
         }

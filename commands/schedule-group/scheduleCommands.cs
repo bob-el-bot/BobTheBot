@@ -1,20 +1,20 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using ColorMethods;
-using Commands.Helpers;
-using Database;
-using Database.Types;
-using Debug;
+using Bob.ColorMethods;
+using Bob.Database;
+using Bob.Database.Types;
+using Bob.Debug;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using PremiumInterface;
-using Time.Timestamps;
-using Time.Timezones;
-using static Commands.Helpers.Schedule;
+using Bob.PremiumInterface;
+using Bob.Time.Timestamps;
+using Bob.Time.Timezones;
+using static Bob.Commands.Helpers.Schedule;
+using Bob.Commands.Helpers;
 
-namespace Commands
+namespace Bob.Commands
 {
     [CommandContextType(InteractionContextType.PrivateChannel, InteractionContextType.Guild)]
     [IntegrationType(ApplicationIntegrationType.GuildInstall)]

@@ -5,7 +5,7 @@ using Discord.Interactions;
 using UnitsNet;
 using UnitsNet.Units;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     public static class UnitConversion
     {

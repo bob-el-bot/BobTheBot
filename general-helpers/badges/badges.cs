@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Discord.Interactions;
 
-namespace Badges
+namespace Bob.Badges
 {
     [Flags]
     public enum Badges : ulong

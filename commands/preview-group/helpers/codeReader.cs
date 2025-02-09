@@ -3,9 +3,9 @@ using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Discord.WebSocket;
-using static ApiInteractions.Interface;
+using static Bob.ApiInteractions.Interface;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     /// <summary>
     /// A helper class for reading code files from GitHub API.

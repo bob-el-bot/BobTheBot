@@ -1,7 +1,7 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Database.Types
+namespace Bob.Database.Types
 {
     public class User
     {

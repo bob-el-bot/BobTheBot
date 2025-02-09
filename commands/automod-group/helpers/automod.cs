@@ -1,7 +1,8 @@
 using System.Threading.Tasks;
 using Discord;
 using Discord.WebSocket;
-namespace Commands.Helpers
+
+namespace Bob.Commands.Helpers
 {
     public static class Automod
     {

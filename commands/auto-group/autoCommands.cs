@@ -1,13 +1,12 @@
-using System;
 using System.Threading.Tasks;
-using Database;
-using Database.Types;
+using Bob.Database;
+using Bob.Database.Types;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using PremiumInterface;
+using Bob.PremiumInterface;
 
-namespace Commands
+namespace Bob.Commands
 {
     [CommandContextType(InteractionContextType.Guild)]
     [IntegrationType(ApplicationIntegrationType.GuildInstall)]

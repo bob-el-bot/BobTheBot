@@ -3,12 +3,12 @@ using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Uptime
+namespace Bob.Monitoring
 {
     /// <summary>
     /// A simple service that listens for HTTP requests and responds with a message.
     /// </summary>
-    public static class Service
+    public static class Uptime
     {
         /// <summary>
         /// Creates an HTTP listener and starts listening for requests.

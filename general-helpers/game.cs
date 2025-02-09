@@ -5,10 +5,9 @@ using Discord.Interactions;
 using Discord.Rest;
 using Discord.WebSocket;
 using System.Threading;
-using Challenges;
-using Debug;
+using Bob.Challenges;
 
-namespace Games
+namespace Bob.Games
 {
     public enum GameType
     {

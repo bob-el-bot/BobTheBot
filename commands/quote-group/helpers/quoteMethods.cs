@@ -2,16 +2,15 @@ using System;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Database;
-using Database.Types;
+using Bob.Database;
+using Bob.Database.Types;
 using Discord;
 using Discord.Interactions;
-using Discord.Rest;
 using Discord.WebSocket;
-using PremiumInterface;
-using Time.Timestamps;
+using Bob.PremiumInterface;
+using Bob.Time.Timestamps;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     public static class QuoteMethods
     {

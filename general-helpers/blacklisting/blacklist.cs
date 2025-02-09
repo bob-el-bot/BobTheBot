@@ -1,12 +1,12 @@
 using System;
 using System.Threading.Tasks;
-using Commands.Helpers;
-using Database;
-using Database.Types;
+using Bob.Commands.Helpers;
+using Bob.Database;
+using Bob.Database.Types;
 using Discord;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace Moderation
+namespace Bob.Moderation
 {
     public static class BlackList
     {

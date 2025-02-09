@@ -1,10 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Text;
 using Discord;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     /// <summary>
     /// Represents a group of related commands.

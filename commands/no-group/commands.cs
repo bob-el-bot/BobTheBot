@@ -5,19 +5,20 @@ using System.Text.Json.Nodes;
 using Discord.WebSocket;
 using Discord;
 using System.Text;
-using static ApiInteractions.Interface;
-using Commands.Helpers;
-using Database.Types;
-using Database;
+using static Bob.ApiInteractions.Interface;
+using Bob.Commands.Helpers;
+using Bob.Database.Types;
+using Bob.Database;
 using System.Text.RegularExpressions;
 using System.Linq;
-using Challenges;
-using PremiumInterface;
-using ColorMethods;
-using Moderation;
-using Time.Timestamps;
+using static Bob.Bot;
+using Bob.Challenges;
+using Bob.PremiumInterface;
+using Bob.ColorMethods;
+using Bob.Moderation;
+using Bob.Time.Timestamps;
 
-namespace Commands
+namespace Bob.Commands
 {
     public class NoGroup : InteractionModuleBase<SocketInteractionContext>
     {
@@ -828,7 +829,7 @@ namespace Commands
             }
             else
             {
-                await foreach (var entitlementCollection in Bot.Client.GetEntitlementsAsync(userId: Context.User.Id))
+                await foreach (var entitlementCollection in Client.GetEntitlementsAsync(userId: Context.User.Id))
                 {
                     if (entitlementCollection.Any(x => x.SkuId == 1282452500913328180))
                     {

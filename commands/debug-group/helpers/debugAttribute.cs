@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Interactions;
 
-namespace Commands.Attributes
+namespace Bob.Commands.Attributes
 {
     public class RequireGuildAttribute(ulong gId) : PreconditionAttribute
     {

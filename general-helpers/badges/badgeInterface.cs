@@ -1,16 +1,13 @@
 using System;
 using System.Collections.Generic;
-using System.Data.Common;
-using System.Dynamic;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Badges;
-using Database;
-using Database.Types;
+using Bob.Badges;
+using Bob.Database;
+using Bob.Database.Types;
 
-namespace BadgeInterface
+namespace Bob.BadgeInterface
 {
     /// <summary>
     /// Provides methods for managing user badges.

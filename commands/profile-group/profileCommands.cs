@@ -1,16 +1,16 @@
 using System;
 using System.Threading.Tasks;
-using ColorMethods;
-using Database;
-using Database.Types;
+using Bob.ColorMethods;
+using Bob.Database;
+using Bob.Database.Types;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using PremiumInterface;
-using BadgeInterface;
-using Moderation;
+using Bob.PremiumInterface;
+using Bob.BadgeInterface;
+using Bob.Moderation;
 
-namespace Commands
+namespace Bob.Commands
 {
     [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
     [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
@@ -154,7 +154,7 @@ namespace Commands
         }
 
         [SlashCommand("badge-info", "Get info about profile badges.")]
-        public async Task BadgeInfo([Summary("badge", "The badge you want to learn about (leave empty to show all).")] Badges.Badges? badge = null)
+        public async Task BadgeInfo([Summary("badge", "The badge you want to learn about (leave empty to show all).")] Bob.Badges.Badges? badge = null)
         {
             var embed = new EmbedBuilder
             {
@@ -167,8 +167,8 @@ namespace Commands
 
             if (badge != null)
             {
-                embed.Title = $"{Badge.GetBadgeEmoji((Badges.Badges)badge)} {Badge.GetBadgeDisplayName((Badges.Badges)badge)} Info";
-                embed.Description = Badge.GetBadgeInfoString((Badges.Badges)badge);
+                embed.Title = $"{Badge.GetBadgeEmoji((Bob.Badges.Badges)badge)} {Badge.GetBadgeDisplayName((Bob.Badges.Badges)badge)} Info";
+                embed.Description = Badge.GetBadgeInfoString((Bob.Badges.Badges)badge);
 
                 await RespondAsync(embed: embed.Build());
             }

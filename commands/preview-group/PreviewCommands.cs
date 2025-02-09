@@ -3,12 +3,12 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using ColorHelper;
-using ColorMethods;
-using Commands.Helpers;
+using Bob.ColorMethods;
+using Bob.Commands.Helpers;
 using Discord;
 using Discord.Interactions;
 
-namespace Commands
+namespace Bob.Commands
 {
     [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
     [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]

@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Challenges;
+using Bob.Challenges;
 using Discord;
 using Discord.WebSocket;
-using Games;
+using Bob.Games;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     public class Wordle(IUser player1, IUser player2) : Games.Game(GameType.Wordle, onePerChannel, TimeSpan.FromMinutes(10), player1, player2)
     {

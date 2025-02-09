@@ -1,8 +1,7 @@
 using System.Linq;
 using System.Text.RegularExpressions;
-using Discord.WebSocket;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     public static class DiscordMessageLinkParse
     {
