@@ -55,6 +55,11 @@ namespace Bob.Commands.Helpers
         public bool InheritGroupName { get; set; }
 
         /// <summary>
+        /// Gets or sets the ID of the command.
+        /// </summary>
+        public ulong Id { get; set; }
+
+        /// <summary>
         /// Gets or sets the description of the command.
         /// </summary>
         public string Description { get; set; }
@@ -105,7 +110,7 @@ namespace Bob.Commands.Helpers
             foreach (var command in CommandGroups[index].Commands)
             {
                 var name = command.InheritGroupName ? $"{CommandGroups[index].Name} {command.Name}" : command.Name;
-                description.AppendLine($"- [Docs]({command.Url}) `/{name}` {command.Description}");
+                description.AppendLine($"- [Docs]({command.Url}) </{name}:{command.Id}> {command.Description}");
 
                 if (command.Parameters != null)
                 {
@@ -1409,9 +1414,9 @@ namespace Bob.Commands.Helpers
                     },
                     new CommandInfo
                     {
-                        Name = "timezones (TEMPORARILY REMOVED DUE TO ISSUES)",
+                        Name = "timezones",
                         InheritGroupName = true,
-                        Description = "Bob will convert a time from one timezone to another.",
+                        Description = "(TEMPORARILY REMOVED DUE TO ISSUES) Bob will convert a time from one timezone to another.",
                         Url = "https://docs.bobthebot.net#convert-timezones",
                         Parameters =
                         [

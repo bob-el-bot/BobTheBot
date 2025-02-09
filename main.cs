@@ -22,6 +22,7 @@ using System.Text;
 using DotNetEnv;
 using System.IO;
 using Bob.Monitoring;
+using System.Collections.Generic;
 
 namespace Bob
 {
@@ -84,7 +85,35 @@ namespace Bob
                 });
 
                 await Service.AddModulesAsync(Assembly.GetEntryAssembly(), null);
-                await Service.RegisterCommandsGloballyAsync();
+                var globalCommands = await Service.RegisterCommandsGloballyAsync();
+
+                Dictionary<string, ulong> _commandIds = globalCommands.ToDictionary(cmd => cmd.Name, cmd => cmd.Id);
+
+                // Update CommandGroups with resolved command IDs
+                foreach (var group in Help.CommandGroups)
+                {
+                    foreach (var command in group.Commands)
+                    {
+                        if (command.InheritGroupName)
+                        {
+                            if (_commandIds.TryGetValue(group.Name, out ulong commandId))
+                            {
+                                command.Id = commandId;
+                            }
+                        }
+                        else
+                        {
+                            var commandNameParts = command.Name.Split(' ');
+
+                            string lookupName = commandNameParts.Length > 1 ? commandNameParts[0] : command.Name;
+
+                            if (_commandIds.TryGetValue(lookupName, out ulong commandId))
+                            {
+                                command.Id = commandId;
+                            }
+                        }
+                    }
+                }
 
                 // Register Debug Commands
                 ModuleInfo[] debugCommands = Service.Modules
