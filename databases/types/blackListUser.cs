@@ -1,9 +1,9 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
-using Time.Timestamps;
+using Bob.Time.Timestamps;
 
-namespace Database.Types
+namespace Bob.Database.Types
 {
     public class BlackListUser
     {

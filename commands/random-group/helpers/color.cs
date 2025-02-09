@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using SkiaSharp;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     public static class ColorPreview
     {

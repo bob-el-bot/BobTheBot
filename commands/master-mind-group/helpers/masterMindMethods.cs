@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using Discord;
 using Discord.Interactions;
-using Moderation;
+using Bob.Moderation;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     public static class MasterMindMethods
     {

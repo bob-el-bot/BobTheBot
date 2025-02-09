@@ -1,12 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     /// <summary>
     /// Represents the result of filtering a message for banned words.

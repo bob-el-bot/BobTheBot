@@ -1,4 +1,4 @@
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     public class HeartLevel(string heart, int min)
     {

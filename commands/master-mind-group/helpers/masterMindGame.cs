@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Discord;
 using Discord.WebSocket;
-using static Commands.Helpers.MasterMindMethods;
+using static Bob.Commands.Helpers.MasterMindMethods;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     /// <summary>
     /// Represents a single game of Master Mind, containing game logic and state.

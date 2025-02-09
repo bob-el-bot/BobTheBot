@@ -2,13 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection.Metadata;
 using System.Text;
-using Challenges;
+using Bob.Challenges;
 using Discord;
-using Time.Timestamps;
+using Bob.Time.Timestamps;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     public static class WordleMethods
     {

@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Challenges;
-using Database;
-using Database.Types;
+using Bob.Challenges;
+using Bob.Database;
+using Bob.Database.Types;
 using Discord;
 using Discord.Rest;
-using Moderation;
+using Bob.Moderation;
 
-namespace PremiumInterface
+namespace Bob.PremiumInterface
 {
     public static class Premium
     {

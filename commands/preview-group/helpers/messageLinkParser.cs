@@ -1,10 +1,9 @@
 using System.Linq;
 using System.Text.RegularExpressions;
-using Discord.WebSocket;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
-    public static class DiscordMessageLinkParse
+    public static partial class DiscordMessageLinkParse
     {
         public enum DiscordLinkType
         {
@@ -68,7 +67,10 @@ namespace Commands.Helpers
 
         private static bool IsChannelMessageUrl(string url)
         {
-            return url.Contains("https://discord.com/channels/") && Regex.IsMatch(url, @"https?://discord\.com/channels/\d+/\d+/\d+");
+            return url.Contains("https://discord.com/channels/") && MyRegex().IsMatch(url);
         }
+
+        [GeneratedRegex(@"https?://discord\.com/channels/\d+/\d+/\d+")]
+        private static partial Regex MyRegex();
     }
 }

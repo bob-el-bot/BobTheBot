@@ -1,15 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Concurrency;
 using System.Threading.Tasks;
-using Commands.Helpers;
-using Database.Types;
-using DotNetEnv;
+using Bob.Commands.Helpers;
+using Bob.Database.Types;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
-namespace Database
+namespace Bob.Database
 {
     public class BobEntities : DbContext
     {

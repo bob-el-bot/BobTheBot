@@ -4,10 +4,10 @@ using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Discord;
-using Time.Timestamps;
-using static ApiInteractions.Interface;
+using Bob.Time.Timestamps;
+using static Bob.ApiInteractions.Interface;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     public static class IssueReader
     {

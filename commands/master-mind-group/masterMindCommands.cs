@@ -1,12 +1,11 @@
 using System.Threading.Tasks;
 using System.Linq;
-using Commands.Helpers;
+using Bob.Commands.Helpers;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using System;
 
-namespace Commands
+namespace Bob.Commands
 {
     [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
     [IntegrationType(ApplicationIntegrationType.GuildInstall)]

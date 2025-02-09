@@ -1,11 +1,10 @@
-using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Commands.Helpers;
+using Bob.Commands.Helpers;
 using Discord;
 using Discord.Interactions;
 
-namespace Commands
+namespace Bob.Commands
 {
     [CommandContextType(InteractionContextType.Guild)]
     [IntegrationType(ApplicationIntegrationType.GuildInstall)]

@@ -1,10 +1,7 @@
 using System;
-using System.Collections.Generic;
-using Commands.Helpers;
-using Discord.Interactions;
-using Time.Timezones;
+using Bob.Time.Timezones;
 
-namespace Time.Timestamps
+namespace Bob.Time.Timestamps
 {
     /// <summary>
     /// Represents a utility class for generating timestamps in various formats.

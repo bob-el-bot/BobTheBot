@@ -7,7 +7,7 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using Microsoft.Extensions.Caching.Memory;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     /// <summary>
     /// A cache for guild users.

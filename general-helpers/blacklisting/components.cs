@@ -1,13 +1,12 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Database;
-using Database.Types;
+using Bob.Database;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 
-namespace Moderation
+namespace Bob.Moderation
 {
     public class Components : InteractionModuleBase<SocketInteractionContext>
     {

@@ -4,10 +4,10 @@ using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Discord;
-using Time.Timestamps;
-using static ApiInteractions.Interface;
+using Bob.Time.Timestamps;
+using static Bob.ApiInteractions.Interface;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     /// <summary>
     /// A helper class for reading pull requests from GitHub API.
@@ -48,7 +48,7 @@ namespace Commands.Helpers
             pullRequestInfo.ReviewComments = (int)jsonData["review_comments"];
             pullRequestInfo.Description = jsonData["body"]?.ToString();
             var labels = jsonData["labels"].AsArray();
-            pullRequestInfo.Labels = new();
+            pullRequestInfo.Labels = [];
             foreach (var label in labels)
             {
                 JsonObject labelData = JsonNode.Parse(label.ToString()).AsObject();

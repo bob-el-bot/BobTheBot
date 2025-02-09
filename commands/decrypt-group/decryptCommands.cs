@@ -1,12 +1,12 @@
 using System.Threading.Tasks;
 using Discord.Interactions;
 using SimpleCiphers;
-using Commands.Helpers;
+using Bob.Commands.Helpers;
 using Discord;
 using System.Linq;
 using System;
 
-namespace Commands
+namespace Bob.Commands
 {
     [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
     [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]

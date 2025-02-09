@@ -5,12 +5,12 @@ using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
-using Challenges;
+using Bob.Challenges;
 using Discord;
-using static ApiInteractions.Interface;
-using Time.Timestamps;
+using static Bob.ApiInteractions.Interface;
+using Bob.Time.Timestamps;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     /// <summary>
     /// Represents a trivia question with its details and answers.

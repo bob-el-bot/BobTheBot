@@ -1,15 +1,15 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Commands.Helpers;
-using Database;
-using Database.Types;
+using Bob.Commands.Helpers;
+using Bob.Database;
+using Bob.Database.Types;
 using Discord;
 using Discord.Interactions;
-using PremiumInterface;
-using static ApiInteractions.Interface;
+using Bob.PremiumInterface;
+using static Bob.ApiInteractions.Interface;
 
-namespace Commands
+namespace Bob.Commands
 {
     [CommandContextType(InteractionContextType.Guild)]
     [IntegrationType(ApplicationIntegrationType.GuildInstall)]

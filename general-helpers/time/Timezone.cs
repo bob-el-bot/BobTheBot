@@ -1,6 +1,6 @@
 using Discord.Interactions;
 
-namespace Time.Timezones
+namespace Bob.Time.Timezones
 {
     #nullable enable
     public enum Timezone 

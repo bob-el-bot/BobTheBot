@@ -5,20 +5,21 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using BadgeInterface;
-using Commands.Attributes;
-using Commands.Helpers;
-using Database;
-using Database.Types;
+using Bob.BadgeInterface;
+using Bob.Commands.Attributes;
+using Bob.Commands.Helpers;
+using Bob.Database;
+using Bob.Database.Types;
 using Discord;
 using Discord.Interactions;
 using Discord.Rest;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
-using Moderation;
-using static ApiInteractions.Interface;
+using Bob.Moderation;
+using static Bob.ApiInteractions.Interface;
+using static Bob.Bot;
 
-namespace Commands
+namespace Bob.Commands
 {
     [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
     [IntegrationType(ApplicationIntegrationType.GuildInstall)]
@@ -132,7 +133,7 @@ namespace Commands
             {
                 StringBuilder response = new();
 
-                await foreach (var entitlementCollection in Bot.Client.GetEntitlementsAsync())
+                await foreach (var entitlementCollection in Client.GetEntitlementsAsync())
                 {
                     foreach (var entitlement in entitlementCollection)
                     {
@@ -367,7 +368,7 @@ namespace Commands
             }
 
             [SlashCommand("give-user-badge", "Gives the given user the given badge.")]
-            public async Task GiveUserBadge(Badges.Badges badge, IUser user = null, string userId = null)
+            public async Task GiveUserBadge(Bob.Badges.Badges badge, IUser user = null, string userId = null)
             {
                 await DeferAsync();
 
@@ -402,7 +403,7 @@ namespace Commands
             }
 
             [SlashCommand("remove-user-badge", "Removes the given badge from the given user.")]
-            public async Task RemoveUserBadge(Badges.Badges badge, IUser user = null, string userId = null)
+            public async Task RemoveUserBadge(Bob.Badges.Badges badge, IUser user = null, string userId = null)
             {
                 await DeferAsync();
 

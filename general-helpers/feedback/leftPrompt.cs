@@ -1,10 +1,10 @@
 using System.Threading.Tasks;
-using Debug;
+using Bob.Debug;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 
-namespace Feedback
+namespace Bob.Feedback
 {
     public class Prompt : InteractionModuleBase<SocketInteractionContext>
     {

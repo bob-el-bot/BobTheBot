@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Challenges;
-using Database;
-using Database.Types;
+using Bob.Challenges;
+using Bob.Database;
+using Bob.Database.Types;
 using Discord;
 using Discord.WebSocket;
-using Games;
+using Bob.Games;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     public class Trivia(IUser player1, IUser player2) : Games.Game(GameType.Trivia, onePerChannel, TimeSpan.FromMinutes(5), player1, player2)
     {

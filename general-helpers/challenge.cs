@@ -2,17 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using BadgeInterface;
-using Commands.Helpers;
-using Database;
-using Database.Types;
+using Bob.BadgeInterface;
+using Bob.Commands.Helpers;
+using Bob.Database;
+using Bob.Database.Types;
 using Discord;
 using Discord.WebSocket;
-using Games;
-using PremiumInterface;
-using Time.Timestamps;
+using Bob.Games;
+using Bob.PremiumInterface;
+using Bob.Time.Timestamps;
 
-namespace Challenges
+namespace Bob.Challenges
 {
     public static class Challenge
     {
@@ -42,13 +42,13 @@ namespace Challenges
         public static readonly Color SinglePlayerLoseColor = Color.Red;
 
         // Caches
-        public static Dictionary<ulong, Games.Game> Games { get; } = new();
-        public static Dictionary<ulong, RockPaperScissors> RockPaperScissorsGames { get; } = new();
-        public static Dictionary<ulong, TicTacToe> TicTacToeGames { get; } = new();
-        public static Dictionary<ulong, Trivia> TriviaGames { get; } = new();
-        public static Dictionary<ulong, Connect4> Connect4Games { get; set; } = new();
-        public static Dictionary<ulong, Wordle> WordleGames { get; set; } = new();
-        public static Dictionary<ulong, uint?> UserChallenges { get; } = new();
+        public static Dictionary<ulong, Games.Game> Games { get; } = [];
+        public static Dictionary<ulong, RockPaperScissors> RockPaperScissorsGames { get; } = [];
+        public static Dictionary<ulong, TicTacToe> TicTacToeGames { get; } = [];
+        public static Dictionary<ulong, Trivia> TriviaGames { get; } = [];
+        public static Dictionary<ulong, Connect4> Connect4Games { get; set; } = [];
+        public static Dictionary<ulong, Wordle> WordleGames { get; set; } = [];
+        public static Dictionary<ulong, uint?> UserChallenges { get; } = [];
 
         /// <summary>
         /// Checks if a user can challenge another user asynchronously.
@@ -451,7 +451,7 @@ namespace Challenges
             player1 = UpdateSpecificGameUserStats(game.Type, player1, winner, true);
             player2 = UpdateSpecificGameUserStats(game.Type, player2, winner, false);
 
-            var updatedUsers = Badge.CheckGivingUserBadge(new List<User> { player1, player2 }, Badges.Badges.Winner3);
+            var updatedUsers = Badge.CheckGivingUserBadge([player1, player2], Bob.Badges.Badges.Winner3);
 
             await context.UpdateUsers(updatedUsers);
         }

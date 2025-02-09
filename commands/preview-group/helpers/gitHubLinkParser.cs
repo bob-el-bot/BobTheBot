@@ -1,8 +1,7 @@
-using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     public static class GitHubLinkParse
     {

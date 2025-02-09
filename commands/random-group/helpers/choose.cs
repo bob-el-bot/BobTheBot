@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     public static class Choose
     {
@@ -16,7 +16,7 @@ namespace Commands.Helpers
 
         public static string GetRandomDecisionText()
         {
-            string[] responses = { "Hmm... *this* one: ", "*Definitely* this: ", "No... no... maybe... *oooo*: ", "This one caught my eye: " };
+            string[] responses = ["Hmm... *this* one: ", "*Definitely* this: ", "No... no... maybe... *oooo*: ", "This one caught my eye: "];
 
             Random random = new();
 

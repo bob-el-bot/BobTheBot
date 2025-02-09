@@ -1,9 +1,9 @@
 using System;
 using System.Threading.Tasks;
-using Challenges;
+using Bob.Challenges;
 using Discord;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     /// <summary>
     /// Provides helper methods for implementing Tic Tac Toe (TTT) game logic.

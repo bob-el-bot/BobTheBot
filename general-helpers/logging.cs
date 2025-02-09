@@ -4,10 +4,10 @@ using System.Threading.Tasks;
 using Discord;
 using Discord.Interactions;
 using Discord.Rest;
-using static Performance.Stats;
+using static Bob.Monitoring.PerformanceStats;
 using Discord.WebSocket;
 
-namespace Debug
+namespace Bob.Debug
 {
     public static class Logger
     {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Discord;
 
-namespace ColorMethods
+namespace Bob.ColorMethods
 {
     public static class Colors
     {
@@ -106,7 +106,7 @@ namespace ColorMethods
         private static string HexStringToHex(string input)
         {
             // Remove the '#' character if present
-            if (input.StartsWith("#"))
+            if (input.StartsWith('#'))
             {
                 input = input[1..];
             }
