@@ -825,7 +825,7 @@ namespace Bob.Commands
             }
             else if (isPremium == false && Premium.IsValidPremium(user.PremiumExpiration))
             {
-                await FollowupAsync(text: "✨ You already have premium!\n💜 *Thanks so much!*", components: Premium.GetComponents());
+                await FollowupAsync(text: "✨ You already have premium!\n💜 *Thanks so much!*");
             }
             else
             {
