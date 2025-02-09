@@ -17,7 +17,7 @@ using Commands.Helpers;
 using BadgeInterface;
 using static ApiInteractions.Interface;
 using static Commands.Helpers.MessageReader;
-using System.Net;
+using Uptime;
 using System.Net.Http;
 using System.Text;
 using DotNetEnv;
@@ -62,39 +62,9 @@ public static class Bot
         await Client.LoginAsync(TokenType.Bot, Token);
         await Client.StartAsync();
 
-        StartHttpListener();
+        Uptime.Service.StartHttpListener();
 
         await Task.Delay(Timeout.Infinite);
-    }
-
-    private static void StartHttpListener()
-    {
-        HttpListener listener = new();
-        listener.Prefixes.Add($"http://*:{Environment.GetEnvironmentVariable("PORT")}/");
-        listener.Start();
-        Console.WriteLine($"Listening for HTTP requests on port {Environment.GetEnvironmentVariable("PORT")}...");
-
-        Task.Run(async () =>
-        {
-            while (true)
-            {
-                HttpListenerContext context = await listener.GetContextAsync();
-                ProcessRequest(context);
-            }
-        });
-    }
-
-    private static void ProcessRequest(HttpListenerContext context)
-    {
-        _ = context.Request;
-        HttpListenerResponse response = context.Response;
-
-        // Process the request here
-        string responseString = "Bob is Alive!";
-        byte[] buffer = Encoding.UTF8.GetBytes(responseString);
-        response.ContentLength64 = buffer.Length;
-        response.OutputStream.Write(buffer, 0, buffer.Length);
-        response.OutputStream.Close();
     }
 
     private static async Task Ready()
