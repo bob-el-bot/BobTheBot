@@ -173,7 +173,7 @@ namespace Bob.Commands
             else
             {
                 // Respond if no quotes match the prompt
-                await RespondAsync(text: $"❌ The prompt: {prompt} was not recognized. Use `/quote-prompts` to see all valid prompts.", ephemeral: true);
+                await RespondAsync(text: $"❌ The prompt: {prompt} was not recognized. Use {Help.GetCommandMention("quote-prompts")} to see all valid prompts.", ephemeral: true);
             }
         }
 

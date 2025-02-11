@@ -88,7 +88,7 @@ namespace Bob.Commands
             // Check if Bob has permission to send messages in given channel
             else if (!permissions.SendMessages || !permissions.ViewChannel || !permissions.EmbedLinks)
             {
-                await RespondAsync(text: $"❌ Bob is either missing permissions to view, send messages, *or* embed links in the channel <#{channel.Id}>.\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`, and `Embed Links`.\n- Use `/quote channel` to set a new channel.", ephemeral: true);
+                await RespondAsync(text: $"❌ Bob is either missing permissions to view, send messages, *or* embed links in the channel <#{channel.Id}>.\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`, and `Embed Links`.\n- Use {Help.GetCommandMention("quote channel")} to set a new channel.", ephemeral: true);
             }
             else
             {

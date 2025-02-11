@@ -111,7 +111,7 @@ namespace Bob.Commands.Helpers
         {
             if (guesses == null || guesses.Count == 0)
             {
-                return "No guesses made yet, use `/wordle guess`.";
+                return $"No guesses made yet, use {Help.GetCommandMention("wordle guess")}.";
             }
 
             StringBuilder description = new();
@@ -153,7 +153,7 @@ namespace Bob.Commands.Helpers
             else
             {
                 stringBuilder.AppendLine($"### 💡 {game.Player1.Mention} lost {game.Title}!");
-                stringBuilder.AppendLine("You have lost, but don't be sad you can just start a new game with `/wordle new-game`");
+                stringBuilder.AppendLine($"You have lost, but don't be sad you can just start a new game with {Help.GetCommandMention("wordle new-game")}");
                 stringBuilder.AppendLine($"**Answer:** {GetFormattedGuess(game.Word)}");
             }
 

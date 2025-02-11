@@ -138,7 +138,7 @@ namespace Bob.Commands
             }
             else
             {
-                await FollowupAsync($"✅ Bob knows what to say, but you **need** to enable welcome messages with `/welcome toggle` for it to take effect.\nYour welcome message will look like so:\n\n{Welcome.FormatCustomMessage(message, Context.User.Mention)}", ephemeral: true);
+                await FollowupAsync($"✅ Bob knows what to say, but you **need** to enable welcome messages with {Help.GetCommandMention("welcome toggle")} for it to take effect.\nYour welcome message will look like so:\n\n{Welcome.FormatCustomMessage(message, Context.User.Mention)}", ephemeral: true);
             }
         }
 
@@ -255,7 +255,7 @@ namespace Bob.Commands
             }
             else
             {
-                await FollowupAsync($"✅ Bob knows what image to use, but you **need** to enable welcome messages with `/welcome toggle` for it to take effect.", ephemeral: true);
+                await FollowupAsync($"✅ Bob knows what image to use, but you **need** to enable welcome messages with {Help.GetCommandMention("welcome toggle")} for it to take effect.", ephemeral: true);
             }
         }
 
