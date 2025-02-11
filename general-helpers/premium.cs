@@ -8,6 +8,7 @@ using Bob.Database.Types;
 using Discord;
 using Discord.Rest;
 using Bob.Moderation;
+using Bob.Commands.Helpers;
 
 namespace Bob.PremiumInterface
 {
@@ -19,7 +20,7 @@ namespace Bob.PremiumInterface
         public static readonly int MaxScheduledMessages = 1;
 
         // Premium Message
-        public static readonly string HasPremiumMessage = "If you already have premium (💜 **thanks so much!**) simply use `/premium` to unlock all of the features.";
+        public static readonly string HasPremiumMessage = $"If you already have premium (💜 **thanks so much!**) simply use {Help.GetCommandMention("premium")} to unlock all of the features.";
 
         public static MessageComponent GetComponents()
         {

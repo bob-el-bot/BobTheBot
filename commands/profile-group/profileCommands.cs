@@ -9,6 +9,7 @@ using Discord.WebSocket;
 using Bob.PremiumInterface;
 using Bob.BadgeInterface;
 using Bob.Moderation;
+using Bob.Commands.Helpers;
 
 namespace Bob.Commands
 {
@@ -86,11 +87,11 @@ namespace Bob.Commands
 
             if (open)
             {
-                await FollowupAsync(text: "✅ Your DMs are now open to people using `/confess`.", ephemeral: true);
+                await FollowupAsync(text: $"✅ Your DMs are now open to people using {Help.GetCommandMention("confess")}.", ephemeral: true);
             }
             else
             {
-                await FollowupAsync(text: "✅ Your DMs will now appear closed to people using `/confess`.", ephemeral: true);
+                await FollowupAsync(text: $"✅ Your DMs will now appear closed to people using {Help.GetCommandMention("confess")}.", ephemeral: true);
             }
         }
 

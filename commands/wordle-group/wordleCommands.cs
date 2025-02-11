@@ -40,7 +40,7 @@ namespace Bob.Commands
 
             if (game == null)
             {
-                await RespondAsync(text: "❌ No game of Wordle is currently active in this channel.\n- Use `/wordle new-game` to begin one.", ephemeral: true);
+                await RespondAsync(text: $"❌ No game of Wordle is currently active in this channel.\n- Use {Help.GetCommandMention("wordle new-game")} to begin one.", ephemeral: true);
                 return;
             }
 

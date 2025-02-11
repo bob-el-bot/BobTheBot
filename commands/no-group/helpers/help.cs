@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Discord;
 
@@ -131,6 +134,11 @@ namespace Bob.Commands.Helpers
             return embed.Build();
         }
 
+        public static string GetCommandMention(string commandName, ulong commandId)
+        {
+            return $"</{commandName}:{commandId}>";
+        }
+
         /// <summary>
         /// Generates a message component containing a select menu for choosing a command group and buttons for support and documentation links.
         /// </summary>
@@ -201,6 +209,27 @@ namespace Bob.Commands.Helpers
             Emote = new Emoji("🌐"),
             Url = "https://docs.bobthebot.net"
         };
+
+        /// <summary>
+        /// Generates a Discord command mention string.
+        /// </summary>
+        /// <param name="commandName">The name of the command.</param>
+        /// <returns>
+        /// A properly formatted Discord command mention if the command exists;
+        /// otherwise, returns a plain text representation of the command.
+        /// </returns>
+        public static string GetCommandMention(string commandName)
+        {
+            CommandLookup.TryGetValue(commandName, out var command);
+
+            if (command == null)
+            {
+                return $"`/{commandName}`"; // Example: `/command`
+            }
+
+            return $"</{commandName}:{command.Id}>"; // Example: </command:1234567890>
+        }
+
 
         public static readonly CommandInfoGroup[] CommandGroups =
         [
@@ -1093,7 +1122,7 @@ namespace Bob.Commands.Helpers
                     }
                 ]
             },
-            new() 
+            new()
             {
                 Title = "Generate",
                 Name = "generate",
@@ -1587,5 +1616,13 @@ namespace Bob.Commands.Helpers
                 ]
             }
         ];
+
+        private static readonly Dictionary<string, CommandInfo> CommandLookup = CommandGroups
+            .SelectMany(group => group.Commands.Select(cmd => new
+            {
+                Key = cmd.InheritGroupName ? $"{group.Name} {cmd.Name}" : cmd.Name,
+                Command = cmd
+            }))
+            .ToDictionary(entry => entry.Key, entry => entry.Command, StringComparer.OrdinalIgnoreCase);
     }
 }

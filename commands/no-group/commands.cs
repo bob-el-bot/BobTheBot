@@ -140,7 +140,7 @@ namespace Bob.Commands
 
             if (game == null)
             {
-                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use `/tic-tac-toe` to start a new game.", ephemeral: true);
+                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use {Help.GetCommandMention("tic-tac-toe")} to start a new game.", ephemeral: true);
             }
             else
             {
@@ -221,7 +221,7 @@ namespace Bob.Commands
 
             if (game == null)
             {
-                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use `/trivia` to start a new game.", ephemeral: true);
+                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use {Help.GetCommandMention("trivia")} to start a new game.", ephemeral: true);
             }
             else
             {
@@ -289,7 +289,7 @@ namespace Bob.Commands
 
             if (game == null)
             {
-                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use `/rock-paper-scissors` to start a new game.", ephemeral: true);
+                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use {Help.GetCommandMention("rock-paper-scissors")} to start a new game.", ephemeral: true);
             }
             else
             {
@@ -365,7 +365,7 @@ namespace Bob.Commands
 
             if (game == null)
             {
-                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use `/connect4` to start a new game.", ephemeral: true);
+                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use {Help.GetCommandMention("connect4")} to start a new game.", ephemeral: true);
             }
             else
             {
@@ -535,8 +535,8 @@ namespace Bob.Commands
         public async Task QuotePrompts()
         {
             // Respond
-            await RespondAsync(text: @"
-**Here are all valid prompts for `/random quote`:**
+            await RespondAsync(text: @$"
+**Here are all valid prompts for {Help.GetCommandMention("random quote")}:**
 
 **Categories:**
 
@@ -732,17 +732,17 @@ namespace Bob.Commands
                 if (filterResult.BlacklistMatches.Count > 0)
                 {
                     var bannedUser = await context.GetUserFromBlackList(Context.User.Id);
-                    string reason = $"Sending a message with `/confess` that contained: {ConfessFiltering.FormatBannedWords(filterResult.BlacklistMatches)}";
+                    string reason = $"Sending a message with {Help.GetCommandMention("confess")} that contained: {ConfessFiltering.FormatBannedWords(filterResult.BlacklistMatches)}";
 
                     if (isUserBlacklisted)
                     {
                         bannedUser = await BlackList.StepBanUser(Context.User.Id, reason);
-                        await FollowupAsync($"❌ Your message contains blacklisted words and you are **already banned**. Your punishment has **increased**.\n- You will be able to use `/confess` again {Timestamp.FromDateTime((DateTime)bannedUser.Expiration, Timestamp.Formats.Relative)}.\n**Reason(s):**\n{bannedUser.Reason}\n- Use `/profile punishments` to check your punishment status.\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
+                        await FollowupAsync($"❌ Your message contains blacklisted words and you are **already banned**. Your punishment has **increased**.\n- You will be able to use {Help.GetCommandMention("confess")} again {Timestamp.FromDateTime((DateTime)bannedUser.Expiration, Timestamp.Formats.Relative)}.\n**Reason(s):**\n{bannedUser.Reason}\n- Use {Help.GetCommandMention("profile punishments")} to check your punishment status.\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
                     }
                     else
                     {
                         bannedUser = await BlackList.BlackListUser(bannedUser, Context.User.Id, reason, BlackList.Punishment.FiveMinutes);
-                        await FollowupAsync($"❌ Your message contains blacklisted words. You have been temporarily banned.\n- You will be able to use `/confess` again {Timestamp.FromDateTime((DateTime)bannedUser.Expiration, Timestamp.Formats.Relative)}.\n**Reason(s):**\n{bannedUser.Reason}\n- Use `/profile punishments` to check your punishment status.\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
+                        await FollowupAsync($"❌ Your message contains blacklisted words. You have been temporarily banned.\n- You will be able to use {Help.GetCommandMention("confess")} again {Timestamp.FromDateTime((DateTime)bannedUser.Expiration, Timestamp.Formats.Relative)}.\n**Reason(s):**\n{bannedUser.Reason}\n- Use {Help.GetCommandMention("profile punishments")} to check your punishment status.\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
                     }
                     return;
                 }
@@ -750,7 +750,7 @@ namespace Bob.Commands
                 if (isUserBlacklisted)
                 {
                     var bannedUser = await context.GetUserFromBlackList(Context.User.Id);
-                    await FollowupAsync($"❌ You are banned from using `/confess`\n{bannedUser.FormatAsString()}\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
+                    await FollowupAsync($"❌ You are banned from using {Help.GetCommandMention("confess")}\n{bannedUser.FormatAsString()}\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
                     return;
                 }
 

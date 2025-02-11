@@ -26,7 +26,7 @@ namespace Bob.Commands.Helpers
         {
             if (server.QuoteChannelId == null)
             {
-                await context.Interaction.FollowupAsync("❌ Use `/quote channel` first (a quote channel is not set in this server).", ephemeral: true);
+                await context.Interaction.FollowupAsync($"❌ Use {Help.GetCommandMention("quote channel")} first (a quote channel is not set in this server).", ephemeral: true);
                 return false;
             }
 

@@ -99,7 +99,7 @@ namespace Bob.Commands
 
             await ModifyOriginalResponseAsync(x =>
             {
-                x.Content = $"✅ Message scheduled for {Timestamp.FromDateTime(scheduledMessage.TimeToSend, Timestamp.Formats.Exact)}\n- ID: `{scheduledMessage.Id}`\n- You can edit your message with `/schedule edit` and the given ID.";
+                x.Content = $"✅ Message scheduled for {Timestamp.FromDateTime(scheduledMessage.TimeToSend, Timestamp.Formats.Exact)}\n- ID: `{scheduledMessage.Id}`\n- You can edit your message with {Help.GetCommandMention("schedule edit")} and the given ID.";
             });
         }
 
@@ -193,7 +193,7 @@ namespace Bob.Commands
 
             await ModifyOriginalResponseAsync(x =>
             {
-                x.Content = $"✅ Announcement scheduled for {Timestamp.FromDateTime(scheduledAnnouncement.TimeToSend, Timestamp.Formats.Exact)}\n- ID: `{scheduledAnnouncement.Id}`\n- You can edit your announcement with `/schedule edit` and the given ID.";
+                x.Content = $"✅ Announcement scheduled for {Timestamp.FromDateTime(scheduledAnnouncement.TimeToSend, Timestamp.Formats.Exact)}\n- ID: `{scheduledAnnouncement.Id}`\n- You can edit your announcement with {Help.GetCommandMention("schedule edit")} and the given ID.";
             });
         }
 
