@@ -736,33 +736,41 @@ namespace Bob.Commands
                     filterResult = ConfessFiltering.ContainsBannedWords($"{message} {signoff}");
                     bool isUserBlacklisted = await BlackList.IsBlacklisted(Context.User.Id);
 
+                    var dbServer = await context.GetServer(Context.Guild.Id);
+
                     if (filterResult.BlacklistMatches.Count > 0)
                     {
-                        var bannedUser = await context.GetUserFromBlackList(Context.User.Id);
-                        string reason = $"Sending a message with {Help.GetCommandMention("confess")} that contained: {ConfessFiltering.FormatBannedWords(filterResult.BlacklistMatches)}";
+                        // If confess filtering is on for the server, punish.
+                        if (dbServer.ConfessFilteringOff == false)
+                        {
+                            var bannedUser = await context.GetUserFromBlackList(Context.User.Id);
+                            string reason = $"Sending a message with {Help.GetCommandMention("confess")} that contained: {ConfessFiltering.FormatBannedWords(filterResult.BlacklistMatches)}";
 
-                        if (isUserBlacklisted)
-                        {
-                            bannedUser = await BlackList.StepBanUser(Context.User.Id, reason);
-                            await FollowupAsync($"❌ Your message contains blacklisted words and you are **already banned**. Your punishment has **increased**.\n- You will be able to use {Help.GetCommandMention("confess")} again {Timestamp.FromDateTime((DateTime)bannedUser.Expiration, Timestamp.Formats.Relative)}.\n**Reason(s):**\n{bannedUser.Reason}\n- Use {Help.GetCommandMention("profile punishments")} to check your punishment status.\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
+                            if (isUserBlacklisted)
+                            {
+                                bannedUser = await BlackList.StepBanUser(Context.User.Id, reason);
+                                await FollowupAsync($"❌ This server has confess message filtering turned on and your message contains blacklisted words. You are **already banned** and so your punishment has **increased**.\n- You will be able to use {Help.GetCommandMention("confess")} again {Timestamp.FromDateTime((DateTime)bannedUser.Expiration, Timestamp.Formats.Relative)}.\n**Reason(s):**\n{bannedUser.Reason}\n- Use {Help.GetCommandMention("profile punishments")} to check your punishment status.\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
+                            }
+                            else
+                            {
+                                bannedUser = await BlackList.BlackListUser(bannedUser, Context.User.Id, reason, BlackList.Punishment.FiveMinutes);
+                                await FollowupAsync($"❌ This server has confess message filtering turned on and your message contains blacklisted words. You have been temporarily banned.\n- You will be able to use {Help.GetCommandMention("confess")} again {Timestamp.FromDateTime((DateTime)bannedUser.Expiration, Timestamp.Formats.Relative)}.\n**Reason(s):**\n{bannedUser.Reason}\n- Use {Help.GetCommandMention("profile punishments")} to check your punishment status.\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
+                            }
+
+                            return;
                         }
-                        else
-                        {
-                            bannedUser = await BlackList.BlackListUser(bannedUser, Context.User.Id, reason, BlackList.Punishment.FiveMinutes);
-                            await FollowupAsync($"❌ Your message contains blacklisted words. You have been temporarily banned.\n- You will be able to use {Help.GetCommandMention("confess")} again {Timestamp.FromDateTime((DateTime)bannedUser.Expiration, Timestamp.Formats.Relative)}.\n**Reason(s):**\n{bannedUser.Reason}\n- Use {Help.GetCommandMention("profile punishments")} to check your punishment status.\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
-                        }
-                        return;
                     }
 
                     if (isUserBlacklisted)
                     {
                         var bannedUser = await context.GetUserFromBlackList(Context.User.Id);
-                        await FollowupAsync($"❌ You are banned from using {Help.GetCommandMention("confess")}\n{bannedUser.FormatAsString()}\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
+                        await FollowupAsync($"❌ This server has confess message filtering turned on. You are currently banned from using {Help.GetCommandMention("confess")}\n{bannedUser.FormatAsString()}\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
                         return;
                     }
                 }
 
-                if (dbUser.ConfessionsOff)
+                // If user has confessions off or filtering on and there are blacklisted words, do not send the message.
+                if (dbUser.ConfessionsOff || filterResult.BlacklistMatches.Count > 0)
                 {
                     await FollowupAsync($"❌ Bob could **not** DM {user.Mention}.\n- You could try again, but this *probably* means their DMs are closed which Bob cannot change.", ephemeral: true);
                     return;
@@ -807,7 +815,7 @@ namespace Bob.Commands
                 await sentMessage.ModifyAsync(x => x.Components = components.Build());
                 await FollowupAsync($"✉️ Sent!\n**Message:** {message} - {signoff}\n**To:** **{user.Mention}**", ephemeral: true);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 Console.WriteLine(e);
                 await FollowupAsync($"❌ Bob could **not** DM {user.Mention}.\n- You could try again, but this *probably* means their DMs are closed which Bob cannot change.", ephemeral: true);

@@ -17,7 +17,7 @@ namespace Bob.Commands.Helpers
             foreach (var property in properties)
             {
                 string propertyName = property.Name;
-                object value = property.GetValue(server) ?? "null"; // Handle null values gracefully
+                object value = property.GetValue(server) ?? "null";
                 
                 stringBuilder.AppendLine($"{propertyName}: {value}");
             }
