@@ -11,6 +11,8 @@ namespace Bob.Database.Types
         public uint? MaxQuoteLength { get; set; }
         public uint MinQuoteLength { get; set; }
 
+        public bool ConfessFilteringOff { get; set; }
+
         public bool Welcome { get; set; }
         public string CustomWelcomeMessage { get; set; }
         public bool HasWelcomeImage { get; set; } 

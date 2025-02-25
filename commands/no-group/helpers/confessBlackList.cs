@@ -13,12 +13,12 @@ namespace Bob.Commands.Helpers
         /// <summary>
         /// Gets or sets the list of words that matched the blacklist.
         /// </summary>
-        public List<string> BlacklistMatches { get; set; }
+        public List<string> BlacklistMatches { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the list of words that need to be marked as spoilers.
         /// </summary>
-        public List<string> WordsToCensor { get; set; }
+        public List<string> WordsToCensor { get; set; } = [];
     }
 
     /// <summary>

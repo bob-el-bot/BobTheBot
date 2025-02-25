@@ -12,6 +12,7 @@ namespace Bob.Database.Types
         // Profile
         public string ProfileColor { get; set; }
         public bool ConfessionsOff { get; set; }
+        public bool ConfessFilteringOff { get; set; }
         // Message Scheduling
         public uint TotalScheduledMessages { get; set; }
         public uint TotalScheduledAnnouncements { get; set; }
