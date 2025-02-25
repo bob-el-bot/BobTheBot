@@ -47,6 +47,7 @@ namespace Bob
 
         public static async Task Main()
         {
+            Env.Load();
             if (Token is null)
             {
                 throw new ArgumentException("Discord bot token not set properly.");

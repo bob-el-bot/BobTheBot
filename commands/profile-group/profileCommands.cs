@@ -95,6 +95,33 @@ namespace Bob.Commands
             }
         }
 
+        [SlashCommand("confessions-filter-toggle", "Enable or disable censoring and/or blocking of /confess messages sent to you.")]
+        public async Task ConfessionsFilterToggle([Summary("enable", "If checked (true), Bob will censor and/or block messages sent to you with /confess that are flagged.")] bool enable)
+        {
+            await DeferAsync(ephemeral: true);
+
+            User user;
+            using (var context = new BobEntities())
+            {
+                user = await context.GetUser(Context.User.Id);
+
+                if (user.ConfessFilteringOff != enable)
+                {
+                    user.ConfessFilteringOff = enable;
+                    await context.UpdateUser(user);
+                }
+            }
+
+            if (enable)
+            {
+                await FollowupAsync(text: $"✅ {Help.GetCommandMention("confess")} messages sent to you will now be censored and/or blocked.", ephemeral: true);
+            }
+            else
+            {
+                await FollowupAsync(text: $"✅ {Help.GetCommandMention("confess")} messages sent to you will now be unfiltered.", ephemeral: true);
+            }
+        }
+
         [SlashCommand("punishments", "See all active punishments on your account.")]
         public async Task ViewPunishments()
         {
