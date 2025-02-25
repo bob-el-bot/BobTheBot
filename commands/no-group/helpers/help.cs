@@ -483,6 +483,31 @@ namespace Bob.Commands.Helpers
                 ]
             },
             new() {
+                Title = "Administration",
+                Name = "admin",
+                Description = "Commands related to administration features.",
+                Emoji = "⚖️",
+                Url = "https://docs.bobthebot.net#admin",
+                Commands =
+                [
+                    new CommandInfo
+                    {
+                        Name = "confess filter-toggle",
+                        InheritGroupName = true,
+                        Description = "Enable or disable censoring and/or blocking of /confess messages in this server.",
+                        Url = "https://docs.bobthebot.net#admin-confess-filter-toggle",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "enable",
+                                Description = "If enabled (true), Bob will censor and/or block flagged messages sent in this server with /confess."
+                            }
+                        ]
+                    },
+                ]
+            },    
+            new() {
                 Title = "Profiles",
                 Name = "profile",
                 Description = "Commands related to user profiles.",
@@ -517,6 +542,21 @@ namespace Bob.Commands.Helpers
                             {
                                 Name = "open",
                                 Description = "Enable or disable receiving messages sent via `/confess`. Choose from: True, False."
+                            }
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "confessions-filter-toggle",
+                        InheritGroupName = true,
+                        Description = "Enable or disable censoring and/or blocking of `/confess` messages sent to you.",
+                        Url = "https://docs.bobthebot.net#profile-confessions-filter-toggle",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "enable",
+                                Description = "If checked (true), Bob will censor and/or block messages sent to you with /confess that are flagged. Choose from: True, False."
                             }
                         ]
                     },

@@ -85,9 +85,13 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 ### 👤 Profile Commands:
 - `/profile display [user]` Displays the specified user's profile.
 - `/profile confessions-toggle [open]` Configure if you want to receive messages sent with `/confess`.
+- `/profile confessions-filter-toggle [enable]` Configure if you want to filter received messages sent with `/confess`.
 - `/profile punishments` See all active punishments on your account.
 - `/profile set-color [color]` Sets your profile color.
 - `/profile badge-info [badge]` Shows how to unlock the given badge.
+
+### ⚖️ Admin Commands:
+- `/admin confess filter-toggle [enable]` Enable or disable censoring and/or blocking of `/confess` messages in this server.
 
 ### 🖊️ Quoting commands:
 - `/quote new [quote] [user] [tag]*3` Formats and shares the quote in designated channel.
