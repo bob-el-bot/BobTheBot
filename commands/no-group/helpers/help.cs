@@ -494,14 +494,14 @@ namespace Bob.Commands.Helpers
                     {
                         Name = "confess filter-toggle",
                         InheritGroupName = true,
-                        Description = "Enable or disable censoring and/or blocking of /confess messages in this server.",
+                        Description = "Enable or disable censoring and/or blocking of `/confess` messages in this server.",
                         Url = "https://docs.bobthebot.net#admin-confess-filter-toggle",
                         Parameters =
                         [
                             new ParameterInfo
                             {
                                 Name = "enable",
-                                Description = "If enabled (true), Bob will censor and/or block flagged messages sent in this server with /confess."
+                                Description = "If enabled (true), Bob will censor and/or block flagged messages sent in this server with `/confess`."
                             }
                         ]
                     },
@@ -556,7 +556,7 @@ namespace Bob.Commands.Helpers
                             new ParameterInfo
                             {
                                 Name = "enable",
-                                Description = "If checked (true), Bob will censor and/or block messages sent to you with /confess that are flagged. Choose from: True, False."
+                                Description = "If checked (true), Bob will censor and/or block messages sent to you with `/confess` that are flagged. Choose from: True, False."
                             }
                         ]
                     },
