@@ -736,12 +736,12 @@ namespace Bob.Commands
                     filterResult = ConfessFiltering.ContainsBannedWords($"{message} {signoff}");
                     bool isUserBlacklisted = await BlackList.IsBlacklisted(Context.User.Id);
 
-                    var dbServer = await context.GetServer(Context.Guild.Id);
-
                     if (filterResult.BlacklistMatches.Count > 0)
                     {
-                        // If confess filtering is on for the server, punish.
-                        if (dbServer.ConfessFilteringOff == false)
+                        Server dbServer = Context.Guild?.Id != null ? await context.GetServer(Context.Guild.Id) : null;
+
+                        // If a Guild Install and confess filtering is on for the server, punish.
+                        if (dbServer != null && dbServer.ConfessFilteringOff == false)
                         {
                             var bannedUser = await context.GetUserFromBlackList(Context.User.Id);
                             string reason = $"Sending a message with {Help.GetCommandMention("confess")} that contained: {ConfessFiltering.FormatBannedWords(filterResult.BlacklistMatches)}";
