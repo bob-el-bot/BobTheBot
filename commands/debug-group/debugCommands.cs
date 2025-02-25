@@ -461,7 +461,7 @@ namespace Bob.Commands
                     using var context = new BobEntities();
                     dbServer = await context.GetServer(parsedId);
 
-                    await FollowupAsync(text: $"✅ `Showing Server: {discordServer.Name}, {discordServer.Id}`\n```cs\nCustom Welcome Message: {dbServer.CustomWelcomeMessage}\nWelcome: {dbServer.Welcome}\nQuote Channel ID: {dbServer.QuoteChannelId}\nMax Quote Length: {dbServer.MaxQuoteLength}\nMin Quote Length: {dbServer.MinQuoteLength}```");
+                    await FollowupAsync(text: $"✅ `Showing Server: {discordServer.Name}, {discordServer.Id}`\n{ServerDebugging.GetServerPropertyString(dbServer)}");
                 }
             }
 
