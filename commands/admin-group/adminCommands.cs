@@ -55,6 +55,7 @@ namespace Bob.Commands
                     await FollowupAsync(text:
                         $"✅ **Confession filtering disabled!**\n" +
                         $"Messages sent with {Help.GetCommandMention("confess")} will no longer be filtered.\n" +
+                        $"Users can still individually decide if they want to filter messages sent to them.\n" +
                         $"\n❗ **Flagged words will not be blocked, and users will not be punished. Use with caution.**",
                         ephemeral: true);
                 }
