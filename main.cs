@@ -268,7 +268,11 @@ namespace Bob
 
         private static async Task MessageReceived(SocketMessage message)
         {
-            var channel = message.Channel as SocketGuildChannel;
+            // Ensure channel is not null (Ensures this is method is only handling messages received form guilds).
+            if (message.Channel is not SocketGuildChannel channel)
+            {
+                return;
+            }
 
             SocketGuildUser fetchedBot = Client.GetGuild(channel.Guild.Id).GetUser(Client.CurrentUser.Id);
             var botPerms = fetchedBot.GetPermissions(channel);
