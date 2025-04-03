@@ -26,7 +26,7 @@ namespace Bob.Commands
         [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("ping", "Bob will share his ping.")]
         public async Task Ping()
-        {
+        {          
             await RespondAsync(text: $"🏓 Pong! The client latency is **{Bot.Client.Latency}** ms.");
         }
 
