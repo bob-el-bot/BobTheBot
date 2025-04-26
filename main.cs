@@ -150,7 +150,7 @@ namespace Bob
                     });
                 }
 
-                Console.WriteLine($"Shard {shard.ShardId} | is ready with {Client.Guilds.Count} guilds.");
+                _ = Log(new LogMessage(LogSeverity.Info, "Bob", $"Shard {shard.ShardId} | is ready with {Client.Guilds.Count} guilds."));
 
                 Client.ShardReady -= ShardReady;
             }
