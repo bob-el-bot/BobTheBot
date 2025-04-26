@@ -23,12 +23,13 @@ using DotNetEnv;
 using System.IO;
 using Bob.Monitoring;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace Bob
 {
     public static class Bot
     {
-        public static readonly DiscordSocketClient Client = new(new DiscordSocketConfig
+        public static DiscordShardedClient Client = new(new DiscordSocketConfig
         {
             GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers | GatewayIntents.GuildMessages | GatewayIntents.MessageContent | GatewayIntents.AutoModerationConfiguration,
         });
@@ -53,7 +54,7 @@ namespace Bob
                 throw new ArgumentException("Discord bot token not set properly.");
             }
 
-            Client.Ready += Ready;
+            Client.ShardReady += ShardReady;
             Client.Log += Log;
             Client.JoinedGuild += JoinedGuild;
             Client.LeftGuild += Feedback.Prompt.LeftGuild;
@@ -67,11 +68,20 @@ namespace Bob
             await Client.StartAsync();
 
             Uptime.StartHttpListener();
+            var cpuUsage = await GetCpuUsageForProcess();
+            Console.WriteLine("CPU at Ready: " + cpuUsage.ToString() + "%");
+            var ramUsage = GetRamUsageForProcess();
+            Console.WriteLine("RAM at Ready: " + ramUsage.ToString() + "%");
+
+            // Restart / reset scheduled messages and announcements
+            _ = Task.Run(Schedule.LoadAndScheduleItemsAsync<ScheduledAnnouncement>);
+            _ = Task.Run(Schedule.LoadAndScheduleItemsAsync<ScheduledMessage>);
+
 
             await Task.Delay(Timeout.Infinite);
         }
 
-        private static async Task Ready()
+        private static async Task ShardReady(DiscordSocketClient shard)
         {
             try
             {
@@ -140,12 +150,9 @@ namespace Bob
                     });
                 }
 
-                var cpuUsage = await GetCpuUsageForProcess();
-                Console.WriteLine("CPU at Ready: " + cpuUsage.ToString() + "%");
-                var ramUsage = GetRamUsageForProcess();
-                Console.WriteLine("RAM at Ready: " + ramUsage.ToString() + "%");
+                Console.WriteLine($"Shard {shard.ShardId} | is ready with {Client.Guilds.Count} guilds.");
 
-                Client.Ready -= Ready;
+                Client.ShardReady -= ShardReady;
             }
             catch (Exception e)
             {
@@ -160,14 +167,10 @@ namespace Bob
                 var timer = new PeriodicTimer(TimeSpan.FromSeconds(16));
                 while (await timer.WaitForNextTickAsync())
                 {
-                    await Client.SetCustomStatusAsync(statuses[index]);
+                    await shard.SetCustomStatusAsync(statuses[index]);
                     index = index + 1 == statuses.Length ? 0 : index + 1;
                 }
             });
-
-            _ = Task.Run(Schedule.LoadAndScheduleItemsAsync<ScheduledAnnouncement>);
-
-            _ = Task.Run(Schedule.LoadAndScheduleItemsAsync<ScheduledMessage>);
         }
 
         private static async Task UserJoined(SocketGuildUser user)
@@ -368,7 +371,7 @@ namespace Bob
         {
             try
             {
-                SocketInteractionContext ctx = new(Client, interaction);
+                ShardedInteractionContext ctx = new(Client, interaction);
                 await Service.ExecuteCommandAsync(ctx, null);
             }
             catch
@@ -445,8 +448,9 @@ namespace Bob
                 var cpuUsage = await GetCpuUsageForProcess();
                 var ramUsage = GetRamUsageForProcess();
                 string location = (ctx.Interaction.GuildId == null) ? "a DM" : (Client.GetGuild((ulong)ctx.Interaction.GuildId) == null ? "User Install" : Client.GetGuild((ulong)ctx.Interaction.GuildId).ToString());
+                int? shardId = ctx.Interaction.GuildId == null ? null : (ctx as ShardedInteractionContext).Client.GetShardIdFor(ctx.Guild);
                 var commandName = info.IsTopLevelCommand ? $"/{info.Name}" : $"/{info.Module.SlashGroupName} {info.Name}";
-                Console.WriteLine($"{DateTime.Now:dd/MM. H:mm:ss} | {FormatPerformance(cpuUsage, ramUsage)} | Location: {location} | Command: {commandName}");
+                Console.WriteLine($"{DateTime.Now:dd/MM. H:mm:ss} | {FormatPerformance(cpuUsage, ramUsage)} | Shard: {(shardId == null ? "N" : shardId)} | Location: {location} | Command: {commandName}");
 
                 // Live Debugging
                 // Server Logging
