@@ -220,7 +220,7 @@ namespace Bob
                     using var context = new BobEntities();
                     dbUser = await context.GetUser(user.Id);
 
-                    await Badge.GiveUserBadge(dbUser, Bob.Badges.Badges.Friend);
+                    await Badge.GiveUserBadge(dbUser, Badges.Badges.Friend);
                 }
             }
             catch (Exception e)

@@ -29,7 +29,10 @@ namespace Bob.Debug
 
         public static async Task LogErrorToDiscord(IInteractionContext ctx, SlashCommandInfo info, string errorReason = null)
         {
-            string location = (ctx.Interaction.GuildId == null) ? "a DM" : (Bot.Client.GetGuild((ulong)ctx.Interaction.GuildId) == null ? "User Install" : Bot.Client.GetGuild((ulong)ctx.Interaction.GuildId).ToString());
+            bool isGuild = ctx.Interaction.GuildId != null;
+
+            string location = !isGuild ? "a DM" : (Bot.Client.GetGuild((ulong)ctx.Interaction.GuildId) == null ? "User Install" : Bot.Client.GetGuild((ulong)ctx.Interaction.GuildId).ToString());
+            int? shardId = !isGuild ? null : (ctx as ShardedInteractionContext).Client.GetShardIdFor(ctx.Guild);
             var commandName = info.IsTopLevelCommand ? $"/{info.Name}" : $"/{info.Module.SlashGroupName} {info.Name}";
             string methodName = info.MethodName;
             IUser user = ctx.User;
@@ -50,7 +53,7 @@ namespace Bob.Debug
 
             // Ensure message length doesn't exceed 2000 characters
             string errorMessage = (errorReason == null) ? "" : $"Error: ```cs\n{errorReason}```";
-            string message = $"`{DateTime.Now:dd/MM. H:mm:ss} | {FormatPerformance(cpuUsage, ramUsage)} | Location: {location} | User: {user.GlobalName}, {user.Id}`\n```{commandUsage}```{errorMessage}Command type: **{commandType}** | Method name in code: **{methodName}**";
+            string message = $"`{DateTime.Now:dd/MM. H:mm:ss} | {FormatPerformance(cpuUsage, ramUsage)} | Shard: {(shardId == null ? "N" : shardId)} | Location: {location} | User: {user.GlobalName}, {user.Id}`\n```{commandUsage}```{errorMessage}Command type: **{commandType}** | Method name in code: **{methodName}**";
 
             if (message.Length > 2000)
             {
@@ -60,7 +63,7 @@ namespace Bob.Debug
 
                 errorReason = errorReason[..maxErrorReasonLength];
 
-                message = $"`{DateTime.Now:dd/MM. H:mm:ss} | {FormatPerformance(cpuUsage, ramUsage)} | Location: {location} | User: {user.GlobalName}, {user.Id}`\n```{commandUsage}```{(errorReason == null ? "" : $"Error: ```cs\n{errorReason}```")}Command type: **{commandType}** | Method name in code: **{methodName}** | **ERR TOO LONG**";
+                message = $"`{DateTime.Now:dd/MM. H:mm:ss} | {FormatPerformance(cpuUsage, ramUsage)} | Shard: {(shardId == null ? "N" : shardId)} | Location: {location} | User: {user.GlobalName}, {user.Id}`\n```{commandUsage}```{(errorReason == null ? "" : $"Error: ```cs\n{errorReason}```")}Command type: **{commandType}** | Method name in code: **{methodName}** | **ERR TOO LONG**";
             }
 
             await logChannel.Value.SendMessageAsync(message);
@@ -68,7 +71,10 @@ namespace Bob.Debug
 
         public static async Task LogErrorToDiscord(IInteractionContext ctx, string errorReason)
         {
-            string location = (ctx.Interaction.GuildId == null) ? "a DM" : (Bot.Client.GetGuild((ulong)ctx.Interaction.GuildId) == null ? "User Install" : Bot.Client.GetGuild((ulong)ctx.Interaction.GuildId).ToString());
+            bool isGuild = ctx.Interaction.GuildId != null;
+
+            string location = !isGuild ? "a DM" : (Bot.Client.GetGuild((ulong)ctx.Interaction.GuildId) == null ? "User Install" : Bot.Client.GetGuild((ulong)ctx.Interaction.GuildId).ToString());
+            int? shardId = !isGuild ? null : (ctx as ShardedInteractionContext).Client.GetShardIdFor(ctx.Guild);
             IUser user = ctx.User;
 
             var cpuUsage = await GetCpuUsageForProcess();
@@ -76,7 +82,7 @@ namespace Bob.Debug
 
             // Ensure message length doesn't exceed 2000 characters
             string errorMessage = $"Error: ```cs\n{errorReason}```";
-            string message = $"`{DateTime.Now:dd/MM. H:mm:ss} | {FormatPerformance(cpuUsage, ramUsage)} | Location: {location} | User: {user.GlobalName}, {user.Id}`\n{errorMessage}";
+            string message = $"`{DateTime.Now:dd/MM. H:mm:ss} | {FormatPerformance(cpuUsage, ramUsage)}| Shard: {(shardId == null ? "N" : shardId)} | Location: {location} | User: {user.GlobalName}, {user.Id}`\n{errorMessage}";
 
             if (message.Length > 2000)
             {
@@ -86,7 +92,7 @@ namespace Bob.Debug
 
                 errorReason = errorReason[..maxErrorReasonLength];
 
-                message = $"`{DateTime.Now:dd/MM. H:mm:ss} | {FormatPerformance(cpuUsage, ramUsage)} | Location: {location} | User: {user.GlobalName}, {user.Id}`\nError: ```cs\n{errorReason}``` | **ERR TOO LONG**";
+                message = $"`{DateTime.Now:dd/MM. H:mm:ss} | {FormatPerformance(cpuUsage, ramUsage)} | Shard: {(shardId == null ? "N" : shardId)} | Location: {location} | User: {user.GlobalName}, {user.Id}`\nError: ```cs\n{errorReason}``` | **ERR TOO LONG**";
             }
 
             await logChannel.Value.SendMessageAsync(message);
@@ -106,7 +112,10 @@ namespace Bob.Debug
 
         public static async Task LogServerUseToDiscord(RestTextChannel channel, IInteractionContext ctx, SlashCommandInfo info, string errorReason = null)
         {
-            string location = (ctx.Interaction.GuildId == null) ? "a DM" : (Bot.Client.GetGuild((ulong)ctx.Interaction.GuildId) == null ? "User Install" : Bot.Client.GetGuild((ulong)ctx.Interaction.GuildId).ToString());
+            bool isGuild = ctx.Interaction.GuildId != null;
+
+            string location = !isGuild ? "a DM" : (Bot.Client.GetGuild((ulong)ctx.Interaction.GuildId) == null ? "User Install" : Bot.Client.GetGuild((ulong)ctx.Interaction.GuildId).ToString());
+            int? shardId = !isGuild ? null : (ctx as ShardedInteractionContext).Client.GetShardIdFor(ctx.Guild);
             var commandName = info.IsTopLevelCommand ? $"/{info.Name}" : $"/{info.Module.SlashGroupName} {info.Name}";
             string methodName = info.MethodName;
             IUser user = ctx.User;
@@ -125,7 +134,7 @@ namespace Bob.Debug
             var cpuUsage = await GetCpuUsageForProcess();
             var ramUsage = GetRamUsageForProcess();
 
-            await channel.SendMessageAsync($"`{DateTime.Now:dd/MM. H:mm:ss} | {FormatPerformance(cpuUsage, ramUsage)} | Location: {location} | User: {user.GlobalName}, {user.Id}`\n```{commandUsage}```{(errorReason == null ? "" : $"Error: ```cs\n{errorReason}```")}Command type: **{commandType}** | Method name in code: **{methodName}**");
+            await channel.SendMessageAsync($"`{DateTime.Now:dd/MM. H:mm:ss} | {FormatPerformance(cpuUsage, ramUsage)} | Shard: {(shardId == null ? "N" : shardId)}  | Location: {location} | User: {user.GlobalName}, {user.Id}`\n```{commandUsage}```{(errorReason == null ? "" : $"Error: ```cs\n{errorReason}```")}Command type: **{commandType}** | Method name in code: **{methodName}**");
         }
 
         public static async Task HandleUnexpectedError(IInteractionContext ctx, Exception ex, bool deferred, bool ephemeral = true)
