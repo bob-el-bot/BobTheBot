@@ -15,7 +15,7 @@ namespace Bob.Commands.Helpers
         {
             try
             {
-                ITextChannel channel = (ITextChannel)await Bot.Client.GetChannelAsync(linkInfo.ChannelId);
+                ITextChannel channel = (ITextChannel)await Bot.Client.GetShardFor(linkInfo.GuildId).GetChannelAsync(linkInfo.ChannelId);
                 IMessage message = await channel.GetMessageAsync(linkInfo.MessageId);
 
                 var firstEmbed = message.Embeds.FirstOrDefault();

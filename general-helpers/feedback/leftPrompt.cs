@@ -6,14 +6,14 @@ using Discord.WebSocket;
 
 namespace Bob.Feedback
 {
-    public class Prompt : InteractionModuleBase<SocketInteractionContext>
+    public class Prompt : InteractionModuleBase<ShardedInteractionContext>
     {
         public static async Task LeftGuild(SocketGuild guild)
         {
             try
             {
                 // Check if the guild still exists
-                IUser owner = guild.Owner ?? await Bot.Client.GetUserAsync(guild.OwnerId);
+                IUser owner = guild.Owner ?? await Bot.Client.GetShardFor(guild.Id).GetUserAsync(guild.OwnerId);
                 var components = new ComponentBuilder();
 
                 var selectMenu = new SelectMenuBuilder
