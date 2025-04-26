@@ -10,7 +10,7 @@ namespace Bob.Commands
     [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
     [IntegrationType(ApplicationIntegrationType.GuildInstall)]
     [Group("mastermind", "All commands relevant to the game Master Mind.")]
-    public class MasterMindGroup : InteractionModuleBase<SocketInteractionContext>
+    public class MasterMindGroup : InteractionModuleBase<ShardedInteractionContext>
     {
         [SlashCommand("new-game", "Start a game of Master Mind (rules will be sent upon use of this command).")]
         public async Task NewGame(MasterMindMethods.GameMode mode = MasterMindMethods.GameMode.Classic)

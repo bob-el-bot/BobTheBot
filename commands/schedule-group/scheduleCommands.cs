@@ -19,7 +19,7 @@ namespace Bob.Commands
     [CommandContextType(InteractionContextType.PrivateChannel, InteractionContextType.Guild)]
     [IntegrationType(ApplicationIntegrationType.GuildInstall)]
     [Group("schedule", "All schedule commands.")]
-    public class ScheduleGroup : InteractionModuleBase<SocketInteractionContext>
+    public class ScheduleGroup : InteractionModuleBase<ShardedInteractionContext>
     {
         [SlashCommand("message", "Bob will send your message at a specified time.")]
         public async Task ScheduleMessage([Summary("message", "The message you want to send. Markdown still works!")][MinLength(1)][MaxLength(2000)] string message,

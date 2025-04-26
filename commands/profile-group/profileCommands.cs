@@ -16,7 +16,7 @@ namespace Bob.Commands
     [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
     [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
     [Group("profile", "All profile commands.")]
-    public class ProfileGroup : InteractionModuleBase<SocketInteractionContext>
+    public class ProfileGroup : InteractionModuleBase<ShardedInteractionContext>
     {
         [SlashCommand("display", "View a user's profile.")]
         public async Task Display([Summary("user", "The user whose profile you would like displayed (leave empty to display your own).")] SocketUser user = null)

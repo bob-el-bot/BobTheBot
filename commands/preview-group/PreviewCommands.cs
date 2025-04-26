@@ -13,7 +13,7 @@ namespace Bob.Commands
     [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
     [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
     [Group("preview", "All commands relevant to previewing.")]
-    public class PreviewGroup : InteractionModuleBase<SocketInteractionContext>
+    public class PreviewGroup : InteractionModuleBase<ShardedInteractionContext>
     {
         [SlashCommand("code", "Preview specific lines from a file on GitHub right on Discord.")]
         public async Task CodePreview([Summary("link", "A GitHub Link to specific lines of code.")] string link)

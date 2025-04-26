@@ -14,7 +14,7 @@ namespace Bob.Commands
     [CommandContextType(InteractionContextType.Guild)]
     [IntegrationType(ApplicationIntegrationType.GuildInstall)]
     [Group("welcome", "All welcome commands.")]
-    public class WelcomeGroup : InteractionModuleBase<SocketInteractionContext>
+    public class WelcomeGroup : InteractionModuleBase<ShardedInteractionContext>
     {
         [SlashCommand("toggle", "Enable or disable Bob welcoming users to your server!")]
         public async Task WelcomeToggle([Summary("welcome", "If checked (true), Bob will send welcome messages.")] bool welcome)

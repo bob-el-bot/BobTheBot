@@ -13,7 +13,7 @@ namespace Bob.Commands
     [CommandContextType(InteractionContextType.Guild)]
     [IntegrationType(ApplicationIntegrationType.GuildInstall)]
     [Group("quote", "All quoting commands.")]
-    public class QuoteGroup : InteractionModuleBase<SocketInteractionContext>
+    public class QuoteGroup : InteractionModuleBase<ShardedInteractionContext>
     {
 
         [SlashCommand("new", "Create a quote.")]

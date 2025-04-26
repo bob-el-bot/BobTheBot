@@ -11,10 +11,10 @@ namespace Bob.Commands
     [CommandContextType(InteractionContextType.Guild)]
     [IntegrationType(ApplicationIntegrationType.GuildInstall)]
     [Group("admin", "All commands relevant to administration features.")]
-    public class AdminGroup : InteractionModuleBase<SocketInteractionContext>
+    public class AdminGroup : InteractionModuleBase<ShardedInteractionContext>
     {
         [Group("confess", "All commands relevant to confession administration features.")]
-        public class ConfessGroup : InteractionModuleBase<SocketInteractionContext>
+        public class ConfessGroup : InteractionModuleBase<ShardedInteractionContext>
         {
             [SlashCommand("filter-toggle", "Enable or disable censoring and/or blocking of /confess messages in this server.")]
             public async Task ConfessionsFilterToggle([Summary("enable", "If enabled (true), Bob will censor and/or block flagged messages sent in this server with /confess.")] bool enable)

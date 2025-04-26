@@ -12,7 +12,7 @@ namespace Bob.Commands
     [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
     [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
     [Group("generate", "All commands relevant to generation.")]
-    public class GenerateGroup : InteractionModuleBase<SocketInteractionContext>
+    public class GenerateGroup : InteractionModuleBase<ShardedInteractionContext>
     {
         [SlashCommand("youtube-comment", "Bob will generate a Youtube comment image!")]
         public async Task YoutubeComment([Summary("comment", "The comment content.")] string comment,

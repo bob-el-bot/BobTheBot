@@ -11,7 +11,7 @@ namespace Bob.Commands
     [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
     [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
     [Group("encrypt", "All commands relevant to encryption.")]
-    public class EncryptGroup : InteractionModuleBase<SocketInteractionContext>
+    public class EncryptGroup : InteractionModuleBase<ShardedInteractionContext>
     {
         [SlashCommand("atbash", "Bob will encrypt your message by swapping letters to their opposite position.")]
         public async Task Atbash([Summary("message", "the text you want to encrypt")] string message)
