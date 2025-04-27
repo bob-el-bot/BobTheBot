@@ -51,6 +51,9 @@ namespace Bob
 
         private static readonly string[] statuses = ["/help | Games!", "/help | Premium! ❤︎", "/help | Scheduling!", "/help | Automod!", "/help | bobthebot.net", "/help | RNG!", "/help | Quotes!", "/help | Confessions!"];
 
+        private static int _shardsReady = 0;
+        private static TaskCompletionSource<bool> _allShardsReady = new();
+
         public static async Task Main()
         {
             Env.Load();
@@ -73,6 +76,12 @@ namespace Bob
             await Client.StartAsync();
 
             Uptime.StartHttpListener();
+
+            // Wait for all shards to be ready before proceeding
+            await _allShardsReady.Task;
+
+            await RegisterSlashCommands();
+
             var cpuUsage = await GetCpuUsageForProcess();
             Console.WriteLine("CPU at Ready: " + cpuUsage.ToString() + "%");
             var ramUsage = GetRamUsageForProcess();
@@ -83,7 +92,6 @@ namespace Bob
             // Restart / reset scheduled messages and announcements
             _ = Task.Run(Schedule.LoadAndScheduleItemsAsync<ScheduledAnnouncement>);
             _ = Task.Run(Schedule.LoadAndScheduleItemsAsync<ScheduledMessage>);
-
 
             await Task.Delay(Timeout.Infinite);
         }
@@ -107,64 +115,62 @@ namespace Bob
             }
         }
 
-        private static async Task ShardReady(DiscordSocketClient shard)
+        private static async Task RegisterSlashCommands()
         {
-            try
+            await Service.AddModulesAsync(Assembly.GetEntryAssembly(), null);
+            var globalCommands = await Service.RegisterCommandsGloballyAsync();
+
+            // Update command IDs...
+            Dictionary<string, ulong> _commandIds = globalCommands.ToDictionary(cmd => cmd.Name, cmd => cmd.Id);
+
+            foreach (var group in Help.CommandGroups)
             {
-                await Service.AddModulesAsync(Assembly.GetEntryAssembly(), null);
-                var globalCommands = await Service.RegisterCommandsGloballyAsync();
-
-                Dictionary<string, ulong> _commandIds = globalCommands.ToDictionary(cmd => cmd.Name, cmd => cmd.Id);
-
-                // Update CommandGroups with resolved command IDs
-                foreach (var group in Help.CommandGroups)
+                foreach (var command in group.Commands)
                 {
-                    foreach (var command in group.Commands)
+                    if (command.InheritGroupName)
                     {
-                        if (command.InheritGroupName)
+                        if (_commandIds.TryGetValue(group.Name, out ulong commandId))
                         {
-                            if (_commandIds.TryGetValue(group.Name, out ulong commandId))
-                            {
-                                command.Id = commandId;
-                            }
+                            command.Id = commandId;
                         }
-                        else
+                    }
+                    else
+                    {
+                        var commandNameParts = command.Name.Split(' ');
+                        string lookupName = commandNameParts.Length > 1 ? commandNameParts[0] : command.Name;
+
+                        if (_commandIds.TryGetValue(lookupName, out ulong commandId))
                         {
-                            var commandNameParts = command.Name.Split(' ');
-
-                            string lookupName = commandNameParts.Length > 1 ? commandNameParts[0] : command.Name;
-
-                            if (_commandIds.TryGetValue(lookupName, out ulong commandId))
-                            {
-                                command.Id = commandId;
-                            }
+                            command.Id = commandId;
                         }
                     }
                 }
-
-                // Register Debug Commands
-                ModuleInfo[] debugCommands = Service.Modules
-                    .Where(module => module.Preconditions.Any(precondition => precondition is RequireGuildAttribute)
-                                  && module.SlashGroupName == "debug")
-                    .ToArray();
-                IGuild supportServer = Client.GetGuild(supportServerId);
-                await Service.AddModulesToGuildAsync(supportServer, true, debugCommands);
-
-                Client.InteractionCreated += InteractionCreated;
-                Service.SlashCommandExecuted += SlashCommandResulted;
-
-                _ = Log(new LogMessage(LogSeverity.Info, "Bob", $"Shard {shard.ShardId} | is ready with {Client.Guilds.Count} guilds."));
-
-                // Client.ShardReady -= ShardReady;
             }
-            catch (Exception e)
+
+            // Optional: Register per-guild debug commands
+            ModuleInfo[] debugCommands = Service.Modules
+                .Where(module => module.Preconditions.Any(precondition => precondition is RequireGuildAttribute)
+                              && module.SlashGroupName == "debug")
+                .ToArray();
+            IGuild supportServer = Client.GetGuild(supportServerId);
+            await Service.AddModulesToGuildAsync(supportServer, true, debugCommands);
+
+            Client.InteractionCreated += InteractionCreated;
+            Service.SlashCommandExecuted += SlashCommandResulted;
+
+            Console.WriteLine("Slash commands registered successfully.");
+        }
+
+        private static Task ShardReady(DiscordSocketClient shard)
+        {
+            _shardsReady++;
+            if (_shardsReady == Client.Shards.Count)
             {
-                Console.WriteLine(e);
+                _allShardsReady.TrySetResult(true);
             }
 
-            // Status
+            // Status rotation
             int index = 0;
-
             _ = Task.Run(async () =>
             {
                 var timer = new PeriodicTimer(TimeSpan.FromSeconds(16));
@@ -174,6 +180,8 @@ namespace Bob
                     index = index + 1 == statuses.Length ? 0 : index + 1;
                 }
             });
+
+            return Task.CompletedTask;
         }
 
         private static async Task UserJoined(SocketGuildUser user)
