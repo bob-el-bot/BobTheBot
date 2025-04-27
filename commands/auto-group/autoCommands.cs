@@ -11,7 +11,7 @@ namespace Bob.Commands
     [CommandContextType(InteractionContextType.Guild)]
     [IntegrationType(ApplicationIntegrationType.GuildInstall)]
     [Group("auto", "All commands relevant to automatic features.")]
-    public class AutoGroup : InteractionModuleBase<SocketInteractionContext>
+    public class AutoGroup : InteractionModuleBase<ShardedInteractionContext>
     {
         [SlashCommand("publish-announcements", "Bob will automatically publish all messages in announcement channels.")]
         public async Task PublishAnnouncements([Summary("publish", "If checked (true), Bob will auto publish.")] bool publish, [Summary("channel", "Channel to change settings for.")][ChannelTypes(ChannelType.News)] SocketChannel channel)

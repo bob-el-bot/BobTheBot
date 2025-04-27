@@ -11,7 +11,7 @@ namespace Bob.Commands
     [RequireBotPermission(GuildPermission.ManageGuild)]
     [DefaultMemberPermissions(GuildPermission.ManageGuild)]
     [Group("automod", "All commands relevant to automod features.")]
-    public class AutomodGroup : InteractionModuleBase<SocketInteractionContext>
+    public class AutomodGroup : InteractionModuleBase<ShardedInteractionContext>
     {
         [SlashCommand("links", "Add link auto moderation. Prevent links from being sent in this server.")]
         public async Task AutoModLinks()

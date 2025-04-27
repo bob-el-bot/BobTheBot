@@ -27,10 +27,10 @@ namespace Bob.Commands
     [RequireGuild(Bot.supportServerId)]
     [RequireTeam]
     [Group("debug", "All commands relevant to debugging.")]
-    public class DebugGroup : InteractionModuleBase<SocketInteractionContext>
+    public class DebugGroup : InteractionModuleBase<ShardedInteractionContext>
     {
         [Group("log", "All debug commands for logging.")]
-        public class LogGroup : InteractionModuleBase<SocketInteractionContext>
+        public class LogGroup : InteractionModuleBase<ShardedInteractionContext>
         {
             private static readonly ulong DebugServerCategoryId = 1181420597138427967;
             public static Dictionary<ulong, IGuild> ServersToLog { get; set; } = [];
@@ -126,14 +126,14 @@ namespace Bob.Commands
         }
 
         [Group("stat", "All debug commands for stats")]
-        public class StatsGroup : InteractionModuleBase<SocketInteractionContext>
+        public class StatsGroup : InteractionModuleBase<ShardedInteractionContext>
         {
             [SlashCommand("entitlements", "view all app entitlements.")]
             public async Task GetEntitlements()
             {
                 StringBuilder response = new();
 
-                await foreach (var entitlementCollection in Client.GetEntitlementsAsync())
+                await foreach (var entitlementCollection in Client.Rest.GetEntitlementsAsync())
                 {
                     foreach (var entitlement in entitlementCollection)
                     {
@@ -257,7 +257,7 @@ namespace Bob.Commands
         }
 
         [Group("database", "All debug commands for the database")]
-        public class DatabaseGroup : InteractionModuleBase<SocketInteractionContext>
+        public class DatabaseGroup : InteractionModuleBase<ShardedInteractionContext>
         {
             [SlashCommand("get-user", "Gets the user object of a given user.")]
             public async Task GetUser(IUser user = null, string userId = null)
@@ -271,7 +271,7 @@ namespace Bob.Commands
                     return;
                 }
 
-                IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
+                IUser discordUser = user ?? await Client.GetUserAsync(parsedId, CacheMode.AllowDownload, null);   
 
                 if (discordUser.IsBot)
                 {
@@ -304,7 +304,7 @@ namespace Bob.Commands
                     return;
                 }
 
-                IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
+                IUser discordUser = user ?? await Client.GetShardFor(Context.Guild).GetUserAsync(parsedId);
 
                 if (discordUser.IsBot)
                 {
@@ -342,7 +342,7 @@ namespace Bob.Commands
                     return;
                 }
 
-                IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
+                IUser discordUser = user ?? await Client.GetShardFor(Context.Guild).GetUserAsync(parsedId);
 
                 if (discordUser.IsBot)
                 {
@@ -380,7 +380,7 @@ namespace Bob.Commands
                     return;
                 }
 
-                IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
+                IUser discordUser = user ?? await Client.GetShardFor(Context.Guild).GetUserAsync(parsedId);
 
                 if (discordUser.IsBot)
                 {
@@ -415,7 +415,7 @@ namespace Bob.Commands
                     return;
                 }
 
-                IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
+                IUser discordUser = user ?? await Client.GetShardFor(Context.Guild).GetUserAsync(parsedId);
 
                 if (discordUser.IsBot)
                 {
@@ -477,7 +477,7 @@ namespace Bob.Commands
                     return;
                 }
 
-                IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
+                IUser discordUser = user ?? await Client.GetShardFor(Context.Guild).GetUserAsync(parsedId);
 
                 if (user != null && conversionResult != false && user.Id != parsedId)
                 {
@@ -514,7 +514,7 @@ namespace Bob.Commands
                     return;
                 }
 
-                IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
+                IUser discordUser = user ?? await Client.GetShardFor(Context.Guild).GetUserAsync(parsedId);
 
                 if (user != null && conversionResult != false && user.Id != parsedId)
                 {
@@ -552,7 +552,7 @@ namespace Bob.Commands
                     return;
                 }
 
-                IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
+                IUser discordUser = user ?? await Client.GetShardFor(Context.Guild).GetUserAsync(parsedId);
 
                 if (user != null && conversionResult != false && user.Id != parsedId)
                 {
@@ -597,7 +597,7 @@ namespace Bob.Commands
                     return;
                 }
 
-                IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
+                IUser discordUser = user ?? await Client.GetShardFor(Context.Guild).GetUserAsync(parsedId);
 
                 if (user != null && conversionResult != false && user.Id != parsedId)
                 {

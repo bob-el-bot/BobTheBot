@@ -11,7 +11,7 @@ namespace Bob.Commands
     [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
     [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
     [Group("decrypt", "All commands relevant to decryption.")]
-    public class DecryptGroup : InteractionModuleBase<SocketInteractionContext>
+    public class DecryptGroup : InteractionModuleBase<ShardedInteractionContext>
     {
         [SlashCommand("atbash", "Bob will decrypt your message by swapping letters to their opposite position.")]
         public async Task Atbash([Summary("message", "the text you want to decrypt")] string message)

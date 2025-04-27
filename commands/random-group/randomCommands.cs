@@ -17,7 +17,7 @@ namespace Bob.Commands
     [CommandContextType(InteractionContextType.BotDm, InteractionContextType.PrivateChannel, InteractionContextType.Guild)]
     [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
     [Group("random", "All random (RNG) commands.")]
-    public class RandomGroup : InteractionModuleBase<SocketInteractionContext>
+    public class RandomGroup : InteractionModuleBase<ShardedInteractionContext>
     {
         private readonly Random random = new();
 
