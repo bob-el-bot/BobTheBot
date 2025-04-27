@@ -80,7 +80,9 @@ namespace Bob.Debug
             if (command != null)
             {
                 foreach (var opt in command.Data.Options)
+                {
                     sb.Append($" {opt.Name}: {opt.Value ?? "null"}");
+                }
             }
 
             return $"```{sb}```";
