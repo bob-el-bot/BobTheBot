@@ -20,14 +20,14 @@ using Bob.Time.Timestamps;
 
 namespace Bob.Commands
 {
-    public class NoGroup : InteractionModuleBase<SocketInteractionContext>
+    public class NoGroup : InteractionModuleBase<ShardedInteractionContext>
     {
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("ping", "Bob will share his ping.")]
         public async Task Ping()
-        {          
-            await RespondAsync(text: $"🏓 Pong! The client latency is **{Bot.Client.Latency}** ms.");
+        {
+            await RespondAsync(text: $"🏓 Pong! The client latency is **{Client.Latency}** ms.");
         }
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
@@ -845,7 +845,7 @@ namespace Bob.Commands
             }
             else
             {
-                await foreach (var entitlementCollection in Client.GetEntitlementsAsync(userId: Context.User.Id))
+                await foreach (var entitlementCollection in Client.GetShardFor(Context.Guild).GetEntitlementsAsync(userId: Context.User.Id))
                 {
                     if (entitlementCollection.Any(x => x.SkuId == 1282452500913328180))
                     {

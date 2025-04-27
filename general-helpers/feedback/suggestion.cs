@@ -6,7 +6,7 @@ using Bob.Commands.Helpers;
 
 namespace Bob.Feedback
 {
-    public class Suggestion : InteractionModuleBase<SocketInteractionContext>
+    public class Suggestion : InteractionModuleBase<ShardedInteractionContext>
     {
         public static async Task SuggestUnitToDiscord(IInteractionContext ctx, UnitConversion.UnitType unitType, string suggestion)
         {

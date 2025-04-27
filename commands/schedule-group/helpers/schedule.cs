@@ -211,7 +211,7 @@ namespace Bob.Commands.Helpers
         /// </summary>
         private static async Task<Embed> BuildAnnouncementEmbed(ScheduledAnnouncement announcement)
         {
-            var user = await Bot.Client.GetUserAsync(announcement.UserId);
+            var user = await Bot.Client.GetShardFor(announcement.ServerId).GetUserAsync(announcement.UserId);
 
             var embed = new EmbedBuilder
             {

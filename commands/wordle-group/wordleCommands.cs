@@ -10,7 +10,7 @@ namespace Bob.Commands
     [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
     [IntegrationType(ApplicationIntegrationType.GuildInstall)]
     [Group("wordle", "All commands relevant to the game Wordle.")]
-    public class WordleGroup : InteractionModuleBase<SocketInteractionContext>
+    public class WordleGroup : InteractionModuleBase<ShardedInteractionContext>
     {
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.GuildInstall)]
