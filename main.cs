@@ -34,7 +34,12 @@ namespace Bob
             GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers | GatewayIntents.GuildMessages | GatewayIntents.MessageContent | GatewayIntents.AutoModerationConfiguration,
         });
 
-        private static InteractionService Service;
+        private static InteractionService Service = new(Client, new InteractionServiceConfig
+        {
+            UseCompiledLambda = true,
+            ThrowOnError = true,
+            AutoServiceScopes = false
+        });
 
         public static string Token = Environment.GetEnvironmentVariable("DISCORD_TOKEN");
 
@@ -73,6 +78,8 @@ namespace Bob
             var ramUsage = GetRamUsageForProcess();
             Console.WriteLine("RAM at Ready: " + ramUsage.ToString() + "%");
 
+            UpdateSiteStats();
+
             // Restart / reset scheduled messages and announcements
             _ = Task.Run(Schedule.LoadAndScheduleItemsAsync<ScheduledAnnouncement>);
             _ = Task.Run(Schedule.LoadAndScheduleItemsAsync<ScheduledMessage>);
@@ -81,17 +88,29 @@ namespace Bob
             await Task.Delay(Timeout.Infinite);
         }
 
+        private static void UpdateSiteStats()
+        {
+            if (Token != Environment.GetEnvironmentVariable("TEST_DISCORD_TOKEN"))
+            {
+                _ = Task.Run(async () =>
+                {
+                    // Update third party stats
+                    // Throwaway as to not block Gateway Tasks.
+                    // Top GG
+                    var topGGResult = await PostToAPI("https://top.gg/api/bots/705680059809398804/stats", Environment.GetEnvironmentVariable("TOP_GG_TOKEN"), new StringContent("{\"server_count\":" + Client.Guilds.Count + "}", Encoding.UTF8, "application/json"));
+                    Console.WriteLine($"TopGG POST status: {topGGResult}");
+
+                    // Discord Bots GG
+                    var discordBotsResult = await PostToAPI("https://discord.bots.gg/api/v1/bots/705680059809398804/stats", Environment.GetEnvironmentVariable("DISCORD_BOTS_TOKEN"), new StringContent("{\"guildCount\":" + Client.Guilds.Count + "}", Encoding.UTF8, "application/json"));
+                    Console.WriteLine($"Discord Bots GG POST status: {discordBotsResult}");
+                });
+            }
+        }
+
         private static async Task ShardReady(DiscordSocketClient shard)
         {
             try
             {
-                Service = new(Client, new InteractionServiceConfig
-                {
-                    UseCompiledLambda = true,
-                    ThrowOnError = true,
-                    AutoServiceScopes = false
-                });
-
                 await Service.AddModulesAsync(Assembly.GetEntryAssembly(), null);
                 var globalCommands = await Service.RegisterCommandsGloballyAsync();
 
@@ -133,22 +152,6 @@ namespace Bob
 
                 Client.InteractionCreated += InteractionCreated;
                 Service.SlashCommandExecuted += SlashCommandResulted;
-
-                if (Token != Environment.GetEnvironmentVariable("TEST_DISCORD_TOKEN"))
-                {
-                    _ = Task.Run(async () =>
-                    {
-                        // Update third party stats
-                        // Throwaway as to not block Gateway Tasks.
-                        // Top GG
-                        var topGGResult = await PostToAPI("https://top.gg/api/bots/705680059809398804/stats", Environment.GetEnvironmentVariable("TOP_GG_TOKEN"), new StringContent("{\"server_count\":" + Client.Guilds.Count + "}", Encoding.UTF8, "application/json"));
-                        Console.WriteLine($"TopGG POST status: {topGGResult}");
-
-                        // Discord Bots GG
-                        var discordBotsResult = await PostToAPI("https://discord.bots.gg/api/v1/bots/705680059809398804/stats", Environment.GetEnvironmentVariable("DISCORD_BOTS_TOKEN"), new StringContent("{\"guildCount\":" + Client.Guilds.Count + "}", Encoding.UTF8, "application/json"));
-                        Console.WriteLine($"Discord Bots GG POST status: {discordBotsResult}");
-                    });
-                }
 
                 _ = Log(new LogMessage(LogSeverity.Info, "Bob", $"Shard {shard.ShardId} | is ready with {Client.Guilds.Count} guilds."));
 
