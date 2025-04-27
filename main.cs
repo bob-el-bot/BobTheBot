@@ -152,7 +152,7 @@ namespace Bob
 
                 _ = Log(new LogMessage(LogSeverity.Info, "Bob", $"Shard {shard.ShardId} | is ready with {Client.Guilds.Count} guilds."));
 
-                Client.ShardReady -= ShardReady;
+                // Client.ShardReady -= ShardReady;
             }
             catch (Exception e)
             {

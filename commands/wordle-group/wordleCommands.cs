@@ -50,6 +50,8 @@ namespace Bob.Commands
                 return;
             }
 
+            guess = guess.ToLowerInvariant();
+
             if (!WordleMethods.IsValidGuess(guess))
             {
                 await RespondAsync(text: "❌ The word you guessed is not valid.", ephemeral: true);
