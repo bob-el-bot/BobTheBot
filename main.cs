@@ -169,17 +169,21 @@ namespace Bob
                 _allShardsReady.TrySetResult(true);
             }
 
-            // Status rotation
-            int index = 0;
-            _ = Task.Run(async () =>
+            if (_shardsReady <= Client.Shards.Count)
             {
-                var timer = new PeriodicTimer(TimeSpan.FromSeconds(16));
-                while (await timer.WaitForNextTickAsync())
+                // Status rotation
+                _ = Task.Run(async () =>
                 {
-                    await shard.SetCustomStatusAsync(statuses[index]);
-                    index = index + 1 == statuses.Length ? 0 : index + 1;
-                }
-            });
+                    int index = 0;
+
+                    var timer = new PeriodicTimer(TimeSpan.FromSeconds(16));
+                    while (await timer.WaitForNextTickAsync())
+                    {
+                        await shard.SetCustomStatusAsync(statuses[index]);
+                        index = index + 1 == statuses.Length ? 0 : index + 1;
+                    }
+                });
+            }
 
             return Task.CompletedTask;
         }
