@@ -29,7 +29,7 @@ namespace Bob
 {
     public static class Bot
     {
-        private static readonly DiscordShardedClient Client = new(new DiscordSocketConfig
+        public static readonly DiscordShardedClient Client = new(new DiscordSocketConfig
         {
             GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers | GatewayIntents.GuildMessages | GatewayIntents.MessageContent | GatewayIntents.AutoModerationConfiguration,
         });
