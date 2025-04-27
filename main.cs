@@ -34,7 +34,12 @@ namespace Bob
             GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers | GatewayIntents.GuildMessages | GatewayIntents.MessageContent | GatewayIntents.AutoModerationConfiguration,
         });
 
-        private static InteractionService Service;
+        private static InteractionService Service = new(Client, new InteractionServiceConfig
+        {
+            UseCompiledLambda = true,
+            ThrowOnError = true,
+            AutoServiceScopes = false
+        });
 
         public static string Token = Environment.GetEnvironmentVariable("DISCORD_TOKEN");
 
@@ -45,6 +50,9 @@ namespace Bob
         public static readonly ulong systemLogChannelId = 1160105468082004029;
 
         private static readonly string[] statuses = ["/help | Games!", "/help | Premium! ❤︎", "/help | Scheduling!", "/help | Automod!", "/help | bobthebot.net", "/help | RNG!", "/help | Quotes!", "/help | Confessions!"];
+
+        private static int _shardsReady = 0;
+        private static TaskCompletionSource<bool> _allShardsReady = new();
 
         public static async Task Main()
         {
@@ -68,100 +76,101 @@ namespace Bob
             await Client.StartAsync();
 
             Uptime.StartHttpListener();
+
+            // Wait for all shards to be ready before proceeding
+            await _allShardsReady.Task;
+
+            await RegisterSlashCommands();
+
             var cpuUsage = await GetCpuUsageForProcess();
             Console.WriteLine("CPU at Ready: " + cpuUsage.ToString() + "%");
             var ramUsage = GetRamUsageForProcess();
             Console.WriteLine("RAM at Ready: " + ramUsage.ToString() + "%");
 
+            UpdateSiteStats();
+
             // Restart / reset scheduled messages and announcements
             _ = Task.Run(Schedule.LoadAndScheduleItemsAsync<ScheduledAnnouncement>);
             _ = Task.Run(Schedule.LoadAndScheduleItemsAsync<ScheduledMessage>);
 
-
             await Task.Delay(Timeout.Infinite);
         }
 
-        private static async Task ShardReady(DiscordSocketClient shard)
+        private static void UpdateSiteStats()
         {
-            try
+            if (Token != Environment.GetEnvironmentVariable("TEST_DISCORD_TOKEN"))
             {
-                Service = new(Client, new InteractionServiceConfig
+                _ = Task.Run(async () =>
                 {
-                    UseCompiledLambda = true,
-                    ThrowOnError = true,
-                    AutoServiceScopes = false
+                    // Update third party stats
+                    // Throwaway as to not block Gateway Tasks.
+                    // Top GG
+                    var topGGResult = await PostToAPI("https://top.gg/api/bots/705680059809398804/stats", Environment.GetEnvironmentVariable("TOP_GG_TOKEN"), new StringContent("{\"server_count\":" + Client.Guilds.Count + "}", Encoding.UTF8, "application/json"));
+                    Console.WriteLine($"TopGG POST status: {topGGResult}");
+
+                    // Discord Bots GG
+                    var discordBotsResult = await PostToAPI("https://discord.bots.gg/api/v1/bots/705680059809398804/stats", Environment.GetEnvironmentVariable("DISCORD_BOTS_TOKEN"), new StringContent("{\"guildCount\":" + Client.Guilds.Count + "}", Encoding.UTF8, "application/json"));
+                    Console.WriteLine($"Discord Bots GG POST status: {discordBotsResult}");
                 });
+            }
+        }
 
-                await Service.AddModulesAsync(Assembly.GetEntryAssembly(), null);
-                var globalCommands = await Service.RegisterCommandsGloballyAsync();
+        private static async Task RegisterSlashCommands()
+        {
+            await Service.AddModulesAsync(Assembly.GetEntryAssembly(), null);
+            var globalCommands = await Service.RegisterCommandsGloballyAsync();
 
-                Dictionary<string, ulong> _commandIds = globalCommands.ToDictionary(cmd => cmd.Name, cmd => cmd.Id);
+            // Update command IDs...
+            Dictionary<string, ulong> _commandIds = globalCommands.ToDictionary(cmd => cmd.Name, cmd => cmd.Id);
 
-                // Update CommandGroups with resolved command IDs
-                foreach (var group in Help.CommandGroups)
+            foreach (var group in Help.CommandGroups)
+            {
+                foreach (var command in group.Commands)
                 {
-                    foreach (var command in group.Commands)
+                    if (command.InheritGroupName)
                     {
-                        if (command.InheritGroupName)
+                        if (_commandIds.TryGetValue(group.Name, out ulong commandId))
                         {
-                            if (_commandIds.TryGetValue(group.Name, out ulong commandId))
-                            {
-                                command.Id = commandId;
-                            }
+                            command.Id = commandId;
                         }
-                        else
+                    }
+                    else
+                    {
+                        var commandNameParts = command.Name.Split(' ');
+                        string lookupName = commandNameParts.Length > 1 ? commandNameParts[0] : command.Name;
+
+                        if (_commandIds.TryGetValue(lookupName, out ulong commandId))
                         {
-                            var commandNameParts = command.Name.Split(' ');
-
-                            string lookupName = commandNameParts.Length > 1 ? commandNameParts[0] : command.Name;
-
-                            if (_commandIds.TryGetValue(lookupName, out ulong commandId))
-                            {
-                                command.Id = commandId;
-                            }
+                            command.Id = commandId;
                         }
                     }
                 }
-
-                // Register Debug Commands
-                ModuleInfo[] debugCommands = Service.Modules
-                    .Where(module => module.Preconditions.Any(precondition => precondition is RequireGuildAttribute)
-                                  && module.SlashGroupName == "debug")
-                    .ToArray();
-                IGuild supportServer = Client.GetGuild(supportServerId);
-                await Service.AddModulesToGuildAsync(supportServer, true, debugCommands);
-
-                Client.InteractionCreated += InteractionCreated;
-                Service.SlashCommandExecuted += SlashCommandResulted;
-
-                if (Token != Environment.GetEnvironmentVariable("TEST_DISCORD_TOKEN"))
-                {
-                    _ = Task.Run(async () =>
-                    {
-                        // Update third party stats
-                        // Throwaway as to not block Gateway Tasks.
-                        // Top GG
-                        var topGGResult = await PostToAPI("https://top.gg/api/bots/705680059809398804/stats", Environment.GetEnvironmentVariable("TOP_GG_TOKEN"), new StringContent("{\"server_count\":" + Client.Guilds.Count + "}", Encoding.UTF8, "application/json"));
-                        Console.WriteLine($"TopGG POST status: {topGGResult}");
-
-                        // Discord Bots GG
-                        var discordBotsResult = await PostToAPI("https://discord.bots.gg/api/v1/bots/705680059809398804/stats", Environment.GetEnvironmentVariable("DISCORD_BOTS_TOKEN"), new StringContent("{\"guildCount\":" + Client.Guilds.Count + "}", Encoding.UTF8, "application/json"));
-                        Console.WriteLine($"Discord Bots GG POST status: {discordBotsResult}");
-                    });
-                }
-
-                _ = Log(new LogMessage(LogSeverity.Info, "Bob", $"Shard {shard.ShardId} | is ready with {Client.Guilds.Count} guilds."));
-
-                // Client.ShardReady -= ShardReady;
             }
-            catch (Exception e)
+
+            // Optional: Register per-guild debug commands
+            ModuleInfo[] debugCommands = Service.Modules
+                .Where(module => module.Preconditions.Any(precondition => precondition is RequireGuildAttribute)
+                              && module.SlashGroupName == "debug")
+                .ToArray();
+            IGuild supportServer = Client.GetGuild(supportServerId);
+            await Service.AddModulesToGuildAsync(supportServer, true, debugCommands);
+
+            Client.InteractionCreated += InteractionCreated;
+            Service.SlashCommandExecuted += SlashCommandResulted;
+
+            Console.WriteLine("Slash commands registered successfully.");
+        }
+
+        private static Task ShardReady(DiscordSocketClient shard)
+        {
+            _shardsReady++;
+            if (_shardsReady == Client.Shards.Count)
             {
-                Console.WriteLine(e);
+                _allShardsReady.TrySetResult(true);
             }
 
-            // Status
+            // Status rotation
             int index = 0;
-
             _ = Task.Run(async () =>
             {
                 var timer = new PeriodicTimer(TimeSpan.FromSeconds(16));
@@ -171,6 +180,8 @@ namespace Bob
                     index = index + 1 == statuses.Length ? 0 : index + 1;
                 }
             });
+
+            return Task.CompletedTask;
         }
 
         private static async Task UserJoined(SocketGuildUser user)
