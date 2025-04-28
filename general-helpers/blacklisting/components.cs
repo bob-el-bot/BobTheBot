@@ -9,7 +9,7 @@ using Discord.WebSocket;
 
 namespace Bob.Moderation
 {
-    public class Components : InteractionModuleBase<SocketInteractionContext>
+    public class Components : InteractionModuleBase<ShardedInteractionContext>
     {
         [ComponentInteraction("banUser:*:*")]
         public async Task HelpOptionsHandler(string id, string reason)
