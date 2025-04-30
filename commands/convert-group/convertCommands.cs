@@ -19,7 +19,7 @@ namespace Bob.Commands
     public class ConvertGroup : InteractionModuleBase<ShardedInteractionContext>
     {
         [SlashCommand("units", "Bob will convert units for you.")]
-        public async Task ConvertUnit(UnitConversion.UnitType unitType, string amount, string fromUnit, string toUnit)
+        public async Task ConvertUnit(UnitConversion.UnitType unitType, string amount, [Autocomplete(typeof(UnitAutocompleteHandler))] string fromUnit, [Autocomplete(typeof(UnitAutocompleteHandler))] string toUnit)
         {
             try
             {
