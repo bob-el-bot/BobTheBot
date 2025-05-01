@@ -165,6 +165,8 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/automod zalgo-text` Add zalgo-text auto moderation. Prevent glitchy text from being sent in this server.
 - `/automod bad-words` Add bad word auto moderation. Prevent bad words from being sent in this server.
 - `/automod invite-links` Add invite link auto moderation. Prevent invites from being sent in this server.
+- `/automod remove [ruleId]` Removes a specified automod rule. 
+- `/automod remove-all` Removes all automod rules.
 
 ### 🗄️ Informational / help commands:
 - `/premium` Ensures Bob knows you have premium! If not you will be given a button to get it!

@@ -1594,6 +1594,28 @@ namespace Bob.Commands.Helpers
                         Description = "Add invite link auto moderation. Prevent invites from being sent in this server.",
                         Url = "https://docs.bobthebot.net#automod-links-invite-links",
                     },
+                    new CommandInfo
+                    {
+                        Name = "remove",
+                        InheritGroupName = true,
+                        Description = "Remove a specified auto moderation rule from this server.",
+                        Url = "https://docs.bobthebot.net#automod-remove",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "ruleId",
+                                Description = "Choose from the list of rules."
+                            }
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "remove-all",
+                        InheritGroupName = true,
+                        Description = "Remove all auto moderation rules from this server.",
+                        Url = "https://docs.bobthebot.net#automod-remove-all",
+                    },
                 ]
             },
             new() {
