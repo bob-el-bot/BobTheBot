@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Bob.Commands.Helpers;
@@ -155,7 +157,7 @@ namespace Bob.Commands
             await Context.Guild.CreateAutoModRuleAsync(rulesContinued);
             await FollowupAsync(text: $"✅ Bad words are now prohibited in your server.", ephemeral: true);
         }
-        
+
         [SlashCommand("invite-links", "Add invite link auto moderation. Prevent invites from being sent in this server.")]
         public async Task AutoModInvites()
         {
@@ -186,5 +188,34 @@ namespace Bob.Commands
             await Context.Guild.CreateAutoModRuleAsync(rules);
             await FollowupAsync(text: $"✅ Invite links are now prohibited in your server.", ephemeral: true);
         }
+
+        [SlashCommand("remove", "Remove a specific Automod action from your server.")]
+        public async Task AutoModRemoval([Autocomplete(typeof(AutomodAutocompleteHandler))] string ruleId)
+        {
+            await DeferAsync(ephemeral: true);
+
+            var rules = await Context.Guild.GetAutoModRulesAsync();
+
+            var ruleToRemove = rules.FirstOrDefault(r => r.Id == ulong.Parse(ruleId));
+
+            if (ruleToRemove == null)
+            {
+                await FollowupAsync(text: $"❌ Automod rule with ID: {ruleId} not found.", ephemeral: true);
+                return;
+            }
+
+            if (ruleToRemove.Creator == null || ruleToRemove.Creator.Id == 1)
+            {
+                await FollowupAsync(
+                    text: $"❌ This automod rule could not be removed.\n- It may be enforced by Discord which means it can not be removed.",
+                    ephemeral: true);
+                return;
+            }
+
+            await ruleToRemove.DeleteAsync();
+
+            await FollowupAsync(text: $"✅ Automod rule `{ruleToRemove.Name}` with ID: `{ruleId}` has been removed.", ephemeral: true);
+        }
+
     }
 }
