@@ -217,5 +217,55 @@ namespace Bob.Commands
             await FollowupAsync(text: $"✅ Automod rule `{ruleToRemove.Name}` with ID: `{ruleId}` has been removed.", ephemeral: true);
         }
 
+        [SlashCommand("remove-all", "Remove all deletable AutoMod rules from your server.")]
+        public async Task AutoModRemoveAll()
+        {
+            await DeferAsync(ephemeral: true);
+
+            var rules = await Context.Guild.GetAutoModRulesAsync();
+
+            int deletedCount = 0;
+            int skippedCount = 0;
+            List<string> deletedNames = [];
+            List<string> skippedNames = [];
+
+            foreach (var rule in rules)
+            {
+                if (rule.Creator == null || rule.Creator.Id == 1)
+                {
+                    skippedCount++;
+                    skippedNames.Add(rule.Name);
+                    continue;
+                }
+
+                try
+                {
+                    await rule.DeleteAsync();
+                    deletedCount++;
+                    deletedNames.Add(rule.Name);
+                }
+                catch (Exception ex)
+                {
+                    skippedCount++;
+                    skippedNames.Add($"{rule.Name} (error: {ex.Message})");
+                }
+            }
+
+            var response = $"🧹 AutoMod cleanup completed:\n\n" +
+                           $"✅ **Deleted**: {deletedCount} rule(s)\n" +
+                           $"❌ **Skipped**: {skippedCount} rule(s)\n";
+
+            if (deletedNames.Count > 0)
+            {
+                response += $"\n**Deleted Rules:**\n- {string.Join("\n- ", deletedNames)}";
+            }
+
+            if (skippedNames.Count > 0)
+            {
+                response += $"\n\n**Skipped Rules:**\n- {string.Join("\n- ", skippedNames)}";
+            }
+
+            await FollowupAsync(text: response, ephemeral: true);
+        }
     }
 }
