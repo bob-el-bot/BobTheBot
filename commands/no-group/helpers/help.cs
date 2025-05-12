@@ -1605,7 +1605,7 @@ namespace Bob.Commands.Helpers
                             new ParameterInfo
                             {
                                 Name = "ruleId",
-                                Description = "Choose from the list of rules."
+                                Description = "Choose from the list of rules the specific one to remove."
                             }
                         ]
                     },

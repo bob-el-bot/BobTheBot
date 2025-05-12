@@ -14,10 +14,10 @@ namespace Bob.Commands.Helpers
     /// </summary>
     public static class CachedUsers
     {
-        private static readonly MemoryCache Cache = new(new MemoryCacheOptions());
+        private static readonly MemoryCache Cache = new(new MemoryCacheOptions() {SizeLimit = 50});
         private static readonly ConcurrentDictionary<ulong, Task> OnGoingDownloads = new();
 
-        /// <summary>
+        /// <summary>   
         /// Adds a guild ID to the cache with a 1-hour expiration. 
         /// If the guild ID is not already in the cache, it triggers a download of all users in the guild.
         /// Subsequent calls for the same guild will wait for the ongoing download to complete if already in progress.
