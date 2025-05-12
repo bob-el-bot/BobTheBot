@@ -14,7 +14,7 @@ namespace Bob.Commands.Helpers
     /// </summary>
     public static class CachedUsers
     {
-        private static readonly MemoryCache Cache = new(new MemoryCacheOptions() {SizeLimit = 50});
+        private static readonly MemoryCache Cache = new(new MemoryCacheOptions() { SizeLimit = 50 });
         private static readonly ConcurrentDictionary<ulong, Task> OnGoingDownloads = new();
 
         /// <summary>   
@@ -38,7 +38,12 @@ namespace Bob.Commands.Helpers
                             await guild.DownloadUsersAsync();
                         }
 
-                        Cache.Set(ctx.Guild.Id, true, TimeSpan.FromHours(1)); // Add to cache after completion
+                        Cache.Set(ctx.Guild.Id, true, new MemoryCacheEntryOptions
+                        {
+                            AbsoluteExpiration = DateTime.UtcNow.AddHours(1),
+                            Size = 1
+                        });
+
                         OnGoingDownloads.TryRemove(ctx.Guild.Id, out Task _); // Clean up
                     });
 
@@ -69,7 +74,12 @@ namespace Bob.Commands.Helpers
                             await guild.DownloadUsersAsync();
                         }
 
-                        Cache.Set(ctx.Guild.Id, true, TimeSpan.FromHours(1)); // Add to cache after completion
+                        Cache.Set(ctx.Guild.Id, true, new MemoryCacheEntryOptions
+                        {
+                            AbsoluteExpiration = DateTime.UtcNow.AddHours(1),
+                            Size = 1
+                        });
+
                         OnGoingDownloads.TryRemove(ctx.Guild.Id, out Task _); // Clean up
                     });
 
