@@ -448,9 +448,9 @@ namespace Bob
 
                         // Live Debugging
                         // Server Logging
-                        if (ctx.Interaction.GuildId != null && DebugGroup.LogGroup.ServersToLog.ContainsKey(ctx.Guild.Id))
+                        if (ctx.Interaction.GuildId.HasValue && DebugGroup.LogGroup.ServersToLog.ContainsKey(ctx.Interaction.GuildId.Value))
                         {
-                            DebugGroup.LogGroup.ServerLogChannels.TryGetValue(ctx.Guild.Id, out RestTextChannel debugLogChannel);
+                            DebugGroup.LogGroup.ServerLogChannels.TryGetValue(ctx.Interaction.GuildId.Value, out RestTextChannel debugLogChannel);
                             await LogServerUseToDiscord(debugLogChannel, ctx, info, res.ErrorReason);
                         }
                         break;
@@ -473,9 +473,9 @@ namespace Bob
 
                 // Live Debugging
                 // Server Logging
-                if (ctx.Interaction.GuildId != null && DebugGroup.LogGroup.ServersToLog.ContainsKey((ulong)ctx.Interaction.GuildId))
+                if (ctx.Interaction.GuildId.HasValue && DebugGroup.LogGroup.ServersToLog.ContainsKey(ctx.Interaction.GuildId.Value))
                 {
-                    DebugGroup.LogGroup.ServerLogChannels.TryGetValue(ctx.Guild.Id, out RestTextChannel debugLogChannel);
+                    DebugGroup.LogGroup.ServerLogChannels.TryGetValue(ctx.Interaction.GuildId.Value, out RestTextChannel debugLogChannel);
                     await LogServerUseToDiscord(debugLogChannel, ctx, info);
                 }
 
