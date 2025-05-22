@@ -595,7 +595,7 @@ namespace Bob.Commands
                     Footer = new EmbedFooterBuilder
                     {
                         IconUrl = Context.User.GetAvatarUrl(),
-                        Text = $"Announced by {Context.User.GlobalName}."
+                        Text = $"Announced by {Context.User.Username}"
                     }
                 };
 
