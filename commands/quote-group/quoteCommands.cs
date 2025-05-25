@@ -19,7 +19,7 @@ namespace Bob.Commands
         [SlashCommand("new", "Create a quote.")]
         public async Task New(
             [Summary("quote", "The text you want quoted. Quotation marks (\") will be added.")] string quote,
-            [Summary("user", "The user who the quote belongs to.")] SocketUser user,
+            [Summary("user", "The user who the quote belongs to (defaults to you).")] SocketUser user = null,
             [Summary("tag1", "A tag for sorting quotes later on (needs premium).")] string tag1 = "",
             [Summary("tag2", "A tag for sorting quotes later on (needs premium).")] string tag2 = "",
             [Summary("tag3", "A tag for sorting quotes later on (needs premium).")] string tag3 = "")
@@ -40,6 +40,10 @@ namespace Bob.Commands
             if (await QuoteMethods.ValidateTags(tag1, tag2, tag3, Context) == false)
             {
                 return;
+            }
+
+            if (user == null) {
+                user = Context.User;
             }
 
             var embed = QuoteMethods.CreateQuoteEmbed(quote, user, DateTimeOffset.UtcNow, Context.User.GlobalName, tag1, tag2, tag3);
