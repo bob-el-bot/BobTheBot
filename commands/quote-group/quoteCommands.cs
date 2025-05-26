@@ -19,7 +19,7 @@ namespace Bob.Commands
         [SlashCommand("new", "Create a quote.")]
         public async Task New(
             [Summary("quote", "The text you want quoted. Quotation marks (\") will be added.")] string quote,
-            [Summary("user", "The user who the quote belongs to.")] SocketUser user,
+            [Summary("user", "The user who the quote belongs to (defaults to you).")] SocketUser user = null,
             [Summary("tag1", "A tag for sorting quotes later on (needs premium).")] string tag1 = "",
             [Summary("tag2", "A tag for sorting quotes later on (needs premium).")] string tag2 = "",
             [Summary("tag3", "A tag for sorting quotes later on (needs premium).")] string tag3 = "")
@@ -42,7 +42,9 @@ namespace Bob.Commands
                 return;
             }
 
-            var embed = QuoteMethods.CreateQuoteEmbed(quote, user, DateTimeOffset.UtcNow, Context.User.GlobalName, tag1, tag2, tag3);
+            user ??= Context.User;
+
+            var embed = QuoteMethods.CreateQuoteEmbed(quote, user, DateTimeOffset.UtcNow, Context.User.Username, tag1, tag2, tag3);
             await QuoteMethods.SendQuoteAsync(server.QuoteChannelId, embed, "Quote made in", Context);
         }
 
@@ -71,7 +73,7 @@ namespace Bob.Commands
                 return;
             }
 
-            var embed = QuoteMethods.CreateQuoteEmbed(quote, user, message.Timestamp, Context.User.GlobalName, originalMessageUrl: message.GetJumpUrl());
+            var embed = QuoteMethods.CreateQuoteEmbed(quote, user, message.Timestamp, Context.User.Username, originalMessageUrl: message.GetJumpUrl());
             await QuoteMethods.SendQuoteAsync(server.QuoteChannelId, embed, "Quote made.", Context);
         }
 
