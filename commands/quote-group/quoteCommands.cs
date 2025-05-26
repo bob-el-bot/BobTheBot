@@ -42,12 +42,9 @@ namespace Bob.Commands
                 return;
             }
 
-            if (user == null)
-            {
-                user = Context.User;
-            }
+            user ??= Context.User;
 
-            var embed = QuoteMethods.CreateQuoteEmbed(quote, user, DateTimeOffset.UtcNow, Context.User.GlobalName, tag1, tag2, tag3);
+            var embed = QuoteMethods.CreateQuoteEmbed(quote, user, DateTimeOffset.UtcNow, Context.User.Username, tag1, tag2, tag3);
             await QuoteMethods.SendQuoteAsync(server.QuoteChannelId, embed, "Quote made in", Context);
         }
 
@@ -76,7 +73,7 @@ namespace Bob.Commands
                 return;
             }
 
-            var embed = QuoteMethods.CreateQuoteEmbed(quote, user, message.Timestamp, Context.User.GlobalName, originalMessageUrl: message.GetJumpUrl());
+            var embed = QuoteMethods.CreateQuoteEmbed(quote, user, message.Timestamp, Context.User.Username, originalMessageUrl: message.GetJumpUrl());
             await QuoteMethods.SendQuoteAsync(server.QuoteChannelId, embed, "Quote made.", Context);
         }
 
