@@ -31,7 +31,7 @@ namespace Bob
     {
         public static readonly DiscordShardedClient Client = new(new DiscordSocketConfig
         {
-            GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers | GatewayIntents.GuildMessages | GatewayIntents.MessageContent | GatewayIntents.AutoModerationConfiguration,
+            GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers | GatewayIntents.GuildMessages | GatewayIntents.GuildMessageReactions | GatewayIntents.MessageContent | GatewayIntents.AutoModerationConfiguration,
         });
 
         private static InteractionService Service = new(Client, new InteractionServiceConfig
@@ -71,6 +71,7 @@ namespace Bob
             Client.EntitlementDeleted += EntitlementDeleted;
             Client.EntitlementUpdated += EntitlementUpdated;
             Client.MessageReceived += MessageReceived;
+            Client.ReactionAdded += HandleReactionAddedAsync;
 
             await Client.LoginAsync(TokenType.Bot, Token);
             await Client.StartAsync();
@@ -365,6 +366,7 @@ namespace Bob
                     }
                 }
 
+                // Auto Embed if Message Link and Server has Auto Embeds for Message Links
                 if (server.AutoEmbedMessageLinks)
                 {
                     DiscordMessageLinkParse.DiscordLink discordLink = DiscordMessageLinkParse.GetUrl(message.Content);
@@ -384,6 +386,58 @@ namespace Bob
             {
                 Console.WriteLine(e);
             }
+        }
+
+        private static async Task HandleReactionAddedAsync(Cacheable<IUserMessage, ulong> cacheable, Cacheable<IMessageChannel, ulong> channelCache, SocketReaction reaction)
+        {
+            var channel = await channelCache.GetOrDownloadAsync();
+            if (channel is not SocketTextChannel textChannel || channel is null)
+            {
+                return;
+            }
+
+            var message = await cacheable.GetOrDownloadAsync();
+            if (message is not IUserMessage userMessage)
+            {
+                return;
+            }
+
+            // Get the server configuration
+            using var dbContext = new BobEntities();
+            var server = await dbContext.GetServer(textChannel.Guild.Id);
+            if (!ReactBoardMethods.isSetup(server))
+            {
+                return;
+            }
+
+            // Ignore reactions in the React Board channel itself
+            if (textChannel.Id == server.ReactBoardChannelId)
+            {
+                return;
+            }
+
+            // Check if the reaction matches the React Board emoji
+            if (reaction.Emote.Name != server.ReactBoardEmoji)
+            {
+                return;
+            }
+
+            var reactBoardChannel = (SocketTextChannel)Client.GetChannel(server.ReactBoardChannelId.Value);
+
+            // Check if Bob has permission to send messages in the React Board channel
+            var bobUser = reactBoardChannel.GetUser(Client.CurrentUser.Id);
+            if (bobUser == null || !bobUser.GetPermissions(reactBoardChannel).SendMessages)
+            {
+                return;
+            }
+
+            // Send the message to the React Board channel
+            await reactBoardChannel.SendMessageAsync(
+                text: $"{userMessage.Author.Mention} reacted with {server.ReactBoardEmoji} to a message in {textChannel.Mention}:\n{userMessage.Content}",
+                allowedMentions: AllowedMentions.None
+            );
+
+            Console.WriteLine($"React Board: Posted message {userMessage.Id} from {userMessage.Author.Username} to {reactBoardChannel.Name}.");
         }
 
         private static async Task InteractionCreated(SocketInteraction interaction)
