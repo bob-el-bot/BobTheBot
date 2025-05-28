@@ -62,7 +62,6 @@ namespace Bob.Commands.Helpers
                 }
             }
 
-            // Limit to last 10
             // Limit to last 20
             while (messageIds.Count > 20)
             {
