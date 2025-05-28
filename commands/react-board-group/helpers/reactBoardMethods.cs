@@ -82,7 +82,7 @@ namespace Bob.Commands.Helpers
         {
             if (!ReactBoardCache.TryGetValue(boardChannel.Id, out HashSet<ulong> messageIds))
             {
-                messageIds = new HashSet<ulong>();
+                messageIds = [];
             }
 
             if (messageIds.Count >= 10)
@@ -121,11 +121,9 @@ namespace Bob.Commands.Helpers
         /// Generates a list of embeds for a given message, formatted for the ReactBoard.
         /// If the message has multiple images, each is embedded separately.
         /// </summary>
-        /// <param name="server">The server configuration (currently unused, but reserved for potential future features).</param>
         /// <param name="reactedMessage">The original message that was reacted to.</param>
-        /// <param name="sourceChannel">The channel the original message was in.</param>
         /// <returns>A list of Discord embeds representing the message and its images.</returns>
-        public static List<Embed> GetReactBoardEmbeds(Server server, IUserMessage reactedMessage, IGuildChannel sourceChannel)
+        public static List<Embed> GetReactBoardEmbeds(IUserMessage reactedMessage)
         {
             string commonUrl = "https://attachments.bobthebot.net";
 

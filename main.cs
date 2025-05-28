@@ -441,7 +441,7 @@ namespace Bob
 
                 try
                 {
-                    var boardMessage = await reactBoardChannel.SendMessageAsync(embeds: [.. ReactBoardMethods.GetReactBoardEmbeds(server, userMessage, textChannel)],
+                    var boardMessage = await reactBoardChannel.SendMessageAsync(embeds: [.. ReactBoardMethods.GetReactBoardEmbeds(userMessage)],
                         allowedMentions: AllowedMentions.None, components: ReactBoardMethods.GetReactBoardComponents(userMessage));
 
                     ReactBoardMethods.AddToCache(reactBoardChannel, userMessage.Id);
