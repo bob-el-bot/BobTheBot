@@ -29,30 +29,32 @@ namespace Bob.Commands.Helpers
 
         /// <summary>
         /// Retrieves the set of message IDs currently on the ReactBoard for the specified channel.
-        /// Fetches from cache if available, otherwise queries the latest 50 messages in the channel.
+        /// Fetches from cache if available, otherwise queries the latest 20 messages in the channel.
         /// </summary>
         /// <param name="boardChannel">The channel associated with the ReactBoard.</param>
         /// <returns>A set of message IDs on the ReactBoard.</returns>
         public static async Task<HashSet<ulong>> GetReactBoardMessageIdsAsync(ITextChannel boardChannel)
         {
-            if (ReactBoardCache.TryGetValue(boardChannel.Id, out HashSet<ulong> cachedIds))
+            if (ReactBoardCache.TryGetValue(boardChannel.Id, out LinkedList<ulong> cachedList))
             {
-                return cachedIds;
+                return [.. cachedList];
             }
 
             var messageIds = new LinkedList<ulong>();
-
-            var messages = await boardChannel.GetMessagesAsync(limit: 10).FlattenAsync();
+            var messages = await boardChannel.GetMessagesAsync(limit: 20).FlattenAsync();
+            var messageIdRegex = jumpToUrlMessageIdRegex();
 
             foreach (var message in messages)
             {
-                foreach (var embed in message.Embeds)
+                if (message.Components.FirstOrDefault() is ActionRowComponent row &&
+                    row.Components.FirstOrDefault() is ButtonComponent button &&
+                    button.Style == ButtonStyle.Link &&
+                    button.Url is not null)
                 {
-                    var footerText = embed.Footer?.Text;
-                    if (footerText != null)
+                    var match = messageIdRegex.Match(button.Url);
+                    if (match.Success && ulong.TryParse(match.Groups[1].Value, out ulong id))
                     {
-                        var match = MyRegex().Match(footerText);
-                        if (match.Success && ulong.TryParse(match.Groups[1].Value, out var id))
+                        if (!messageIds.Contains(id))
                         {
                             messageIds.AddLast(id);
                         }
@@ -60,16 +62,15 @@ namespace Bob.Commands.Helpers
                 }
             }
 
-            // Keep only the latest 10
+            // Limit to last 10
             while (messageIds.Count > 10)
             {
                 messageIds.RemoveFirst();
             }
 
-            var finalSet = new HashSet<ulong>(messageIds);
-            ReactBoardCache.Set(boardChannel.Id, finalSet, CacheOptions);
+            ReactBoardCache.Set(boardChannel.Id, messageIds, CacheOptions);
 
-            return finalSet;
+            return [.. messageIds];
         }
 
         /// <summary>
@@ -80,17 +81,19 @@ namespace Bob.Commands.Helpers
         /// <param name="messageId">The message ID to add.</param>
         public static void AddToCache(ITextChannel boardChannel, ulong messageId)
         {
-            if (!ReactBoardCache.TryGetValue(boardChannel.Id, out HashSet<ulong> messageIds))
+            if (!ReactBoardCache.TryGetValue(boardChannel.Id, out LinkedList<ulong> messageIds))
             {
-                messageIds = [];
+                messageIds = new LinkedList<ulong>();
             }
 
-            if (messageIds.Count >= 10)
-            {
-                messageIds.Remove(messageIds.First());
-            }
+            messageIds.Remove(messageId);
+            messageIds.AddLast(messageId);
 
-            messageIds.Add(messageId);
+            // Limit to last 10
+            while (messageIds.Count > 10)
+            {
+                messageIds.RemoveFirst();
+            }
 
             ReactBoardCache.Set(boardChannel.Id, messageIds, CacheOptions);
         }
@@ -140,7 +143,7 @@ namespace Bob.Commands.Helpers
                 .WithDescription(reactedMessage.Content ?? "*No text content*")
                 .WithFooter(footer =>
                 {
-                    footer.WithText($"ID: {reactedMessage.Id} • {reactedMessage.CreatedAt.LocalDateTime:F}");
+                    footer.WithText($"{reactedMessage.CreatedAt.LocalDateTime:F}");
                 })
                 .WithColor(Bot.theme)
                 .WithUrl(commonUrl);
@@ -190,7 +193,7 @@ namespace Bob.Commands.Helpers
                 .Build();
         }
 
-        [GeneratedRegex(@"ID:\s*(\d+)")]
-        private static partial Regex MyRegex();
+        [GeneratedRegex(@"https:\/\/discord\.com\/channels\/\d+\/\d+\/(\d+)", RegexOptions.Compiled)]
+        private static partial Regex jumpToUrlMessageIdRegex();
     }
 }
