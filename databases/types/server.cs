@@ -23,6 +23,7 @@ namespace Bob.Database.Types
         public bool ReactBoardOn { get; set; }
         public ulong? ReactBoardChannelId { get; set; }
         public string ReactBoardEmoji { get; set; }
+        public uint ReactBoardMinimumReactions { get; set; }
 
         // Constructor to set default values
         public Server()

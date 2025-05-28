@@ -134,5 +134,29 @@ namespace Bob.Commands
 
             await FollowupAsync(text: $"✅ The react board emoji has been set to {emoji}.", ephemeral: true);
         }
+
+        [SlashCommand("minimum-reactions", "Set the minimum reactions required to post on the react board.")]
+        public async Task SetMinimumReactions([Summary("minimum_reactions", "The minimum reactions required to post on the react board.")] uint minimumReactions)
+        {
+            var user = Context.Guild.GetUser(Context.User.Id);
+
+            // Check if user has ManageChannels permission
+            if (!user.GuildPermissions.ManageChannels)
+            {
+                await RespondAsync(text: "❌ Ask an admin or mod to configure this for you.\n- Permission(s) needed: `Manage Channels`.", ephemeral: true);
+                return;
+            }
+
+            await DeferAsync(ephemeral: true);
+
+            // Update database with the new minimum reactions
+            using var context = new BobEntities();
+            var server = await context.GetServer(Context.Guild.Id);
+            
+            server.ReactBoardMinimumReactions = minimumReactions;
+            await context.UpdateServer(server);
+
+            await FollowupAsync(text: $"✅ The minimum reactions required to post on the react board has been set to {minimumReactions}.", ephemeral: true);
+        }
     }
 }
