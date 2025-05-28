@@ -411,11 +411,19 @@ namespace Bob
                 }
 
                 if (reaction.Emote.Name != server.ReactBoardEmoji || textChannel.Id == server.ReactBoardChannelId)
+                var storedEmojiId = ReactBoardMethods.GetEmojiIdFromString(server.ReactBoardEmoji);
+
+                bool isMatchingEmoji = reaction.Emote is Emote emote
+                    ? emote.Id.ToString() == storedEmojiId
+                    : reaction.Emote.Name.Equals(server.ReactBoardEmoji, StringComparison.OrdinalIgnoreCase);
+
+                if (!isMatchingEmoji || textChannel.Id == server.ReactBoardChannelId)
                 {
                     return;
                 }
 
-                if (!userMessage.Reactions.TryGetValue(reaction.Emote, out var reactionMetadata) || reactionMetadata.ReactionCount < server.ReactBoardMinimumReactions)
+                if (!userMessage.Reactions.TryGetValue(reaction.Emote, out var reactionMetadata) ||
+                    reactionMetadata.ReactionCount < server.ReactBoardMinimumReactions)
                 {
                     return;
                 }

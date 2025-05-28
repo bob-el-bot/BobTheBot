@@ -42,7 +42,7 @@ namespace Bob.Commands.Helpers
 
             var messageIds = new LinkedList<ulong>();
             var messages = await boardChannel.GetMessagesAsync(limit: 20).FlattenAsync();
-            var messageIdRegex = jumpToUrlMessageIdRegex();
+            var messageIdRegex = JumpToUrlMessageIdRegex();
 
             foreach (var message in messages)
             {
@@ -193,7 +193,23 @@ namespace Bob.Commands.Helpers
                 .Build();
         }
 
+        /// <summary>
+        /// Extracts the ID of a custom Discord emoji from its string representation.
+        /// </summary>
+        /// <param name="emojiString">The emoji string, typically in the format &lt;:name:id&gt;.</param>
+        /// <returns>
+        /// The emoji ID as a string if the input matches the expected format; otherwise, <c>null</c>.
+        /// </returns>
+        public static string GetEmojiIdFromString(string emojiString)
+        {
+            var match = EmojiIdRegex().Match(emojiString);
+            return match.Success ? match.Groups[1].Value : null;
+        }
+
         [GeneratedRegex(@"https:\/\/discord\.com\/channels\/\d+\/\d+\/(\d+)", RegexOptions.Compiled)]
-        private static partial Regex jumpToUrlMessageIdRegex();
+        private static partial Regex JumpToUrlMessageIdRegex();
+
+        [GeneratedRegex(@"<:.+?:(\d+)>")]
+        private static partial Regex EmojiIdRegex();
     }
 }
