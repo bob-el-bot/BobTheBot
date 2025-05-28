@@ -455,6 +455,7 @@ namespace Bob
             catch (Exception e)
             {
                 Console.WriteLine($"Error handling reaction: {e.Message}");
+                Console.WriteLine(e.StackTrace);
             }
         }
 
