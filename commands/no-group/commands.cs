@@ -648,7 +648,7 @@ namespace Bob.Commands
             {
                 Title = $"What's New?",
                 Description = @"### 🗒️ Creator's Notes (May 28th, 2025)
-- We realize that subscription models suck, and now that Discord has an option for one-time purchases, we do too! Lifetime ✨ premium goes for ***only $4.99!*** (💜 we hope this makes your life better!)
+- Due to the over all value increase of premium and the growing number of users Bob needs to look over we have increased the cost tht premium goes for. Monthly is now ***4.99*** and Lifetime is now ***$19.99***. Users who have already purchased premium will not be affected by this change (💜 thanks to everyone who already has).
 - Added 📌 `/react-board` group to setup and manage a React Baord in your server (thanks hbkvxncent for the idea). Make sure to see the `React Board Commands` section in `/help` for more info.
 - Added 🤬 `/admin confess filter-toggle` to turn confess filtering on or off for your server.
 - Added 🤬 `/profile confessions-filter-toggle` to allow you to decide whether you want to use confess filtering or not.
