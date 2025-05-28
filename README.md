@@ -104,6 +104,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/react-board channel [channel]` Set the channel for the react board.
 - `/react-board emoji [emoji]` Set the emoji which triggers the react board.
 - `/react-board minimum-reactions [minimum-reactions]` Set the minimum reactions required to post on the react board.
+- `/react-board info` Get information about the react board settings for this server.
 
 ### 👋 Welcome Commands:
 - `/welcome toggle [welcome]` Bob will send welcome messages to new server members.

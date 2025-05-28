@@ -506,7 +506,7 @@ namespace Bob.Commands.Helpers
                         ]
                     },
                 ]
-            },    
+            },
             new() {
                 Title = "Profiles",
                 Name = "profile",
@@ -746,6 +746,13 @@ namespace Bob.Commands.Helpers
                                 Description = "The minimum reactions required to post on the react board."
                             }
                         ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "info",
+                        InheritGroupName = true,
+                        Description = "Get information about the react board settings for this server.",
+                        Url = "https://docs.bobthebot.net#react-board-info",
                     }
                 ]
             },
