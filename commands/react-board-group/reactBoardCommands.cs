@@ -83,7 +83,7 @@ namespace Bob.Commands
         {
             var user = Context.Guild.GetUser(Context.User.Id);
             var bob = Context.Guild.GetUser(Context.Client.CurrentUser.Id);
-            var channelPermissions = bob.GetPermissions(channel as IGuildChannel);
+            var channelPermissions = bob.GetPermissions(channel);
 
             // Check if user has ManageChannels permission
             if (!user.GuildPermissions.ManageChannels)
@@ -136,7 +136,7 @@ namespace Bob.Commands
         }
 
         [SlashCommand("minimum-reactions", "Set the minimum reactions required to post on the react board.")]
-        public async Task SetMinimumReactions([Summary("minimum_reactions", "The minimum reactions required to post on the react board.")] uint minimumReactions)
+        public async Task SetMinimumReactions([Summary("minimum-reactions", "The minimum reactions required to post on the react board.")] uint minimumReactions)
         {
             var user = Context.Guild.GetUser(Context.User.Id);
 
