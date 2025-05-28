@@ -393,45 +393,47 @@ namespace Bob
         {
             try
             {
-
-
-                var channel = await channelCache.GetOrDownloadAsync();
-                if (channel is not SocketTextChannel textChannel || channel is null)
+                if (await channelCache.GetOrDownloadAsync() is not SocketTextChannel textChannel)
                 {
                     return;
                 }
 
-                var message = await cacheable.GetOrDownloadAsync();
-                if (message is not IUserMessage userMessage)
+                if (await cacheable.GetOrDownloadAsync() is not IUserMessage userMessage)
                 {
                     return;
                 }
 
-                // Get the server configuration
                 using var dbContext = new BobEntities();
                 var server = await dbContext.GetServer(textChannel.Guild.Id);
-                if (!ReactBoardMethods.isSetup(server))
+                if (!ReactBoardMethods.IsSetup(server))
                 {
                     return;
                 }
 
-                // Check if the reaction matches the React Board emoji
-                if (reaction.Emote.Name != server.ReactBoardEmoji)
+                var storedEmojiId = ReactBoardMethods.GetEmojiIdFromString(server.ReactBoardEmoji);
+
+                bool isMatchingEmoji = reaction.Emote is Emote emote
+                    ? emote.Id.ToString() == storedEmojiId
+                    : reaction.Emote.Name.Equals(server.ReactBoardEmoji, StringComparison.OrdinalIgnoreCase);
+
+                if (!isMatchingEmoji || textChannel.Id == server.ReactBoardChannelId)
                 {
                     return;
                 }
 
-                // Ignore reactions in the React Board channel itself
-                if (textChannel.Id == server.ReactBoardChannelId)
+                if (!userMessage.Reactions.TryGetValue(reaction.Emote, out var reactionMetadata) ||
+                    reactionMetadata.ReactionCount < server.ReactBoardMinimumReactions)
                 {
                     return;
                 }
 
-                var reactBoardChannel = (SocketTextChannel)Client.GetChannel(server.ReactBoardChannelId.Value);
+                if (Client.GetChannel(server.ReactBoardChannelId.Value) is not SocketTextChannel reactBoardChannel)
+                {
+                    return;
+                }
 
-                // Check if Bob has permission to send messages in the React Board channel
-                var bobUser = reactBoardChannel.GetUser(Client.CurrentUser.Id);
-                if (bobUser == null || !bobUser.GetPermissions(reactBoardChannel).SendMessages)
+                var botUser = reactBoardChannel.GetUser(Client.CurrentUser.Id);
+                if (botUser == null || !botUser.GetPermissions(reactBoardChannel).SendMessages)
                 {
                     return;
                 }
@@ -443,20 +445,23 @@ namespace Bob
 
                 try
                 {
-                    var boardMessage = await reactBoardChannel.SendMessageAsync(embeds: [.. ReactBoardMethods.GetReactBoardEmbeds(server, userMessage, textChannel)],
-                        allowedMentions: AllowedMentions.None, components: ReactBoardMethods.GetReactBoardComponents(userMessage));
+                    var boardMessage = await reactBoardChannel.SendMessageAsync(
+                        embeds: [.. ReactBoardMethods.GetReactBoardEmbeds(userMessage)],
+                        allowedMentions: AllowedMentions.None,
+                        components: ReactBoardMethods.GetReactBoardComponents(userMessage)
+                    );
 
                     ReactBoardMethods.AddToCache(reactBoardChannel, userMessage.Id);
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine($"Error in React Board: {e.Message}");
-                    return;
                 }
             }
             catch (Exception e)
             {
                 Console.WriteLine($"Error handling reaction: {e.Message}");
+                Console.WriteLine(e.StackTrace);
             }
         }
 

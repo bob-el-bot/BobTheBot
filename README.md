@@ -58,7 +58,7 @@ Bob has many features *built in* to ensure that you never get stuck. Give an inv
 # All Commands
 Bob The Bot has many features all of which are `/slash` commands for ease of use! You can visit [docs.bobthebot.net](https://docs.bobthebot.net) to get more in-depth information.
 
-### 🎲 RNG (randomly generated) commands: 
+### 🎲 RNG (randomly generated) Commands: 
 - `/random color` Get a color with Hex, CMYK, HSL, HSV and RGB codes.
 - `/random dice-roll [sides]` Roll a die with a specified # of sides.
 - `/random coin-toss` Flip a coin.
@@ -72,7 +72,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/random advice` Get a random piece of advice.
 - `/random choose [option]*5` Bob will pick from the options provided.
 
-### 🎮 Game commands:
+### 🎮 Game Commands:
 - `trivia [opponent]` Play a game of trivia with or without someone.
 - `/connect4` Play Bob or a user in a game of Connect 4.
 - `/tic-tac-toe [opponent]` Play Bob or a user in a game of Tic Tac Toe. 
@@ -93,20 +93,27 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 ### ⚖️ Admin Commands:
 - `/admin confess filter-toggle [enable]` Enable or disable censoring and/or blocking of `/confess` messages in this server.
 
-### 🖊️ Quoting commands:
+### 🖊️ Quoting Commands:
 - `/quote new [quote] [user] [tag]*3` Formats and shares the quote in designated channel.
 - `/quote channel [channel]` Sets the quote channel for the server.
 - `/quote set-max-length [length]` Sets the maximum length of quotes for the server.
 - `/quote set-min-length [length]` Sets the minimum length of quotes for the server.
 
-### 👋 Welcome commands:
+### 📌 React Board Commands:
+- `/react-board toggle [enable]` Toggle the react board for the server.
+- `/react-board channel [channel]` Set the channel for the react board.
+- `/react-board emoji [emoji]` Set the emoji which triggers the react board.
+- `/react-board minimum-reactions [minimum-reactions]` Set the minimum reactions required to post on the react board.
+- `/react-board info` Get information about the react board settings for this server.
+
+### 👋 Welcome Commands:
 - `/welcome toggle [welcome]` Bob will send welcome messages to new server members.
 - `/welcome set-message [message]` Set a custom message to welcome new users with.
 - `/welcome remove-message` Bob will stop using the custom message to welcome users.
 - `/welcome set-image [image]` Set a custom image to welcome new users with.
 - `/welcome remove-image` Bob will stop using the custom image to welcome users.
 
-### 🔒 Encryption commands:
+### 🔒 Encryption Commands:
 - `/encrypt a1z26 [message]` Encrypts your message by swapping letters to their corresponding number.
 - `/encrypt atbash [message]` Encrypts your message by swapping letters to their opposite position.
 - `/encrypt caesar [message] [shift]` Encrypts your message by shifting the letters the specified amount.
@@ -114,7 +121,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/encrypt vigenere [message] [key]` Encrypts your message using a specified key.
 - `/encrypt binary [message]` Encrypts your message using binary.
 
-### 🔓 Decryption commands:
+### 🔓 Decryption Commands:
 - `/decrypt a1z26 [message]` Decrypts your message by swapping letters to their corresponding number.
 - `/decrypt atbash [message]` Decrypts your message by swapping letters to their opposite position.
 - `/decrypt caesar [message] [shift]` Decrypts your message by shifting the letters the specified amount.
@@ -122,10 +129,10 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/decrypt vigenere [message] [key]` Decrypts your message using a specified key.
 - `/decrypt binary [message]` Decrypts your message using binary.
 
-### 🪄 Generate commands:
+### 🪄 Generate Commands:
 - `/generate youtube-comment [comment] [username] [avatar-url] [likes] [time] [time-unit] [theme]` Bob will generate a Youtube comment image!
 
-### ✨ Miscellaneous commands: 
+### ✨ Miscellaneous Commands: 
 - `/fonts [text] [font]` Change your text to a different font.
     - `[font]` choices: 𝖒𝖊𝖉𝖎𝖊𝖛𝖆𝖑, 𝓯𝓪𝓷𝓬𝔂, 𝕠𝕦𝕥𝕝𝕚𝕟𝕖𝕕, s̷l̷̷a̷s̷h̷e̷d̷, ɟןıddǝp, and 🄱🄾🅇🄴🄳.
 - `/confess [message] [user] [signoff]` Have Bob DM a user a message.
@@ -137,29 +144,29 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/review` Get a link to review Bob on Top.GG.
 - `/hi` Say hi to Bob.
 
-### ↔️ Convert commands:
+### ↔️ Convert Commands:
 - `/convert units [unit-type] [amount] [from-unit] [to-unit]` Bob will convert units for you.
 - `/convert timezones [month] [day] [hour] [minute] [from-timezone] [to-timezone]` Convert time from one timezone to another.
 - `/convert qr-code [content] [error-correction-level]` Convert text or links into QR codes.
 
-### 🔎 Preview commands:
+### 🔎 Preview Commands:
 - `/preview code [link]` Preview specific lines of code from a file on GitHub.
 - `/preview pull-request [link]` Preview a pull request from GitHub right on Discord.
 - `/preview issue [link]` Preview an issue from GitHub right on Discord.
 - `/preview message [link]` Preview a Discord message from any server Bob is in.
 - `/preview color [color]` Preview what a color looks like, and get more information.
 
-### 🕖 Schedule commands:
+### 🕖 Schedule Commands:
 - `/schedule message [message] [channel] [month] [day] [hour] [minute] [timezone]` Bob will send your message at a specified time.
 - `/schedule announcement [title] [description] [color] [channel] [month] [day] [hour] [minute] [timezone]` Bob will send an embed at a specified time.
 - `/schedule edit [id]` Bob will allow you to edit any messages or announcements you have scheduled.
 
-### 🖨️ Auto commands:
+### 🖨️ Auto Commands:
 - `/auto publish-announcements [publish] [channel]` Bob will publish all messages sent in the given channel.
 - `/auto preview-github [preview]` Bob will preview all valid GitHub links in the server.
 - `/auto preview-messages [preview]` Bob will preview all valid Discord message links in the server.
 
-### ⚖️ Automod commands:
+### ⚖️ Automod Commands:
 - `/automod phone-numbers [strict]` Add phone number auto moderation. Prevent phone numbers from being sent in this server.
 - `/automod links` Add link auto moderation. Prevent links from being sent in this server.
 - `/automod zalgo-text` Add zalgo-text auto moderation. Prevent glitchy text from being sent in this server.
@@ -168,7 +175,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/automod remove [ruleId]` Removes a specified automod rule. 
 - `/automod remove-all` Removes all automod rules.
 
-### 🗄️ Informational / help commands:
+### 🗄️ Informational / Help Commands:
 - `/premium` Ensures Bob knows you have premium! If not you will be given a button to get it!
 - `/help` Get DMed information for *all* commands.
 - `/new` See the latest updates to Bob.

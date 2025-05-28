@@ -83,7 +83,7 @@ namespace Bob.Commands
         {
             var user = Context.Guild.GetUser(Context.User.Id);
             var bob = Context.Guild.GetUser(Context.Client.CurrentUser.Id);
-            var channelPermissions = bob.GetPermissions(channel as IGuildChannel);
+            var channelPermissions = bob.GetPermissions(channel);
 
             // Check if user has ManageChannels permission
             if (!user.GuildPermissions.ManageChannels)
@@ -112,7 +112,7 @@ namespace Bob.Commands
         }
 
         [SlashCommand("emoji", "Set the emoji which triggers the react board.")]
-        public async Task SetEmoji([Summary("emoji", "The emoji to set for the react board.")] string emoji)
+        public async Task SetEmoji([Summary("emoji", "The emoji to set for the react board (both custom and default work).")] string emoji)
         {
             var user = Context.Guild.GetUser(Context.User.Id);
 
@@ -133,6 +133,61 @@ namespace Bob.Commands
             await context.UpdateServer(server);
 
             await FollowupAsync(text: $"✅ The react board emoji has been set to {emoji}.", ephemeral: true);
+        }
+
+        [SlashCommand("minimum-reactions", "Set the minimum reactions required to post on the react board.")]
+        public async Task SetMinimumReactions([Summary("minimum-reactions", "The minimum reactions required to post on the react board.")] uint minimumReactions)
+        {
+            var user = Context.Guild.GetUser(Context.User.Id);
+
+            // Check if user has ManageChannels permission
+            if (!user.GuildPermissions.ManageChannels)
+            {
+                await RespondAsync(text: "❌ Ask an admin or mod to configure this for you.\n- Permission(s) needed: `Manage Channels`.", ephemeral: true);
+                return;
+            }
+
+            await DeferAsync(ephemeral: true);
+
+            // Update database with the new minimum reactions
+            using var context = new BobEntities();
+            var server = await context.GetServer(Context.Guild.Id);
+
+            server.ReactBoardMinimumReactions = minimumReactions;
+            await context.UpdateServer(server);
+
+            await FollowupAsync(text: $"✅ The minimum reactions required to post on the react board has been set to {minimumReactions}.", ephemeral: true);
+        }
+
+        [SlashCommand("info", "Get information about the react board settings for this server.")]
+        public async Task Info()
+        {
+            await DeferAsync(ephemeral: true);
+
+            using var context = new BobEntities();
+            var server = await context.GetServer(Context.Guild.Id);
+
+            var reactBoardChannel = Context.Guild.GetTextChannel(server.ReactBoardChannelId ?? 0);
+            var emoji = server.ReactBoardEmoji ?? "Not set";
+            var minimumReactions = server.ReactBoardMinimumReactions;
+
+            var embed = new EmbedBuilder()
+                .WithTitle("📌 React Board Settings")
+                .AddField("Enabled", server.ReactBoardOn ? "Yes" : "No", inline: true)
+                .AddField("Channel", reactBoardChannel != null ? $"<#{reactBoardChannel.Id}>" : "Not set", inline: true)
+                .AddField("Emoji", emoji, inline: true)
+                .AddField("Minimum Reactions", minimumReactions.ToString(), inline: true)
+                .AddField("How to Update Settings",
+                    $"""
+            • {Help.GetCommandMention("react-board toggle")} Enable or disable the React Board
+            • {Help.GetCommandMention("react-board channel")} Set the React Board channel
+            • {Help.GetCommandMention("react-board emoji")} Set the emoji to use
+            • {Help.GetCommandMention("react-board minimum-reactions")} Set minimum reactions required
+            """)
+                .WithColor(Bot.theme)
+                .Build();
+
+            await FollowupAsync(embed: embed, ephemeral: true);
         }
     }
 }
