@@ -133,15 +133,27 @@ namespace Bob.Commands.Helpers
                 .Where(a => a.ContentType != null && a.ContentType.StartsWith("image/"))
                 .ToList();
 
+            var nonImageAttachments = reactedMessage.Attachments
+                .Where(a => a.ContentType == null || !a.ContentType.StartsWith("image/"))
+                .ToList();
+
             var mainEmbedBuilder = new EmbedBuilder()
                 .WithAuthor(reactedMessage.Author.Username, reactedMessage.Author.GetAvatarUrl() ?? reactedMessage.Author.GetDefaultAvatarUrl())
-                .WithDescription(reactedMessage.Content)
+                .WithDescription(reactedMessage.Content ?? "*No text content*")
                 .WithFooter(footer =>
                 {
-                    footer.WithText($"ID: {reactedMessage.Id} • {reactedMessage.CreatedAt.LocalDateTime.ToString("F")}");
+                    footer.WithText($"ID: {reactedMessage.Id} • {reactedMessage.CreatedAt.LocalDateTime:F}");
                 })
                 .WithColor(Color.Orange)
                 .WithUrl(commonUrl);
+
+            if (nonImageAttachments.Any())
+            {
+                foreach (var attachment in nonImageAttachments)
+                {
+                    mainEmbedBuilder.AddField("Attachment", $"[{attachment.Filename}]({attachment.Url})");
+                }
+            }
 
             var allEmbeds = new List<Embed>();
 
