@@ -647,18 +647,21 @@ namespace Bob.Commands
             var embed = new EmbedBuilder
             {
                 Title = $"What's New?",
-                Description = @"### 🗒️ Creator's Notes
+                Description = @"### 🗒️ Creator's Notes (May 28th, 2025)
 - We realize that subscription models suck, and now that Discord has an option for one-time purchases, we do too! Lifetime ✨ premium goes for ***only $4.99!*** (💜 we hope this makes your life better!)
-- Added `/convert qr-code` to convert text or URLs to a QR code here in Discord!
-- Added random selection of users if left unspecified in `/ship`. Shoutout x_star. for the idea!
-- Revamped `/mastermind` to be more accurate to the original board game. It is now color-based, has three difficulty options, and two game modes. Shoutout intelligenceunknownsh for some of these ideas!
-- Improved the `/connect4` AI to be more challenging by increasing search depth and adding in some randomness to the beginning of games. Shoutout intelligenceunknownsh for catching this!
-- Improved `/ship` calculation to make the distribution more even and less biased towards 60-70%. Shoutout intelligenceunknownsh for catching this!
-- Made `/preview color` and `/random color` faster and more memory efficient by using the WEBP format instead of PNG.
-- Fixed bug where user's game stats were updated on the test bot.
-- Fixed bug where `/quote new` and the message command `Quote` incorrectly handled quotes of 4096 characters which led to uncaught exceptions.
+- Added 📌 `/react-board` group to setup and manage a React Baord in your server (thanks hbkvxncent for the idea). Make sure to see the `React Board Commands` section in `/help` for more info.
+- Added 🤬 `/admin confess filter-toggle` to turn confess filtering on or off for your server.
+- Added 🤬 `/profile confessions-filter-toggle` to allow you to decide whether you want to use confess filtering or not.
+- Added 🚫 `/automod remove` to remove a specific automod rule from your server (thanks honey_bunny5130 for the idea).
+- Added 🗑️ `/automod remove-all` to remove all automod rules from your server (thanks honey_bunny5130 for the idea).
+- Added autocomplete to 📏 `/convert units` to make it far easier to use.
+- Moved Bob over to 💎 Sharding to meet Discord's requirements. This means that Bob can now handle more servers, and is more stable than ever!
+- Made the [user] field in `/quote new` default to the user calling the command, so you don't have to specify it every time.
+- Fixed 🪲 bug in Quote creation where if a user had no guild nickname it would show a blank name (thanks hbkvxncent for catching this).
+- Fixed a bug in Announcement creation where if a user had no guild nickname it would show a blank name (thanks hbkvxncent for catching this).
+- Fixed a bug in `/confess` where it would fail in 👤 User Installs.
 - Stay 📺 tuned for more awesome updates!",
-                Color = Bot.theme
+                Color = theme
             };
 
             embed.AddField(name: "✨ Latest Update", value: commitMessage, inline: true)
