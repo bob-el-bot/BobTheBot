@@ -393,8 +393,6 @@ namespace Bob
         {
             try
             {
-
-
                 var channel = await channelCache.GetOrDownloadAsync();
                 if (channel is not SocketTextChannel textChannel || channel is null)
                 {
@@ -410,7 +408,7 @@ namespace Bob
                 // Get the server configuration
                 using var dbContext = new BobEntities();
                 var server = await dbContext.GetServer(textChannel.Guild.Id);
-                if (!ReactBoardMethods.isSetup(server))
+                if (!ReactBoardMethods.IsSetup(server))
                 {
                     return;
                 }

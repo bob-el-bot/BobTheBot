@@ -112,7 +112,7 @@ namespace Bob.Commands.Helpers
         /// </summary>
         /// <param name="server">The server configuration to check.</param>
         /// <returns>True if the ReactBoard is properly set up, false otherwise.</returns>
-        public static bool isSetup(Server server)
+        public static bool IsSetup(Server server)
         {
             return server.ReactBoardOn && server.ReactBoardChannelId.HasValue && server.ReactBoardEmoji != null && server.ReactBoardEmoji.Length > 0;
         }
