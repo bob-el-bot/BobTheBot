@@ -9,15 +9,30 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace Bob.Commands.Helpers
 {
+    /// <summary>
+    /// Provides helper methods for managing the ReactBoard feature, including caching, embed generation, and UI components.
+    /// </summary>
     public static class ReactBoardMethods
     {
+        /// <summary>
+        /// In-memory cache for storing ReactBoard message IDs per channel.
+        /// </summary>
         private static readonly MemoryCache ReactBoardCache = new MemoryCache(new MemoryCacheOptions());
 
+        /// <summary>
+        /// Cache entry options with a sliding expiration of 12 hours.
+        /// </summary>
         private static readonly MemoryCacheEntryOptions CacheOptions = new MemoryCacheEntryOptions
         {
             SlidingExpiration = TimeSpan.FromHours(12)
         };
 
+        /// <summary>
+        /// Retrieves the set of message IDs currently on the ReactBoard for the specified channel.
+        /// Fetches from cache if available, otherwise queries the latest 50 messages in the channel.
+        /// </summary>
+        /// <param name="boardChannel">The channel associated with the ReactBoard.</param>
+        /// <returns>A set of message IDs on the ReactBoard.</returns>
         public static async Task<HashSet<ulong>> GetReactBoardMessageIdsAsync(ITextChannel boardChannel)
         {
             if (ReactBoardCache.TryGetValue(boardChannel.Id, out HashSet<ulong> cachedIds))
@@ -57,6 +72,12 @@ namespace Bob.Commands.Helpers
             return finalSet;
         }
 
+        /// <summary>
+        /// Adds a message ID to the cache for the specified ReactBoard channel.
+        /// If the cache for the channel exceeds 10 messages, the oldest is removed.
+        /// </summary>
+        /// <param name="boardChannel">The channel associated with the ReactBoard.</param>
+        /// <param name="messageId">The message ID to add.</param>
         public static void AddToCache(ITextChannel boardChannel, ulong messageId)
         {
             if (!ReactBoardCache.TryGetValue(boardChannel.Id, out HashSet<ulong> messageIds))
@@ -64,10 +85,8 @@ namespace Bob.Commands.Helpers
                 messageIds = new HashSet<ulong>();
             }
 
-            // Enforce the 10-message limit
             if (messageIds.Count >= 10)
             {
-                // Remove the oldest item (approximation)
                 messageIds.Remove(messageIds.First());
             }
 
@@ -76,28 +95,44 @@ namespace Bob.Commands.Helpers
             ReactBoardCache.Set(boardChannel.Id, messageIds, CacheOptions);
         }
 
+        /// <summary>
+        /// Checks if a message is already present on the ReactBoard for the specified channel.
+        /// </summary>
+        /// <param name="boardChannel">The channel associated with the ReactBoard.</param>
+        /// <param name="originalMessageId">The message ID to check.</param>
+        /// <returns>True if the message is on the ReactBoard, false otherwise.</returns>
         public static async Task<bool> IsMessageOnBoardAsync(ITextChannel boardChannel, ulong originalMessageId)
         {
             var boardMessageIds = await GetReactBoardMessageIdsAsync(boardChannel);
             return boardMessageIds.Contains(originalMessageId);
         }
 
+        /// <summary>
+        /// Checks if the server has a valid ReactBoard setup, including channel ID and emoji.
+        /// </summary>
+        /// <param name="server">The server configuration to check.</param>
+        /// <returns>True if the ReactBoard is properly set up, false otherwise.</returns>
         public static bool isSetup(Server server)
         {
             return server.ReactBoardOn && server.ReactBoardChannelId.HasValue && server.ReactBoardEmoji != null && server.ReactBoardEmoji.Length > 0;
         }
 
+        /// <summary>
+        /// Generates a list of embeds for a given message, formatted for the ReactBoard.
+        /// If the message has multiple images, each is embedded separately.
+        /// </summary>
+        /// <param name="server">The server configuration (currently unused, but reserved for potential future features).</param>
+        /// <param name="reactedMessage">The original message that was reacted to.</param>
+        /// <param name="sourceChannel">The channel the original message was in.</param>
+        /// <returns>A list of Discord embeds representing the message and its images.</returns>
         public static List<Embed> GetReactBoardEmbeds(Server server, IUserMessage reactedMessage, IGuildChannel sourceChannel)
         {
-            // Define a common URL for grouping
             string commonUrl = "https://attachments.bobthebot.net";
 
-            // Get image attachments
             var imageAttachments = reactedMessage.Attachments
                 .Where(a => a.ContentType != null && a.ContentType.StartsWith("image/"))
                 .ToList();
 
-            // Prepare the main embed builder
             var mainEmbedBuilder = new EmbedBuilder()
                 .WithAuthor(reactedMessage.Author.Username, reactedMessage.Author.GetAvatarUrl() ?? reactedMessage.Author.GetDefaultAvatarUrl())
                 .WithDescription(reactedMessage.Content)
@@ -112,16 +147,13 @@ namespace Bob.Commands.Helpers
 
             if (imageAttachments.Count == 1)
             {
-                // If there's only one image, embed it in the main embed
                 mainEmbedBuilder.WithImageUrl(imageAttachments.First().Url);
                 allEmbeds.Add(mainEmbedBuilder.Build());
             }
             else
             {
-                // Multiple images: main embed first (without image)
                 allEmbeds.Add(mainEmbedBuilder.Build());
 
-                // Add each image as a separate embed
                 var imageEmbeds = imageAttachments
                     .Select(a => new EmbedBuilder()
                         .WithImageUrl(a.Url)
@@ -134,6 +166,11 @@ namespace Bob.Commands.Helpers
             return allEmbeds;
         }
 
+        /// <summary>
+        /// Generates a message component containing a "View Original" button linking to the original message.
+        /// </summary>
+        /// <param name="userMessage">The original user message to link to.</param>
+        /// <returns>A message component with a link button.</returns>
         public static MessageComponent GetReactBoardComponents(IUserMessage userMessage)
         {
             var jumpUrl = userMessage.GetJumpUrl();
