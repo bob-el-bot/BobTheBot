@@ -5,12 +5,83 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Bob.Database.Types;
 using Discord;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Bob.Commands.Helpers
 {
     public static class ReactBoardMethods
     {
-        public static bool isSetup(Server server) {
+        private static readonly MemoryCache ReactBoardCache = new MemoryCache(new MemoryCacheOptions());
+
+        private static readonly MemoryCacheEntryOptions CacheOptions = new MemoryCacheEntryOptions
+        {
+            SlidingExpiration = TimeSpan.FromHours(12)
+        };
+
+        public static async Task<HashSet<ulong>> GetReactBoardMessageIdsAsync(ITextChannel boardChannel)
+        {
+            if (ReactBoardCache.TryGetValue(boardChannel.Id, out HashSet<ulong> cachedIds))
+            {
+                return cachedIds;
+            }
+
+            var messageIds = new LinkedList<ulong>();
+
+            var messages = await boardChannel.GetMessagesAsync(limit: 50).FlattenAsync();
+
+            foreach (var message in messages)
+            {
+                foreach (var embed in message.Embeds)
+                {
+                    var footerText = embed.Footer?.Text;
+                    if (footerText != null)
+                    {
+                        var match = Regex.Match(footerText, @"ID:\s*(\d+)");
+                        if (match.Success && ulong.TryParse(match.Groups[1].Value, out var id))
+                        {
+                            messageIds.AddLast(id);
+                        }
+                    }
+                }
+            }
+
+            // Keep only the latest 10
+            while (messageIds.Count > 10)
+            {
+                messageIds.RemoveFirst();
+            }
+
+            var finalSet = new HashSet<ulong>(messageIds);
+            ReactBoardCache.Set(boardChannel.Id, finalSet, CacheOptions);
+
+            return finalSet;
+        }
+
+        public static void AddToCache(ITextChannel boardChannel, ulong messageId)
+        {
+            if (!ReactBoardCache.TryGetValue(boardChannel.Id, out HashSet<ulong> messageIds))
+            {
+                messageIds = new HashSet<ulong>();
+            }
+
+            // Enforce the 10-message limit
+            if (messageIds.Count >= 10)
+            {
+                // Remove the oldest item (approximation)
+                messageIds.Remove(messageIds.First());
+            }
+
+            messageIds.Add(messageId);
+
+            ReactBoardCache.Set(boardChannel.Id, messageIds, CacheOptions);
+        }
+
+        public static async Task<bool> IsMessageOnBoardAsync(ITextChannel boardChannel, ulong originalMessageId)
+        {
+            var boardMessageIds = await GetReactBoardMessageIdsAsync(boardChannel);
+            return boardMessageIds.Contains(originalMessageId);
+        }
+
         public static bool isSetup(Server server)
         {
             return server.ReactBoardOn && server.ReactBoardChannelId.HasValue && server.ReactBoardEmoji != null && server.ReactBoardEmoji.Length > 0;

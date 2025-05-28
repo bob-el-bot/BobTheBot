@@ -431,11 +431,17 @@ namespace Bob
                 return;
             }
 
+            if (await ReactBoardMethods.IsMessageOnBoardAsync(reactBoardChannel, userMessage.Id))
+            {
+                return;
+            }
+
             try
             {
                 var boardMessage = await reactBoardChannel.SendMessageAsync(embeds: [.. ReactBoardMethods.GetReactBoardEmbeds(server, userMessage, textChannel)],
                     allowedMentions: AllowedMentions.None, components: ReactBoardMethods.GetReactBoardComponents(userMessage));
 
+                ReactBoardMethods.AddToCache(reactBoardChannel, userMessage.Id);
             }
             catch (Exception e)
             {
