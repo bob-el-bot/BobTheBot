@@ -410,7 +410,6 @@ namespace Bob
                     return;
                 }
 
-                if (reaction.Emote.Name != server.ReactBoardEmoji || textChannel.Id == server.ReactBoardChannelId)
                 var storedEmojiId = ReactBoardMethods.GetEmojiIdFromString(server.ReactBoardEmoji);
 
                 bool isMatchingEmoji = reaction.Emote is Emote emote

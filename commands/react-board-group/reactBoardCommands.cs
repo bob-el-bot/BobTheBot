@@ -112,7 +112,7 @@ namespace Bob.Commands
         }
 
         [SlashCommand("emoji", "Set the emoji which triggers the react board.")]
-        public async Task SetEmoji([Summary("emoji", "The emoji to set for the react board.")] string emoji)
+        public async Task SetEmoji([Summary("emoji", "The emoji to set for the react board (both custom and default work).")] string emoji)
         {
             var user = Context.Guild.GetUser(Context.User.Id);
 

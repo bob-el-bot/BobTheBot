@@ -680,6 +680,76 @@ namespace Bob.Commands.Helpers
                 ]
             },
             new() {
+                Title = "React Board",
+                Name = "react-board",
+                Description = "Commands related to the react board.",
+                Emoji = "📌",
+                Url = "https://docs.bobthebot.net#react-board",
+                Commands =
+                [
+                    new CommandInfo
+                    {
+                        Name = "toggle",
+                        InheritGroupName = true,
+                        Description = "Toggles the react board for the server.",
+                        Url = "https://docs.bobthebot.net#react-board-toggle",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "enable",
+                                Description = "Enable or disable the react board. Choose from: True, False."
+                            },
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "channel",
+                        InheritGroupName = true,
+                        Description = "Set the channel for the react board.",
+                        Url = "https://docs.bobthebot.net#react-board-channel",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "channel",
+                                Description = "The text channel you want to use as the react board for the server."
+                            }
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "emoji",
+                        InheritGroupName = true,
+                        Description = "Set the emoji which triggers the react board.",
+                        Url = "https://docs.bobthebot.net#react-board-emoji",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "emoji",
+                                Description = "The emoji to set for the react board. It can be a custom emoji or a standard emoji."
+                            }
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "minimum-reactions",
+                        InheritGroupName = true,
+                        Description = "Set the minimum reactions required to post on the react board.",
+                        Url = "https://docs.bobthebot.net#react-board-minimum-reactions",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "minimum-reactions",
+                                Description = "The minimum reactions required to post on the react board."
+                            }
+                        ]
+                    }
+                ]
+            },
+            new() {
                 Title = "Welcoming",
                 Name = "welcome",
                 Description = "Commands related to welcoming new users.",
