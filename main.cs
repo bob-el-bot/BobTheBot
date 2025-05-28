@@ -24,6 +24,7 @@ using System.IO;
 using Bob.Monitoring;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq.Expressions;
 
 namespace Bob
 {
@@ -390,63 +391,72 @@ namespace Bob
 
         private static async Task HandleReactionAddedAsync(Cacheable<IUserMessage, ulong> cacheable, Cacheable<IMessageChannel, ulong> channelCache, SocketReaction reaction)
         {
-            var channel = await channelCache.GetOrDownloadAsync();
-            if (channel is not SocketTextChannel textChannel || channel is null)
-            {
-                return;
-            }
-
-            var message = await cacheable.GetOrDownloadAsync();
-            if (message is not IUserMessage userMessage)
-            {
-                return;
-            }
-
-            // Get the server configuration
-            using var dbContext = new BobEntities();
-            var server = await dbContext.GetServer(textChannel.Guild.Id);
-            if (!ReactBoardMethods.isSetup(server))
-            {
-                return;
-            }
-
-            // Check if the reaction matches the React Board emoji
-            if (reaction.Emote.Name != server.ReactBoardEmoji)
-            {
-                return;
-            }
-
-            // Ignore reactions in the React Board channel itself
-            if (textChannel.Id == server.ReactBoardChannelId)
-            {
-                return;
-            }
-
-            var reactBoardChannel = (SocketTextChannel)Client.GetChannel(server.ReactBoardChannelId.Value);
-
-            // Check if Bob has permission to send messages in the React Board channel
-            var bobUser = reactBoardChannel.GetUser(Client.CurrentUser.Id);
-            if (bobUser == null || !bobUser.GetPermissions(reactBoardChannel).SendMessages)
-            {
-                return;
-            }
-
-            if (await ReactBoardMethods.IsMessageOnBoardAsync(reactBoardChannel, userMessage.Id))
-            {
-                return;
-            }
-
             try
             {
-                var boardMessage = await reactBoardChannel.SendMessageAsync(embeds: [.. ReactBoardMethods.GetReactBoardEmbeds(server, userMessage, textChannel)],
-                    allowedMentions: AllowedMentions.None, components: ReactBoardMethods.GetReactBoardComponents(userMessage));
 
-                ReactBoardMethods.AddToCache(reactBoardChannel, userMessage.Id);
+
+                var channel = await channelCache.GetOrDownloadAsync();
+                if (channel is not SocketTextChannel textChannel || channel is null)
+                {
+                    return;
+                }
+
+                var message = await cacheable.GetOrDownloadAsync();
+                if (message is not IUserMessage userMessage)
+                {
+                    return;
+                }
+
+                // Get the server configuration
+                using var dbContext = new BobEntities();
+                var server = await dbContext.GetServer(textChannel.Guild.Id);
+                if (!ReactBoardMethods.isSetup(server))
+                {
+                    return;
+                }
+
+                // Check if the reaction matches the React Board emoji
+                if (reaction.Emote.Name != server.ReactBoardEmoji)
+                {
+                    return;
+                }
+
+                // Ignore reactions in the React Board channel itself
+                if (textChannel.Id == server.ReactBoardChannelId)
+                {
+                    return;
+                }
+
+                var reactBoardChannel = (SocketTextChannel)Client.GetChannel(server.ReactBoardChannelId.Value);
+
+                // Check if Bob has permission to send messages in the React Board channel
+                var bobUser = reactBoardChannel.GetUser(Client.CurrentUser.Id);
+                if (bobUser == null || !bobUser.GetPermissions(reactBoardChannel).SendMessages)
+                {
+                    return;
+                }
+
+                if (await ReactBoardMethods.IsMessageOnBoardAsync(reactBoardChannel, userMessage.Id))
+                {
+                    return;
+                }
+
+                try
+                {
+                    var boardMessage = await reactBoardChannel.SendMessageAsync(embeds: [.. ReactBoardMethods.GetReactBoardEmbeds(server, userMessage, textChannel)],
+                        allowedMentions: AllowedMentions.None, components: ReactBoardMethods.GetReactBoardComponents(userMessage));
+
+                    ReactBoardMethods.AddToCache(reactBoardChannel, userMessage.Id);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Error in React Board: {e.Message}");
+                    return;
+                }
             }
             catch (Exception e)
             {
-                Console.WriteLine($"Error in React Board: {e.Message}");
-                return;
+                Console.WriteLine($"Error handling reaction: {e.Message}");
             }
         }
 

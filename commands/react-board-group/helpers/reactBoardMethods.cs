@@ -12,17 +12,17 @@ namespace Bob.Commands.Helpers
     /// <summary>
     /// Provides helper methods for managing the ReactBoard feature, including caching, embed generation, and UI components.
     /// </summary>
-    public static class ReactBoardMethods
+    public static partial class ReactBoardMethods
     {
         /// <summary>
         /// In-memory cache for storing ReactBoard message IDs per channel.
         /// </summary>
-        private static readonly MemoryCache ReactBoardCache = new MemoryCache(new MemoryCacheOptions());
+        private static readonly MemoryCache ReactBoardCache = new(new MemoryCacheOptions());
 
         /// <summary>
         /// Cache entry options with a sliding expiration of 12 hours.
         /// </summary>
-        private static readonly MemoryCacheEntryOptions CacheOptions = new MemoryCacheEntryOptions
+        private static readonly MemoryCacheEntryOptions CacheOptions = new()
         {
             SlidingExpiration = TimeSpan.FromHours(12)
         };
@@ -51,7 +51,7 @@ namespace Bob.Commands.Helpers
                     var footerText = embed.Footer?.Text;
                     if (footerText != null)
                     {
-                        var match = Regex.Match(footerText, @"ID:\s*(\d+)");
+                        var match = MyRegex().Match(footerText);
                         if (match.Success && ulong.TryParse(match.Groups[1].Value, out var id))
                         {
                             messageIds.AddLast(id);
@@ -144,10 +144,10 @@ namespace Bob.Commands.Helpers
                 {
                     footer.WithText($"ID: {reactedMessage.Id} • {reactedMessage.CreatedAt.LocalDateTime:F}");
                 })
-                .WithColor(Color.Orange)
+                .WithColor(Bot.theme)
                 .WithUrl(commonUrl);
 
-            if (nonImageAttachments.Any())
+            if (nonImageAttachments.Count != 0)
             {
                 foreach (var attachment in nonImageAttachments)
                 {
@@ -191,5 +191,8 @@ namespace Bob.Commands.Helpers
                 .WithButton("View Original", null, ButtonStyle.Link, url: jumpUrl)
                 .Build();
         }
+
+        [GeneratedRegex(@"ID:\s*(\d+)")]
+        private static partial Regex MyRegex();
     }
 }
