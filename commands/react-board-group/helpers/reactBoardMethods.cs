@@ -188,7 +188,7 @@ namespace Bob.Commands.Helpers
             var jumpUrl = userMessage.GetJumpUrl();
 
             return new ComponentBuilder()
-                .WithButton("View Original", null, ButtonStyle.Link, url: jumpUrl)
+                .WithButton("Jump to Message", null, ButtonStyle.Link, url: jumpUrl)
                 .Build();
         }
 
