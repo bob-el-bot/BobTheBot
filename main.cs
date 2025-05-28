@@ -410,14 +410,14 @@ namespace Bob
                 return;
             }
 
-            // Ignore reactions in the React Board channel itself
-            if (textChannel.Id == server.ReactBoardChannelId)
+            // Check if the reaction matches the React Board emoji
+            if (reaction.Emote.Name != server.ReactBoardEmoji)
             {
                 return;
             }
 
-            // Check if the reaction matches the React Board emoji
-            if (reaction.Emote.Name != server.ReactBoardEmoji)
+            // Ignore reactions in the React Board channel itself
+            if (textChannel.Id == server.ReactBoardChannelId)
             {
                 return;
             }
@@ -431,13 +431,17 @@ namespace Bob
                 return;
             }
 
-            // Send the message to the React Board channel
-            await reactBoardChannel.SendMessageAsync(
-                text: $"{userMessage.Author.Mention} reacted with {server.ReactBoardEmoji} to a message in {textChannel.Mention}:\n{userMessage.Content}",
-                allowedMentions: AllowedMentions.None
-            );
+            try
+            {
+                var boardMessage = await reactBoardChannel.SendMessageAsync(embeds: [.. ReactBoardMethods.GetReactBoardEmbeds(server, userMessage, textChannel)],
+                    allowedMentions: AllowedMentions.None, components: ReactBoardMethods.GetReactBoardComponents(userMessage));
 
-            Console.WriteLine($"React Board: Posted message {userMessage.Id} from {userMessage.Author.Username} to {reactBoardChannel.Name}.");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error in React Board: {e.Message}");
+                return;
+            }
         }
 
         private static async Task InteractionCreated(SocketInteraction interaction)
