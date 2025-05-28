@@ -63,9 +63,10 @@ namespace Bob.Commands.Helpers
             }
 
             // Limit to last 10
-            while (messageIds.Count > 10)
+            // Limit to last 20
+            while (messageIds.Count > 20)
             {
-                messageIds.RemoveFirst();
+                messageIds.RemoveLast();
             }
 
             ReactBoardCache.Set(boardChannel.Id, messageIds, CacheOptions);
@@ -87,12 +88,12 @@ namespace Bob.Commands.Helpers
             }
 
             messageIds.Remove(messageId);
-            messageIds.AddLast(messageId);
+            messageIds.AddFirst(messageId);
 
-            // Limit to last 10
-            while (messageIds.Count > 10)
+            // Limit to last 20
+            while (messageIds.Count > 20)
             {
-                messageIds.RemoveFirst();
+                messageIds.RemoveLast();
             }
 
             ReactBoardCache.Set(boardChannel.Id, messageIds, CacheOptions);
