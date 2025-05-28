@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Bob.Commands.Helpers;
 using Bob.Database.Types;
+using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
@@ -21,6 +22,7 @@ namespace Bob.Database
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+            Env.Load();
             var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 
             // Parse the database URL
