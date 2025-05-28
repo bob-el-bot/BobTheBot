@@ -42,7 +42,7 @@ namespace Bob.Commands.Helpers
 
             var messageIds = new LinkedList<ulong>();
 
-            var messages = await boardChannel.GetMessagesAsync(limit: 50).FlattenAsync();
+            var messages = await boardChannel.GetMessagesAsync(limit: 10).FlattenAsync();
 
             foreach (var message in messages)
             {
