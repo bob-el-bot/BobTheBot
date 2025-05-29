@@ -397,9 +397,24 @@ namespace Bob
                 {
                     return;
                 }
-
-                if (await cacheable.GetOrDownloadAsync() is not IUserMessage userMessage)
+                
+                var botUser = textChannel.GetUser(Client.CurrentUser.Id);
+                
+                if (botUser == null || !botUser.GetPermissions(textChannel).ReadMessageHistory)
                 {
+                    Console.WriteLine("Bob does not have permission to read message history in this channel.");
+                }
+
+                IUserMessage userMessage;
+
+                try
+                {
+                    userMessage = await cacheable.GetOrDownloadAsync();
+                }
+                catch (Exception ex)
+                {
+
+                    Console.WriteLine($"Error fetching message: {ex.Message}");
                     return;
                 }
 
@@ -432,7 +447,7 @@ namespace Bob
                     return;
                 }
 
-                var botUser = reactBoardChannel.GetUser(Client.CurrentUser.Id);
+                botUser = reactBoardChannel.GetUser(Client.CurrentUser.Id);
                 if (botUser == null || !botUser.GetPermissions(reactBoardChannel).SendMessages)
                 {
                     return;
