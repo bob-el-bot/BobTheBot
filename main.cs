@@ -397,24 +397,17 @@ namespace Bob
                 {
                     return;
                 }
-                
+
                 var botUser = textChannel.GetUser(Client.CurrentUser.Id);
-                
+
                 if (botUser == null || !botUser.GetPermissions(textChannel).ReadMessageHistory)
                 {
-                    Console.WriteLine("Bob does not have permission to read message history in this channel.");
+                    Console.WriteLine($"Bob does not have permission to read message history in the channel: {textChannel.Name} ({textChannel.Id})");
+                    return;
                 }
 
-                IUserMessage userMessage;
-
-                try
+                if (await cacheable.GetOrDownloadAsync() is not IUserMessage userMessage)
                 {
-                    userMessage = await cacheable.GetOrDownloadAsync();
-                }
-                catch (Exception ex)
-                {
-
-                    Console.WriteLine($"Error fetching message: {ex.Message}");
                     return;
                 }
 
@@ -458,20 +451,13 @@ namespace Bob
                     return;
                 }
 
-                try
-                {
-                    var boardMessage = await reactBoardChannel.SendMessageAsync(
-                        embeds: [.. ReactBoardMethods.GetReactBoardEmbeds(userMessage)],
-                        allowedMentions: AllowedMentions.None,
-                        components: ReactBoardMethods.GetReactBoardComponents(userMessage)
-                    );
+                var boardMessage = await reactBoardChannel.SendMessageAsync(
+                    embeds: [.. ReactBoardMethods.GetReactBoardEmbeds(userMessage)],
+                    allowedMentions: AllowedMentions.None,
+                    components: ReactBoardMethods.GetReactBoardComponents(userMessage)
+                );
 
-                    ReactBoardMethods.AddToCache(reactBoardChannel, userMessage.Id);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine($"Error in React Board: {e.Message}");
-                }
+                ReactBoardMethods.AddToCache(reactBoardChannel, userMessage.Id);
             }
             catch (Exception e)
             {
