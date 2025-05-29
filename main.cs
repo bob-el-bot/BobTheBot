@@ -402,7 +402,6 @@ namespace Bob
 
                 if (botUser == null || !botUser.GetPermissions(textChannel).ReadMessageHistory)
                 {
-                    Console.WriteLine($"Bob does not have permission to read message history in the channel: {textChannel.Name} ({textChannel.Id})");
                     return;
                 }
 
