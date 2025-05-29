@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Bob.Database.Types;
 using Discord;
@@ -27,6 +29,20 @@ namespace Bob.Commands.Helpers
             SlidingExpiration = TimeSpan.FromHours(12)
         };
 
+        private static readonly ConcurrentDictionary<ulong, object> ChannelLocks = new();
+
+        /// <summary>
+        /// Retrieves the lock object associated with the specified channel ID.
+        /// Ensures thread-safe access for operations related to the channel in the ReactBoard cache.
+        /// </summary>
+        /// <param name="channelId">The unique identifier of the channel.</param>
+        /// <returns>An object that serves as the lock for the specified channel.</returns>
+
+        private static object GetLockForChannel(ulong channelId)
+        {
+            return ChannelLocks.GetOrAdd(channelId, _ => new object());
+        }
+
         /// <summary>
         /// Retrieves the set of message IDs currently on the ReactBoard for the specified channel.
         /// Fetches from cache if available, otherwise queries the latest 20 messages in the channel.
@@ -35,9 +51,13 @@ namespace Bob.Commands.Helpers
         /// <returns>A set of message IDs on the ReactBoard.</returns>
         public static async Task<HashSet<ulong>> GetReactBoardMessageIdsAsync(ITextChannel boardChannel)
         {
-            if (ReactBoardCache.TryGetValue(boardChannel.Id, out LinkedList<ulong> cachedList))
+            var lockObj = GetLockForChannel(boardChannel.Id);
+            lock (lockObj)
             {
-                return [.. cachedList];
+                if (ReactBoardCache.TryGetValue(boardChannel.Id, out LinkedList<ulong> cachedList))
+                {
+                    return [.. cachedList];
+                }
             }
 
             var messageIds = new LinkedList<ulong>();
@@ -62,13 +82,15 @@ namespace Bob.Commands.Helpers
                 }
             }
 
-            // Limit to last 20
             while (messageIds.Count > 20)
             {
                 messageIds.RemoveLast();
             }
 
-            ReactBoardCache.Set(boardChannel.Id, messageIds, CacheOptions);
+            lock (lockObj)
+            {
+                ReactBoardCache.Set(boardChannel.Id, messageIds, CacheOptions);
+            }
 
             return [.. messageIds];
         }
@@ -81,22 +103,26 @@ namespace Bob.Commands.Helpers
         /// <param name="messageId">The message ID to add.</param>
         public static void AddToCache(ITextChannel boardChannel, ulong messageId)
         {
-            if (!ReactBoardCache.TryGetValue(boardChannel.Id, out LinkedList<ulong> messageIds))
+            var lockObj = GetLockForChannel(boardChannel.Id);
+            lock (lockObj)
             {
-                messageIds = new LinkedList<ulong>();
+                if (!ReactBoardCache.TryGetValue(boardChannel.Id, out LinkedList<ulong> messageIds))
+                {
+                    messageIds = new LinkedList<ulong>();
+                }
+
+                messageIds.Remove(messageId);
+                messageIds.AddFirst(messageId);
+
+                while (messageIds.Count > 20)
+                {
+                    messageIds.RemoveLast();
+                }
+
+                ReactBoardCache.Set(boardChannel.Id, messageIds, CacheOptions);
             }
-
-            messageIds.Remove(messageId);
-            messageIds.AddFirst(messageId);
-
-            // Limit to last 20
-            while (messageIds.Count > 20)
-            {
-                messageIds.RemoveLast();
-            }
-
-            ReactBoardCache.Set(boardChannel.Id, messageIds, CacheOptions);
         }
+
 
         /// <summary>
         /// Checks if a message is already present on the ReactBoard for the specified channel.
