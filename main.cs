@@ -389,80 +389,84 @@ namespace Bob
             }
         }
 
-        private static async Task HandleReactionAddedAsync(Cacheable<IUserMessage, ulong> cacheable, Cacheable<IMessageChannel, ulong> channelCache, SocketReaction reaction)
+        private static Task HandleReactionAddedAsync(Cacheable<IUserMessage, ulong> cacheable, Cacheable<IMessageChannel, ulong> channelCache, SocketReaction reaction)
         {
-            try
+            _ = Task.Run(async () =>
             {
-                if (await channelCache.GetOrDownloadAsync() is not SocketTextChannel textChannel)
+                try
                 {
-                    return;
+                    if (await channelCache.GetOrDownloadAsync() is not SocketTextChannel textChannel)
+                    {
+                        return;
+                    }
+
+                    var botUser = textChannel.GetUser(Client.CurrentUser.Id);
+
+                    if (botUser == null || !botUser.GetPermissions(textChannel).ReadMessageHistory)
+                    {
+                        return;
+                    }
+
+                    if (await cacheable.GetOrDownloadAsync() is not IUserMessage userMessage)
+                    {
+                        return;
+                    }
+
+                    using var dbContext = new BobEntities();
+                    var server = await dbContext.GetServer(textChannel.Guild.Id);
+                    if (!ReactBoardMethods.IsSetup(server))
+                    {
+                        return;
+                    }
+
+                    var storedEmojiId = ReactBoardMethods.GetEmojiIdFromString(server.ReactBoardEmoji);
+
+                    bool isMatchingEmoji = reaction.Emote is Emote emote
+                        ? emote.Id.ToString() == storedEmojiId
+                        : reaction.Emote.Name.Equals(server.ReactBoardEmoji, StringComparison.OrdinalIgnoreCase);
+
+                    if (!isMatchingEmoji || textChannel.Id == server.ReactBoardChannelId)
+                    {
+                        return;
+                    }
+
+                    if (!userMessage.Reactions.TryGetValue(reaction.Emote, out var reactionMetadata) ||
+                        reactionMetadata.ReactionCount < server.ReactBoardMinimumReactions)
+                    {
+                        return;
+                    }
+
+                    if (Client.GetChannel(server.ReactBoardChannelId.Value) is not SocketTextChannel reactBoardChannel)
+                    {
+                        return;
+                    }
+
+                    botUser = reactBoardChannel.GetUser(Client.CurrentUser.Id);
+                    if (botUser == null || !botUser.GetPermissions(reactBoardChannel).SendMessages)
+                    {
+                        return;
+                    }
+
+                    if (await ReactBoardMethods.IsMessageOnBoardAsync(reactBoardChannel, userMessage.Id))
+                    {
+                        return;
+                    }
+
+                    await reactBoardChannel.SendMessageAsync(
+                        embeds: [.. ReactBoardMethods.GetReactBoardEmbeds(userMessage)],
+                        allowedMentions: AllowedMentions.None,
+                        components: ReactBoardMethods.GetReactBoardComponents(userMessage)
+                    );
+
+                    ReactBoardMethods.AddToCache(reactBoardChannel, userMessage.Id);
                 }
-
-                var botUser = textChannel.GetUser(Client.CurrentUser.Id);
-
-                if (botUser == null || !botUser.GetPermissions(textChannel).ReadMessageHistory)
+                catch (Exception e)
                 {
-                    return;
+                    Console.WriteLine($"Error handling reaction: {e.Message}");
+                    Console.WriteLine(e.StackTrace);
                 }
-
-                if (await cacheable.GetOrDownloadAsync() is not IUserMessage userMessage)
-                {
-                    return;
-                }
-
-                using var dbContext = new BobEntities();
-                var server = await dbContext.GetServer(textChannel.Guild.Id);
-                if (!ReactBoardMethods.IsSetup(server))
-                {
-                    return;
-                }
-
-                var storedEmojiId = ReactBoardMethods.GetEmojiIdFromString(server.ReactBoardEmoji);
-
-                bool isMatchingEmoji = reaction.Emote is Emote emote
-                    ? emote.Id.ToString() == storedEmojiId
-                    : reaction.Emote.Name.Equals(server.ReactBoardEmoji, StringComparison.OrdinalIgnoreCase);
-
-                if (!isMatchingEmoji || textChannel.Id == server.ReactBoardChannelId)
-                {
-                    return;
-                }
-
-                if (!userMessage.Reactions.TryGetValue(reaction.Emote, out var reactionMetadata) ||
-                    reactionMetadata.ReactionCount < server.ReactBoardMinimumReactions)
-                {
-                    return;
-                }
-
-                if (Client.GetChannel(server.ReactBoardChannelId.Value) is not SocketTextChannel reactBoardChannel)
-                {
-                    return;
-                }
-
-                botUser = reactBoardChannel.GetUser(Client.CurrentUser.Id);
-                if (botUser == null || !botUser.GetPermissions(reactBoardChannel).SendMessages)
-                {
-                    return;
-                }
-
-                if (await ReactBoardMethods.IsMessageOnBoardAsync(reactBoardChannel, userMessage.Id))
-                {
-                    return;
-                }
-
-                await reactBoardChannel.SendMessageAsync(
-                    embeds: [.. ReactBoardMethods.GetReactBoardEmbeds(userMessage)],
-                    allowedMentions: AllowedMentions.None,
-                    components: ReactBoardMethods.GetReactBoardComponents(userMessage)
-                );
-
-                ReactBoardMethods.AddToCache(reactBoardChannel, userMessage.Id);
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine($"Error handling reaction: {e.Message}");
-                Console.WriteLine(e.StackTrace);
-            }
+            });
+            return Task.CompletedTask;
         }
 
         private static async Task InteractionCreated(SocketInteraction interaction)
