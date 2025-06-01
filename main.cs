@@ -450,7 +450,7 @@ namespace Bob
                     return;
                 }
 
-                var boardMessage = await reactBoardChannel.SendMessageAsync(
+                await reactBoardChannel.SendMessageAsync(
                     embeds: [.. ReactBoardMethods.GetReactBoardEmbeds(userMessage)],
                     allowedMentions: AllowedMentions.None,
                     components: ReactBoardMethods.GetReactBoardComponents(userMessage)
