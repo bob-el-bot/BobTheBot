@@ -10,16 +10,16 @@
       },
       "Discord.Net": {
         "type": "Direct",
-        "requested": "[3.17.4, )",
-        "resolved": "3.17.4",
-        "contentHash": "VrZer2JeHRj5bDDLaNPBQaoWb1AsyPFcXCv6gSTL7ZGb3OS/ue+r/buYS+jSvTwo/VH9VQHLq/yBnYV1IdUo3Q==",
+        "requested": "[3.18.0-beta.3, )",
+        "resolved": "3.18.0-beta.3",
+        "contentHash": "zjqZBd4FFWkyL+TGP484T1baz+cq1hSWJuCTeuJi5VOKKlFL5K/M5qgceMLeSy9FhA/1+NsX/McFaJiYLar3xg==",
         "dependencies": {
-          "Discord.Net.Commands": "3.17.4",
-          "Discord.Net.Core": "3.17.4",
-          "Discord.Net.Interactions": "3.17.4",
-          "Discord.Net.Rest": "3.17.4",
-          "Discord.Net.WebSocket": "3.17.4",
-          "Discord.Net.Webhook": "3.17.4"
+          "Discord.Net.Commands": "3.18.0-beta.3",
+          "Discord.Net.Core": "3.18.0-beta.3",
+          "Discord.Net.Interactions": "3.18.0-beta.3",
+          "Discord.Net.Rest": "3.18.0-beta.3",
+          "Discord.Net.WebSocket": "3.18.0-beta.3",
+          "Discord.Net.Webhook": "3.18.0-beta.3"
         }
       },
       "DotNetEnv": {
@@ -114,17 +114,17 @@
       },
       "Discord.Net.Commands": {
         "type": "Transitive",
-        "resolved": "3.17.4",
-        "contentHash": "lU9kj1uDWy45A2ZEUOAq09m6BfuNQd4KNiISEZw8csflciOHQSWydnH+14UuGycmJ/GX15wZYDXS291IkHLoOQ==",
+        "resolved": "3.18.0-beta.3",
+        "contentHash": "eFwazOPRV65LAAq4s+6n97Y/qadAFc7pTJOLc4bbVsvxPKuO1x0b7I7Rk3dz4A9bwQCTG+iiP+3nEeJBblGtqg==",
         "dependencies": {
-          "Discord.Net.Core": "3.17.4",
+          "Discord.Net.Core": "3.18.0-beta.3",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0"
         }
       },
       "Discord.Net.Core": {
         "type": "Transitive",
-        "resolved": "3.17.4",
-        "contentHash": "tMCilkXI6Gqqn6ipyysyuv3qHUNY1LNUbEpRHF6Q5jqW0Tckvu/EuZ2r/1xJatxvC8EoohIA05Dq3N3rrRlxBQ==",
+        "resolved": "3.18.0-beta.3",
+        "contentHash": "rdv0H2FzhyYzi+VzhMw3Ij54fIRHS9CnLR5uBSD6hmH4puAvQBms97/Rx0j2+9EdrggBupY5uzIQY16tIwJZcw==",
         "dependencies": {
           "Newtonsoft.Json": "13.0.3",
           "System.Collections.Immutable": "8.0.0",
@@ -134,11 +134,11 @@
       },
       "Discord.Net.Interactions": {
         "type": "Transitive",
-        "resolved": "3.17.4",
-        "contentHash": "M+9Ctrbtv3MuMkRPXqcQSrz0bj+g3G7KabV9KomHZlx9JDMUKesk4L7ssHycoRfezF2tJh1QBw1e8KtCb0ZG/w==",
+        "resolved": "3.18.0-beta.3",
+        "contentHash": "eQXL37qMfQasoFbd5Nd8avCDMpoddcy6YfbGPMzR/CroEZ5123cTsT8dZZhp3fqSvxeAcdXUld5AlxaXuNOysQ==",
         "dependencies": {
-          "Discord.Net.Core": "3.17.4",
-          "Discord.Net.Rest": "3.17.4",
+          "Discord.Net.Core": "3.18.0-beta.3",
+          "Discord.Net.Rest": "3.18.0-beta.3",
           "Microsoft.Extensions.DependencyInjection.Abstractions": "8.0.0",
           "System.Collections.Immutable": "8.0.0",
           "System.Reactive": "6.0.1"
@@ -146,28 +146,28 @@
       },
       "Discord.Net.Rest": {
         "type": "Transitive",
-        "resolved": "3.17.4",
-        "contentHash": "j3YRvFY9Rd0cCPQpRbTb12fGdcO41Cg0haKSZ/6fqHy1WEzZcKRpU8wC9a9e6yIwc5Gi0jrqYAQ/jvXartOqlg==",
+        "resolved": "3.18.0-beta.3",
+        "contentHash": "5lV2dO7iO1wkZ0+qgWeQgfWFT2unUHSMnLsYXU12iWxlN+mxBXiyKb+L1oKR22imfIKsdVmoeFvmEThgGsHT0w==",
         "dependencies": {
-          "Discord.Net.Core": "3.17.4"
+          "Discord.Net.Core": "3.18.0-beta.3"
         }
       },
       "Discord.Net.Webhook": {
         "type": "Transitive",
-        "resolved": "3.17.4",
-        "contentHash": "NGr75To1uxeyMEPsR4lo5+m/d2ALGzsgAUBCv/27tBU5G0Ss9fjaemPumcQtXO1uJSBQallxreWsn/LfMQHc5A==",
+        "resolved": "3.18.0-beta.3",
+        "contentHash": "RzZueAqCkO0+JzZ5fxR30Dakx64sttTMQgajpdCz+Q44pFec3JzFcDGoUFvJ2JWVtVWNbnDM6Ia2kmpRPpjePQ==",
         "dependencies": {
-          "Discord.Net.Core": "3.17.4",
-          "Discord.Net.Rest": "3.17.4"
+          "Discord.Net.Core": "3.18.0-beta.3",
+          "Discord.Net.Rest": "3.18.0-beta.3"
         }
       },
       "Discord.Net.WebSocket": {
         "type": "Transitive",
-        "resolved": "3.17.4",
-        "contentHash": "PgnYibshP4V/dozsqUqgNTDkMM0fukB01l2UJcS/QsSdmCTSbqL/twgUNIc8yP3N0kDtKP51jOMufUdNTZht0A==",
+        "resolved": "3.18.0-beta.3",
+        "contentHash": "oc0ceeDewUwDXPV3Mh1TUJzq7R5vUhYliY4I9pNr1oUVd0iDolc/MbTxmIbWIo5ov1TGPkgmA3aC4uP+BColEw==",
         "dependencies": {
-          "Discord.Net.Core": "3.17.4",
-          "Discord.Net.Rest": "3.17.4"
+          "Discord.Net.Core": "3.18.0-beta.3",
+          "Discord.Net.Rest": "3.18.0-beta.3"
         }
       },
       "Humanizer.Core": {
