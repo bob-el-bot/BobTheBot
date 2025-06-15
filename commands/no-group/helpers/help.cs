@@ -1370,6 +1370,11 @@ namespace Bob.Commands.Helpers
                             {
                                 Name = "color",
                                 Description = "A color name (like \"purple\"), or a valid hex code (like \"#8D52FD\") or valid RGB code (like \"141, 82, 253\")."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "image",
+                                Description = "An image you would like to use (PNG, JPG, JPEG, WEBP, GIF, BMP)."
                             }
                         ]
                     },
