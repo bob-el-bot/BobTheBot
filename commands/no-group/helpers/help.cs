@@ -812,7 +812,7 @@ namespace Bob.Commands.Helpers
                             new ParameterInfo
                             {
                                 Name = "image",
-                                Description = "The image you would like to use (PNG, JPG, JPEG, WEBP). It will be compressed into a WEBP, but if the compressed image is larger than Discord's 8MB limit, you must compress it yourself or choose another image."
+                                Description = "The image you would like to use (PNG, JPG, JPEG, WEBP, GIF, BMP). It will be compressed into a WEBP, but if the compressed image is larger than Discord's 8MB limit, you must compress it yourself or choose another image."
                             }
                         ]
                     },
