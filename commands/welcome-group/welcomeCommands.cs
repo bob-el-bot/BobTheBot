@@ -142,8 +142,14 @@ namespace Bob.Commands
             }
         }
 
+        // Make sure you have this using statement for your new helper class
+        // using YourProject.Helpers; // Or wherever you placed ImageProcessor.cs
+
         [SlashCommand("set-image", "Set a custom welcome image for your server!")]
-        public async Task SetCustomWelcomeImage([Summary("image", "The image you would like to use (PNG, JPG, JPEG, WEBP).")] Attachment attachment)
+        public async Task SetCustomWelcomeImage(
+            [Summary("image", "The image you would like to use (PNG, JPG, JPEG, WEBP, GIF, BMP).")]
+    Attachment attachment
+        )
         {
             await DeferAsync(ephemeral: true);
             var discordUser = Context.Guild.GetUser(Context.User.Id);
@@ -154,13 +160,22 @@ namespace Bob.Commands
             {
                 if (systemChannel == null)
                 {
-                    await FollowupAsync("❌ You do not have a **System Messages** channel set in your server.\n- You can change this in the **Overview** tab of your server's settings.", ephemeral: true);
+                    await FollowupAsync(
+                        "❌ You do not have a **System Messages** channel set in your server.\n" +
+                        "- You can change this in the **Overview** tab of your server's settings.",
+                        ephemeral: true
+                    );
                     return;
                 }
 
                 if (!discordUser.GetPermissions(systemChannel).ManageChannel)
                 {
-                    await FollowupAsync($"❌ You do not have permissions to manage <#{systemChannel.Id}> (The system channel where welcome messages are sent)\n- Try asking a user with the permission `Manage Channel`.", ephemeral: true);
+                    await FollowupAsync(
+                        $"❌ You do not have permissions to manage <#{systemChannel.Id}> " +
+                        "(The system channel where welcome messages are sent)\n" +
+                        "- Try asking a user with the permission `Manage Channel`.",
+                        ephemeral: true
+                    );
                     return;
                 }
             }
@@ -168,15 +183,21 @@ namespace Bob.Commands
             // Check if the user has premium.
             if (await Premium.IsPremiumAsync(Context.Interaction.Entitlements, Context.User.Id) == false)
             {
-                await FollowupAsync($"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}", components: Premium.GetComponents(), ephemeral: true);
+                await FollowupAsync(
+                    $"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}",
+                    components: Premium.GetComponents(),
+                    ephemeral: true
+                );
                 return;
             }
 
-            // Check if the image is a valid format.
-            string contentType = attachment.ContentType.ToLower();
-            if (string.IsNullOrEmpty(attachment.ContentType) || contentType != "image/png" && contentType != "image/jpeg" && contentType != "image/jpg" && contentType != "image/webp")
+            string contentType = attachment.ContentType?.ToLower();
+            if (string.IsNullOrEmpty(contentType) || (contentType != "image/png" && contentType != "image/jpeg" && contentType != "image/jpg" && contentType != "image/webp" && contentType != "image/gif" && contentType != "image/bmp"))
             {
-                await FollowupAsync("❌ The image must be in either **PNG**, **JPG**, **JPEG**, or **WEBP** format.", ephemeral: true);
+                await FollowupAsync(
+                    "❌ The image must be in either **PNG**, **JPG**, **JPEG**, **WEBP**, **GIF**, or **BMP** format.",
+                    ephemeral: true
+                );
                 return;
             }
 
@@ -188,26 +209,37 @@ namespace Bob.Commands
                 return;
             }
 
-            byte[] compressedImage = contentType == "image/webp" ? image : null;
-
-            if (compressedImage == null)
+            byte[] compressedImage;
+            try
             {
-                try
+                if (contentType == "image/webp")
                 {
-                    compressedImage = Welcome.ConvertToWebP(image);
+                    compressedImage = image;
                 }
-                catch (Exception e)
+                else
                 {
-                    await FollowupAsync("❌ The image could not be processed. Please try again with a different image.", ephemeral: true);
-                    Console.WriteLine(e);
-                    return;
+                    compressedImage = ImageProcessor.ConvertToAnimatedWebP(image);
                 }
+            }
+            catch (Exception e)
+            {
+                await FollowupAsync(
+                    "❌ The image could not be processed. It might be corrupted or in an unsupported variation of the format. Please try again.",
+                    ephemeral: true
+                );
+                Console.WriteLine($"ImageSharp conversion failed: {e}");
+                return;
             }
 
             // Check if the image is within Discord's size requirements.
             if (compressedImage.Length > 8000000)
             {
-                await FollowupAsync("❌ The image size exceeds Discord's **8MB** limit.\n- Try compressing the image or using a smaller one.\n- This is after compressing it with WEBP.", ephemeral: true);
+                await FollowupAsync(
+                    "❌ The image size exceeds Discord's **8MB** limit.\n" +
+                    "- Try compressing the image or using a smaller one.\n" +
+                    "- This is after compressing it with WEBP.",
+                    ephemeral: true
+                );
                 return;
             }
 
@@ -246,16 +278,25 @@ namespace Bob.Commands
             {
                 if (systemChannel == null)
                 {
-                    await FollowupAsync($"❌ Bob knows to welcome users now, and what image to use, but you **need** to set a **System Messages** channel in settings for this to take effect.", ephemeral: true);
+                    await FollowupAsync(
+                        "❌ Bob knows to welcome users now, and what image to use, but you **need** to set a **System Messages** channel in settings for this to take effect.",
+                        ephemeral: true
+                    );
                 }
                 else
                 {
-                    await FollowupAsync($"✅ Bob will now greet people in <#{systemChannel.Id}> with the given image.", ephemeral: true);
+                    await FollowupAsync(
+                        $"✅ Bob will now greet people in <#{systemChannel.Id}> with the given image.",
+                        ephemeral: true
+                    );
                 }
             }
             else
             {
-                await FollowupAsync($"✅ Bob knows what image to use, but you **need** to enable welcome messages with {Help.GetCommandMention("welcome toggle")} for it to take effect.", ephemeral: true);
+                await FollowupAsync(
+                    $"✅ Bob knows what image to use, but you **need** to enable welcome messages with {Help.GetCommandMention("welcome toggle")} for it to take effect.",
+                    ephemeral: true
+                );
             }
         }
 

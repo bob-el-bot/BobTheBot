@@ -812,7 +812,7 @@ namespace Bob.Commands.Helpers
                             new ParameterInfo
                             {
                                 Name = "image",
-                                Description = "The image you would like to use (PNG, JPG, JPEG, WEBP). It will be compressed into a WEBP, but if the compressed image is larger than Discord's 8MB limit, you must compress it yourself or choose another image."
+                                Description = "The image you would like to use (PNG, JPG, JPEG, WEBP, GIF, BMP). It will be compressed into a WEBP, but if the compressed image is larger than Discord's 8MB limit, you must compress it yourself or choose another image."
                             }
                         ]
                     },
@@ -1370,6 +1370,11 @@ namespace Bob.Commands.Helpers
                             {
                                 Name = "color",
                                 Description = "A color name (like \"purple\"), or a valid hex code (like \"#8D52FD\") or valid RGB code (like \"141, 82, 253\")."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "image",
+                                Description = "An image you would like to use (PNG, JPG, JPEG, WEBP, GIF, BMP)."
                             }
                         ]
                     },
