@@ -571,26 +571,39 @@ namespace Bob.Commands
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("announce", "Bob will create a fancy embed announcement in the channel the command is used in.")]
-        public async Task Announce(
-                [Summary("title", "The title of the announcement (the title of the embed).")][MinLength(1)][MaxLength(256)] string title,
-                [Summary("description", "The anouncement (the description of the embed).")][MinLength(1)][MaxLength(4096)] string description,
-                [Summary("color", "A color name (purple), or a valid hex code (#8D52FD) or valid RGB code (141, 82, 253).")] string color,
-                [Summary("image", "An image you would like to use (PNG, JPG, JPEG, WEBP, GIF, BMP).")] Attachment attachment = null)
+        public async Task Announce([Summary("title", "The title of the announcement (the title of the embed).")][MinLength(1)][MaxLength(256)] string title,
+            [Summary("description", "The anouncement (the description of the embed).")][MinLength(1)][MaxLength(4096)] string description,
+            [Summary("color", "A color name (purple), or a valid hex code (#8D52FD) or valid RGB code (141, 82, 253).")] string color,
+            [Summary("image", "An image you would like to use (PNG, JPG, JPEG, WEBP, GIF, BMP).")] Attachment attachment = null)
         {
             await DeferAsync(ephemeral: true);
 
-            // Check if Bob has permission to send messages in given channel
-            ChannelPermissions permissions = Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel);
-            if (!Context.Interaction.IsDMInteraction && (!permissions.SendMessages || !permissions.ViewChannel || !permissions.EmbedLinks))
+            if (!Context.Interaction.IsDMInteraction)
             {
-                await FollowupAsync(
-                    text: $"❌ Bob is either missing permissions to view, send messages, *or* " +
-                          $"embed links in the channel <#{Context.Channel.Id}>\n- Try giving Bob " +
-                          $"the following permissions: `View Channel`, `Embed Links`, " +
-                          $"and `Send Messages`.",
-                    ephemeral: true
-                );
-                return;
+                IGuildChannel channelToCheck;
+                if (Context.Channel is SocketThreadChannel thread)
+                {
+                    channelToCheck = thread.ParentChannel;
+                }
+                else
+                {
+                    channelToCheck = (IGuildChannel)Context.Channel;
+                }
+
+                var botUser = Context.Guild.GetUser(Context.Client.CurrentUser.Id);
+                ChannelPermissions permissions = botUser.GetPermissions(channelToCheck);
+
+                if (!permissions.SendMessages || !permissions.ViewChannel || !permissions.EmbedLinks)
+                {
+                    await FollowupAsync(
+                        text: $"❌ Bob is either missing permissions to view, send messages, *or* " +
+                              $"embed links in the channel <#{Context.Channel.Id}>\n- Try giving Bob " +
+                              $"the following permissions: `View Channel`, `Embed Links`, " +
+                              $"and `Send Messages`.",
+                        ephemeral: true
+                    );
+                    return;
+                }
             }
 
             Color? finalColor = Colors.TryGetColor(color);
@@ -607,13 +620,10 @@ namespace Bob.Commands
                 return;
             }
 
-            EmbedBuilder embed;
             string imageUrl = null;
-
             if (attachment != null)
             {
                 string contentType = attachment.ContentType?.ToLower();
-
                 if (string.IsNullOrEmpty(contentType) || (contentType != "image/png" && contentType != "image/jpeg" && contentType != "image/jpg" && contentType != "image/webp" && contentType != "image/gif" && contentType != "image/bmp"))
                 {
                     await FollowupAsync(
@@ -621,14 +631,12 @@ namespace Bob.Commands
                         "**WEBP**, **GIF**, or **BMP** format.",
                         ephemeral: true
                     );
-
                     return;
                 }
-
                 imageUrl = attachment.Url;
             }
 
-            embed = new EmbedBuilder
+            var embed = new EmbedBuilder
             {
                 Title = title,
                 Color = finalColor,
@@ -639,10 +647,23 @@ namespace Bob.Commands
                     IconUrl = Context.User.GetAvatarUrl(),
                     Text = $"Announced by {Context.User.Username}"
                 }
-            };
+            }.Build();
+
+            try
+            {
+                await Context.Channel.SendMessageAsync(embed: embed);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to send announcement: {ex}");
+                await FollowupAsync(
+                    "❌ I was unable to send the announcement. Please double-check my permissions in this channel.",
+                    ephemeral: true
+                );
+                return;
+            }
 
             await FollowupAsync(text: "✅ Your announcement has been made.", ephemeral: true);
-            await Context.Channel.SendMessageAsync(embed: embed.Build());
         }
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
