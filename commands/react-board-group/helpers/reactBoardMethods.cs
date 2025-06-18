@@ -3,8 +3,8 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
+using Bob.Database;
 using Bob.Database.Types;
 using Discord;
 using Microsoft.Extensions.Caching.Memory;
@@ -45,13 +45,16 @@ namespace Bob.Commands.Helpers
 
         /// <summary>
         /// Retrieves the set of message IDs currently on the ReactBoard for the specified channel.
-        /// Fetches from cache if available, otherwise queries the latest 20 messages in the channel.
+        /// Checks cache, then DB, then falls back to fetching from Discord if needed.
         /// </summary>
         /// <param name="boardChannel">The channel associated with the ReactBoard.</param>
+        /// <param name="guildId">The guild/server ID.</param>
         /// <returns>A set of message IDs on the ReactBoard.</returns>
-        public static async Task<HashSet<ulong>> GetReactBoardMessageIdsAsync(ITextChannel boardChannel)
+        public static async Task<HashSet<ulong>> GetReactBoardMessageIdsAsync(ITextChannel boardChannel, ulong guildId)
         {
             var lockObj = GetLockForChannel(boardChannel.Id);
+
+            // 1. Try cache
             lock (lockObj)
             {
                 if (ReactBoardCache.TryGetValue(boardChannel.Id, out LinkedList<ulong> cachedList))
@@ -60,9 +63,29 @@ namespace Bob.Commands.Helpers
                 }
             }
 
-            var messageIds = new LinkedList<ulong>();
-            var messages = await boardChannel.GetMessagesAsync(limit: 20).FlattenAsync();
+            // 2. Try DB
+            using (var db = new BobEntities())
+            {
+                var allreactBoardMessages = await db.GetAllReactBoardMessagesForGuildAsync(guildId);
+
+                if (allreactBoardMessages.Count > 0)
+                {
+                    var messageIds = new LinkedList<ulong>(allreactBoardMessages.Select(x => x.OriginalMessageId));
+                    lock (lockObj)
+                    {
+                        ReactBoardCache.Set(boardChannel.Id, messageIds, CacheOptions);
+                    }
+                    return [.. messageIds];
+                }
+            }
+
+            Console.WriteLine($"[ReactBoard] No cached or DB entries found for channel {boardChannel.Id} in guild {guildId}. Fetching from Discord...");
+
+            // 3. Fallback: Fetch from Discord, parse, write to DB, cache
+            var messageIdsFromDiscord = new LinkedList<ulong>();
+            var messages = await boardChannel.GetMessagesAsync(limit: 50).FlattenAsync();
             var messageIdRegex = JumpToUrlMessageIdRegex();
+            var dbInserts = new List<ReactBoardMessage>();
 
             foreach (var message in messages)
             {
@@ -72,36 +95,44 @@ namespace Bob.Commands.Helpers
                     button.Url is not null)
                 {
                     var match = messageIdRegex.Match(button.Url);
-                    if (match.Success && ulong.TryParse(match.Groups[1].Value, out ulong id))
+                    if (match.Success && ulong.TryParse(match.Groups[1].Value, out ulong origId))
                     {
-                        if (!messageIds.Contains(id))
+                        if (!messageIdsFromDiscord.Contains(origId))
                         {
-                            messageIds.AddLast(id);
+                            messageIdsFromDiscord.AddLast(origId);
+                            dbInserts.Add(new ReactBoardMessage
+                            {
+                                GuildId = guildId,
+                                OriginalMessageId = origId
+                            });
                         }
                     }
                 }
             }
 
-            while (messageIds.Count > 20)
+            // Write to DB
+            if (dbInserts.Count > 0)
             {
-                messageIds.RemoveLast();
+                using var db = new BobEntities();
+                await db.AddMultipleReactBoardMessagesAsync(dbInserts);
             }
 
+            // Cache
             lock (lockObj)
             {
-                ReactBoardCache.Set(boardChannel.Id, messageIds, CacheOptions);
+                ReactBoardCache.Set(boardChannel.Id, messageIdsFromDiscord, CacheOptions);
             }
 
-            return [.. messageIds];
+            return [.. messageIdsFromDiscord];
         }
 
         /// <summary>
-        /// Adds a message ID to the cache for the specified ReactBoard channel.
-        /// If the cache for the channel exceeds 10 messages, the oldest is removed.
+        /// Adds a message ID to the cache and DB for the specified ReactBoard channel.
         /// </summary>
         /// <param name="boardChannel">The channel associated with the ReactBoard.</param>
-        /// <param name="messageId">The message ID to add.</param>
-        public static void AddToCache(ITextChannel boardChannel, ulong messageId)
+        /// <param name="originalMessageId">The original message ID.</param>
+        /// <param name="boardMessageId">The message ID in the board channel.</param>
+        public static async Task AddToCacheAndDbAsync(ITextChannel boardChannel, ulong originalMessageId)
         {
             var lockObj = GetLockForChannel(boardChannel.Id);
             lock (lockObj)
@@ -111,18 +142,30 @@ namespace Bob.Commands.Helpers
                     messageIds = new LinkedList<ulong>();
                 }
 
-                messageIds.Remove(messageId);
-                messageIds.AddFirst(messageId);
+                messageIds.Remove(originalMessageId);
+                messageIds.AddFirst(originalMessageId);
 
-                while (messageIds.Count > 20)
+                while (messageIds.Count > 50)
                 {
                     messageIds.RemoveLast();
                 }
 
                 ReactBoardCache.Set(boardChannel.Id, messageIds, CacheOptions);
             }
-        }
 
+            using var db = new BobEntities();
+            var existing = await db.GetReactBoardMessageAsync(originalMessageId);
+            if (existing == null)
+            {
+                var entry = new ReactBoardMessage
+                {
+                    GuildId = boardChannel.GuildId,
+                    OriginalMessageId = originalMessageId
+                };
+
+                await db.AddReactBoardMessageAsync(entry);
+            }
+        }
 
         /// <summary>
         /// Checks if a message is already present on the ReactBoard for the specified channel.
@@ -132,7 +175,7 @@ namespace Bob.Commands.Helpers
         /// <returns>True if the message is on the ReactBoard, false otherwise.</returns>
         public static async Task<bool> IsMessageOnBoardAsync(ITextChannel boardChannel, ulong originalMessageId)
         {
-            var boardMessageIds = await GetReactBoardMessageIdsAsync(boardChannel);
+            var boardMessageIds = await GetReactBoardMessageIdsAsync(boardChannel, boardChannel.GuildId);
             return boardMessageIds.Contains(originalMessageId);
         }
 

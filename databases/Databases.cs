@@ -19,6 +19,7 @@ namespace Bob.Database
         public virtual DbSet<BlackListUser> BlackListUser { get; set; }
         public virtual DbSet<ScheduledMessage> ScheduledMessage { get; set; }
         public virtual DbSet<ScheduledAnnouncement> ScheduledAnnouncement { get; set; }
+        public virtual DbSet<ReactBoardMessage> ReactBoardMessage { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -448,6 +449,102 @@ namespace Bob.Database
         public async Task AddWelcomeImage(WelcomeImage image)
         {
             await WelcomeImage.AddAsync(image);
+            await SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Adds a new ReactBoardMessage entry to the database and saves changes asynchronously.
+        /// </summary>
+        /// <param name="message">The ReactBoardMessage entity to add.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public async Task AddReactBoardMessageAsync(ReactBoardMessage message)
+        {
+            await ReactBoardMessage.AddAsync(message);
+            await SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Removes a ReactBoardMessage entry from the database and saves changes asynchronously.
+        /// </summary>
+        /// <param name="message">The ReactBoardMessage entity to remove.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public async Task RemoveReactBoardMessageAsync(ReactBoardMessage message)
+        {
+            ReactBoardMessage.Remove(message);
+            await SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Retrieves a ReactBoardMessage entry by its original message ID asynchronously.
+        /// </summary>
+        /// <param name="originalMessageId">The original message ID to search for.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, with the ReactBoardMessage entity if found; otherwise, null.
+        /// </returns>
+        public async Task<ReactBoardMessage> GetReactBoardMessageAsync(ulong originalMessageId)
+        {
+            return await ReactBoardMessage.FindAsync(keyValues: originalMessageId);
+        }
+
+        /// <summary>
+        /// Adds a dummy ReactBoardMessage entry for a guild if no entries exist yet.
+        /// This prevents unnecessary Discord fetches for new React Board setups.
+        /// </summary>
+        /// <param name="guildId">The unique identifier of the guild.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public async Task AddInitialReactBoardMessageAsync(ulong guildId)
+        {
+            bool anyExist = await ReactBoardMessage.AnyAsync(x => x.GuildId == guildId);
+
+            if (anyExist)
+            {
+                return;
+            }
+
+            var dummyMessage = new ReactBoardMessage
+            {
+                OriginalMessageId = 0,
+                GuildId = guildId
+            };
+
+            await AddReactBoardMessageAsync(dummyMessage);
+        }
+
+        /// <summary>
+        /// Adds a collection of ReactBoardMessage entries to the database for a specific guild and saves changes asynchronously.
+        /// </summary>
+        /// <param name="messages">The collection of ReactBoardMessage entities to add. Each should have the GuildId property set appropriately.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public async Task AddMultipleReactBoardMessagesAsync(List<ReactBoardMessage> messages)
+        {
+            await ReactBoardMessage.AddRangeAsync(messages);
+            await SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Retrieves all ReactBoardMessage entries for a specific guild asynchronously.
+        /// </summary>
+        /// <param name="guildId">The unique identifier of the guild.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, with a list of ReactBoardMessage entities for the specified guild.
+        /// </returns>
+        public async Task<List<ReactBoardMessage>> GetAllReactBoardMessagesForGuildAsync(ulong guildId)
+        {
+            return await ReactBoardMessage.Where(x => x.GuildId == guildId).ToListAsync();
+        }
+
+        /// <summary>
+        /// Removes all ReactBoardMessage entries for a specific guild from the database and saves changes asynchronously.
+        /// </summary>
+        /// <param name="guildId">The unique identifier of the guild whose ReactBoardMessages should be removed.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public async Task RemoveAllReactBoardMessagesForGuildAsync(ulong guildId)
+        {
+            var messages = await ReactBoardMessage
+                .Where(x => x.GuildId == guildId)
+                .ToListAsync();
+
+            ReactBoardMessage.RemoveRange(messages);
             await SaveChangesAsync();
         }
     }

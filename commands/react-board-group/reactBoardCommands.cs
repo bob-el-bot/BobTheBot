@@ -68,6 +68,8 @@ namespace Bob.Commands
             // Respond to the user
             if (enable)
             {
+                await context.AddInitialReactBoardMessageAsync(Context.Guild.Id);
+
                 await FollowupAsync(reactBoardChannel == null
                     ? $"✅ The react board has been enabled, but you **need** to set a react board channel with {Help.GetCommandMention("react-board channel")} for Bob to post messages."
                     : $"✅ The react board is now enabled in <#{reactBoardChannel.Id}>.", ephemeral: true);
