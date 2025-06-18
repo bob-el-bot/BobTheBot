@@ -458,7 +458,7 @@ namespace Bob
                         components: ReactBoardMethods.GetReactBoardComponents(userMessage)
                     );
 
-                    ReactBoardMethods.AddToCache(reactBoardChannel, userMessage.Id);
+                    await ReactBoardMethods.AddToCacheAndDbAsync(reactBoardChannel, userMessage.Id);
                 }
                 catch (Exception e)
                 {
