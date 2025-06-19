@@ -503,10 +503,9 @@ namespace Bob.Database
 
             var dummyMessage = new ReactBoardMessage
             {
-                OriginalMessageId = 100,
+                OriginalMessageId = guildId,
                 GuildId = guildId
             };
-
 
             await AddReactBoardMessageAsync(dummyMessage);
         }
