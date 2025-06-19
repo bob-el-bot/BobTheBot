@@ -28,21 +28,63 @@ public static class BobInfoService
     {
         var bobInfo = new BobInfo();
 
-        // Serialize the Bob info to a message to send to Chroma
-        var bobInfoMessage = $"Bob's Name: {bobInfo.Name}\nFavorite Color: {bobInfo.FavoriteColor}\nCreated on: {bobInfo.CreationDate.ToShortDateString()}\nCreator: {bobInfo.Creator}\nWebsite: {bobInfo.Website}\nDocs: {bobInfo.DocsPage}";
+        // await ChromaService.CreateCollection("bobInfo");
 
-        // Convert the message to an embedding
-        var embedding = await GetEmbedding(bobInfoMessage);
-
-        var body = new
+        var facts = new[]
         {
-            embeddings = embedding,
-            metadata = new { userId = "Bob", message = bobInfoMessage, timestamp = DateTime.UtcNow.ToString() }
-        };
+        ("name", $"My name is {bobInfo.Name}."),
+        ("favorite_color", $"My favorite color is {bobInfo.FavoriteColor}."),
+        ("creation_date", $"I was created on {bobInfo.CreationDate.ToShortDateString()}."),
+        ("creator", $"I was created by {bobInfo.Creator}."),
+        ("website", $"My website is {bobInfo.Website}."),
+        ("docs", $"You can find my documentation at {bobInfo.DocsPage}."),
+        ("discord_username", $"My creator's Discord username is {bobInfo.DiscordUsername}."),
+        ("community_server", $"Join my community server here: {bobInfo.CommunityServer}."),
+        ("personal_website", $"My creator's personal website is {bobInfo.PersonalWebsite}.")
+    };
 
+        foreach (var (key, fact) in facts)
+        {
+            // Get the embedding for the current fact
+            var embedding = await GetEmbedding(fact);
+
+            // Prepare the metadata
+            _ = new
+            {
+                key,
+                message = fact,
+                userId = "Bob",
+                timestamp = DateTime.UtcNow.ToString()
+            };
+
+            // Add the embedding to the collection
+            await ChromaService.AddToCollection(
+                collectionUUID: "4bdfa78e-41c8-4cbb-a107-e3d38662744e",
+                embedding: embedding,
+                document: fact,
+                id: key,  // Use the key as the ID
+                metadataKey: "message",
+                metadataValue: fact
+            );
+        }
+    }
+
+    public static async Task<string> RetrieveBobInfo(string query)
+    {
+        var embedding = await GetEmbedding(query);
+
+        var body = new { embeddings = embedding, top_k = 1 }; // Retrieve the most relevant info
         var content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
-        var response = await Interface.Client.PostAsync($"{ChromaUrl}/add", content);
+
+        var response = await Interface.Client.PostAsync($"{ChromaUrl}/heartbeat", content);
         response.EnsureSuccessStatusCode();
+
+        var responseBody = await response.Content.ReadAsStringAsync();
+        var jsonResponse = JsonConvert.DeserializeObject<dynamic>(responseBody);
+
+        // Extract the most relevant message from Chroma
+        var bestMatch = jsonResponse?.results?[0]?.metadata?.message;
+        return bestMatch ?? "I don't have that information yet!";
     }
 
     private static async Task<float[]> GetEmbedding(string message)
