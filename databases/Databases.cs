@@ -20,6 +20,7 @@ namespace Bob.Database
         public virtual DbSet<ScheduledMessage> ScheduledMessage { get; set; }
         public virtual DbSet<ScheduledAnnouncement> ScheduledAnnouncement { get; set; }
         public virtual DbSet<ReactBoardMessage> ReactBoardMessage { get; set; }
+        public virtual DbSet<Memory> Memory { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -51,6 +52,11 @@ namespace Bob.Database
             modelBuilder.Entity<User>()
                 .Property(u => u.ProfileColor)
                 .HasDefaultValue("#2C2F33"); // Set default value for ProfileColor
+
+            modelBuilder.HasPostgresExtension("vector");
+            modelBuilder.Entity<Memory>()
+                .Property(m => m.Embedding)
+                .HasColumnType("vector(1536)");
 
             base.OnModelCreating(modelBuilder);
         }
@@ -556,6 +562,39 @@ namespace Bob.Database
 
             ReactBoardMessage.RemoveRange(messages);
             await SaveChangesAsync();
+        }
+
+        public async Task StoreMemoryAsync(string userId, string content, float[] embedding)
+        {
+            var memory = new Memory
+            {
+                UserId = userId,
+                Content = content,
+                Embedding = embedding,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await Memory.AddAsync(memory);
+            await SaveChangesAsync();
+        }
+
+        public async Task<List<Memory>> GetRelevantMemoriesAsync(string userId, float[] queryEmbedding, int limit = 5)
+        {
+            var sql = @"
+                SELECT * FROM ""Memories""
+                WHERE ""UserId"" = @userId
+                ORDER BY ""Embedding"" <-> @embedding
+                LIMIT @limit;
+            ";
+
+            var memories = await Memory
+                .FromSqlRaw(sql,
+                    new NpgsqlParameter("userId", userId),
+                    new NpgsqlParameter("embedding", queryEmbedding),
+                    new NpgsqlParameter("limit", limit))
+                .ToListAsync();
+
+            return memories;
         }
     }
 }
