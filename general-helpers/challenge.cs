@@ -85,14 +85,14 @@ namespace Bob.Challenges
         public static async Task SendMessage(SocketInteraction interaction, Games.Game game)
         {
             // Loading Message
-            var msg = await interaction.FollowupAsync(text: "⚔️ *Creating Challenge...*");
+            await interaction.RespondAsync(text: $"{game.Player2.Mention}\n⚔️ *Creating Challenge...*", allowedMentions: AllowedMentions.All);
 
             // Update User Info
             IncrementUserChallenges(game.Player1.Id);
 
             // Prepare Game
-            game.Message = msg;
-            game.Id = game.OnePerChannel ? interaction.Channel.Id : msg.Id;
+            game.Message = interaction.GetOriginalResponseAsync().Result;
+            game.Id = game.OnePerChannel ? interaction.Channel.Id : game.Message.Id;
             game.State = GameState.Challenge;
 
             // Add to Games List
@@ -110,7 +110,7 @@ namespace Bob.Challenges
 
             // Start Challenge
             game.Expired += ExpireGame;
-            await game.Message.ModifyAsync(x => { x.Content = game.Player2.Mention; x.Embed = embed.Build(); x.Components = components.Build(); });
+            await interaction.ModifyOriginalResponseAsync(x => { x.Content = game.Player2.Mention; x.Embed = embed.Build(); x.Components = components.Build(); });
         }
 
         /// <summary>
