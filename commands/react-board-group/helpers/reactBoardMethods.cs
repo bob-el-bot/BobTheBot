@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -212,7 +213,7 @@ namespace Bob.Commands.Helpers
                 .WithDescription(reactedMessage.Content ?? "*No text content*")
                 .WithFooter(footer =>
                 {
-                    footer.WithText($"{reactedMessage.CreatedAt.LocalDateTime:F}");
+                    footer.WithText($"{reactedMessage.CreatedAt.LocalDateTime.ToString("F", CultureInfo.GetCultureInfo("en-US"))}");
                 })
                 .WithColor(Bot.theme)
                 .WithUrl(commonUrl);

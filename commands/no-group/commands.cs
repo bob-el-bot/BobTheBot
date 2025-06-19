@@ -125,7 +125,6 @@ namespace Bob.Commands
                 }
                 else
                 {
-                    await DeferAsync();
                     await Challenge.SendMessage(Context.Interaction, new TicTacToe(Context.User, opponent));
                 }
             }
@@ -206,7 +205,6 @@ namespace Bob.Commands
                 }
                 else
                 {
-                    await DeferAsync();
                     await Challenge.SendMessage(Context.Interaction, new Trivia(Context.User, opponent));
                 }
             }
@@ -274,7 +272,6 @@ namespace Bob.Commands
                 }
                 else
                 {
-                    await DeferAsync();
                     await Challenge.SendMessage(Context.Interaction, new RockPaperScissors(Context.User, opponent));
                 }
             }
@@ -350,7 +347,6 @@ namespace Bob.Commands
                 }
                 else
                 {
-                    await DeferAsync();
                     await Challenge.SendMessage(Context.Interaction, new Connect4(Context.User, opponent));
                 }
             }
