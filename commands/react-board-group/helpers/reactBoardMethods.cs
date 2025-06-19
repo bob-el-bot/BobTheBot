@@ -213,7 +213,9 @@ namespace Bob.Commands.Helpers
                 .WithDescription(reactedMessage.Content ?? "*No text content*")
                 .WithFooter(footer =>
                 {
-                    footer.WithText($"{reactedMessage.CreatedAt.LocalDateTime.ToString("F", CultureInfo.GetCultureInfo("en-US"))}");
+                    footer.WithText(
+    $"{reactedMessage.CreatedAt.UtcDateTime.ToString("dddd, MMMM d, yyyy h:mm:ss tt 'UTC'", CultureInfo.InvariantCulture)}"
+                    );
                 })
                 .WithColor(Bot.theme)
                 .WithUrl(commonUrl);

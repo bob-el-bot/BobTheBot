@@ -138,6 +138,16 @@ namespace Bob.Database
         }
 
         /// <summary>
+        /// Removes a server from the database asynchronously.
+        /// </summary>
+        /// <param name="server">The server to be removed.</param>
+        public async Task RemoveServer(Server server)
+        {
+            Server.Remove(server);
+            await SaveChangesAsync();
+        }
+        
+        /// <summary>
         /// Retrieves a <see cref="User"/> object by its unique identifier.
         /// If the user is not found, a new entry is created and returned.
         /// </summary>

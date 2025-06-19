@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Bob.Database;
 using Bob.Debug;
 using Discord;
 using Discord.Interactions;
@@ -41,6 +42,17 @@ namespace Bob.Feedback
             {
                 // User's direct messages are closed, no action needed
             }
+
+            using var context = new BobEntities();
+
+            var server = await context.GetServer(guild.Id);
+            
+            if (server == null)
+            {
+                return;
+            }
+
+            await context.RemoveServer(server);
         }
 
         [ComponentInteraction("leftGuild:*")]
