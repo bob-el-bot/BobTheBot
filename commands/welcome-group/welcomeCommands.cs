@@ -1,19 +1,20 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Commands.Helpers;
-using Database;
-using Database.Types;
+using Bob.Commands.Helpers;
+using Bob.Database;
+using Bob.Database.Types;
 using Discord;
 using Discord.Interactions;
-using PremiumInterface;
+using Bob.PremiumInterface;
+using static Bob.ApiInteractions.Interface;
 
-namespace Commands
+namespace Bob.Commands
 {
     [CommandContextType(InteractionContextType.Guild)]
     [IntegrationType(ApplicationIntegrationType.GuildInstall)]
     [Group("welcome", "All welcome commands.")]
-    public class WelcomeGroup : InteractionModuleBase<SocketInteractionContext>
+    public class WelcomeGroup : InteractionModuleBase<ShardedInteractionContext>
     {
         [SlashCommand("toggle", "Enable or disable Bob welcoming users to your server!")]
         public async Task WelcomeToggle([Summary("welcome", "If checked (true), Bob will send welcome messages.")] bool welcome)
@@ -100,7 +101,7 @@ namespace Commands
             }
 
             // Check if the user has premium.
-            if (!Premium.IsPremium(Context.Interaction.Entitlements))
+            if (await Premium.IsPremiumAsync(Context.Interaction.Entitlements, Context.User.Id) == false)
             {
                 await FollowupAsync($"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}", components: Premium.GetComponents(), ephemeral: true);
                 return;
@@ -137,7 +138,211 @@ namespace Commands
             }
             else
             {
-                await FollowupAsync($"✅ Bob knows what to say, but you **need** to enable welcome messages with `/welcome toggle` for it to take effect.\nYour welcome message will look like so:\n\n{Welcome.FormatCustomMessage(message, Context.User.Mention)}", ephemeral: true);
+                await FollowupAsync($"✅ Bob knows what to say, but you **need** to enable welcome messages with {Help.GetCommandMention("welcome toggle")} for it to take effect.\nYour welcome message will look like so:\n\n{Welcome.FormatCustomMessage(message, Context.User.Mention)}", ephemeral: true);
+            }
+        }
+
+        // Make sure you have this using statement for your new helper class
+        // using YourProject.Helpers; // Or wherever you placed ImageProcessor.cs
+
+        [SlashCommand("set-image", "Set a custom welcome image for your server!")]
+        public async Task SetCustomWelcomeImage(
+            [Summary("image", "The image you would like to use (PNG, JPG, JPEG, WEBP, GIF, BMP).")]
+    Attachment attachment
+        )
+        {
+            await DeferAsync(ephemeral: true);
+            var discordUser = Context.Guild.GetUser(Context.User.Id);
+            var systemChannel = Context.Guild.SystemChannel;
+
+            // Check if the user has manage channels permissions.
+            if (!discordUser.GuildPermissions.Administrator)
+            {
+                if (systemChannel == null)
+                {
+                    await FollowupAsync(
+                        "❌ You do not have a **System Messages** channel set in your server.\n" +
+                        "- You can change this in the **Overview** tab of your server's settings.",
+                        ephemeral: true
+                    );
+                    return;
+                }
+
+                if (!discordUser.GetPermissions(systemChannel).ManageChannel)
+                {
+                    await FollowupAsync(
+                        $"❌ You do not have permissions to manage <#{systemChannel.Id}> " +
+                        "(The system channel where welcome messages are sent)\n" +
+                        "- Try asking a user with the permission `Manage Channel`.",
+                        ephemeral: true
+                    );
+                    return;
+                }
+            }
+
+            // Check if the user has premium.
+            if (await Premium.IsPremiumAsync(Context.Interaction.Entitlements, Context.User.Id) == false)
+            {
+                await FollowupAsync(
+                    $"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}",
+                    components: Premium.GetComponents(),
+                    ephemeral: true
+                );
+                return;
+            }
+
+            string contentType = attachment.ContentType?.ToLower();
+            if (string.IsNullOrEmpty(contentType) || (contentType != "image/png" && contentType != "image/jpeg" && contentType != "image/jpg" && contentType != "image/webp" && contentType != "image/gif" && contentType != "image/bmp"))
+            {
+                await FollowupAsync(
+                    "❌ The image must be in either **PNG**, **JPG**, **JPEG**, **WEBP**, **GIF**, or **BMP** format.",
+                    ephemeral: true
+                );
+                return;
+            }
+
+            var image = await GetFromAPI(attachment.Url);
+
+            if (image == null || image.Length == 0)
+            {
+                await FollowupAsync("❌ Failed to retrieve the image. Please try again later.", ephemeral: true);
+                return;
+            }
+
+            byte[] compressedImage;
+            try
+            {
+                if (contentType == "image/webp")
+                {
+                    compressedImage = image;
+                }
+                else
+                {
+                    compressedImage = ImageProcessor.ConvertToAnimatedWebP(image);
+                }
+            }
+            catch (Exception e)
+            {
+                await FollowupAsync(
+                    "❌ The image could not be processed. It might be corrupted or in an unsupported variation of the format. Please try again.",
+                    ephemeral: true
+                );
+                Console.WriteLine($"ImageSharp conversion failed: {e}");
+                return;
+            }
+
+            // Check if the image is within Discord's size requirements.
+            if (compressedImage.Length > 8000000)
+            {
+                await FollowupAsync(
+                    "❌ The image size exceeds Discord's **8MB** limit.\n" +
+                    "- Try compressing the image or using a smaller one.\n" +
+                    "- This is after compressing it with WEBP.",
+                    ephemeral: true
+                );
+                return;
+            }
+
+            Console.WriteLine($"Image size: {compressedImage.Length}");
+
+            // Update server welcome information.
+            using var context = new BobEntities();
+            var server = await context.GetServer(Context.Guild.Id);
+
+            // Only write to DB if needed.
+            if (server.HasWelcomeImage != true)
+            {
+                server.HasWelcomeImage = true;
+                await context.UpdateServer(server);
+            }
+
+            var welcomeImage = await context.GetWelcomeImage(Context.Guild.Id);
+
+            if (welcomeImage != null)
+            {
+                welcomeImage.Image = compressedImage;
+                await context.UpdateWelcomeImage(welcomeImage);
+            }
+            else
+            {
+                // Add image to database.
+                WelcomeImage newImage = new()
+                {
+                    Id = Context.Guild.Id,
+                    Image = compressedImage
+                };
+                await context.AddWelcomeImage(newImage);
+            }
+
+            if (server.Welcome)
+            {
+                if (systemChannel == null)
+                {
+                    await FollowupAsync(
+                        "❌ Bob knows to welcome users now, and what image to use, but you **need** to set a **System Messages** channel in settings for this to take effect.",
+                        ephemeral: true
+                    );
+                }
+                else
+                {
+                    await FollowupAsync(
+                        $"✅ Bob will now greet people in <#{systemChannel.Id}> with the given image.",
+                        ephemeral: true
+                    );
+                }
+            }
+            else
+            {
+                await FollowupAsync(
+                    $"✅ Bob knows what image to use, but you **need** to enable welcome messages with {Help.GetCommandMention("welcome toggle")} for it to take effect.",
+                    ephemeral: true
+                );
+            }
+        }
+
+        [SlashCommand("remove-image", "Removes the custom welcome image from your server. Does not disable general welcome messages.")]
+        public async Task RemoveCustomWelcomeImage()
+        {
+            await DeferAsync(ephemeral: true);
+            var discordUser = Context.Guild.GetUser(Context.User.Id);
+            var systemChannel = Context.Guild.SystemChannel;
+
+            // Check if the user has manage channels permissions.
+            if (!discordUser.GuildPermissions.Administrator)
+            {
+                if (systemChannel == null)
+                {
+                    await FollowupAsync("❌ You do not have a **System Messages** channel set in your server.\n- You can change this in the **Overview** tab of your server's settings.", ephemeral: true);
+                    return;
+                }
+
+                if (!discordUser.GetPermissions(systemChannel).ManageChannel)
+                {
+                    await FollowupAsync($"❌ You do not have permissions to manage <#{systemChannel.Id}> (The system channel where welcome messages are sent)\n- Try asking a user with the permission `Manage Channel`.", ephemeral: true);
+                    return;
+                }
+            }
+            // Update server welcome information.
+            else
+            {
+                Server server;
+                using var context = new BobEntities();
+                server = await context.GetServer(Context.Guild.Id);
+
+                // Only write to DB if needed.
+                if (server.HasWelcomeImage == true)
+                {
+                    server.HasWelcomeImage = false;
+                    await context.UpdateServer(server);
+
+                    var welcomeImage = await context.GetWelcomeImage(Context.Guild.Id);
+                    if (welcomeImage != null)
+                    {
+                        await context.RemoveWelcomeImage(welcomeImage);
+                    }
+                }
+
+                await FollowupAsync(text: $"✅ Bob will no longer greet people with the custom image.", ephemeral: true);
             }
         }
 

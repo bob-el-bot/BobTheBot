@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     public static class TimeConversion
     {

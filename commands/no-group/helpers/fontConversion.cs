@@ -1,7 +1,7 @@
 using System.Text;
 using Discord.Interactions;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     public class FontConversion
     {

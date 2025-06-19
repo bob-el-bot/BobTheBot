@@ -1,15 +1,15 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Database;
-using Database.Types;
+using Bob.Commands.Helpers;
+using Bob.Database;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
 
-namespace Moderation
+namespace Bob.Moderation
 {
-    public class Components : InteractionModuleBase<SocketInteractionContext>
+    public class Components : InteractionModuleBase<ShardedInteractionContext>
     {
         [ComponentInteraction("banUser:*:*")]
         public async Task HelpOptionsHandler(string id, string reason)
@@ -109,7 +109,7 @@ namespace Moderation
 
             await Context.Interaction.ModifyOriginalResponseAsync(x =>
             {
-                x.Content = "✅ Your DMs will now appear closed to people using `/confess`.\n- You can use `/profile confessions-toggle` to configure this whenever.";
+                x.Content = $"✅ Your DMs will now appear closed to people using {Help.GetCommandMention("confess")}.\n- You can use {Help.GetCommandMention("profile confessions-toggle")} to configure this whenever.";
                 x.Components = null;
             });
         }

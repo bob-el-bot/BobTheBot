@@ -5,20 +5,21 @@ using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using BadgeInterface;
-using Commands.Attributes;
-using Commands.Helpers;
-using Database;
-using Database.Types;
+using Bob.BadgeInterface;
+using Bob.Commands.Attributes;
+using Bob.Commands.Helpers;
+using Bob.Database;
+using Bob.Database.Types;
 using Discord;
 using Discord.Interactions;
 using Discord.Rest;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
-using Moderation;
-using static ApiInteractions.Interface;
+using Bob.Moderation;
+using static Bob.ApiInteractions.Interface;
+using static Bob.Bot;
 
-namespace Commands
+namespace Bob.Commands
 {
     [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
     [IntegrationType(ApplicationIntegrationType.GuildInstall)]
@@ -26,10 +27,10 @@ namespace Commands
     [RequireGuild(Bot.supportServerId)]
     [RequireTeam]
     [Group("debug", "All commands relevant to debugging.")]
-    public class DebugGroup : InteractionModuleBase<SocketInteractionContext>
+    public class DebugGroup : InteractionModuleBase<ShardedInteractionContext>
     {
         [Group("log", "All debug commands for logging.")]
-        public class LogGroup : InteractionModuleBase<SocketInteractionContext>
+        public class LogGroup : InteractionModuleBase<ShardedInteractionContext>
         {
             private static readonly ulong DebugServerCategoryId = 1181420597138427967;
             public static Dictionary<ulong, IGuild> ServersToLog { get; set; } = [];
@@ -125,8 +126,24 @@ namespace Commands
         }
 
         [Group("stat", "All debug commands for stats")]
-        public class StatsGroup : InteractionModuleBase<SocketInteractionContext>
+        public class StatsGroup : InteractionModuleBase<ShardedInteractionContext>
         {
+            [SlashCommand("entitlements", "view all app entitlements.")]
+            public async Task GetEntitlements()
+            {
+                StringBuilder response = new();
+
+                await foreach (var entitlementCollection in Client.Rest.GetEntitlementsAsync())
+                {
+                    foreach (var entitlement in entitlementCollection)
+                    {
+                        response.AppendLine($"{entitlement.SkuId} - {entitlement.Type} - {entitlement.EndsAt} - {entitlement.UserId}");
+                    }
+                }
+
+                await RespondAsync(text: response.ToString());
+            }
+
             [SlashCommand("all-tables", "Shows all stats relevant to the all tables.")]
             public async Task AllTableStats()
             {
@@ -140,6 +157,7 @@ namespace Commands
                 int newsChannelEntriesCount = await context.NewsChannel.CountAsync();
                 int scheduledMessageEntriesCount = await context.ScheduledMessage.CountAsync();
                 int scheduledAnnouncementEntriesCount = await context.ScheduledAnnouncement.CountAsync();
+                int welcomeImageEntriesCount = await context.WelcomeImage.CountAsync();
                 double size = await context.GetDatabaseSizeBytes();
 
                 var embed = new EmbedBuilder
@@ -152,6 +170,7 @@ namespace Commands
                     .AddField(name: "User Entries", value: $"`{userEntriesCount}`", inline: true)
                     .AddField(name: "BlackListUser Entries", value: $"`{blackListEntriesCount}`", inline: true)
                     .AddField(name: "Server Entries", value: $"`{serverEntriesCount}`", inline: true)
+                    .AddField(name: "Welcome Image Entries", value: $"`{welcomeImageEntriesCount}`", inline: true)
                     .AddField(name: "NewsChannel Entries", value: $"`{newsChannelEntriesCount}`", inline: true)
                     .AddField(name: "Scheduled Message Entries", value: $"`{scheduledMessageEntriesCount}`", inline: true)
                     .AddField(name: "Scheduled Announcement Entries", value: $"`{scheduledAnnouncementEntriesCount}`", inline: true)
@@ -238,7 +257,7 @@ namespace Commands
         }
 
         [Group("database", "All debug commands for the database")]
-        public class DatabaseGroup : InteractionModuleBase<SocketInteractionContext>
+        public class DatabaseGroup : InteractionModuleBase<ShardedInteractionContext>
         {
             [SlashCommand("get-user", "Gets the user object of a given user.")]
             public async Task GetUser(IUser user = null, string userId = null)
@@ -252,7 +271,7 @@ namespace Commands
                     return;
                 }
 
-                IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
+                IUser discordUser = user ?? await Client.GetUserAsync(parsedId, CacheMode.AllowDownload, null);   
 
                 if (discordUser.IsBot)
                 {
@@ -285,7 +304,7 @@ namespace Commands
                     return;
                 }
 
-                IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
+                IUser discordUser = user ?? await Client.GetShardFor(Context.Guild).GetUserAsync(parsedId);
 
                 if (discordUser.IsBot)
                 {
@@ -323,7 +342,7 @@ namespace Commands
                     return;
                 }
 
-                IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
+                IUser discordUser = user ?? await Client.GetShardFor(Context.Guild).GetUserAsync(parsedId);
 
                 if (discordUser.IsBot)
                 {
@@ -349,7 +368,7 @@ namespace Commands
             }
 
             [SlashCommand("give-user-badge", "Gives the given user the given badge.")]
-            public async Task GiveUserBadge(Badges.Badges badge, IUser user = null, string userId = null)
+            public async Task GiveUserBadge(Bob.Badges.Badges badge, IUser user = null, string userId = null)
             {
                 await DeferAsync();
 
@@ -361,7 +380,7 @@ namespace Commands
                     return;
                 }
 
-                IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
+                IUser discordUser = user ?? await Client.GetShardFor(Context.Guild).GetUserAsync(parsedId);
 
                 if (discordUser.IsBot)
                 {
@@ -384,7 +403,7 @@ namespace Commands
             }
 
             [SlashCommand("remove-user-badge", "Removes the given badge from the given user.")]
-            public async Task RemoveUserBadge(Badges.Badges badge, IUser user = null, string userId = null)
+            public async Task RemoveUserBadge(Bob.Badges.Badges badge, IUser user = null, string userId = null)
             {
                 await DeferAsync();
 
@@ -396,7 +415,7 @@ namespace Commands
                     return;
                 }
 
-                IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
+                IUser discordUser = user ?? await Client.GetShardFor(Context.Guild).GetUserAsync(parsedId);
 
                 if (discordUser.IsBot)
                 {
@@ -442,7 +461,7 @@ namespace Commands
                     using var context = new BobEntities();
                     dbServer = await context.GetServer(parsedId);
 
-                    await FollowupAsync(text: $"✅ `Showing Server: {discordServer.Name}, {discordServer.Id}`\n```cs\nCustom Welcome Message: {dbServer.CustomWelcomeMessage}\nWelcome: {dbServer.Welcome}\nQuote Channel ID: {dbServer.QuoteChannelId}\nMax Quote Length: {dbServer.MaxQuoteLength}\nMin Quote Length: {dbServer.MinQuoteLength}```");
+                    await FollowupAsync(text: $"✅ `Showing Server: {discordServer.Name}, {discordServer.Id}`\n{ServerDebugging.GetServerPropertyString(dbServer)}");
                 }
             }
 
@@ -458,7 +477,7 @@ namespace Commands
                     return;
                 }
 
-                IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
+                IUser discordUser = user ?? await Client.GetShardFor(Context.Guild).GetUserAsync(parsedId);
 
                 if (user != null && conversionResult != false && user.Id != parsedId)
                 {
@@ -495,7 +514,7 @@ namespace Commands
                     return;
                 }
 
-                IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
+                IUser discordUser = user ?? await Client.GetShardFor(Context.Guild).GetUserAsync(parsedId);
 
                 if (user != null && conversionResult != false && user.Id != parsedId)
                 {
@@ -533,7 +552,7 @@ namespace Commands
                     return;
                 }
 
-                IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
+                IUser discordUser = user ?? await Client.GetShardFor(Context.Guild).GetUserAsync(parsedId);
 
                 if (user != null && conversionResult != false && user.Id != parsedId)
                 {
@@ -578,7 +597,7 @@ namespace Commands
                     return;
                 }
 
-                IUser discordUser = user ?? await Bot.Client.GetUserAsync(parsedId);
+                IUser discordUser = user ?? await Client.GetShardFor(Context.Guild).GetUserAsync(parsedId);
 
                 if (user != null && conversionResult != false && user.Id != parsedId)
                 {

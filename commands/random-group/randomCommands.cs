@@ -1,23 +1,23 @@
 using System;
 using System.Collections.Generic;
-using static ApiInteractions.Interface;
+using static Bob.ApiInteractions.Interface;
 using System.Text;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using ColorHelper;
 using Discord.Interactions;
-using static Commands.Helpers.Choose;
+using static Bob.Commands.Helpers.Choose;
 using System.IO;
-using Commands.Helpers;
+using Bob.Commands.Helpers;
 using Discord;
 using System.Net.Http;
 
-namespace Commands
+namespace Bob.Commands
 {
     [CommandContextType(InteractionContextType.BotDm, InteractionContextType.PrivateChannel, InteractionContextType.Guild)]
     [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
     [Group("random", "All random (RNG) commands.")]
-    public class RandomGroup : InteractionModuleBase<SocketInteractionContext>
+    public class RandomGroup : InteractionModuleBase<ShardedInteractionContext>
     {
         private readonly Random random = new();
 
@@ -173,7 +173,7 @@ namespace Commands
             else
             {
                 // Respond if no quotes match the prompt
-                await RespondAsync(text: $"❌ The prompt: {prompt} was not recognized. Use `/quote-prompts` to see all valid prompts.", ephemeral: true);
+                await RespondAsync(text: $"❌ The prompt: {prompt} was not recognized. Use {Help.GetCommandMention("quote-prompts")} to see all valid prompts.", ephemeral: true);
             }
         }
 

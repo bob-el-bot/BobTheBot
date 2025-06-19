@@ -1,17 +1,17 @@
 using System.Threading.Tasks;
 using Discord.Interactions;
 using SimpleCiphers;
-using Commands.Helpers;
+using Bob.Commands.Helpers;
 using Discord;
 using System.Linq;
 using System;
 
-namespace Commands
+namespace Bob.Commands
 {
     [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
     [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
     [Group("decrypt", "All commands relevant to decryption.")]
-    public class DecryptGroup : InteractionModuleBase<SocketInteractionContext>
+    public class DecryptGroup : InteractionModuleBase<ShardedInteractionContext>
     {
         [SlashCommand("atbash", "Bob will decrypt your message by swapping letters to their opposite position.")]
         public async Task Atbash([Summary("message", "the text you want to decrypt")] string message)

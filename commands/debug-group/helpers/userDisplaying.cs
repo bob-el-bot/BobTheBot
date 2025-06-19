@@ -1,9 +1,9 @@
 using System.Reflection;
 using System.Text;
-using BadgeInterface;
-using Database.Types;
+using Bob.BadgeInterface;
+using Bob.Database.Types;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     public static class UserDebugging
     {

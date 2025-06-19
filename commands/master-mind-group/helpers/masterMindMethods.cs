@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using Discord;
 using Discord.Interactions;
-using Moderation;
+using Bob.Moderation;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     public static class MasterMindMethods
     {
@@ -92,7 +92,7 @@ namespace Commands.Helpers
         {
             StringBuilder rules = new();
 
-            rules.Append("The goal of the game is to guess the correct randomly generated code. Each code consists of 4 colors, chosen from 6 possible colors (duplicates are allowed). Use the command `/mastermind guess` to make your guess. After each guess you will be given feedback on how close you are to the correct code. The feedback is as follows:\n");
+            rules.Append($"The goal of the game is to guess the correct randomly generated code. Each code consists of 4 colors, chosen from 6 possible colors (duplicates are allowed). Use the command {Help.GetCommandMention("mastermind guess")} to make your guess. After each guess you will be given feedback on how close you are to the correct code. The feedback is as follows:\n");
 
             switch (mode)
             {
@@ -275,7 +275,7 @@ Good luck cracking the code!");
             else if (game.GuessesLeft <= 0)
             {
                 defaultEmbed.Title += " (lost)";
-                defaultEmbed.Description += "You have lost, but don't be sad you can just start a new game with `/master-mind new-game`";
+                defaultEmbed.Description += $"You have lost, but don't be sad you can just start a new game with {Help.GetCommandMention("mastermind new-game")}";
                 defaultEmbed.AddField("Answer:", $"{GetColorsString(game.Key)}");
             }
 

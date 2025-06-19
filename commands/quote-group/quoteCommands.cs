@@ -1,29 +1,25 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Commands.Helpers;
-using Database;
-using Database.Types;
+using Bob.Commands.Helpers;
+using Bob.Database;
+using Bob.Database.Types;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using PremiumInterface;
-using Time.Timestamps;
+using Bob.PremiumInterface;
 
-namespace Commands
+namespace Bob.Commands
 {
     [CommandContextType(InteractionContextType.Guild)]
     [IntegrationType(ApplicationIntegrationType.GuildInstall)]
     [Group("quote", "All quoting commands.")]
-    public class QuoteGroup : InteractionModuleBase<SocketInteractionContext>
+    public class QuoteGroup : InteractionModuleBase<ShardedInteractionContext>
     {
 
         [SlashCommand("new", "Create a quote.")]
         public async Task New(
             [Summary("quote", "The text you want quoted. Quotation marks (\") will be added.")] string quote,
-            [Summary("user", "The user who the quote belongs to.")] SocketUser user,
+            [Summary("user", "The user who the quote belongs to (defaults to you).")] SocketUser user = null,
             [Summary("tag1", "A tag for sorting quotes later on (needs premium).")] string tag1 = "",
             [Summary("tag2", "A tag for sorting quotes later on (needs premium).")] string tag2 = "",
             [Summary("tag3", "A tag for sorting quotes later on (needs premium).")] string tag3 = "")
@@ -46,7 +42,9 @@ namespace Commands
                 return;
             }
 
-            var embed = QuoteMethods.CreateQuoteEmbed(quote, user, DateTimeOffset.UtcNow, Context.User.GlobalName, tag1, tag2, tag3);
+            user ??= Context.User;
+
+            var embed = QuoteMethods.CreateQuoteEmbed(quote, user, DateTimeOffset.UtcNow, Context.User.Username, tag1, tag2, tag3);
             await QuoteMethods.SendQuoteAsync(server.QuoteChannelId, embed, "Quote made in", Context);
         }
 
@@ -75,7 +73,7 @@ namespace Commands
                 return;
             }
 
-            var embed = QuoteMethods.CreateQuoteEmbed(quote, user, message.Timestamp, Context.User.GlobalName, originalMessageUrl: message.GetJumpUrl());
+            var embed = QuoteMethods.CreateQuoteEmbed(quote, user, message.Timestamp, Context.User.Username, originalMessageUrl: message.GetJumpUrl());
             await QuoteMethods.SendQuoteAsync(server.QuoteChannelId, embed, "Quote made.", Context);
         }
 
@@ -92,7 +90,7 @@ namespace Commands
             // Check if Bob has permission to send messages in given channel
             else if (!permissions.SendMessages || !permissions.ViewChannel || !permissions.EmbedLinks)
             {
-                await RespondAsync(text: $"❌ Bob is either missing permissions to view, send messages, *or* embed links in the channel <#{channel.Id}>.\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`, and `Embed Links`.\n- Use `/quote channel` to set a new channel.", ephemeral: true);
+                await RespondAsync(text: $"❌ Bob is either missing permissions to view, send messages, *or* embed links in the channel <#{channel.Id}>.\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`, and `Embed Links`.\n- Use {Help.GetCommandMention("quote channel")} to set a new channel.", ephemeral: true);
             }
             else
             {
@@ -125,7 +123,7 @@ namespace Commands
                 await FollowupAsync(text: $"❌ Ask an admin or mod to configure this for you.\n- Permission(s) needed: `Manage Channels`.", ephemeral: true);
             }
             // Check if the user has premium.
-            else if (Premium.IsPremium(Context.Interaction.Entitlements) == false)
+            else if (await Premium.IsPremiumAsync(Context.Interaction.Entitlements, Context.User.Id) == false)
             {
                 await FollowupAsync(text: $"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}", components: Premium.GetComponents(), ephemeral: true);
             }
@@ -170,7 +168,7 @@ namespace Commands
                 await FollowupAsync(text: $"❌ Ask an admin or mod to configure this for you.\n- Permission(s) needed: `Manage Channels`.", ephemeral: true);
             }
             // Check if the user has premium.
-            else if (Premium.IsPremium(Context.Interaction.Entitlements) == false)
+            else if (await Premium.IsPremiumAsync(Context.Interaction.Entitlements, Context.User.Id) == false)
             {
                 await FollowupAsync(text: $"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}", components: Premium.GetComponents(), ephemeral: true);
             }

@@ -1,21 +1,22 @@
 using System;
 using System.Threading.Tasks;
-using ColorMethods;
-using Database;
-using Database.Types;
+using Bob.ColorMethods;
+using Bob.Database;
+using Bob.Database.Types;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using PremiumInterface;
-using BadgeInterface;
-using Moderation;
+using Bob.PremiumInterface;
+using Bob.BadgeInterface;
+using Bob.Moderation;
+using Bob.Commands.Helpers;
 
-namespace Commands
+namespace Bob.Commands
 {
     [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
     [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
     [Group("profile", "All profile commands.")]
-    public class ProfileGroup : InteractionModuleBase<SocketInteractionContext>
+    public class ProfileGroup : InteractionModuleBase<ShardedInteractionContext>
     {
         [SlashCommand("display", "View a user's profile.")]
         public async Task Display([Summary("user", "The user whose profile you would like displayed (leave empty to display your own).")] SocketUser user = null)
@@ -40,7 +41,7 @@ namespace Commands
                 float connect4WinPercent = (float)Math.Round(userToDisplay.TotalConnect4Games != 0 ? userToDisplay.Connect4Wins / userToDisplay.TotalConnect4Games * 100 : 0, 2);
 
                 // Check Premium
-                bool hasPremium = Premium.IsPremium(Context.Interaction.Entitlements);
+                bool hasPremium = Premium.IsPremium(Context.Interaction.Entitlements, userToDisplay);
 
                 Color color = hasPremium ? Colors.TryGetColor(userToDisplay.ProfileColor) ?? 0x2C2F33 : 0x2C2F33;
 
@@ -86,11 +87,38 @@ namespace Commands
 
             if (open)
             {
-                await FollowupAsync(text: "✅ Your DMs are now open to people using `/confess`.", ephemeral: true);
+                await FollowupAsync(text: $"✅ Your DMs are now open to people using {Help.GetCommandMention("confess")}.", ephemeral: true);
             }
             else
             {
-                await FollowupAsync(text: "✅ Your DMs will now appear closed to people using `/confess`.", ephemeral: true);
+                await FollowupAsync(text: $"✅ Your DMs will now appear closed to people using {Help.GetCommandMention("confess")}.", ephemeral: true);
+            }
+        }
+
+        [SlashCommand("confessions-filter-toggle", "Enable or disable censoring and/or blocking of /confess messages sent to you.")]
+        public async Task ConfessionsFilterToggle([Summary("enable", "If checked (true), Bob will censor and/or block messages sent to you with /confess that are flagged.")] bool enable)
+        {
+            await DeferAsync(ephemeral: true);
+
+            User user;
+            using (var context = new BobEntities())
+            {
+                user = await context.GetUser(Context.User.Id);
+
+                if (user.ConfessFilteringOff != enable)
+                {
+                    user.ConfessFilteringOff = enable;
+                    await context.UpdateUser(user);
+                }
+            }
+
+            if (enable)
+            {
+                await FollowupAsync(text: $"✅ {Help.GetCommandMention("confess")} messages sent to you will now be censored and/or blocked.", ephemeral: true);
+            }
+            else
+            {
+                await FollowupAsync(text: $"✅ {Help.GetCommandMention("confess")} messages sent to you will now be unfiltered.", ephemeral: true);
             }
         }
 
@@ -119,41 +147,42 @@ namespace Commands
 
             Color? finalColor = Colors.TryGetColor(color);
 
-            // Check if the user has premium.
-            if (Premium.IsPremium(Context.Interaction.Entitlements) == false)
-            {
-                await FollowupAsync(text: $"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}", components: Premium.GetComponents(), ephemeral: true);
-            }
-            else if (finalColor == null)
+            if (finalColor == null)
             {
                 await FollowupAsync(text: $"❌ `{color}` is an invalid color. Here is a list of valid colors:\n- {Colors.GetSupportedColorsString()}.\n- Valid hex and RGB codes are also accepted.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                return;
             }
-            else
+
+            using var context = new BobEntities();
+            User user = await context.GetUser(Context.User.Id);
+
+            // Check if the user has premium.
+            if (Premium.IsPremium(Context.Interaction.Entitlements, user) == false)
             {
-                using var context = new BobEntities();
-                User user = await context.GetUser(Context.User.Id);
-
-                // Only write to DB if needed.
-                if (user.ProfileColor != color)
-                {
-                    user.ProfileColor = color;
-                    await context.UpdateUser(user);
-                }
-
-                // Create Embed
-                var embed = new EmbedBuilder
-                {
-                    Title = "⬅️ Your new profile color.",
-                    Color = finalColor,
-                };
-
-                // Respond
-                await FollowupAsync(embed: embed.Build());
+                await FollowupAsync(text: $"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}", components: Premium.GetComponents(), ephemeral: true);
+                return;
             }
+
+            // Only write to DB if needed.
+            if (user.ProfileColor != color)
+            {
+                user.ProfileColor = color;
+                await context.UpdateUser(user);
+            }
+
+            // Create Embed
+            var embed = new EmbedBuilder
+            {
+                Title = "⬅️ Your new profile color.",
+                Color = finalColor,
+            };
+
+            // Respond
+            await FollowupAsync(embed: embed.Build());
         }
 
         [SlashCommand("badge-info", "Get info about profile badges.")]
-        public async Task BadgeInfo([Summary("badge", "The badge you want to learn about (leave empty to show all).")] Badges.Badges? badge = null)
+        public async Task BadgeInfo([Summary("badge", "The badge you want to learn about (leave empty to show all).")] Bob.Badges.Badges? badge = null)
         {
             var embed = new EmbedBuilder
             {
@@ -166,8 +195,8 @@ namespace Commands
 
             if (badge != null)
             {
-                embed.Title = $"{Badge.GetBadgeEmoji((Badges.Badges)badge)} {Badge.GetBadgeDisplayName((Badges.Badges)badge)} Info";
-                embed.Description = Badge.GetBadgeInfoString((Badges.Badges)badge);
+                embed.Title = $"{Badge.GetBadgeEmoji((Bob.Badges.Badges)badge)} {Badge.GetBadgeDisplayName((Bob.Badges.Badges)badge)} Info";
+                embed.Description = Badge.GetBadgeInfoString((Bob.Badges.Badges)badge);
 
                 await RespondAsync(embed: embed.Build());
             }

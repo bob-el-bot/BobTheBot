@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Time.Timezones
+namespace Bob.Time.Timezones
 {
     /// <summary>
     /// Utility class for timezone conversion.

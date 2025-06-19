@@ -1,7 +1,7 @@
 using Discord;
 using Discord.Interactions;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     /// <summary>
     /// Modal used for editing a scheduled message's content.

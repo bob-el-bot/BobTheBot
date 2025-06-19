@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Caching.Memory;
 using SkiaSharp;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     /// <summary>
     /// A cache for images downloaded from URLs.

@@ -1,17 +1,16 @@
 using System.Threading.Tasks;
 using System.Linq;
-using Commands.Helpers;
+using Bob.Commands.Helpers;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using System;
 
-namespace Commands
+namespace Bob.Commands
 {
     [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
     [IntegrationType(ApplicationIntegrationType.GuildInstall)]
     [Group("mastermind", "All commands relevant to the game Master Mind.")]
-    public class MasterMindGroup : InteractionModuleBase<SocketInteractionContext>
+    public class MasterMindGroup : InteractionModuleBase<ShardedInteractionContext>
     {
         [SlashCommand("new-game", "Start a game of Master Mind (rules will be sent upon use of this command).")]
         public async Task NewGame(MasterMindMethods.GameMode mode = MasterMindMethods.GameMode.Classic)
@@ -43,7 +42,7 @@ namespace Commands
             
             if (game == null)
             {
-                await RespondAsync(text: "❌ There is currently not a game of Master Mind in this channel. To make one use `/mastermind new-game`", ephemeral: true);
+                await RespondAsync(text: $"❌ There is currently not a game of Master Mind in this channel. To make one use {Help.GetCommandMention("mastermind new-game")}", ephemeral: true);
             }
             else if (MasterMindMethods.CurrentGames.Count > 0 && game.IsStarted == false)
             {
@@ -89,7 +88,7 @@ namespace Commands
             if (game == null)
             {
                 await component.Message.ModifyAsync(x => { x.Components = MasterMindMethods.CreateDifficultySelectMenu(true); });
-                await FollowupAsync(text: "❌ This game does not exist any more.\n- To make a new one use `/mastermind new-game`.", ephemeral: true);
+                await FollowupAsync(text: $"❌ This game does not exist any more.\n- To make a new one use {Help.GetCommandMention("mastermind new-game")}.", ephemeral: true);
                 return;
             }
 
@@ -107,7 +106,7 @@ namespace Commands
             {
                 Title = "🧠 Master Mind",
                 Color = MasterMindMethods.DefaultColor,
-                Description = "Make your first guess with `/mastermind guess`.",
+                Description = $"Make your first guess with {Help.GetCommandMention("mastermind guess")}.",
             };
             embed.AddField(name: "Guesses Left:", value: $"`{game.GuessesLeft}`", inline: true);
 
@@ -130,7 +129,7 @@ namespace Commands
             {
                 SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
                 await component.Message.ModifyAsync(x => { x.Components = MasterMindMethods.GetForfeitButton(true); });
-                await FollowupAsync(text: "❌ This game does not exist any more.\n- To make a new one use `/mastermind new-game`.", ephemeral: true);
+                await FollowupAsync(text: $"❌ This game does not exist any more.\n- To make a new one use {Help.GetCommandMention("mastermind new-game")}.", ephemeral: true);
                 return;
             }
 
@@ -140,7 +139,7 @@ namespace Commands
                 {
                     Title = "🧠 Master Mind",
                     Color = new(15548997),
-                    Description = "This was certainly difficult, try again with `/mastermind new-game`",
+                    Description = $"This was certainly difficult, try again with {Help.GetCommandMention("mastermind new-game")}",
                 };
 
                 embed.Title += " (forfeited)";

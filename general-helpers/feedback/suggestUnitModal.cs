@@ -1,7 +1,7 @@
 using Discord;
 using Discord.Interactions;
 
-namespace Feedback.Models
+namespace Bob.Feedback.Models
 {
     /// <summary>
     /// Modal used for suggesting a unit to the user.

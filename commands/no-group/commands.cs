@@ -5,28 +5,29 @@ using System.Text.Json.Nodes;
 using Discord.WebSocket;
 using Discord;
 using System.Text;
-using static ApiInteractions.Interface;
-using Commands.Helpers;
-using Database.Types;
-using Database;
+using static Bob.ApiInteractions.Interface;
+using Bob.Commands.Helpers;
+using Bob.Database.Types;
+using Bob.Database;
 using System.Text.RegularExpressions;
 using System.Linq;
-using Challenges;
-using PremiumInterface;
-using ColorMethods;
-using Moderation;
-using Time.Timestamps;
+using static Bob.Bot;
+using Bob.Challenges;
+using Bob.PremiumInterface;
+using Bob.ColorMethods;
+using Bob.Moderation;
+using Bob.Time.Timestamps;
 
-namespace Commands
+namespace Bob.Commands
 {
-    public class NoGroup : InteractionModuleBase<SocketInteractionContext>
+    public class NoGroup : InteractionModuleBase<ShardedInteractionContext>
     {
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("ping", "Bob will share his ping.")]
         public async Task Ping()
         {
-            await RespondAsync(text: $"🏓 Pong! The client latency is **{Bot.Client.Latency}** ms.");
+            await RespondAsync(text: $"🏓 Pong! The client latency is **{Client.Latency}** ms.");
         }
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
@@ -124,7 +125,6 @@ namespace Commands
                 }
                 else
                 {
-                    await DeferAsync();
                     await Challenge.SendMessage(Context.Interaction, new TicTacToe(Context.User, opponent));
                 }
             }
@@ -139,7 +139,7 @@ namespace Commands
 
             if (game == null)
             {
-                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use `/tic-tac-toe` to start a new game.", ephemeral: true);
+                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use {Help.GetCommandMention("tic-tac-toe")} to start a new game.", ephemeral: true);
             }
             else
             {
@@ -205,7 +205,6 @@ namespace Commands
                 }
                 else
                 {
-                    await DeferAsync();
                     await Challenge.SendMessage(Context.Interaction, new Trivia(Context.User, opponent));
                 }
             }
@@ -220,7 +219,7 @@ namespace Commands
 
             if (game == null)
             {
-                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use `/trivia` to start a new game.", ephemeral: true);
+                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use {Help.GetCommandMention("trivia")} to start a new game.", ephemeral: true);
             }
             else
             {
@@ -273,7 +272,6 @@ namespace Commands
                 }
                 else
                 {
-                    await DeferAsync();
                     await Challenge.SendMessage(Context.Interaction, new RockPaperScissors(Context.User, opponent));
                 }
             }
@@ -288,7 +286,7 @@ namespace Commands
 
             if (game == null)
             {
-                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use `/rock-paper-scissors` to start a new game.", ephemeral: true);
+                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use {Help.GetCommandMention("rock-paper-scissors")} to start a new game.", ephemeral: true);
             }
             else
             {
@@ -349,7 +347,6 @@ namespace Commands
                 }
                 else
                 {
-                    await DeferAsync();
                     await Challenge.SendMessage(Context.Interaction, new Connect4(Context.User, opponent));
                 }
             }
@@ -364,7 +361,7 @@ namespace Commands
 
             if (game == null)
             {
-                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use `/connect4` to start a new game.", ephemeral: true);
+                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use {Help.GetCommandMention("connect4")} to start a new game.", ephemeral: true);
             }
             else
             {
@@ -534,8 +531,8 @@ namespace Commands
         public async Task QuotePrompts()
         {
             // Respond
-            await RespondAsync(text: @"
-**Here are all valid prompts for `/random quote`:**
+            await RespondAsync(text: @$"
+**Here are all valid prompts for {Help.GetCommandMention("random quote")}:**
 
 **Categories:**
 
@@ -570,37 +567,99 @@ namespace Commands
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("announce", "Bob will create a fancy embed announcement in the channel the command is used in.")]
-        public async Task Announce([Summary("title", "The title of the announcement (the title of the embed).")][MinLength(1)][MaxLength(256)] string title, [Summary("description", "The anouncement (the description of the embed).")][MinLength(1)][MaxLength(4096)] string description, [Summary("color", "A color name (purple), or a valid hex code (#8D52FD) or valid RGB code (141, 82, 253).")] string color)
+        public async Task Announce([Summary("title", "The title of the announcement (the title of the embed).")][MinLength(1)][MaxLength(256)] string title,
+            [Summary("description", "The anouncement (the description of the embed).")][MinLength(1)][MaxLength(4096)] string description,
+            [Summary("color", "A color name (purple), or a valid hex code (#8D52FD) or valid RGB code (141, 82, 253).")] string color,
+            [Summary("image", "An image you would like to use (PNG, JPG, JPEG, WEBP, GIF, BMP).")] Attachment attachment = null)
         {
-            Color? finalColor = Colors.TryGetColor(color);
+            await DeferAsync(ephemeral: true);
 
-            // Check if Bob has permission to send messages in given channel
-            ChannelPermissions permissions = Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel);
-            if (!Context.Interaction.IsDMInteraction && (!permissions.SendMessages || !permissions.ViewChannel || !permissions.EmbedLinks))
+            if (!Context.Interaction.IsDMInteraction)
             {
-                await RespondAsync(text: $"❌ Bob is either missing permissions to view, send messages, *or* embed links in the channel <#{Context.Channel.Id}>\n- Try giving Bob the following pemrissions: `View Channel`, `Embed Links`, and `Send Messages`.", ephemeral: true);
-            }
-            else if (finalColor == null)
-            {
-                await RespondAsync(text: $"❌ `{color}` is an invalid color. Here is a list of valid colors:\n- {Colors.GetSupportedColorsString()}.\n- Valid hex and RGB codes are also accepted.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
-            }
-            else
-            {
-                var embed = new EmbedBuilder
+                IGuildChannel channelToCheck;
+                if (Context.Channel is SocketThreadChannel thread)
                 {
-                    Title = title,
-                    Color = finalColor,
-                    Description = Announcement.FormatDescription(description),
-                    Footer = new EmbedFooterBuilder
-                    {
-                        IconUrl = Context.User.GetAvatarUrl(),
-                        Text = $"Announced by {Context.User.GlobalName}."
-                    }
-                };
+                    channelToCheck = thread.ParentChannel;
+                }
+                else
+                {
+                    channelToCheck = (IGuildChannel)Context.Channel;
+                }
 
-                await RespondAsync(text: "✅ Your announcement has been made.", ephemeral: true);
-                await Context.Channel.SendMessageAsync(embed: embed.Build());
+                var botUser = Context.Guild.GetUser(Context.Client.CurrentUser.Id);
+                ChannelPermissions permissions = botUser.GetPermissions(channelToCheck);
+
+                if (!permissions.SendMessages || !permissions.ViewChannel || !permissions.EmbedLinks)
+                {
+                    await FollowupAsync(
+                        text: $"❌ Bob is either missing permissions to view, send messages, *or* " +
+                              $"embed links in the channel <#{Context.Channel.Id}>\n- Try giving Bob " +
+                              $"the following permissions: `View Channel`, `Embed Links`, " +
+                              $"and `Send Messages`.",
+                        ephemeral: true
+                    );
+                    return;
+                }
             }
+
+            Color? finalColor = Colors.TryGetColor(color);
+            if (finalColor == null)
+            {
+                await FollowupAsync(
+                    text: $"❌ `{color}` is an invalid color. Here is a list of valid colors:\n" +
+                          $"- {Colors.GetSupportedColorsString()}.\n" +
+                          $"- Valid hex and RGB codes are also accepted.\n" +
+                          $"- If you think this is a mistake, let us know here: " +
+                          $"[Bob's Official Server](https://discord.gg/HvGMRZD8jQ)",
+                    ephemeral: true
+                );
+                return;
+            }
+
+            string imageUrl = null;
+            if (attachment != null)
+            {
+                string contentType = attachment.ContentType?.ToLower();
+                if (string.IsNullOrEmpty(contentType) || (contentType != "image/png" && contentType != "image/jpeg" && contentType != "image/jpg" && contentType != "image/webp" && contentType != "image/gif" && contentType != "image/bmp"))
+                {
+                    await FollowupAsync(
+                        "❌ The image must be in either **PNG**, **JPG**, **JPEG**, " +
+                        "**WEBP**, **GIF**, or **BMP** format.",
+                        ephemeral: true
+                    );
+                    return;
+                }
+                imageUrl = attachment.Url;
+            }
+
+            var embed = new EmbedBuilder
+            {
+                Title = title,
+                Color = finalColor,
+                Description = Announcement.FormatDescription(description),
+                ImageUrl = imageUrl,
+                Footer = new EmbedFooterBuilder
+                {
+                    IconUrl = Context.User.GetAvatarUrl(),
+                    Text = $"Announced by {Context.User.Username}"
+                }
+            }.Build();
+
+            try
+            {
+                await Context.Channel.SendMessageAsync(embed: embed);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to send announcement: {ex}");
+                await FollowupAsync(
+                    "❌ I was unable to send the announcement. Please double-check my permissions in this channel.",
+                    ephemeral: true
+                );
+                return;
+            }
+
+            await FollowupAsync(text: "✅ Your announcement has been made.", ephemeral: true);
         }
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
@@ -646,18 +705,21 @@ namespace Commands
             var embed = new EmbedBuilder
             {
                 Title = $"What's New?",
-                Description = @"### 🗒️ Creator's Notes
-- We realize that subscription models suck, and now that Discord has an option for one-time purchases, we do too! Lifetime ✨ premium goes for ***only $4.99!*** (💜 we hope this makes your life better!)
-- Added `/convert qr-code` to convert text or URLs to a QR code here in Discord!
-- Added random selection of users if left unspecified in `/ship`. Shoutout x_star. for the idea!
-- Revamped `/mastermind` to be more accurate to the original board game. It is now color-based, has three difficulty options, and two game modes. Shoutout intelligenceunknownsh for some of these ideas!
-- Improved the `/connect4` AI to be more challenging by increasing search depth and adding in some randomness to the beginning of games. Shoutout intelligenceunknownsh for catching this!
-- Improved `/ship` calculation to make the distribution more even and less biased towards 60-70%. Shoutout intelligenceunknownsh for catching this!
-- Made `/preview color` and `/random color` faster and more memory efficient by using the WEBP format instead of PNG.
-- Fixed bug where user's game stats were updated on the test bot.
-- Fixed bug where `/quote new` and the message command `Quote` incorrectly handled quotes of 4096 characters which led to uncaught exceptions.
+                Description = @"### 🗒️ Creator's Notes (June 15th, 2025)
+- Due to the over all value increase of premium and the growing number of users Bob needs to look over we have increased the cost tht premium goes for. Monthly is now ***4.99*** and Lifetime is now ***$19.99***. Users who have already purchased premium will not be affected by this change (💜 thanks to everyone who already has).
+- Added image support to 📢 `/announce` command (thanks hbkvxncent for the idea).
+- Added 📌 `/react-board` group to setup and manage a React Baord in your server (thanks hbkvxncent for the idea). Make sure to see the `React Board Commands` section in `/help` for more info.
+- Added 🤬 `/admin confess filter-toggle` to turn confess filtering on or off for your server.
+- Added 🤬 `/profile confessions-filter-toggle` to allow you to decide whether you want to use confess filtering or not.
+- Added 🚫 `/automod remove` to remove a specific automod rule from your server (thanks honey_bunny5130 for the idea).
+- Added 🗑️ `/automod remove-all` to remove all automod rules from your server (thanks honey_bunny5130 for the idea).
+- Added autocomplete to 📏 `/convert units` to make it far easier to use.
+- Moved Bob over to 💎 Sharding to meet Discord's requirements. This means that Bob can now handle more servers, and is more stable than ever!
+- Made the [user] field in `/quote new` default to the user calling the command, so you don't have to specify it every time.
+- Fixed 🪲 bug in Quote creation where if a user had no guild nickname it would show a blank name (thanks hbkvxncent for catching this).
+- Fixed a bug in Announcement creation where if a user had no guild nickname it would show a blank name (thanks hbkvxncent for catching this).
 - Stay 📺 tuned for more awesome updates!",
-                Color = Bot.theme
+                Color = theme
             };
 
             embed.AddField(name: "✨ Latest Update", value: commitMessage, inline: true)
@@ -724,37 +786,52 @@ namespace Commands
             {
                 using var context = new BobEntities();
 
-                // Check for blacklisted words
-                var filterResult = ConfessFiltering.ContainsBannedWords($"{message} {signoff}");
-                bool isUserBlacklisted = await BlackList.IsBlacklisted(Context.User.Id);
+                var dbUser = await context.GetUser(user.Id);
 
-                if (filterResult.BlacklistMatches.Count > 0)
+                FilterResult filterResult = new();
+
+                // If user has confess filtering on, check for blacklisted words
+                if (dbUser.ConfessFilteringOff == false)
                 {
-                    var bannedUser = await context.GetUserFromBlackList(Context.User.Id);
-                    string reason = $"Sending a message with `/confess` that contained: {ConfessFiltering.FormatBannedWords(filterResult.BlacklistMatches)}";
+                    // Check for blacklisted words
+                    filterResult = ConfessFiltering.ContainsBannedWords($"{message} {signoff}");
+                    bool isUserBlacklisted = await BlackList.IsBlacklisted(Context.User.Id);
+
+                    if (filterResult.BlacklistMatches.Count > 0)
+                    {
+                        Server dbServer = Context.Guild?.Id != null ? await context.GetServer(Context.Guild.Id) : null;
+
+                        // If a Guild Install and confess filtering is on for the server, punish.
+                        if (dbServer != null && dbServer.ConfessFilteringOff == false)
+                        {
+                            var bannedUser = await context.GetUserFromBlackList(Context.User.Id);
+                            string reason = $"Sending a message with {Help.GetCommandMention("confess")} that contained: {ConfessFiltering.FormatBannedWords(filterResult.BlacklistMatches)}";
+
+                            if (isUserBlacklisted)
+                            {
+                                bannedUser = await BlackList.StepBanUser(Context.User.Id, reason);
+                                await FollowupAsync($"❌ This server has confess message filtering turned on and your message contains blacklisted words. You are **already banned** and so your punishment has **increased**.\n- You will be able to use {Help.GetCommandMention("confess")} again {Timestamp.FromDateTime((DateTime)bannedUser.Expiration, Timestamp.Formats.Relative)}.\n**Reason(s):**\n{bannedUser.Reason}\n- Use {Help.GetCommandMention("profile punishments")} to check your punishment status.\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
+                            }
+                            else
+                            {
+                                bannedUser = await BlackList.BlackListUser(bannedUser, Context.User.Id, reason, BlackList.Punishment.FiveMinutes);
+                                await FollowupAsync($"❌ This server has confess message filtering turned on and your message contains blacklisted words. You have been temporarily banned.\n- You will be able to use {Help.GetCommandMention("confess")} again {Timestamp.FromDateTime((DateTime)bannedUser.Expiration, Timestamp.Formats.Relative)}.\n**Reason(s):**\n{bannedUser.Reason}\n- Use {Help.GetCommandMention("profile punishments")} to check your punishment status.\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
+                            }
+
+                            return;
+                        }
+                    }
 
                     if (isUserBlacklisted)
                     {
-                        bannedUser = await BlackList.StepBanUser(Context.User.Id, reason);
-                        await FollowupAsync($"❌ Your message contains blacklisted words and you are **already banned**. Your punishment has **increased**.\n- You will be able to use `/confess` again {Timestamp.FromDateTime((DateTime)bannedUser.Expiration, Timestamp.Formats.Relative)}.\n**Reason(s):**\n{bannedUser.Reason}\n- Use `/profile punishments` to check your punishment status.\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
+                        var bannedUser = await context.GetUserFromBlackList(Context.User.Id);
+                        await FollowupAsync($"❌ This server has confess message filtering turned on. You are currently banned from using {Help.GetCommandMention("confess")}\n{bannedUser.FormatAsString()}\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
+                        return;
                     }
-                    else
-                    {
-                        bannedUser = await BlackList.BlackListUser(bannedUser, Context.User.Id, reason, BlackList.Punishment.FiveMinutes);
-                        await FollowupAsync($"❌ Your message contains blacklisted words. You have been temporarily banned.\n- You will be able to use `/confess` again {Timestamp.FromDateTime((DateTime)bannedUser.Expiration, Timestamp.Formats.Relative)}.\n**Reason(s):**\n{bannedUser.Reason}\n- Use `/profile punishments` to check your punishment status.\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
-                    }
-                    return;
                 }
 
-                if (isUserBlacklisted)
-                {
-                    var bannedUser = await context.GetUserFromBlackList(Context.User.Id);
-                    await FollowupAsync($"❌ You are banned from using `/confess`\n{bannedUser.FormatAsString()}\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
-                    return;
-                }
-
-                var dbUser = await context.GetUser(user.Id);
-                if (dbUser.ConfessionsOff)
+                // If user has confessions off or filtering on and there are blacklisted words, do not send the message.
+                if (dbUser.ConfessionsOff || filterResult.BlacklistMatches.Count > 0)
                 {
                     await FollowupAsync($"❌ Bob could **not** DM {user.Mention}.\n- You could try again, but this *probably* means their DMs are closed which Bob cannot change.", ephemeral: true);
                     return;
@@ -799,8 +876,9 @@ namespace Commands
                 await sentMessage.ModifyAsync(x => x.Components = components.Build());
                 await FollowupAsync($"✉️ Sent!\n**Message:** {message} - {signoff}\n**To:** **{user.Mention}**", ephemeral: true);
             }
-            catch
+            catch (Exception e)
             {
+                Console.WriteLine(e);
                 await FollowupAsync($"❌ Bob could **not** DM {user.Mention}.\n- You could try again, but this *probably* means their DMs are closed which Bob cannot change.", ephemeral: true);
             }
         }
@@ -810,6 +888,8 @@ namespace Commands
         [SlashCommand("premium", "Update your premium status or buy it!")]
         public async Task PremiumStatus()
         {
+            await DeferAsync();
+
             User user;
             using var context = new BobEntities();
             user = await context.GetUser(Context.User.Id);
@@ -818,41 +898,61 @@ namespace Commands
             bool isPremium = Premium.IsPremium(Context.Interaction.Entitlements);
             if (isPremium == false && Premium.IsValidPremium(user.PremiumExpiration) == false)
             {
-                await RespondAsync(text: "✨ You can get premium below!\n💜 *Thanks so much!*", components: Premium.GetComponents());
+                await FollowupAsync(text: "✨ You can get premium below!\n💜 *Thanks so much!*", components: Premium.GetComponents());
+            }
+            else if (isPremium == false && Premium.IsValidPremium(user.PremiumExpiration))
+            {
+                await FollowupAsync(text: "✨ You already have premium!\n💜 *Thanks so much!*");
             }
             else
             {
-                await DeferAsync();
-
-                if (isPremium != false)
+                await foreach (var entitlementCollection in Client.GetShardFor(Context.Guild).GetEntitlementsAsync(userId: Context.User.Id))
                 {
-                    // Get Expiration Date
-                    var entitlement = Context.Interaction.Entitlements.FirstOrDefault(x => x.SkuId == 1169107771673812992);
-                    Console.WriteLine(entitlement);
-                    Console.WriteLine(entitlement?.EndsAt);
-                    var expirationDate = entitlement?.EndsAt ?? DateTimeOffset.MinValue; // Default if null
-
-                    if (expirationDate == DateTimeOffset.MinValue && Context.Interaction.Entitlements.FirstOrDefault(x => x.SkuId == 1282452500913328180) != null)
+                    if (entitlementCollection.Any(x => x.SkuId == 1282452500913328180))
                     {
-                        expirationDate = DateTimeOffset.MaxValue;
-                    }
-
-                    // Only write to DB if needed.
-                    if (user.PremiumExpiration != expirationDate)
-                    {
-                        Console.WriteLine($"User {Context.User.Id} has updated their premium expiration to {expirationDate} in the DB");
-                        user.PremiumExpiration = expirationDate;
+                        user.PremiumExpiration = DateTimeOffset.MaxValue;
                         await context.UpdateUser(user);
-                    }
-                    else
-                    {
-                        Console.WriteLine($"User {Context.User.Id} has not updated their premium expiration in the DB (it is already {expirationDate})");
                     }
                 }
 
-                // Respond
                 await FollowupAsync(text: "✨ Your premium status has been updated!\n**💜 Thanks so much** for your support and have fun with your new features!");
             }
+
+            // Temporarily commented out due to Discord not properly handling entitlements on their end.
+
+            // else
+            // {
+            //     await DeferAsync();
+
+            //     if (isPremium)
+            //     {
+
+
+            //         // Get Expiration Date
+            //         var entitlement = Context.Interaction.Entitlements.FirstOrDefault(x => x.SkuId == 1169107771673812992);
+            //         var expirationDate = entitlement?.EndsAt;
+
+            //         if (expirationDate == null && Context.Interaction.Entitlements.First(x => x.SkuId == 1282452500913328180) != null)
+            //         {
+            //             expirationDate = DateTimeOffset.MaxValue;
+            //         }
+
+            //         // Only write to DB if needed.
+            //         if (user.PremiumExpiration != expirationDate && expirationDate != null)
+            //         {
+            //             Console.WriteLine($"User {Context.User.Id} has updated their premium expiration to {expirationDate} in the DB");
+            //             user.PremiumExpiration = (DateTimeOffset) expirationDate;
+            //             await context.UpdateUser(user);
+            //         }
+            //         else
+            //         {
+            //             Console.WriteLine($"User {Context.User.Id} has not updated their premium expiration in the DB (it is already {expirationDate})");
+            //         }
+            //     }
+
+            //     // Respond
+            //     await FollowupAsync(text: "✨ Your premium status has been updated!\n**💜 Thanks so much** for your support and have fun with your new features!");
+            // }
         }
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]

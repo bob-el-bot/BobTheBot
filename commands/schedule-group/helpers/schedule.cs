@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using ColorMethods;
-using Database;
-using Database.Types;
+using Bob.Database;
+using Bob.ColorMethods;
+using Bob.Database.Types;
 using Discord;
 using Microsoft.EntityFrameworkCore;
-using Time.Timestamps;
+using Bob.Time.Timestamps;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     public interface IScheduledItem
     {
@@ -211,7 +211,7 @@ namespace Commands.Helpers
         /// </summary>
         private static async Task<Embed> BuildAnnouncementEmbed(ScheduledAnnouncement announcement)
         {
-            var user = await Bot.Client.GetUserAsync(announcement.UserId);
+            var user = await Bot.Client.GetShardFor(announcement.ServerId).GetUserAsync(announcement.UserId);
 
             var embed = new EmbedBuilder
             {

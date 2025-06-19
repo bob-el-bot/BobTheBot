@@ -2,9 +2,9 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 
-namespace Performance
+namespace Bob.Monitoring
 {
-    public static class Stats
+    public static class PerformanceStats
     {
         public static async Task<double> GetCpuUsageForProcess()
         {

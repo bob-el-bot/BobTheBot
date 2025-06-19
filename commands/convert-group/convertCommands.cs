@@ -2,24 +2,24 @@ using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Commands.Helpers;
-using Debug;
+using Bob.Commands.Helpers;
+using Bob.Debug;
 using Discord;
 using Discord.Interactions;
-using Feedback.Models;
-using Time.Timestamps;
-using Time.Timezones;
+using Bob.Feedback.Models;
+using Bob.Time.Timestamps;
+using Bob.Time.Timezones;
 using UnitsNet;
 
-namespace Commands
+namespace Bob.Commands
 {
     [CommandContextType(InteractionContextType.BotDm, InteractionContextType.PrivateChannel, InteractionContextType.Guild)]
     [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
     [Group("convert", "All conversion commands.")]
-    public class ConvertGroup : InteractionModuleBase<SocketInteractionContext>
+    public class ConvertGroup : InteractionModuleBase<ShardedInteractionContext>
     {
         [SlashCommand("units", "Bob will convert units for you.")]
-        public async Task ConvertUnit(UnitConversion.UnitType unitType, string amount, string fromUnit, string toUnit)
+        public async Task ConvertUnit(UnitConversion.UnitType unitType, string amount, [Autocomplete(typeof(UnitAutocompleteHandler))] string fromUnit, [Autocomplete(typeof(UnitAutocompleteHandler))] string toUnit)
         {
             try
             {

@@ -1,17 +1,16 @@
 using System;
 using System.Threading.Tasks;
-using Challenges;
-using Commands.Helpers;
+using Bob.Challenges;
+using Bob.Commands.Helpers;
 using Discord;
 using Discord.Interactions;
-using Discord.WebSocket;
 
-namespace Commands
+namespace Bob.Commands
 {
     [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
     [IntegrationType(ApplicationIntegrationType.GuildInstall)]
     [Group("wordle", "All commands relevant to the game Wordle.")]
-    public class WordleGroup : InteractionModuleBase<SocketInteractionContext>
+    public class WordleGroup : InteractionModuleBase<ShardedInteractionContext>
     {
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.GuildInstall)]
@@ -41,7 +40,7 @@ namespace Commands
 
             if (game == null)
             {
-                await RespondAsync(text: "❌ No game of Wordle is currently active in this channel.\n- Use `/wordle new-game` to begin one.", ephemeral: true);
+                await RespondAsync(text: $"❌ No game of Wordle is currently active in this channel.\n- Use {Help.GetCommandMention("wordle new-game")} to begin one.", ephemeral: true);
                 return;
             }
 
@@ -50,6 +49,8 @@ namespace Commands
                 await RespondAsync(text: "❌ You are not the player in this game.", ephemeral: true);
                 return;
             }
+
+            guess = guess.ToLowerInvariant();
 
             if (!WordleMethods.IsValidGuess(guess))
             {

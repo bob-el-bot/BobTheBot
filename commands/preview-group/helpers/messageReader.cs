@@ -5,15 +5,17 @@ using System.Text;
 using System.Threading.Tasks;
 using Discord;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     public static class MessageReader
     {
+        private static readonly string[] sourceArray = [".png", ".jpg", ".jpeg", ".gif"];
+
         public static async Task<Embed> GetPreview(DiscordLinkInfo linkInfo)
         {
             try
             {
-                ITextChannel channel = (ITextChannel)await Bot.Client.GetChannelAsync(linkInfo.ChannelId);
+                ITextChannel channel = (ITextChannel)await Bot.Client.GetShardFor(linkInfo.GuildId).GetChannelAsync(linkInfo.ChannelId);
                 IMessage message = await channel.GetMessageAsync(linkInfo.MessageId);
 
                 var firstEmbed = message.Embeds.FirstOrDefault();
@@ -66,7 +68,7 @@ namespace Commands.Helpers
                 {
                     foreach(var attachment in message.Attachments)
                     {
-                        bool isImage = (new[] { ".png", ".jpg", ".jpeg", ".gif" }).Any(ext => attachment.Filename.Contains(ext));
+                        bool isImage = sourceArray.Any(ext => attachment.Filename.Contains(ext));
                         
                         if (isImage)
                         {

@@ -1,12 +1,9 @@
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
-using System.Text;
-using System;
 
-namespace ApiInteractions
+namespace Bob.ApiInteractions
 {
     /// <summary>
     /// Provides methods for interacting with APIs.

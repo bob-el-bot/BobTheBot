@@ -6,7 +6,7 @@ using QRCoder;
 using SkiaSharp;
 using System.Text;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     public class QRCodeConverter
     {

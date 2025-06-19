@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
+using System.Linq;
 using System.Text;
 using Discord;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     /// <summary>
     /// Represents a group of related commands.
@@ -58,6 +58,11 @@ namespace Commands.Helpers
         public bool InheritGroupName { get; set; }
 
         /// <summary>
+        /// Gets or sets the ID of the command.
+        /// </summary>
+        public ulong Id { get; set; }
+
+        /// <summary>
         /// Gets or sets the description of the command.
         /// </summary>
         public string Description { get; set; }
@@ -108,7 +113,7 @@ namespace Commands.Helpers
             foreach (var command in CommandGroups[index].Commands)
             {
                 var name = command.InheritGroupName ? $"{CommandGroups[index].Name} {command.Name}" : command.Name;
-                description.AppendLine($"- [Docs]({command.Url}) `/{name}` {command.Description}");
+                description.AppendLine($"- [Docs]({command.Url}) </{name}:{command.Id}> {command.Description}");
 
                 if (command.Parameters != null)
                 {
@@ -127,6 +132,11 @@ namespace Commands.Helpers
             };
 
             return embed.Build();
+        }
+
+        public static string GetCommandMention(string commandName, ulong commandId)
+        {
+            return $"</{commandName}:{commandId}>";
         }
 
         /// <summary>
@@ -199,6 +209,27 @@ namespace Commands.Helpers
             Emote = new Emoji("🌐"),
             Url = "https://docs.bobthebot.net"
         };
+
+        /// <summary>
+        /// Generates a Discord command mention string.
+        /// </summary>
+        /// <param name="commandName">The name of the command.</param>
+        /// <returns>
+        /// A properly formatted Discord command mention if the command exists;
+        /// otherwise, returns a plain text representation of the command.
+        /// </returns>
+        public static string GetCommandMention(string commandName)
+        {
+            CommandLookup.TryGetValue(commandName, out var command);
+
+            if (command == null)
+            {
+                return $"`/{commandName}`"; // Example: `/command`
+            }
+
+            return $"</{commandName}:{command.Id}>"; // Example: </command:1234567890>
+        }
+
 
         public static readonly CommandInfoGroup[] CommandGroups =
         [
@@ -452,6 +483,31 @@ namespace Commands.Helpers
                 ]
             },
             new() {
+                Title = "Administration",
+                Name = "admin",
+                Description = "Commands related to administration features.",
+                Emoji = "⚖️",
+                Url = "https://docs.bobthebot.net#admin",
+                Commands =
+                [
+                    new CommandInfo
+                    {
+                        Name = "confess filter-toggle",
+                        InheritGroupName = true,
+                        Description = "Enable or disable censoring and/or blocking of `/confess` messages in this server.",
+                        Url = "https://docs.bobthebot.net#admin-confess-filter-toggle",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "enable",
+                                Description = "If enabled (true), Bob will censor and/or block flagged messages sent in this server with `/confess`."
+                            }
+                        ]
+                    },
+                ]
+            },
+            new() {
                 Title = "Profiles",
                 Name = "profile",
                 Description = "Commands related to user profiles.",
@@ -486,6 +542,21 @@ namespace Commands.Helpers
                             {
                                 Name = "open",
                                 Description = "Enable or disable receiving messages sent via `/confess`. Choose from: True, False."
+                            }
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "confessions-filter-toggle",
+                        InheritGroupName = true,
+                        Description = "Enable or disable censoring and/or blocking of `/confess` messages sent to you.",
+                        Url = "https://docs.bobthebot.net#profile-confessions-filter-toggle",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "enable",
+                                Description = "If checked (true), Bob will censor and/or block messages sent to you with `/confess` that are flagged. Choose from: True, False."
                             }
                         ]
                     },
@@ -609,6 +680,83 @@ namespace Commands.Helpers
                 ]
             },
             new() {
+                Title = "React Board",
+                Name = "react-board",
+                Description = "Commands related to the react board.",
+                Emoji = "📌",
+                Url = "https://docs.bobthebot.net#react-board",
+                Commands =
+                [
+                    new CommandInfo
+                    {
+                        Name = "toggle",
+                        InheritGroupName = true,
+                        Description = "Toggles the react board for the server.",
+                        Url = "https://docs.bobthebot.net#react-board-toggle",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "enable",
+                                Description = "Enable or disable the react board. Choose from: True, False."
+                            },
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "channel",
+                        InheritGroupName = true,
+                        Description = "Set the channel for the react board.",
+                        Url = "https://docs.bobthebot.net#react-board-channel",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "channel",
+                                Description = "The text channel you want to use as the react board for the server."
+                            }
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "emoji",
+                        InheritGroupName = true,
+                        Description = "Set the emoji which triggers the react board.",
+                        Url = "https://docs.bobthebot.net#react-board-emoji",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "emoji",
+                                Description = "The emoji to set for the react board. It can be a custom emoji or a standard emoji."
+                            }
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "minimum-reactions",
+                        InheritGroupName = true,
+                        Description = "Set the minimum reactions required to post on the react board.",
+                        Url = "https://docs.bobthebot.net#react-board-minimum-reactions",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "minimum-reactions",
+                                Description = "The minimum reactions required to post on the react board."
+                            }
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "info",
+                        InheritGroupName = true,
+                        Description = "Get information about the react board settings for this server.",
+                        Url = "https://docs.bobthebot.net#react-board-info",
+                    }
+                ]
+            },
+            new() {
                 Title = "Welcoming",
                 Name = "welcome",
                 Description = "Commands related to welcoming new users.",
@@ -650,9 +798,31 @@ namespace Commands.Helpers
                     {
                         Name = "remove-message",
                         InheritGroupName = true,
-                        Description = "Bob will stop using the custom message to welcome users.",
+                        Description = "Removes the custom welcome message from your server. Does not disable general welcome messages.",
                         Url = "https://docs.bobthebot.net#welcome-remove-message",
-                    }
+                    },
+                    new CommandInfo
+                    {
+                        Name = "set-image",
+                        InheritGroupName = true,
+                        Description = "Set a custom welcome image for your server!",
+                        Url = "https://docs.bobthebot.net#welcome-set-image",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "image",
+                                Description = "The image you would like to use (PNG, JPG, JPEG, WEBP, GIF, BMP). It will be compressed into a WEBP, but if the compressed image is larger than Discord's 8MB limit, you must compress it yourself or choose another image."
+                            }
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "remove-image",
+                        InheritGroupName = true,
+                        Description = "Removes the custom welcome image from your server. Does not disable general welcome messages.",
+                        Url = "https://docs.bobthebot.net#welcome-remove-image",
+                    },
                 ]
             },
             new() {
@@ -1069,7 +1239,7 @@ namespace Commands.Helpers
                     }
                 ]
             },
-            new() 
+            new()
             {
                 Title = "Generate",
                 Name = "generate",
@@ -1200,6 +1370,11 @@ namespace Commands.Helpers
                             {
                                 Name = "color",
                                 Description = "A color name (like \"purple\"), or a valid hex code (like \"#8D52FD\") or valid RGB code (like \"141, 82, 253\")."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "image",
+                                Description = "An image you would like to use (PNG, JPG, JPEG, WEBP, GIF, BMP)."
                             }
                         ]
                     },
@@ -1390,9 +1565,9 @@ namespace Commands.Helpers
                     },
                     new CommandInfo
                     {
-                        Name = "timezones (TEMPORARILY REMOVED DUE TO ISSUES)",
+                        Name = "timezones",
                         InheritGroupName = true,
-                        Description = "Bob will convert a time from one timezone to another.",
+                        Description = "(TEMPORARILY REMOVED DUE TO ISSUES) Bob will convert a time from one timezone to another.",
                         Url = "https://docs.bobthebot.net#convert-timezones",
                         Parameters =
                         [
@@ -1501,6 +1676,28 @@ namespace Commands.Helpers
                         Description = "Add invite link auto moderation. Prevent invites from being sent in this server.",
                         Url = "https://docs.bobthebot.net#automod-links-invite-links",
                     },
+                    new CommandInfo
+                    {
+                        Name = "remove",
+                        InheritGroupName = true,
+                        Description = "Remove a specified auto moderation rule from this server.",
+                        Url = "https://docs.bobthebot.net#automod-remove",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "ruleId",
+                                Description = "Choose from the list of rules the specific one to remove."
+                            }
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "remove-all",
+                        InheritGroupName = true,
+                        Description = "Remove all auto moderation rules from this server.",
+                        Url = "https://docs.bobthebot.net#automod-remove-all",
+                    },
                 ]
             },
             new() {
@@ -1563,5 +1760,13 @@ namespace Commands.Helpers
                 ]
             }
         ];
+
+        private static readonly Dictionary<string, CommandInfo> CommandLookup = CommandGroups
+            .SelectMany(group => group.Commands.Select(cmd => new
+            {
+                Key = cmd.InheritGroupName ? $"{group.Name} {cmd.Name}" : cmd.Name,
+                Command = cmd
+            }))
+            .ToDictionary(entry => entry.Key, entry => entry.Command, StringComparer.OrdinalIgnoreCase);
     }
 }

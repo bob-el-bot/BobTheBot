@@ -1,12 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     /// <summary>
     /// Represents the result of filtering a message for banned words.
@@ -16,12 +13,12 @@ namespace Commands.Helpers
         /// <summary>
         /// Gets or sets the list of words that matched the blacklist.
         /// </summary>
-        public List<string> BlacklistMatches { get; set; }
+        public List<string> BlacklistMatches { get; set; } = [];
 
         /// <summary>
         /// Gets or sets the list of words that need to be marked as spoilers.
         /// </summary>
-        public List<string> WordsToCensor { get; set; }
+        public List<string> WordsToCensor { get; set; } = [];
     }
 
     /// <summary>

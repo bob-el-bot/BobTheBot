@@ -10,7 +10,7 @@ using System.Web;
 using Discord;
 using HtmlAgilityPack;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     public partial class Analyze
     {

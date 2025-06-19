@@ -1,12 +1,13 @@
 using System;
 using System.Threading.Tasks;
-using Challenges;
+using Bob.Challenges;
 using Discord;
 using Discord.WebSocket;
-using Games;
-using Time.Timestamps;
+using Bob.Games;
+using Bob.Time.Timestamps;
+using Bob.Commands.Helpers;
 
-namespace Commands.Helpers
+namespace Bob.Commands.Helpers
 {
     public class Connect4(IUser player1, IUser player2) : Games.Game(GameType.Connect4, onePerChannel, TimeSpan.FromMinutes(5), player1, player2)
     {

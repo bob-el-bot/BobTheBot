@@ -1,8 +1,8 @@
 using System;
 using System.ComponentModel.DataAnnotations;
-using Commands.Helpers;
+using Bob.Commands.Helpers;
 
-namespace Database.Types
+namespace Bob.Database.Types
 {
     public class ScheduledAnnouncement : IScheduledItem
     {

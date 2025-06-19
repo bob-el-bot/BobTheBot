@@ -1,27 +1,29 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reactive.Concurrency;
 using System.Threading.Tasks;
-using Commands.Helpers;
-using Database.Types;
+using Bob.Commands.Helpers;
+using Bob.Database.Types;
 using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
 
-namespace Database
+namespace Bob.Database
 {
     public class BobEntities : DbContext
     {
         public virtual DbSet<Server> Server { get; set; }
+        public virtual DbSet<WelcomeImage> WelcomeImage { get; set; }
         public virtual DbSet<User> User { get; set; }
         public virtual DbSet<NewsChannel> NewsChannel { get; set; }
         public virtual DbSet<BlackListUser> BlackListUser { get; set; }
         public virtual DbSet<ScheduledMessage> ScheduledMessage { get; set; }
         public virtual DbSet<ScheduledAnnouncement> ScheduledAnnouncement { get; set; }
+        public virtual DbSet<ReactBoardMessage> ReactBoardMessage { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+            Env.Load();
             var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 
             // Parse the database URL
@@ -135,6 +137,16 @@ namespace Database
             await SaveChangesAsync();
         }
 
+        /// <summary>
+        /// Removes a server from the database asynchronously.
+        /// </summary>
+        /// <param name="server">The server to be removed.</param>
+        public async Task RemoveServer(Server server)
+        {
+            Server.Remove(server);
+            await SaveChangesAsync();
+        }
+        
         /// <summary>
         /// Retrieves a <see cref="User"/> object by its unique identifier.
         /// If the user is not found, a new entry is created and returned.
@@ -405,6 +417,145 @@ namespace Database
                     await RemoveScheduledAnnouncement(announcement.Id);
                     break;
             }
+        }
+
+        /// <summary>
+        /// Retrieves a welcome image from the database by its ID.
+        /// </summary>
+        /// <param name="id">The unique ID of the welcome image (usually the server ID).</param>
+        /// <returns>The corresponding <see cref="WelcomeImage"/> object if found; otherwise, null.</returns>
+        public async Task<WelcomeImage> GetWelcomeImage(ulong id)
+        {
+            return await WelcomeImage.FindAsync(keyValues: id);
+        }
+
+        /// <summary>
+        /// Updates an existing welcome image in the database.
+        /// </summary>
+        /// <param name="image">The <see cref="WelcomeImage"/> entity containing updated data.</param>
+        /// <returns>A task that represents the asynchronous update operation.</returns>
+        public async Task UpdateWelcomeImage(WelcomeImage image)
+        {
+            WelcomeImage.Update(image);
+            await SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Removes a welcome image from the database.
+        /// </summary>
+        /// <param name="image">The <see cref="WelcomeImage"/> entity to remove.</param>
+        /// <returns>A task that represents the asynchronous delete operation.</returns>
+        public async Task RemoveWelcomeImage(WelcomeImage image)
+        {
+            WelcomeImage.Remove(image);
+            await SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Adds a new welcome image to the database.
+        /// </summary>
+        /// <param name="image">The <see cref="WelcomeImage"/> entity to add.</param>
+        /// <returns>A task that represents the asynchronous insert operation.</returns>
+        public async Task AddWelcomeImage(WelcomeImage image)
+        {
+            await WelcomeImage.AddAsync(image);
+            await SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Adds a new ReactBoardMessage entry to the database and saves changes asynchronously.
+        /// </summary>
+        /// <param name="message">The ReactBoardMessage entity to add.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public async Task AddReactBoardMessageAsync(ReactBoardMessage message)
+        {
+            await ReactBoardMessage.AddAsync(message);
+            await SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Removes a ReactBoardMessage entry from the database and saves changes asynchronously.
+        /// </summary>
+        /// <param name="message">The ReactBoardMessage entity to remove.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public async Task RemoveReactBoardMessageAsync(ReactBoardMessage message)
+        {
+            ReactBoardMessage.Remove(message);
+            await SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Retrieves a ReactBoardMessage entry by its original message ID asynchronously.
+        /// </summary>
+        /// <param name="originalMessageId">The original message ID to search for.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, with the ReactBoardMessage entity if found; otherwise, null.
+        /// </returns>
+        public async Task<ReactBoardMessage> GetReactBoardMessageAsync(ulong originalMessageId)
+        {
+            return await ReactBoardMessage.FindAsync(keyValues: originalMessageId);
+        }
+
+        /// <summary>
+        /// Adds a dummy ReactBoardMessage entry for a guild if no entries exist yet.
+        /// This prevents unnecessary Discord fetches for new React Board setups.
+        /// </summary>
+        /// <param name="guildId">The unique identifier of the guild.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public async Task AddInitialReactBoardMessageAsync(ulong guildId)
+        {
+            bool anyExist = await ReactBoardMessage.AnyAsync(x => x.GuildId == guildId);
+
+            if (anyExist)
+            {
+                return;
+            }
+
+            var dummyMessage = new ReactBoardMessage
+            {
+                OriginalMessageId = guildId,
+                GuildId = guildId
+            };
+
+            await AddReactBoardMessageAsync(dummyMessage);
+        }
+
+        /// <summary>
+        /// Adds a collection of ReactBoardMessage entries to the database for a specific guild and saves changes asynchronously.
+        /// </summary>
+        /// <param name="messages">The collection of ReactBoardMessage entities to add. Each should have the GuildId property set appropriately.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public async Task AddMultipleReactBoardMessagesAsync(List<ReactBoardMessage> messages)
+        {
+            await ReactBoardMessage.AddRangeAsync(messages);
+            await SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Retrieves all ReactBoardMessage entries for a specific guild asynchronously.
+        /// </summary>
+        /// <param name="guildId">The unique identifier of the guild.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, with a list of ReactBoardMessage entities for the specified guild.
+        /// </returns>
+        public async Task<List<ReactBoardMessage>> GetAllReactBoardMessagesForGuildAsync(ulong guildId)
+        {
+            return await ReactBoardMessage.Where(x => x.GuildId == guildId).ToListAsync();
+        }
+
+        /// <summary>
+        /// Removes all ReactBoardMessage entries for a specific guild from the database and saves changes asynchronously.
+        /// </summary>
+        /// <param name="guildId">The unique identifier of the guild whose ReactBoardMessages should be removed.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public async Task RemoveAllReactBoardMessagesForGuildAsync(ulong guildId)
+        {
+            var messages = await ReactBoardMessage
+                .Where(x => x.GuildId == guildId)
+                .ToListAsync();
+
+            ReactBoardMessage.RemoveRange(messages);
+            await SaveChangesAsync();
         }
     }
 }

@@ -1,25 +1,25 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using ColorMethods;
-using Commands.Helpers;
-using Database;
-using Database.Types;
-using Debug;
+using Bob.ColorMethods;
+using Bob.Database;
+using Bob.Database.Types;
+using Bob.Debug;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
-using PremiumInterface;
-using Time.Timestamps;
-using Time.Timezones;
-using static Commands.Helpers.Schedule;
+using Bob.PremiumInterface;
+using Bob.Time.Timestamps;
+using Bob.Time.Timezones;
+using static Bob.Commands.Helpers.Schedule;
+using Bob.Commands.Helpers;
 
-namespace Commands
+namespace Bob.Commands
 {
     [CommandContextType(InteractionContextType.PrivateChannel, InteractionContextType.Guild)]
     [IntegrationType(ApplicationIntegrationType.GuildInstall)]
     [Group("schedule", "All schedule commands.")]
-    public class ScheduleGroup : InteractionModuleBase<SocketInteractionContext>
+    public class ScheduleGroup : InteractionModuleBase<ShardedInteractionContext>
     {
         [SlashCommand("message", "Bob will send your message at a specified time.")]
         public async Task ScheduleMessage([Summary("message", "The message you want to send. Markdown still works!")][MinLength(1)][MaxLength(2000)] string message,
@@ -39,7 +39,7 @@ namespace Commands
 
             try
             {
-                if (Premium.IsPremium(Context.Interaction.Entitlements) == false && user.TotalScheduledMessages >= Premium.MaxScheduledMessages)
+                if (Premium.IsPremium(Context.Interaction.Entitlements, user) == false && user.TotalScheduledMessages >= Premium.MaxScheduledMessages)
                 {
                     await FollowupAsync(text: $"✨ This is a *premium* feature.\n- You already have a scheduled message, please upgrade to premium for unlimited scheduled messages.\n- {Premium.HasPremiumMessage}", components: Premium.GetComponents(), ephemeral: true);
                     return;
@@ -99,7 +99,7 @@ namespace Commands
 
             await ModifyOriginalResponseAsync(x =>
             {
-                x.Content = $"✅ Message scheduled for {Timestamp.FromDateTime(scheduledMessage.TimeToSend, Timestamp.Formats.Exact)}\n- ID: `{scheduledMessage.Id}`\n- You can edit your message with `/schedule edit` and the given ID.";
+                x.Content = $"✅ Message scheduled for {Timestamp.FromDateTime(scheduledMessage.TimeToSend, Timestamp.Formats.Exact)}\n- ID: `{scheduledMessage.Id}`\n- You can edit your message with {Help.GetCommandMention("schedule edit")} and the given ID.";
             });
         }
 
@@ -125,7 +125,7 @@ namespace Commands
             try
             {
                 // Check if the user has premium.
-                if (Premium.IsPremium(Context.Interaction.Entitlements) == false)
+                if (Premium.IsPremium(Context.Interaction.Entitlements, user) == false)
                 {
                     await FollowupAsync(text: $"✨ This is a *premium* feature.\n- {Premium.HasPremiumMessage}", components: Premium.GetComponents(), ephemeral: true);
                     return;
@@ -193,7 +193,7 @@ namespace Commands
 
             await ModifyOriginalResponseAsync(x =>
             {
-                x.Content = $"✅ Announcement scheduled for {Timestamp.FromDateTime(scheduledAnnouncement.TimeToSend, Timestamp.Formats.Exact)}\n- ID: `{scheduledAnnouncement.Id}`\n- You can edit your announcement with `/schedule edit` and the given ID.";
+                x.Content = $"✅ Announcement scheduled for {Timestamp.FromDateTime(scheduledAnnouncement.TimeToSend, Timestamp.Formats.Exact)}\n- ID: `{scheduledAnnouncement.Id}`\n- You can edit your announcement with {Help.GetCommandMention("schedule edit")} and the given ID.";
             });
         }
 
