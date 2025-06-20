@@ -20,7 +20,7 @@ using Bob.Time.Timestamps;
 
 namespace Bob.Commands
 {
-    public class NoGroup : InteractionModuleBase<ShardedInteractionContext>
+    public class NoGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInteractionContext>
     {
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
@@ -784,9 +784,7 @@ namespace Bob.Commands
 
             try
             {
-                using var context = new BobEntities();
-
-                var dbUser = await context.GetUser(user.Id);
+                var dbUser = await dbContext.GetUser(user.Id);
 
                 FilterResult filterResult = new();
 
@@ -799,12 +797,12 @@ namespace Bob.Commands
 
                     if (filterResult.BlacklistMatches.Count > 0)
                     {
-                        Server dbServer = Context.Guild?.Id != null ? await context.GetServer(Context.Guild.Id) : null;
+                        Server dbServer = Context.Guild?.Id != null ? await dbContext.GetServer(Context.Guild.Id) : null;
 
                         // If a Guild Install and confess filtering is on for the server, punish.
                         if (dbServer != null && dbServer.ConfessFilteringOff == false)
                         {
-                            var bannedUser = await context.GetUserFromBlackList(Context.User.Id);
+                            var bannedUser = await dbContext.GetUserFromBlackList(Context.User.Id);
                             string reason = $"Sending a message with {Help.GetCommandMention("confess")} that contained: {ConfessFiltering.FormatBannedWords(filterResult.BlacklistMatches)}";
 
                             if (isUserBlacklisted)
@@ -824,7 +822,7 @@ namespace Bob.Commands
 
                     if (isUserBlacklisted)
                     {
-                        var bannedUser = await context.GetUserFromBlackList(Context.User.Id);
+                        var bannedUser = await dbContext.GetUserFromBlackList(Context.User.Id);
                         await FollowupAsync($"❌ This server has confess message filtering turned on. You are currently banned from using {Help.GetCommandMention("confess")}\n{bannedUser.FormatAsString()}\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
                         return;
                     }
@@ -891,8 +889,7 @@ namespace Bob.Commands
             await DeferAsync();
 
             User user;
-            using var context = new BobEntities();
-            user = await context.GetUser(Context.User.Id);
+            user = await dbContext.GetUser(Context.User.Id);
 
             // If user has premium ensure DB is updated.
             bool isPremium = Premium.IsPremium(Context.Interaction.Entitlements);
@@ -911,7 +908,7 @@ namespace Bob.Commands
                     if (entitlementCollection.Any(x => x.SkuId == 1282452500913328180))
                     {
                         user.PremiumExpiration = DateTimeOffset.MaxValue;
-                        await context.UpdateUser(user);
+                        await dbContext.UpdateUser(user);
                     }
                 }
 

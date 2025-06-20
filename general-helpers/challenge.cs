@@ -11,6 +11,7 @@ using Discord.WebSocket;
 using Bob.Games;
 using Bob.PremiumInterface;
 using Bob.Time.Timestamps;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bob.Challenges
 {
@@ -58,7 +59,8 @@ namespace Bob.Challenges
         /// <returns>A tuple indicating whether the challenge is possible and a message explaining why or why not.</returns>
         public static async Task<(bool, string)> CanChallengeAsync(ulong player1Id, ulong player2Id)
         {
-            using var context = new BobEntities();
+            using var scope = Bot.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
             User user = await context.GetUser(player1Id);
 
             if (player1Id == player2Id)
@@ -439,7 +441,8 @@ namespace Bob.Challenges
         /// <param name="winner">The winner of the game.</param>
         public static async Task UpdateUserStats(Games.Game game, WinCases winner)
         {
-            using var context = new BobEntities();
+            using var scope = Bot.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
             var userIds = new[] { game.Player1.Id, game.Player2.Id };
             var users = await context.GetUsers(userIds);
 

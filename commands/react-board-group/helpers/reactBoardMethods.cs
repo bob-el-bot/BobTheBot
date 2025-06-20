@@ -9,6 +9,7 @@ using Bob.Database;
 using Bob.Database.Types;
 using Discord;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bob.Commands.Helpers
 {
@@ -65,8 +66,9 @@ namespace Bob.Commands.Helpers
             }
 
             // 2. Try DB
-            using (var db = new BobEntities())
+            using (var scope = Bot.Services.CreateScope())
             {
+                var db = scope.ServiceProvider.GetRequiredService<BobEntities>();
                 var allreactBoardMessages = await db.GetAllReactBoardMessagesForGuildAsync(guildId);
 
                 if (allreactBoardMessages.Count > 0)
@@ -114,7 +116,8 @@ namespace Bob.Commands.Helpers
             // Write to DB
             if (dbInserts.Count > 0)
             {
-                using var db = new BobEntities();
+                using var scope = Bot.Services.CreateScope();
+                var db = scope.ServiceProvider.GetRequiredService<BobEntities>();
                 await db.AddMultipleReactBoardMessagesAsync(dbInserts);
             }
 
@@ -154,7 +157,8 @@ namespace Bob.Commands.Helpers
                 ReactBoardCache.Set(boardChannel.Id, messageIds, CacheOptions);
             }
 
-            using var db = new BobEntities();
+            using var scope = Bot.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<BobEntities>();
             var existing = await db.GetReactBoardMessageAsync(originalMessageId);
             if (existing == null)
             {

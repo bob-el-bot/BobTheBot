@@ -14,7 +14,7 @@ namespace Bob.Commands
     public class AdminGroup : InteractionModuleBase<ShardedInteractionContext>
     {
         [Group("confess", "All commands relevant to confession administration features.")]
-        public class ConfessGroup : InteractionModuleBase<ShardedInteractionContext>
+        public class ConfessGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInteractionContext>
         {
             [SlashCommand("filter-toggle", "Enable or disable censoring and/or blocking of /confess messages in this server.")]
             public async Task ConfessionsFilterToggle([Summary("enable", "If enabled (true), Bob will censor and/or block flagged messages sent in this server with /confess.")] bool enable)
@@ -23,23 +23,18 @@ namespace Bob.Commands
 
                 var discordUser = Context.Guild.GetUser(Context.User.Id);
 
-                // Check if user is an administrator
                 if (!discordUser.GuildPermissions.Administrator)
                 {
                     await FollowupAsync(text: "❌ You must have the `Administrator` permission to use this command.", ephemeral: true);
                     return;
                 }
 
-                Server server;
-                using (var context = new BobEntities())
-                {
-                    server = await context.GetServer(Context.Guild.Id);
+                var server = await dbContext.GetServer(Context.Guild.Id);
 
-                    if (server.ConfessFilteringOff == enable)
-                    {
-                        server.ConfessFilteringOff = !enable;
-                        await context.UpdateServer(server);
-                    }
+                if (server.ConfessFilteringOff == enable)
+                {
+                    server.ConfessFilteringOff = !enable;
+                    await dbContext.UpdateServer(server);
                 }
 
                 if (enable)
