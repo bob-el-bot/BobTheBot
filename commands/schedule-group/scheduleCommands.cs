@@ -19,7 +19,7 @@ namespace Bob.Commands
     [CommandContextType(InteractionContextType.PrivateChannel, InteractionContextType.Guild)]
     [IntegrationType(ApplicationIntegrationType.GuildInstall)]
     [Group("schedule", "All schedule commands.")]
-    public class ScheduleGroup : InteractionModuleBase<ShardedInteractionContext>
+    public class ScheduleGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInteractionContext>
     {
         [SlashCommand("message", "Bob will send your message at a specified time.")]
         public async Task ScheduleMessage([Summary("message", "The message you want to send. Markdown still works!")][MinLength(1)][MaxLength(2000)] string message,
@@ -30,12 +30,11 @@ namespace Bob.Commands
             [Summary("minute", "The minute you want your message sent.")][MinValue(0)][MaxValue(59)] int minute,
             [Summary("timezone", "Your timezone.")] Timezone timezone)
         {
-            DateTime scheduledTime;
-            var context = new BobEntities();
-
             await DeferAsync();
+            
+            DateTime scheduledTime;
 
-            var user = await context.GetUser(Context.User.Id);
+            var user = await dbContext.GetUser(Context.User.Id);
 
             try
             {
@@ -91,9 +90,9 @@ namespace Bob.Commands
                 UserId = Context.User.Id
             };
 
-            await context.AddScheduledMessage(scheduledMessage);
+            await dbContext.AddScheduledMessage(scheduledMessage);
             user.TotalScheduledMessages += 1;
-            await context.UpdateUser(user);
+            await dbContext.UpdateUser(user);
 
             ScheduleTask(scheduledMessage);
 
@@ -114,13 +113,12 @@ namespace Bob.Commands
             [Summary("minute", "The minute you want your message sent.")][MinValue(0)][MaxValue(59)] int minute,
            [Summary("timezone", "Your timezone.")] Timezone timezone)
         {
+            await DeferAsync();
+            
             DateTime scheduledTime;
             Color? finalColor = Colors.TryGetColor(color);
-            var context = new BobEntities();
 
-            await DeferAsync();
-
-            var user = await context.GetUser(Context.User.Id);
+            var user = await dbContext.GetUser(Context.User.Id);
 
             try
             {
@@ -185,9 +183,9 @@ namespace Bob.Commands
                 UserId = Context.User.Id
             };
 
-            await context.AddScheduledAnnouncement(scheduledAnnouncement);
+            await dbContext.AddScheduledAnnouncement(scheduledAnnouncement);
             user.TotalScheduledAnnouncements += 1;
-            await context.UpdateUser(user);
+            await dbContext.UpdateUser(user);
 
             ScheduleTask(scheduledAnnouncement);
 
@@ -208,9 +206,8 @@ namespace Bob.Commands
                 return;
             }
 
-            using var context = new BobEntities();
-            IScheduledItem scheduledItem = await context.GetScheduledMessage(parsedId);
-            scheduledItem ??= await context.GetScheduledAnnouncement(parsedId);
+            IScheduledItem scheduledItem = await dbContext.GetScheduledMessage(parsedId);
+            scheduledItem ??= await dbContext.GetScheduledAnnouncement(parsedId);
 
             if (scheduledItem == null)
             {
@@ -237,8 +234,7 @@ namespace Bob.Commands
             {
                 var messageId = Convert.ToUInt64(id);
 
-                using var context = new BobEntities();
-                var message = await context.GetScheduledMessage(messageId);
+                var message = await dbContext.GetScheduledMessage(messageId);
 
                 if (message == null)
                 {
@@ -272,8 +268,7 @@ namespace Bob.Commands
             {
                 var announcementId = Convert.ToUInt64(id);
 
-                using var context = new BobEntities();
-                var announcement = await context.GetScheduledAnnouncement(announcementId);
+                var announcement = await dbContext.GetScheduledAnnouncement(announcementId);
 
                 if (announcement == null)
                 {
@@ -308,10 +303,9 @@ namespace Bob.Commands
 
             var messageId = Convert.ToUInt64(id);
 
-            using var context = new BobEntities();
-            var message = await context.GetScheduledMessage(messageId);
+            var message = await dbContext.GetScheduledMessage(messageId);
             message.Message = modal.Content;
-            await context.UpdateScheduledMessage(message);
+            await dbContext.UpdateScheduledMessage(message);
 
             var embed = BuildEditEmbed(message);
             await Context.Interaction.ModifyOriginalResponseAsync(x => { x.Embed = embed.Build(); });
@@ -324,11 +318,10 @@ namespace Bob.Commands
 
             var announcementId = Convert.ToUInt64(id);
 
-            using var context = new BobEntities();
-            var announcement = await context.GetScheduledAnnouncement(announcementId);
+            var announcement = await dbContext.GetScheduledAnnouncement(announcementId);
             announcement.Title = modal.EmbedTitle;
             announcement.Description = modal.Description;
-            await context.UpdateScheduledAnnouncement(announcement);
+            await dbContext.UpdateScheduledAnnouncement(announcement);
 
             var embed = BuildEditEmbed(announcement);
             await Context.Interaction.ModifyOriginalResponseAsync(x => { x.Embed = embed.Build(); });
@@ -342,15 +335,14 @@ namespace Bob.Commands
             var originalResponse = await Context.Interaction.GetOriginalResponseAsync();
             var messageId = Convert.ToUInt64(id);
 
-            using var context = new BobEntities();
-            await context.RemoveScheduledMessage(messageId);
+            await dbContext.RemoveScheduledMessage(messageId);
 
-            User user = await context.GetUser(Context.User.Id);
+            User user = await dbContext.GetUser(Context.User.Id);
             if (user.TotalScheduledMessages > 0)
             {
                 user.TotalScheduledMessages -= 1;
             }
-            await context.UpdateUser(user);
+            await dbContext.UpdateUser(user);
 
             // Cancel the corresponding task if it exists
             if (ScheduledTasks.TryGetValue(messageId, out var cts))
@@ -382,15 +374,14 @@ namespace Bob.Commands
             var originalResponse = await Context.Interaction.GetOriginalResponseAsync();
             var announcementId = Convert.ToUInt64(id);
 
-            using var context = new BobEntities();
-            await context.RemoveScheduledAnnouncement(announcementId);
+            await dbContext.RemoveScheduledAnnouncement(announcementId);
 
-            User user = await context.GetUser(Context.User.Id);
+            User user = await dbContext.GetUser(Context.User.Id);
             if (user.TotalScheduledAnnouncements > 0)
             {
                 user.TotalScheduledAnnouncements -= 1;
             }
-            await context.UpdateUser(user);
+            await dbContext.UpdateUser(user);
 
             // Cancel the corresponding task if it exists
             if (ScheduledTasks.TryGetValue(announcementId, out var cts))
