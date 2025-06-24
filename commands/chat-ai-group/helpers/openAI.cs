@@ -4,7 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using ApiInteractions;
+using Bob.ApiInteractions;
 using Newtonsoft.Json;
 
 namespace Commands.Helpers

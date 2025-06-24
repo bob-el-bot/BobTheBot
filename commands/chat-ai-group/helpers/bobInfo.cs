@@ -3,7 +3,7 @@ using System;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using ApiInteractions;
+using Bob.ApiInteractions;
 using Commands.Helpers;
 using Newtonsoft.Json;
 
