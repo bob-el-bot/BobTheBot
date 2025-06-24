@@ -25,6 +25,7 @@ using Bob.Monitoring;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
+using Commands.Helpers;
 
 namespace Bob
 {
@@ -329,9 +330,43 @@ namespace Bob
                     return;
                 }
 
+                using var dbContext = new BobEntities();
+
+                if (message.Content.StartsWith("<@705680059809398804>"))
+                {
+                    string cleanedMessage = message.Content.Replace("<@705680059809398804>", "").Trim();
+
+                    // 1. Get embedding for the new message
+                    float[] embeddingArray = await OpenAI.GetEmbedding(cleanedMessage);
+                    var queryEmbedding = new Pgvector.Vector(embeddingArray);
+
+                    // 2. Retrieve relevant memories from Postgres (vector search)
+                    var relevantMemories = await dbContext.GetRelevantMemoriesAsync(
+                        message.Author.Id.ToString(), queryEmbedding, limit: 5);
+
+                    // 3. Build the prompt
+                    var messages = new List<object>
+    {
+        new { role = "system", content = "You are Bob, a helpful, friendly, and a little fancy Discord bot." }
+    };
+
+                    foreach (var mem in relevantMemories)
+                        messages.Add(new { role = "user", content = mem.Content });
+
+                    messages.Add(new { role = "user", content = cleanedMessage });
+
+                    // 4. Send to OpenAI
+                    string response = await OpenAI.PostToOpenAI(messages);
+
+                    // 5. Store the new message and its embedding in memory
+                    await dbContext.StoreMemoryAsync(
+                        message.Author.Id.ToString(), cleanedMessage, queryEmbedding);
+
+                    await message.Channel.SendMessageAsync(response);
+                }
+
                 // Auto Embed if GitHub Link and Server has Auto Embeds for GitHub 
                 Server server;
-                using var dbContext = new BobEntities();
                 server = await dbContext.GetServer(channel.Guild.Id);
                 if (server.AutoEmbedGitHubLinks == true)
                 {
