@@ -7,6 +7,9 @@ using Bob.Database.Types;
 using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using Pgvector;
+using Pgvector.EntityFrameworkCore;
+
 
 namespace Bob.Database
 {
@@ -25,7 +28,7 @@ namespace Bob.Database
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             Env.Load();
-            var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+            var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL_NEW");
 
             // Parse the database URL
             var databaseUri = new Uri(databaseUrl);
@@ -40,7 +43,7 @@ namespace Bob.Database
                 Database = databaseUri.AbsolutePath.TrimStart('/')
             }.ToString();
 
-            optionsBuilder.UseNpgsql(npgsqlConnectionString);
+            optionsBuilder.UseNpgsql(npgsqlConnectionString, o => o.UseVector());
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -152,7 +155,7 @@ namespace Bob.Database
             Server.Remove(server);
             await SaveChangesAsync();
         }
-        
+
         /// <summary>
         /// Retrieves a <see cref="User"/> object by its unique identifier.
         /// If the user is not found, a new entry is created and returned.
@@ -564,7 +567,7 @@ namespace Bob.Database
             await SaveChangesAsync();
         }
 
-        public async Task StoreMemoryAsync(string userId, string content, float[] embedding)
+        public async Task StoreMemoryAsync(string userId, string content, Vector embedding)
         {
             var memory = new Memory
             {
@@ -578,20 +581,21 @@ namespace Bob.Database
             await SaveChangesAsync();
         }
 
-        public async Task<List<Memory>> GetRelevantMemoriesAsync(string userId, float[] queryEmbedding, int limit = 5)
+        public async Task<List<Memory>> GetRelevantMemoriesAsync(string userId, Vector queryEmbedding, int limit = 5)
         {
             var sql = @"
-                SELECT * FROM ""Memories""
-                WHERE ""UserId"" = @userId
-                ORDER BY ""Embedding"" <-> @embedding
-                LIMIT @limit;
-            ";
+        SELECT * FROM ""Memory""
+        WHERE ""UserId"" = @userId
+        ORDER BY ""Embedding"" <-> @embedding
+        LIMIT @limit;
+    ";
+
+            var embeddingParam = new NpgsqlParameter("embedding", queryEmbedding);
+            var userIdParam = new NpgsqlParameter("userId", userId);
+            var limitParam = new NpgsqlParameter("limit", limit);
 
             var memories = await Memory
-                .FromSqlRaw(sql,
-                    new NpgsqlParameter("userId", userId),
-                    new NpgsqlParameter("embedding", queryEmbedding),
-                    new NpgsqlParameter("limit", limit))
+                .FromSqlRaw(sql, userIdParam, embeddingParam, limitParam)
                 .ToListAsync();
 
             return memories;
