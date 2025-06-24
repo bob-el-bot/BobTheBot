@@ -567,6 +567,12 @@ namespace Bob.Database
             await SaveChangesAsync();
         }
 
+        /// <summary>
+        /// Stores a new memory record for a user with the given content and embedding.
+        /// </summary>
+        /// <param name="userId">The user's unique identifier.</param>
+        /// <param name="content">The message content to store.</param>
+        /// <param name="embedding">The vector embedding of the content.</param>
         public async Task StoreMemoryAsync(string userId, string content, Vector embedding)
         {
             var memory = new Memory
@@ -581,14 +587,16 @@ namespace Bob.Database
             await SaveChangesAsync();
         }
 
+        /// <summary>
+        /// Retrieves the most relevant memories for a user based on vector similarity.
+        /// </summary>
+        /// <param name="userId">The user's unique identifier.</param>
+        /// <param name="queryEmbedding">The embedding to compare against stored memories.</param>
+        /// <param name="limit">The maximum number of memories to return.</param>
+        /// <returns>A list of relevant <see cref="Memory"/> objects.</returns>
         public async Task<List<Memory>> GetRelevantMemoriesAsync(string userId, Vector queryEmbedding, int limit = 5)
         {
-            var sql = @"
-        SELECT * FROM ""Memory""
-        WHERE ""UserId"" = @userId
-        ORDER BY ""Embedding"" <-> @embedding
-        LIMIT @limit;
-    ";
+            var sql = @"SELECT * FROM ""Memory"" WHERE ""UserId"" = @userId ORDER BY ""Embedding"" <-> @embedding LIMIT @limit;";
 
             var embeddingParam = new NpgsqlParameter("embedding", queryEmbedding);
             var userIdParam = new NpgsqlParameter("userId", userId);
