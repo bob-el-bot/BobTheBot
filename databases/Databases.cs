@@ -7,6 +7,9 @@ using Bob.Database.Types;
 using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using Pgvector;
+using Pgvector.EntityFrameworkCore;
+
 
 namespace Bob.Database
 {
@@ -27,33 +30,27 @@ namespace Bob.Database
         public virtual DbSet<ScheduledMessage> ScheduledMessage { get; set; }
         public virtual DbSet<ScheduledAnnouncement> ScheduledAnnouncement { get; set; }
         public virtual DbSet<ReactBoardMessage> ReactBoardMessage { get; set; }
+        public virtual DbSet<Memory> Memory { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            if (!optionsBuilder.IsConfigured)
+            Env.Load();
+            var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL_NEW");
+
+            // Parse the database URL
+            var databaseUri = new Uri(databaseUrl);
+            var userInfo = databaseUri.UserInfo.Split(':');
+
+            var npgsqlConnectionString = new NpgsqlConnectionStringBuilder
             {
-                string npgsqlConnectionString;
-                if (!string.IsNullOrEmpty(_connectionString))
-                {
-                    npgsqlConnectionString = _connectionString;
-                }
-                else
-                {
-                    Env.Load();
-                    var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-                    var databaseUri = new Uri(databaseUrl);
-                    var userInfo = databaseUri.UserInfo.Split(':');
-                    npgsqlConnectionString = new NpgsqlConnectionStringBuilder
-                    {
-                        Host = databaseUri.Host,
-                        Port = databaseUri.Port,
-                        Username = userInfo[0],
-                        Password = userInfo[1],
-                        Database = databaseUri.AbsolutePath.TrimStart('/')
-                    }.ToString();
-                }
-                optionsBuilder.UseNpgsql(npgsqlConnectionString);
-            }
+                Host = databaseUri.Host,
+                Port = databaseUri.Port,
+                Username = userInfo[0],
+                Password = userInfo[1],
+                Database = databaseUri.AbsolutePath.TrimStart('/')
+            }.ToString();
+
+            optionsBuilder.UseNpgsql(npgsqlConnectionString, o => o.UseVector());
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -65,6 +62,11 @@ namespace Bob.Database
             modelBuilder.Entity<User>()
                 .Property(u => u.ProfileColor)
                 .HasDefaultValue("#2C2F33"); // Set default value for ProfileColor
+
+            modelBuilder.HasPostgresExtension("vector");
+            modelBuilder.Entity<Memory>()
+                .Property(m => m.Embedding)
+                .HasColumnType("vector(1536)");
 
             base.OnModelCreating(modelBuilder);
         }
@@ -570,6 +572,48 @@ namespace Bob.Database
 
             ReactBoardMessage.RemoveRange(messages);
             await SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Stores a new memory record for a user with the given content and embedding.
+        /// </summary>
+        /// <param name="userId">The user's unique identifier.</param>
+        /// <param name="content">The message content to store.</param>
+        /// <param name="embedding">The vector embedding of the content.</param>
+        public async Task StoreMemoryAsync(string userId, string content, Vector embedding)
+        {
+            var memory = new Memory
+            {
+                UserId = userId,
+                Content = content,
+                Embedding = embedding,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await Memory.AddAsync(memory);
+            await SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Retrieves the most relevant memories for a user based on vector similarity.
+        /// </summary>
+        /// <param name="userId">The user's unique identifier.</param>
+        /// <param name="queryEmbedding">The embedding to compare against stored memories.</param>
+        /// <param name="limit">The maximum number of memories to return.</param>
+        /// <returns>A list of relevant <see cref="Memory"/> objects.</returns>
+        public async Task<List<Memory>> GetRelevantMemoriesAsync(string userId, Vector queryEmbedding, int limit = 5)
+        {
+            var sql = @"SELECT * FROM ""Memory"" WHERE ""UserId"" = @userId ORDER BY ""Embedding"" <-> @embedding LIMIT @limit;";
+
+            var embeddingParam = new NpgsqlParameter("embedding", queryEmbedding);
+            var userIdParam = new NpgsqlParameter("userId", userId);
+            var limitParam = new NpgsqlParameter("limit", limit);
+
+            var memories = await Memory
+                .FromSqlRaw(sql, userIdParam, embeddingParam, limitParam)
+                .ToListAsync();
+
+            return memories;
         }
     }
 }
