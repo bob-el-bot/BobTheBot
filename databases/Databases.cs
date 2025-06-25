@@ -35,7 +35,7 @@ namespace Bob.Database
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             Env.Load();
-            var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL_NEW");
+            var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
 
             // Parse the database URL
             var databaseUri = new Uri(databaseUrl);

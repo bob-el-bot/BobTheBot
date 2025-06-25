@@ -346,8 +346,6 @@ namespace Bob
                     return;
                 }
 
-                using var dbContext = new BobEntities();
-
     //             if (message.Content.StartsWith("<@705680059809398804>"))
     //             {
     //                 string cleanedMessage = message.Content.Replace("<@705680059809398804>", "").Trim();
