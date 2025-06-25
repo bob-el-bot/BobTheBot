@@ -26,6 +26,8 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
 using Commands.Helpers;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
 
 namespace Bob
 {
@@ -56,6 +58,8 @@ namespace Bob
         private static int _shardsReady = 0;
         private static TaskCompletionSource<bool> _allShardsReady = new();
 
+        public static IServiceProvider Services;
+
         public static async Task Main()
         {
             Env.Load();
@@ -63,6 +67,11 @@ namespace Bob
             {
                 throw new ArgumentException("Discord bot token not set properly.");
             }
+
+            var services = new ServiceCollection();
+
+            services.AddDbContext<BobEntities>(options => options.UseNpgsql(Environment.GetEnvironmentVariable("DATABASE_URL")));
+            Services = services.BuildServiceProvider();
 
             Client.ShardReady += ShardReady;
             Client.Log += Log;
@@ -120,7 +129,7 @@ namespace Bob
 
         private static async Task RegisterSlashCommands()
         {
-            await Service.AddModulesAsync(Assembly.GetEntryAssembly(), null);
+            await Service.AddModulesAsync(Assembly.GetEntryAssembly(), Services);
             var globalCommands = await Service.RegisterCommandsGloballyAsync();
 
             // Update command IDs...
@@ -196,8 +205,9 @@ namespace Bob
             try
             {
                 Server server;
-                using (var context = new BobEntities())
+                using (var scope = Services.CreateScope())
                 {
+                    var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
                     server = await context.GetServer(user.Guild.Id);
                 }
 
@@ -208,9 +218,10 @@ namespace Bob
                     {
                         if (server.HasWelcomeImage)
                         {
-                            WelcomeImage welcomeImage;
-                            using (var context = new BobEntities())
+                            WelcomeImage welcomeImage = null;
+                            using (var scope = Services.CreateScope())
                             {
+                                var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
                                 welcomeImage = await context.GetWelcomeImage(user.Guild.Id);
                             }
 
@@ -235,8 +246,11 @@ namespace Bob
                 if (user.Guild.Id == supportServerId)
                 {
                     User dbUser;
-                    using var context = new BobEntities();
-                    dbUser = await context.GetUser(user.Id);
+                    using (var scope = Services.CreateScope())
+                    {
+                        var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
+                        dbUser = await context.GetUser(user.Id);
+                    }
 
                     await Badge.GiveUserBadge(dbUser, Badges.Badges.Friend);
                 }
@@ -249,14 +263,15 @@ namespace Bob
 
         private static async Task JoinedGuild(SocketGuild guild)
         {
-            // Add server to DB (if needed)
-            using var context = new BobEntities();
+            using var scope = Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
             await context.GetServer(guild.Id);
         }
 
         private static async Task EntitlementCreated(SocketEntitlement ent)
         {
-            using var context = new BobEntities();
+            using var scope = Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
             IUser entUser = await ent.User.Value.GetOrDownloadAsync();
             User user = await context.GetUser(entUser.Id);
 
@@ -274,7 +289,8 @@ namespace Bob
 
         private static async Task EntitlementUpdated(Cacheable<SocketEntitlement, ulong> before, SocketEntitlement after)
         {
-            using var context = new BobEntities();
+            using var scope = Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
             IUser entUser = await before.Value.User.Value.GetOrDownloadAsync();
             User user = await context.GetUser(entUser.Id);
 
@@ -310,8 +326,9 @@ namespace Bob
                 if (channel.GetChannelType() == ChannelType.News && message.Components == null)
                 {
                     NewsChannel newsChannel;
-                    using (var context = new BobEntities())
+                    using (var scope = Services.CreateScope())
                     {
+                        var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
                         newsChannel = await context.GetNewsChannel(channel.Id);
                     }
 
@@ -319,7 +336,6 @@ namespace Bob
                     {
                         IUserMessage userMessage = (IUserMessage)message;
                         await userMessage.CrosspostAsync();
-
                         return;
                     }
                 }
@@ -367,7 +383,13 @@ namespace Bob
 
                 // Auto Embed if GitHub Link and Server has Auto Embeds for GitHub 
                 Server server;
-                server = await dbContext.GetServer(channel.Guild.Id);
+
+                using (var scope = Services.CreateScope())
+                {
+                    var dbContext = scope.ServiceProvider.GetRequiredService<BobEntities>();
+                    server = await dbContext.GetServer(channel.Guild.Id);
+                }
+
                 if (server.AutoEmbedGitHubLinks == true)
                 {
                     GitHubLinkParse.GitHubLink gitHubLink = GitHubLinkParse.GetUrl(message.Content);
@@ -447,8 +469,10 @@ namespace Bob
                         return;
                     }
 
-                    using var dbContext = new BobEntities();
+                    using var scope = Services.CreateScope();
+                    var dbContext = scope.ServiceProvider.GetRequiredService<BobEntities>();
                     var server = await dbContext.GetServer(textChannel.Guild.Id);
+
                     if (!ReactBoardMethods.IsSetup(server))
                     {
                         return;
@@ -509,7 +533,7 @@ namespace Bob
             try
             {
                 ShardedInteractionContext ctx = new(Client, interaction);
-                await Service.ExecuteCommandAsync(ctx, null);
+                await Service.ExecuteCommandAsync(ctx, Services);
             }
             catch
             {

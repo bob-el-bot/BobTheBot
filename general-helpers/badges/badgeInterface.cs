@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Bob.Badges;
 using Bob.Database;
 using Bob.Database.Types;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bob.BadgeInterface
 {
@@ -126,7 +127,8 @@ namespace Bob.BadgeInterface
             {
                 user = GiveUserObjectBadge(user, badge);
 
-                using var context = new BobEntities();
+                using var scope = Bot.Services.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
                 await context.UpdateUser(user);
             }
         }
@@ -185,7 +187,8 @@ namespace Bob.BadgeInterface
 
                 user.EarnedBadges = currentBadges;
 
-                using var context = new BobEntities();
+                using var scope = Bot.Services.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
                 await context.UpdateUser(user);
             }
         }

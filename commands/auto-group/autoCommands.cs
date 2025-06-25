@@ -11,7 +11,7 @@ namespace Bob.Commands
     [CommandContextType(InteractionContextType.Guild)]
     [IntegrationType(ApplicationIntegrationType.GuildInstall)]
     [Group("auto", "All commands relevant to automatic features.")]
-    public class AutoGroup : InteractionModuleBase<ShardedInteractionContext>
+    public class AutoGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInteractionContext>
     {
         [SlashCommand("publish-announcements", "Bob will automatically publish all messages in announcement channels.")]
         public async Task PublishAnnouncements([Summary("publish", "If checked (true), Bob will auto publish.")] bool publish, [Summary("channel", "Channel to change settings for.")][ChannelTypes(ChannelType.News)] SocketChannel channel)
@@ -35,8 +35,7 @@ namespace Bob.Commands
             // Update news channel information.
             else
             {
-                using var context = new BobEntities();
-                NewsChannel newsChannel = await context.GetNewsChannel(channel.Id);
+                NewsChannel newsChannel = await dbContext.GetNewsChannel(channel.Id);
 
                 if (publish == true)
                 {
@@ -49,7 +48,7 @@ namespace Bob.Commands
                             ServerId = Context.Guild.Id
                         };
 
-                        await context.AddNewsChannel(newsChannel);
+                        await dbContext.AddNewsChannel(newsChannel);
                     }
 
                     IGuildUser fetchedBot = (IGuildUser)await Context.Channel.GetUserAsync(Bot.Client.CurrentUser.Id);
@@ -68,7 +67,7 @@ namespace Bob.Commands
                     // Only write to DB if needed.
                     if (newsChannel != null)
                     {
-                        await context.RemoveNewsChannel(newsChannel);
+                        await dbContext.RemoveNewsChannel(newsChannel);
                     }
 
                     await FollowupAsync(text: $"✅ Bob will no longer auto publish in {givenNewsChannel.Mention}", ephemeral: true);
@@ -89,14 +88,13 @@ namespace Bob.Commands
             // Update github preview information.
             else
             {
-                using var context = new BobEntities();
-                Server server = await context.GetServer(Context.Guild.Id);
+                Server server = await dbContext.GetServer(Context.Guild.Id);
 
                 // Only write to DB if needed.
                 if (server.AutoEmbedGitHubLinks != preview)
                 {
                     server.AutoEmbedGitHubLinks = preview;
-                    await context.UpdateServer(server);
+                    await dbContext.UpdateServer(server);
                 }
 
                 if (preview == true)
@@ -123,14 +121,13 @@ namespace Bob.Commands
             // Update github preview information.
             else
             {
-                using var context = new BobEntities();
-                Server server = await context.GetServer(Context.Guild.Id);
+                Server server = await dbContext.GetServer(Context.Guild.Id);
 
                 // Only write to DB if needed.
                 if (server.AutoEmbedMessageLinks != preview)
                 {
                     server.AutoEmbedMessageLinks = preview;
-                    await context.UpdateServer(server);
+                    await dbContext.UpdateServer(server);
                 }
 
                 if (preview == true)

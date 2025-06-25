@@ -15,6 +15,13 @@ namespace Bob.Database
 {
     public class BobEntities : DbContext
     {
+        private readonly string _connectionString;
+
+        public BobEntities(string connectionString = null)
+        {
+            _connectionString = connectionString;
+        }
+
         public virtual DbSet<Server> Server { get; set; }
         public virtual DbSet<WelcomeImage> WelcomeImage { get; set; }
         public virtual DbSet<User> User { get; set; }

@@ -14,7 +14,7 @@ namespace Bob.Commands
     [CommandContextType(InteractionContextType.Guild)]
     [IntegrationType(ApplicationIntegrationType.GuildInstall)]
     [Group("welcome", "All welcome commands.")]
-    public class WelcomeGroup : InteractionModuleBase<ShardedInteractionContext>
+    public class WelcomeGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInteractionContext>
     {
         [SlashCommand("toggle", "Enable or disable Bob welcoming users to your server!")]
         public async Task WelcomeToggle([Summary("welcome", "If checked (true), Bob will send welcome messages.")] bool welcome)
@@ -54,14 +54,11 @@ namespace Bob.Commands
             }
 
             // Update server welcome information
-            using (var context = new BobEntities())
+            var server = await dbContext.GetServer(Context.Guild.Id);
+            if (server.Welcome != welcome)
             {
-                var server = await context.GetServer(Context.Guild.Id);
-                if (server.Welcome != welcome)
-                {
-                    server.Welcome = welcome;
-                    await context.UpdateServer(server);
-                }
+                server.Welcome = welcome;
+                await dbContext.UpdateServer(server);
             }
 
             // Send response based on welcome setting
@@ -115,14 +112,13 @@ namespace Bob.Commands
             }
 
             // Update server welcome information.
-            using var context = new BobEntities();
-            var server = await context.GetServer(Context.Guild.Id);
+            var server = await dbContext.GetServer(Context.Guild.Id);
 
             // Only write to DB if needed.
             if (server.CustomWelcomeMessage != message)
             {
                 server.CustomWelcomeMessage = message;
-                await context.UpdateServer(server);
+                await dbContext.UpdateServer(server);
             }
 
             if (server.Welcome)
@@ -246,22 +242,21 @@ namespace Bob.Commands
             Console.WriteLine($"Image size: {compressedImage.Length}");
 
             // Update server welcome information.
-            using var context = new BobEntities();
-            var server = await context.GetServer(Context.Guild.Id);
+            var server = await dbContext.GetServer(Context.Guild.Id);
 
             // Only write to DB if needed.
             if (server.HasWelcomeImage != true)
             {
                 server.HasWelcomeImage = true;
-                await context.UpdateServer(server);
+                await dbContext.UpdateServer(server);
             }
 
-            var welcomeImage = await context.GetWelcomeImage(Context.Guild.Id);
+            var welcomeImage = await dbContext.GetWelcomeImage(Context.Guild.Id);
 
             if (welcomeImage != null)
             {
                 welcomeImage.Image = compressedImage;
-                await context.UpdateWelcomeImage(welcomeImage);
+                await dbContext.UpdateWelcomeImage(welcomeImage);
             }
             else
             {
@@ -271,7 +266,7 @@ namespace Bob.Commands
                     Id = Context.Guild.Id,
                     Image = compressedImage
                 };
-                await context.AddWelcomeImage(newImage);
+                await dbContext.AddWelcomeImage(newImage);
             }
 
             if (server.Welcome)
@@ -325,20 +320,18 @@ namespace Bob.Commands
             // Update server welcome information.
             else
             {
-                Server server;
-                using var context = new BobEntities();
-                server = await context.GetServer(Context.Guild.Id);
+                Server server = await dbContext.GetServer(Context.Guild.Id);
 
                 // Only write to DB if needed.
                 if (server.HasWelcomeImage == true)
                 {
                     server.HasWelcomeImage = false;
-                    await context.UpdateServer(server);
+                    await dbContext.UpdateServer(server);
 
-                    var welcomeImage = await context.GetWelcomeImage(Context.Guild.Id);
+                    var welcomeImage = await dbContext.GetWelcomeImage(Context.Guild.Id);
                     if (welcomeImage != null)
                     {
-                        await context.RemoveWelcomeImage(welcomeImage);
+                        await dbContext.RemoveWelcomeImage(welcomeImage);
                     }
                 }
 
@@ -371,15 +364,13 @@ namespace Bob.Commands
             // Update server welcome information.
             else
             {
-                Server server;
-                using var context = new BobEntities();
-                server = await context.GetServer(Context.Guild.Id);
+                Server server = await dbContext.GetServer(Context.Guild.Id);
 
                 // Only write to DB if needed.
                 if (!string.IsNullOrEmpty(server.CustomWelcomeMessage))
                 {
                     server.CustomWelcomeMessage = "";
-                    await context.UpdateServer(server);
+                    await dbContext.UpdateServer(server);
                 }
 
                 await FollowupAsync(text: $"✅ Bob will no longer greet people with the custom message.", ephemeral: true);

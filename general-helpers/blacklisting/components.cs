@@ -9,7 +9,7 @@ using Discord.WebSocket;
 
 namespace Bob.Moderation
 {
-    public class Components : InteractionModuleBase<ShardedInteractionContext>
+    public class Components(BobEntities dbContext) : InteractionModuleBase<ShardedInteractionContext>
     {
         [ComponentInteraction("banUser:*:*")]
         public async Task HelpOptionsHandler(string id, string reason)
@@ -98,13 +98,12 @@ namespace Bob.Moderation
 
             var userId = Convert.ToUInt64(id);
 
-            using var context = new BobEntities();
-            var dbUser = await context.GetUser(userId);
+            var dbUser = await dbContext.GetUser(userId);
 
             if (dbUser.ConfessionsOff == false)
             {
                 dbUser.ConfessionsOff = true;
-                await context.UpdateUser(dbUser);
+                await dbContext.UpdateUser(dbUser);
             }
 
             await Context.Interaction.ModifyOriginalResponseAsync(x =>

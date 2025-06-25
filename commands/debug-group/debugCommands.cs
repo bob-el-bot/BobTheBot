@@ -62,7 +62,7 @@ namespace Bob.Commands
                 }
                 else
                 {
-                    IGuild guild = Bot.Client.GetGuild(id);
+                    IGuild guild = Client.GetGuild(id);
                     if (guild != null)
                     {
                         RestTextChannel restChannel = await Context.Guild.CreateTextChannelAsync(name: $"{serverId}", tcp => tcp.CategoryId = DebugServerCategoryId);
@@ -126,7 +126,7 @@ namespace Bob.Commands
         }
 
         [Group("stat", "All debug commands for stats")]
-        public class StatsGroup : InteractionModuleBase<ShardedInteractionContext>
+        public class StatsGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInteractionContext>
         {
             [SlashCommand("entitlements", "view all app entitlements.")]
             public async Task GetEntitlements()
@@ -149,16 +149,15 @@ namespace Bob.Commands
             {
                 await DeferAsync();
 
-                using var context = new BobEntities();
-                ulong entryCount = await context.GetTotalEntries();
-                int userEntriesCount = await context.User.CountAsync();
-                int blackListEntriesCount = await context.BlackListUser.CountAsync();
-                int serverEntriesCount = await context.Server.CountAsync();
-                int newsChannelEntriesCount = await context.NewsChannel.CountAsync();
-                int scheduledMessageEntriesCount = await context.ScheduledMessage.CountAsync();
-                int scheduledAnnouncementEntriesCount = await context.ScheduledAnnouncement.CountAsync();
-                int welcomeImageEntriesCount = await context.WelcomeImage.CountAsync();
-                double size = await context.GetDatabaseSizeBytes();
+                ulong entryCount = await dbContext.GetTotalEntries();
+                int userEntriesCount = await dbContext.User.CountAsync();
+                int blackListEntriesCount = await dbContext.BlackListUser.CountAsync();
+                int serverEntriesCount = await dbContext.Server.CountAsync();
+                int newsChannelEntriesCount = await dbContext.NewsChannel.CountAsync();
+                int scheduledMessageEntriesCount = await dbContext.ScheduledMessage.CountAsync();
+                int scheduledAnnouncementEntriesCount = await dbContext.ScheduledAnnouncement.CountAsync();
+                int welcomeImageEntriesCount = await dbContext.WelcomeImage.CountAsync();
+                double size = await dbContext.GetDatabaseSizeBytes();
 
                 var embed = new EmbedBuilder
                 {
@@ -225,7 +224,7 @@ namespace Bob.Commands
             {
                 await DeferAsync();
 
-                int totalServers = Bot.Client.Guilds.Count;
+                int totalServers = Client.Guilds.Count;
                 var message = new StringBuilder();
 
                 async Task<HttpStatusCode> UpdateServerCount(string url, string token, string jsonKey)
@@ -257,7 +256,7 @@ namespace Bob.Commands
         }
 
         [Group("database", "All debug commands for the database")]
-        public class DatabaseGroup : InteractionModuleBase<ShardedInteractionContext>
+        public class DatabaseGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInteractionContext>
         {
             [SlashCommand("get-user", "Gets the user object of a given user.")]
             public async Task GetUser(IUser user = null, string userId = null)
@@ -283,9 +282,7 @@ namespace Bob.Commands
                 }
                 else
                 {
-                    User dbUser;
-                    using var context = new BobEntities();
-                    dbUser = await context.GetUser(user == null ? parsedId : user.Id);
+                    User dbUser = await dbContext.GetUser(user == null ? parsedId : user.Id);
 
                     await FollowupAsync(text: $"✅ `Showing User: {discordUser.GlobalName}, {discordUser.Id}`\n{UserDebugging.GetUserPropertyString(dbUser)}");
                 }
@@ -320,10 +317,9 @@ namespace Bob.Commands
                 }
                 else
                 {
-                    using var context = new BobEntities();
-                    User dbUser = await context.GetUser(user == null ? parsedId : user.Id);
+                    User dbUser = await dbContext.GetUser(user == null ? parsedId : user.Id);
                     dbUser.TotalScheduledAnnouncements = (uint)value;
-                    await context.UpdateUser(dbUser);
+                    await dbContext.UpdateUser(dbUser);
 
                     await FollowupAsync(text: $"✅ `Announcement Count of User: {discordUser.GlobalName}, {discordUser.Id} updated.`\n{UserDebugging.GetUserPropertyString(dbUser)}");
                 }
@@ -358,10 +354,9 @@ namespace Bob.Commands
                 }
                 else
                 {
-                    using var context = new BobEntities();
-                    User dbUser = await context.GetUser(user == null ? parsedId : user.Id);
+                    User dbUser = await dbContext.GetUser(user == null ? parsedId : user.Id);
                     dbUser.TotalScheduledMessages = (uint)value;
-                    await context.UpdateUser(dbUser);
+                    await dbContext.UpdateUser(dbUser);
 
                     await FollowupAsync(text: $"✅ `Announcement Count of User: {discordUser.GlobalName}, {discordUser.Id} updated.`\n{UserDebugging.GetUserPropertyString(dbUser)}");
                 }
@@ -392,9 +387,7 @@ namespace Bob.Commands
                 }
                 else
                 {
-                    User dbUser;
-                    using var context = new BobEntities();
-                    dbUser = await context.GetUser(user == null ? parsedId : user.Id);
+                    User dbUser = await dbContext.GetUser(user == null ? parsedId : user.Id);
 
                     await Badge.GiveUserBadge(dbUser, badge);
 
@@ -427,9 +420,7 @@ namespace Bob.Commands
                 }
                 else
                 {
-                    User dbUser;
-                    using var context = new BobEntities();
-                    dbUser = await context.GetUser(user == null ? parsedId : user.Id);
+                    User dbUser = await dbContext.GetUser(user == null ? parsedId : user.Id);
 
                     await Badge.RemoveUserBadge(dbUser, badge);
 
@@ -449,7 +440,7 @@ namespace Bob.Commands
                     return;
                 }
 
-                SocketGuild discordServer = Bot.Client.GetGuild(parsedId);
+                SocketGuild discordServer = Client.GetGuild(parsedId);
 
                 if (discordServer == null)
                 {
@@ -457,9 +448,7 @@ namespace Bob.Commands
                 }
                 else
                 {
-                    Server dbServer;
-                    using var context = new BobEntities();
-                    dbServer = await context.GetServer(parsedId);
+                    Server dbServer = await dbContext.GetServer(parsedId);
 
                     await FollowupAsync(text: $"✅ `Showing Server: {discordServer.Name}, {discordServer.Id}`\n{ServerDebugging.GetServerPropertyString(dbServer)}");
                 }
@@ -635,8 +624,7 @@ namespace Bob.Commands
                 }
                 else
                 {
-                    using var context = new BobEntities();
-                    await context.RemoveScheduledAnnouncement(parsedAnnouncementId);
+                    await dbContext.RemoveScheduledAnnouncement(parsedAnnouncementId);
 
                     await FollowupAsync(text: $"✅ Deleted Scheduled Announcement `{parsedAnnouncementId}`.");
                 }
