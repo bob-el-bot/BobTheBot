@@ -69,22 +69,7 @@ namespace Bob
 
             var services = new ServiceCollection();
 
-            services.AddScoped<BobEntities>(provider =>
-            {
-                Env.Load();
-                var oldUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-                var newUrl = Environment.GetEnvironmentVariable("DATABASE_URL_NEW");
-
-                if (string.IsNullOrWhiteSpace(oldUrl))
-                    throw new Exception("DATABASE_URL is not set or empty!");
-                if (string.IsNullOrWhiteSpace(newUrl))
-                    throw new Exception("DATABASE_URL_NEW is not set or empty!");
-
-                string oldConnStr = DualWriteBobEntities.BuildConnectionString(oldUrl);
-                string newConnStr = DualWriteBobEntities.BuildConnectionString(newUrl);
-
-                return new DualWriteBobEntities(oldConnStr, newConnStr);
-            });
+            services.AddDbContext<BobEntities>(options => options.UseNpgsql(Environment.GetEnvironmentVariable("DATABASE_URL")));
             Services = services.BuildServiceProvider();
 
             Client.ShardReady += ShardReady;
