@@ -11,7 +11,7 @@ namespace Bob.Commands
     [CommandContextType(InteractionContextType.Guild)]
     [IntegrationType(ApplicationIntegrationType.GuildInstall)]
     [Group("react-board", "All react board commands.")]
-    public class ReactBoardGroup : InteractionModuleBase<ShardedInteractionContext>
+    public class ReactBoardGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInteractionContext>
     {
         [SlashCommand("toggle", "Toggle the react board for this server.")]
         public async Task Toggle([Summary("enable", "If checked (true), the react-board will enable.")] bool enable)
@@ -20,8 +20,7 @@ namespace Bob.Commands
 
             var discordUser = Context.Guild.GetUser(Context.User.Id);
 
-            using var context = new BobEntities();
-            var server = await context.GetServer(Context.Guild.Id);
+            var server = await dbContext.GetServer(Context.Guild.Id);
 
             SocketTextChannel reactBoardChannel = null;
             if (server.ReactBoardChannelId is ulong channelId)
@@ -62,13 +61,13 @@ namespace Bob.Commands
             if (server.ReactBoardOn != enable)
             {
                 server.ReactBoardOn = enable;
-                await context.UpdateServer(server);
+                await dbContext.UpdateServer(server);
             }
 
             // Respond to the user
             if (enable)
             {
-                await context.AddInitialReactBoardMessageAsync(Context.Guild.Id);
+                await dbContext.AddInitialReactBoardMessageAsync(Context.Guild.Id);
 
                 await FollowupAsync(reactBoardChannel == null
                     ? $"✅ The react board has been enabled, but you **need** to set a react board channel with {Help.GetCommandMention("react-board channel")} for Bob to post messages."
@@ -104,11 +103,10 @@ namespace Bob.Commands
             await DeferAsync(ephemeral: true);
 
             // Update database with the new channel ID
-            using var context = new BobEntities();
-            var server = await context.GetServer(Context.Guild.Id);
+            var server = await dbContext.GetServer(Context.Guild.Id);
 
             server.ReactBoardChannelId = channel.Id;
-            await context.UpdateServer(server);
+            await dbContext.UpdateServer(server);
 
             await FollowupAsync(text: $"✅ The react board channel has been set to <#{channel.Id}>.", ephemeral: true);
         }
@@ -128,11 +126,10 @@ namespace Bob.Commands
             await DeferAsync(ephemeral: true);
 
             // Update database with the new emoji
-            using var context = new BobEntities();
-            var server = await context.GetServer(Context.Guild.Id);
+            var server = await dbContext.GetServer(Context.Guild.Id);
 
             server.ReactBoardEmoji = emoji;
-            await context.UpdateServer(server);
+            await dbContext.UpdateServer(server);
 
             await FollowupAsync(text: $"✅ The react board emoji has been set to {emoji}.", ephemeral: true);
         }
@@ -152,11 +149,10 @@ namespace Bob.Commands
             await DeferAsync(ephemeral: true);
 
             // Update database with the new minimum reactions
-            using var context = new BobEntities();
-            var server = await context.GetServer(Context.Guild.Id);
+            var server = await dbContext.GetServer(Context.Guild.Id);
 
             server.ReactBoardMinimumReactions = minimumReactions;
-            await context.UpdateServer(server);
+            await dbContext.UpdateServer(server);
 
             await FollowupAsync(text: $"✅ The minimum reactions required to post on the react board has been set to {minimumReactions}.", ephemeral: true);
         }
@@ -166,8 +162,7 @@ namespace Bob.Commands
         {
             await DeferAsync(ephemeral: true);
 
-            using var context = new BobEntities();
-            var server = await context.GetServer(Context.Guild.Id);
+            var server = await dbContext.GetServer(Context.Guild.Id);
 
             var reactBoardChannel = Context.Guild.GetTextChannel(server.ReactBoardChannelId ?? 0);
             var emoji = server.ReactBoardEmoji ?? "Not set";

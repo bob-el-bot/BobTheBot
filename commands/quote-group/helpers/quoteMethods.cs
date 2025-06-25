@@ -9,6 +9,7 @@ using Discord.Interactions;
 using Discord.WebSocket;
 using Bob.PremiumInterface;
 using Bob.Time.Timestamps;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bob.Commands.Helpers
 {
@@ -18,7 +19,8 @@ namespace Bob.Commands.Helpers
 
         public static async Task<Server> GetServerAsync(ulong guildId)
         {
-            using var context = new BobEntities();
+            using var scope = Bot.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
             return await context.GetServer(guildId);
         }
 

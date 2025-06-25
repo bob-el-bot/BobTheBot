@@ -16,7 +16,7 @@ namespace Bob.Commands
     [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
     [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
     [Group("profile", "All profile commands.")]
-    public class ProfileGroup : InteractionModuleBase<ShardedInteractionContext>
+    public class ProfileGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInteractionContext>
     {
         [SlashCommand("display", "View a user's profile.")]
         public async Task Display([Summary("user", "The user whose profile you would like displayed (leave empty to display your own).")] SocketUser user = null)
@@ -32,8 +32,7 @@ namespace Bob.Commands
                 await DeferAsync();
 
                 // Get Stats
-                using var context = new BobEntities();
-                User userToDisplay = await context.GetUser(user.Id);
+                User userToDisplay = await dbContext.GetUser(user.Id);
 
                 float rpsWinPercent = (float)Math.Round(userToDisplay.TotalRockPaperScissorsGames != 0 ? userToDisplay.RockPaperScissorsWins / userToDisplay.TotalRockPaperScissorsGames * 100 : 0, 2);
                 float tttWinPercent = (float)Math.Round(userToDisplay.TotalTicTacToeGames != 0 ? userToDisplay.TicTacToeWins / userToDisplay.TotalTicTacToeGames * 100 : 0, 2);
@@ -73,16 +72,12 @@ namespace Bob.Commands
         {
             await DeferAsync(ephemeral: true);
 
-            User user;
-            using (var context = new BobEntities())
-            {
-                user = await context.GetUser(Context.User.Id);
+            User user = await dbContext.GetUser(Context.User.Id);
 
-                if (user.ConfessionsOff == open)
-                {
-                    user.ConfessionsOff = !open;
-                    await context.UpdateUser(user);
-                }
+            if (user.ConfessionsOff == open)
+            {
+                user.ConfessionsOff = !open;
+                await dbContext.UpdateUser(user);
             }
 
             if (open)
@@ -100,16 +95,12 @@ namespace Bob.Commands
         {
             await DeferAsync(ephemeral: true);
 
-            User user;
-            using (var context = new BobEntities())
-            {
-                user = await context.GetUser(Context.User.Id);
+            User user = await dbContext.GetUser(Context.User.Id);
 
-                if (user.ConfessFilteringOff != enable)
-                {
-                    user.ConfessFilteringOff = enable;
-                    await context.UpdateUser(user);
-                }
+            if (user.ConfessFilteringOff != enable)
+            {
+                user.ConfessFilteringOff = enable;
+                await dbContext.UpdateUser(user);
             }
 
             if (enable)
@@ -153,8 +144,7 @@ namespace Bob.Commands
                 return;
             }
 
-            using var context = new BobEntities();
-            User user = await context.GetUser(Context.User.Id);
+            User user = await dbContext.GetUser(Context.User.Id);
 
             // Check if the user has premium.
             if (Premium.IsPremium(Context.Interaction.Entitlements, user) == false)
@@ -167,7 +157,7 @@ namespace Bob.Commands
             if (user.ProfileColor != color)
             {
                 user.ProfileColor = color;
-                await context.UpdateUser(user);
+                await dbContext.UpdateUser(user);
             }
 
             // Create Embed

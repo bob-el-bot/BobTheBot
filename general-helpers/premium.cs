@@ -9,6 +9,7 @@ using Discord;
 using Discord.Rest;
 using Bob.Moderation;
 using Bob.Commands.Helpers;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bob.PremiumInterface
 {
@@ -105,9 +106,9 @@ namespace Bob.PremiumInterface
                 return true;
             }
 
-            User user;
-            using var context = new BobEntities();
-            user = await context.GetUser(userId);
+            using var scope = Bot.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
+            User user = await context.GetUser(userId);
 
             return IsValidPremium(user.PremiumExpiration);
         }

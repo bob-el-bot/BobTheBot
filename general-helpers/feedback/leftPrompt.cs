@@ -4,6 +4,7 @@ using Bob.Debug;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bob.Feedback
 {
@@ -43,10 +44,11 @@ namespace Bob.Feedback
                 // User's direct messages are closed, no action needed
             }
 
-            using var context = new BobEntities();
+            using var scope = Bot.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
 
             var server = await context.GetServer(guild.Id);
-            
+
             if (server == null)
             {
                 return;
