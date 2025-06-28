@@ -70,7 +70,13 @@ namespace Bob
 
             var services = new ServiceCollection();
 
-            services.AddDbContext<BobEntities>(options => options.UseNpgsql(Environment.GetEnvironmentVariable("DATABASE_URL")));
+            services.AddDbContext<BobEntities>(options => options.UseNpgsql(Environment.GetEnvironmentVariable("DATABASE_URL"),
+                npgsqlOptions => npgsqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 1,
+                    maxRetryDelay: TimeSpan.FromSeconds(5),
+                    errorCodesToAdd: null
+                )
+            ));
             Services = services.BuildServiceProvider();
 
             Client.ShardReady += ShardReady;
