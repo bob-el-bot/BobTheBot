@@ -506,7 +506,7 @@ namespace Bob.Commands.Helpers
                         ]
                     },
                 ]
-            },    
+            },
             new() {
                 Title = "Profiles",
                 Name = "profile",
@@ -680,6 +680,83 @@ namespace Bob.Commands.Helpers
                 ]
             },
             new() {
+                Title = "React Board",
+                Name = "react-board",
+                Description = "Commands related to the react board.",
+                Emoji = "📌",
+                Url = "https://docs.bobthebot.net#react-board",
+                Commands =
+                [
+                    new CommandInfo
+                    {
+                        Name = "toggle",
+                        InheritGroupName = true,
+                        Description = "Toggles the react board for the server.",
+                        Url = "https://docs.bobthebot.net#react-board-toggle",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "enable",
+                                Description = "Enable or disable the react board. Choose from: True, False."
+                            },
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "channel",
+                        InheritGroupName = true,
+                        Description = "Set the channel for the react board.",
+                        Url = "https://docs.bobthebot.net#react-board-channel",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "channel",
+                                Description = "The text channel you want to use as the react board for the server."
+                            }
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "emoji",
+                        InheritGroupName = true,
+                        Description = "Set the emoji which triggers the react board.",
+                        Url = "https://docs.bobthebot.net#react-board-emoji",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "emoji",
+                                Description = "The emoji to set for the react board. It can be a custom emoji or a standard emoji."
+                            }
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "minimum-reactions",
+                        InheritGroupName = true,
+                        Description = "Set the minimum reactions required to post on the react board.",
+                        Url = "https://docs.bobthebot.net#react-board-minimum-reactions",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "minimum-reactions",
+                                Description = "The minimum reactions required to post on the react board."
+                            }
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "info",
+                        InheritGroupName = true,
+                        Description = "Get information about the react board settings for this server.",
+                        Url = "https://docs.bobthebot.net#react-board-info",
+                    }
+                ]
+            },
+            new() {
                 Title = "Welcoming",
                 Name = "welcome",
                 Description = "Commands related to welcoming new users.",
@@ -735,7 +812,7 @@ namespace Bob.Commands.Helpers
                             new ParameterInfo
                             {
                                 Name = "image",
-                                Description = "The image you would like to use (PNG, JPG, JPEG, WEBP). It will be compressed into a WEBP, but if the compressed image is larger than Discord's 8MB limit, you must compress it yourself or choose another image."
+                                Description = "The image you would like to use (PNG, JPG, JPEG, WEBP, GIF, BMP). It will be compressed into a WEBP, but if the compressed image is larger than Discord's 8MB limit, you must compress it yourself or choose another image."
                             }
                         ]
                     },
@@ -1293,6 +1370,11 @@ namespace Bob.Commands.Helpers
                             {
                                 Name = "color",
                                 Description = "A color name (like \"purple\"), or a valid hex code (like \"#8D52FD\") or valid RGB code (like \"141, 82, 253\")."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "image",
+                                Description = "An image you would like to use (PNG, JPG, JPEG, WEBP, GIF, BMP)."
                             }
                         ]
                     },

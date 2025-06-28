@@ -13,7 +13,7 @@ namespace Bob.Commands
     [CommandContextType(InteractionContextType.Guild)]
     [IntegrationType(ApplicationIntegrationType.GuildInstall)]
     [Group("quote", "All quoting commands.")]
-    public class QuoteGroup : InteractionModuleBase<ShardedInteractionContext>
+    public class QuoteGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInteractionContext>
     {
 
         [SlashCommand("new", "Create a quote.")]
@@ -96,14 +96,11 @@ namespace Bob.Commands
             {
                 await DeferAsync(ephemeral: true);
 
-                using (var context = new BobEntities())
-                {
-                    Server server = await context.GetServer(Context.Guild.Id);
+                Server server = await dbContext.GetServer(Context.Guild.Id);
 
-                    // Set the channel for this server
-                    server.QuoteChannelId = channel.Id;
-                    await context.UpdateServer(server);
-                }
+                // Set the channel for this server
+                server.QuoteChannelId = channel.Id;
+                await dbContext.UpdateServer(server);
 
                 await FollowupAsync(text: $"✅ <#{channel.Id}> is now the quote channel for the server.", ephemeral: true);
             }
@@ -114,8 +111,7 @@ namespace Bob.Commands
         {
             await DeferAsync(ephemeral: true);
 
-            using var context = new BobEntities();
-            Server server = await context.GetServer(Context.Guild.Id);
+            Server server = await dbContext.GetServer(Context.Guild.Id);
 
             // Check if the user has manage channels permissions.
             if (!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageChannels)
@@ -147,7 +143,7 @@ namespace Bob.Commands
                 if (server.MaxQuoteLength != length)
                 {
                     server.MaxQuoteLength = (uint)length;
-                    await context.UpdateServer(server);
+                    await dbContext.UpdateServer(server);
                 }
 
                 await FollowupAsync(text: $"✅ Your server now has a maximum quote length of **{length}**.");
@@ -159,8 +155,7 @@ namespace Bob.Commands
         {
             await DeferAsync(ephemeral: true);
 
-            using var context = new BobEntities();
-            Server server = await context.GetServer(Context.Guild.Id);
+            Server server = await dbContext.GetServer(Context.Guild.Id);
 
             // Check if the user has manage channels permissions.
             if (!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageChannels)
@@ -192,7 +187,7 @@ namespace Bob.Commands
                 if (server.MinQuoteLength != length)
                 {
                     server.MinQuoteLength = (uint)length;
-                    await context.UpdateServer(server);
+                    await dbContext.UpdateServer(server);
                 }
 
                 await FollowupAsync(text: $"✅ Your server now has a minimum quote length of **{length}**.");

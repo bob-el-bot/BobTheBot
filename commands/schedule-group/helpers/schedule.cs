@@ -9,6 +9,7 @@ using Bob.Database.Types;
 using Discord;
 using Microsoft.EntityFrameworkCore;
 using Bob.Time.Timestamps;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bob.Commands.Helpers
 {
@@ -133,7 +134,8 @@ namespace Bob.Commands.Helpers
         {
             try
             {
-                using var context = new BobEntities();
+                using var scope = Bot.Services.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
 
                 var dbUser = await context.GetUser(scheduledItem.UserId);
                 bool userChanged = false; // Flag to track if user properties change
@@ -197,7 +199,8 @@ namespace Bob.Commands.Helpers
         /// <typeparam name="T">The type of scheduled item (message or announcement).</typeparam>
         public static async Task LoadAndScheduleItemsAsync<T>() where T : class, IScheduledItem
         {
-            using var context = new BobEntities();
+            using var scope = Bot.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
             var unsentItems = await context.Set<T>().ToListAsync();
 
             foreach (var item in unsentItems)

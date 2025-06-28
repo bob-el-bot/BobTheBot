@@ -11,6 +11,7 @@ using Discord.WebSocket;
 using Bob.Games;
 using Bob.PremiumInterface;
 using Bob.Time.Timestamps;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bob.Challenges
 {
@@ -58,7 +59,8 @@ namespace Bob.Challenges
         /// <returns>A tuple indicating whether the challenge is possible and a message explaining why or why not.</returns>
         public static async Task<(bool, string)> CanChallengeAsync(ulong player1Id, ulong player2Id)
         {
-            using var context = new BobEntities();
+            using var scope = Bot.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
             User user = await context.GetUser(player1Id);
 
             if (player1Id == player2Id)
@@ -85,14 +87,14 @@ namespace Bob.Challenges
         public static async Task SendMessage(SocketInteraction interaction, Games.Game game)
         {
             // Loading Message
-            var msg = await interaction.FollowupAsync(text: "⚔️ *Creating Challenge...*");
+            await interaction.RespondAsync(text: $"{game.Player2.Mention}\n⚔️ *Creating Challenge...*", allowedMentions: AllowedMentions.All);
 
             // Update User Info
             IncrementUserChallenges(game.Player1.Id);
 
             // Prepare Game
-            game.Message = msg;
-            game.Id = game.OnePerChannel ? interaction.Channel.Id : msg.Id;
+            game.Message = interaction.GetOriginalResponseAsync().Result;
+            game.Id = game.OnePerChannel ? interaction.Channel.Id : game.Message.Id;
             game.State = GameState.Challenge;
 
             // Add to Games List
@@ -110,7 +112,7 @@ namespace Bob.Challenges
 
             // Start Challenge
             game.Expired += ExpireGame;
-            await game.Message.ModifyAsync(x => { x.Content = game.Player2.Mention; x.Embed = embed.Build(); x.Components = components.Build(); });
+            await interaction.ModifyOriginalResponseAsync(x => { x.Content = game.Player2.Mention; x.Embed = embed.Build(); x.Components = components.Build(); });
         }
 
         /// <summary>
@@ -439,7 +441,8 @@ namespace Bob.Challenges
         /// <param name="winner">The winner of the game.</param>
         public static async Task UpdateUserStats(Games.Game game, WinCases winner)
         {
-            using var context = new BobEntities();
+            using var scope = Bot.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
             var userIds = new[] { game.Player1.Id, game.Player2.Id };
             var users = await context.GetUsers(userIds);
 
