@@ -136,21 +136,21 @@ namespace Bob.Commands
             void rules(AutoModRuleProperties properties)
             {
                 // Configure your rule properties here
-                properties.Name = "Bad Word Detection Via Bob 1";
+                properties.Name = "Bad Word Detection Via Bob 1/2";
                 properties.Actions = new AutoModRuleActionProperties[] { actionProperties };
                 properties.TriggerType = AutoModTriggerType.Keyword;
                 properties.EventType = AutoModEventType.MessageSend;
-                properties.KeywordFilter = ConfessFiltering.BannedWords.Take(1000).ToArray();
+                properties.KeywordFilter = CensoredWordSets.AllWords.Take(1000).ToArray();
             }
 
             void rulesContinued(AutoModRuleProperties properties)
             {
                 // Configure your rule properties here
-                properties.Name = "Bad Word Detection Via Bob 2";
+                properties.Name = "Bad Word Detection Via Bob 2/2";
                 properties.Actions = new AutoModRuleActionProperties[] { actionProperties };
                 properties.TriggerType = AutoModTriggerType.Keyword;
                 properties.EventType = AutoModEventType.MessageSend;
-                properties.KeywordFilter = ConfessFiltering.BannedWords.Skip(1000).ToArray();
+                properties.KeywordFilter = CensoredWordSets.AllWords.Skip(1000).ToArray();
             }
 
             await Context.Guild.CreateAutoModRuleAsync(rules);

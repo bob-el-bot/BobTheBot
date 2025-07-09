@@ -16,6 +16,7 @@
     <PackageReference Include="Pgvector.EntityFrameworkCore" Version="0.2.2" />
     <PackageReference Include="QRCoder" Version="1.6.0" />
     <PackageReference Include="simple-ciphers" Version="2.4.0" />
+    <PackageReference Include="Cinsor" Version="1.0.0" />
     <PackageReference Include="SkiaSharp" Version="2.88.6" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="2.88.6" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.1.10" />

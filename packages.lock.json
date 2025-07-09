@@ -2,6 +2,12 @@
   "version": 1,
   "dependencies": {
     "net9.0": {
+      "Cinsor": {
+        "type": "Direct",
+        "requested": "[1.0.0, )",
+        "resolved": "1.0.0",
+        "contentHash": "/twGfKg6evpeuRqG6HXiv4luAwpzNQHafmFRx3ieV05sgEflpvIu3Sj0MBMElCB/94MZn6AzdRXNDxJ4NXamRw=="
+      },
       "ColorHelper": {
         "type": "Direct",
         "requested": "[1.8.1, )",
