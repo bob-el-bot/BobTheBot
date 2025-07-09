@@ -1070,9 +1070,9 @@ namespace Bob.Commands
 
                 if (!permissions.EmbedLinks)
                 {
-                    await RespondAsync("❌ Bob is either missing permissions to " +
+                    await RespondAsync("❌ Bob is missing permissions to " +
                         $"embed links in the channel <#{Context.Channel.Id}>\n- Try giving Bob " +
-                        $"the following permissions: `Embed Links`", ephemeral: true);
+                        $"the following permission: `Embed Links`", ephemeral: true);
                     return;
                 }
             }
