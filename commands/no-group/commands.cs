@@ -1053,15 +1053,28 @@ namespace Bob.Commands
         [SlashCommand("ship", "Bob will determine how good of a couple two users would make")]
         public async Task Ship(SocketUser person1 = null, SocketUser person2 = null)
         {
-            var botUser = Context.Guild.GetUser(Context.Client.CurrentUser.Id);
-            ChannelPermissions permissions = botUser.GetPermissions(channelToCheck);
-
-            if (!permissions.EmbedLinks)
+            if (!Context.Interaction.IsDMInteraction)
             {
-                await RespondAsync("❌ Bob is either missing permissions to " +
-                    $"embed links in the channel <#{Context.Channel.Id}>\n- Try giving Bob " +
-                    $"the following permissions: `Embed Links`", ephemeral: true);
-                return;
+                IGuildChannel channelToCheck;
+                if (Context.Channel is SocketThreadChannel thread)
+                {
+                    channelToCheck = thread.ParentChannel;
+                }
+                else
+                {
+                    channelToCheck = (IGuildChannel)Context.Channel;
+                }
+
+                var botUser = Context.Guild.GetUser(Context.Client.CurrentUser.Id);
+                ChannelPermissions permissions = botUser.GetPermissions(channelToCheck);
+
+                if (!permissions.EmbedLinks)
+                {
+                    await RespondAsync("❌ Bob is either missing permissions to " +
+                        $"embed links in the channel <#{Context.Channel.Id}>\n- Try giving Bob " +
+                        $"the following permissions: `Embed Links`", ephemeral: true);
+                    return;
+                }
             }
 
             await DeferAsync();
