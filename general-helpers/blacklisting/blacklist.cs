@@ -5,6 +5,7 @@ using Bob.Database;
 using Bob.Database.Types;
 using Discord;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bob.Moderation
 {
@@ -240,7 +241,8 @@ namespace Bob.Moderation
                 return cachedUser;
             }
 
-            using var context = new BobEntities();
+            using var scope = Bot.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
             var user = await context.GetUserFromBlackList(id);
 
             if (user != null)
@@ -258,7 +260,8 @@ namespace Bob.Moderation
         /// <returns>A task representing the asynchronous operation.</returns>
         public static async Task RemoveUser(BlackListUser user)
         {
-            using var context = new BobEntities();
+            using var scope = Bot.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
             await context.RemoveUserFromBlackList(user);
 
             RemoveFromCache(user.Id);
@@ -274,7 +277,8 @@ namespace Bob.Moderation
             var user = await GetUser(id);
             if (user != null)
             {
-                using var context = new BobEntities();
+                using var scope = Bot.Services.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
                 await context.RemoveUserFromBlackList(user);
             }
 
@@ -293,12 +297,14 @@ namespace Bob.Moderation
             var dbUser = await GetUser(user.Id);
             if (dbUser == null)
             {
-                using var context = new BobEntities();
+                using var scope = Bot.Services.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
                 await context.AddUserToBlackList(user);
             }
             else
             {
-                using var context = new BobEntities();
+                using var scope = Bot.Services.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
                 await context.UpdateUserFromBlackList(user);
             }
 

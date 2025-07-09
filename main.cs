@@ -24,6 +24,10 @@ using System.IO;
 using Bob.Monitoring;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq.Expressions;
+using Commands.Helpers;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
 
 namespace Bob
 {
@@ -31,7 +35,7 @@ namespace Bob
     {
         public static readonly DiscordShardedClient Client = new(new DiscordSocketConfig
         {
-            GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers | GatewayIntents.GuildMessages | GatewayIntents.MessageContent | GatewayIntents.AutoModerationConfiguration,
+            GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers | GatewayIntents.GuildMessages | GatewayIntents.GuildMessageReactions | GatewayIntents.MessageContent | GatewayIntents.AutoModerationConfiguration,
         });
 
         private static InteractionService Service = new(Client, new InteractionServiceConfig
@@ -54,6 +58,8 @@ namespace Bob
         private static int _shardsReady = 0;
         private static TaskCompletionSource<bool> _allShardsReady = new();
 
+        public static IServiceProvider Services;
+
         public static async Task Main()
         {
             Env.Load();
@@ -61,6 +67,17 @@ namespace Bob
             {
                 throw new ArgumentException("Discord bot token not set properly.");
             }
+
+            var services = new ServiceCollection();
+
+            services.AddDbContext<BobEntities>(options => options.UseNpgsql(Environment.GetEnvironmentVariable("DATABASE_URL"),
+                npgsqlOptions => npgsqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: 1,
+                    maxRetryDelay: TimeSpan.FromSeconds(5),
+                    errorCodesToAdd: null
+                )
+            ));
+            Services = services.BuildServiceProvider();
 
             Client.ShardReady += ShardReady;
             Client.Log += Log;
@@ -71,6 +88,7 @@ namespace Bob
             Client.EntitlementDeleted += EntitlementDeleted;
             Client.EntitlementUpdated += EntitlementUpdated;
             Client.MessageReceived += MessageReceived;
+            Client.ReactionAdded += HandleReactionAddedAsync;
 
             await Client.LoginAsync(TokenType.Bot, Token);
             await Client.StartAsync();
@@ -117,7 +135,7 @@ namespace Bob
 
         private static async Task RegisterSlashCommands()
         {
-            await Service.AddModulesAsync(Assembly.GetEntryAssembly(), null);
+            await Service.AddModulesAsync(Assembly.GetEntryAssembly(), Services);
             var globalCommands = await Service.RegisterCommandsGloballyAsync();
 
             // Update command IDs...
@@ -193,8 +211,9 @@ namespace Bob
             try
             {
                 Server server;
-                using (var context = new BobEntities())
+                using (var scope = Services.CreateScope())
                 {
+                    var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
                     server = await context.GetServer(user.Guild.Id);
                 }
 
@@ -205,9 +224,10 @@ namespace Bob
                     {
                         if (server.HasWelcomeImage)
                         {
-                            WelcomeImage welcomeImage;
-                            using (var context = new BobEntities())
+                            WelcomeImage welcomeImage = null;
+                            using (var scope = Services.CreateScope())
                             {
+                                var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
                                 welcomeImage = await context.GetWelcomeImage(user.Guild.Id);
                             }
 
@@ -232,8 +252,11 @@ namespace Bob
                 if (user.Guild.Id == supportServerId)
                 {
                     User dbUser;
-                    using var context = new BobEntities();
-                    dbUser = await context.GetUser(user.Id);
+                    using (var scope = Services.CreateScope())
+                    {
+                        var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
+                        dbUser = await context.GetUser(user.Id);
+                    }
 
                     await Badge.GiveUserBadge(dbUser, Badges.Badges.Friend);
                 }
@@ -246,14 +269,15 @@ namespace Bob
 
         private static async Task JoinedGuild(SocketGuild guild)
         {
-            // Add server to DB (if needed)
-            using var context = new BobEntities();
+            using var scope = Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
             await context.GetServer(guild.Id);
         }
 
         private static async Task EntitlementCreated(SocketEntitlement ent)
         {
-            using var context = new BobEntities();
+            using var scope = Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
             IUser entUser = await ent.User.Value.GetOrDownloadAsync();
             User user = await context.GetUser(entUser.Id);
 
@@ -271,7 +295,8 @@ namespace Bob
 
         private static async Task EntitlementUpdated(Cacheable<SocketEntitlement, ulong> before, SocketEntitlement after)
         {
-            using var context = new BobEntities();
+            using var scope = Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
             IUser entUser = await before.Value.User.Value.GetOrDownloadAsync();
             User user = await context.GetUser(entUser.Id);
 
@@ -307,8 +332,9 @@ namespace Bob
                 if (channel.GetChannelType() == ChannelType.News && message.Components == null)
                 {
                     NewsChannel newsChannel;
-                    using (var context = new BobEntities())
+                    using (var scope = Services.CreateScope())
                     {
+                        var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
                         newsChannel = await context.GetNewsChannel(channel.Id);
                     }
 
@@ -316,7 +342,6 @@ namespace Bob
                     {
                         IUserMessage userMessage = (IUserMessage)message;
                         await userMessage.CrosspostAsync();
-
                         return;
                     }
                 }
@@ -327,10 +352,48 @@ namespace Bob
                     return;
                 }
 
+    //             if (message.Content.StartsWith("<@705680059809398804>"))
+    //             {
+    //                 string cleanedMessage = message.Content.Replace("<@705680059809398804>", "").Trim();
+
+    //                 // 1. Get embedding for the new message
+    //                 float[] embeddingArray = await OpenAI.GetEmbedding(cleanedMessage);
+    //                 var queryEmbedding = new Pgvector.Vector(embeddingArray);
+
+    //                 // 2. Retrieve relevant memories from Postgres (vector search)
+    //                 var relevantMemories = await dbContext.GetRelevantMemoriesAsync(
+    //                     message.Author.Id.ToString(), queryEmbedding, limit: 5);
+
+    //                 // 3. Build the prompt
+    //                 var messages = new List<object>
+    // {
+    //     new { role = "system", content = "You are Bob, a helpful, friendly, and a little fancy Discord bot." }
+    // };
+
+    //                 foreach (var mem in relevantMemories)
+    //                     messages.Add(new { role = "user", content = mem.Content });
+
+    //                 messages.Add(new { role = "user", content = cleanedMessage });
+
+    //                 // 4. Send to OpenAI
+    //                 string response = await OpenAI.PostToOpenAI(messages);
+
+    //                 // 5. Store the new message and its embedding in memory
+    //                 await dbContext.StoreMemoryAsync(
+    //                     message.Author.Id.ToString(), cleanedMessage, queryEmbedding);
+
+    //                 await message.Channel.SendMessageAsync(response);
+    //             }
+
                 // Auto Embed if GitHub Link and Server has Auto Embeds for GitHub 
                 Server server;
-                using var dbContext = new BobEntities();
-                server = await dbContext.GetServer(channel.Guild.Id);
+
+                using (var scope = Services.CreateScope())
+                {
+                    var dbContext = scope.ServiceProvider.GetRequiredService<BobEntities>();
+                    server = await dbContext.GetServer(channel.Guild.Id);
+                }
+
                 if (server.AutoEmbedGitHubLinks == true)
                 {
                     GitHubLinkParse.GitHubLink gitHubLink = GitHubLinkParse.GetUrl(message.Content);
@@ -365,6 +428,7 @@ namespace Bob
                     }
                 }
 
+                // Auto Embed if Message Link and Server has Auto Embeds for Message Links
                 if (server.AutoEmbedMessageLinks)
                 {
                     DiscordMessageLinkParse.DiscordLink discordLink = DiscordMessageLinkParse.GetUrl(message.Content);
@@ -386,12 +450,94 @@ namespace Bob
             }
         }
 
+        private static Task HandleReactionAddedAsync(Cacheable<IUserMessage, ulong> cacheable, Cacheable<IMessageChannel, ulong> channelCache, SocketReaction reaction)
+        {
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    if (await channelCache.GetOrDownloadAsync() is not SocketTextChannel textChannel)
+                    {
+                        return;
+                    }
+
+                    var botUser = textChannel.GetUser(Client.CurrentUser.Id);
+
+                    if (botUser == null || !botUser.GetPermissions(textChannel).ReadMessageHistory)
+                    {
+                        return;
+                    }
+
+                    if (await cacheable.GetOrDownloadAsync() is not IUserMessage userMessage)
+                    {
+                        return;
+                    }
+
+                    using var scope = Services.CreateScope();
+                    var dbContext = scope.ServiceProvider.GetRequiredService<BobEntities>();
+                    var server = await dbContext.GetServer(textChannel.Guild.Id);
+
+                    if (!ReactBoardMethods.IsSetup(server))
+                    {
+                        return;
+                    }
+
+                    var storedEmojiId = ReactBoardMethods.GetEmojiIdFromString(server.ReactBoardEmoji);
+
+                    bool isMatchingEmoji = reaction.Emote is Emote emote
+                        ? emote.Id.ToString() == storedEmojiId
+                        : reaction.Emote.Name.Equals(server.ReactBoardEmoji, StringComparison.OrdinalIgnoreCase);
+
+                    if (!isMatchingEmoji || textChannel.Id == server.ReactBoardChannelId)
+                    {
+                        return;
+                    }
+
+                    if (!userMessage.Reactions.TryGetValue(reaction.Emote, out var reactionMetadata) ||
+                        reactionMetadata.ReactionCount < server.ReactBoardMinimumReactions)
+                    {
+                        return;
+                    }
+
+                    if (Client.GetChannel(server.ReactBoardChannelId.Value) is not SocketTextChannel reactBoardChannel)
+                    {
+                        return;
+                    }
+
+                    botUser = reactBoardChannel.GetUser(Client.CurrentUser.Id);
+                    if (botUser == null || !botUser.GetPermissions(reactBoardChannel).SendMessages)
+                    {
+                        return;
+                    }
+
+                    if (await ReactBoardMethods.IsMessageOnBoardAsync(reactBoardChannel, userMessage.Id))
+                    {
+                        return;
+                    }
+
+                    await reactBoardChannel.SendMessageAsync(
+                        embeds: [.. ReactBoardMethods.GetReactBoardEmbeds(userMessage)],
+                        allowedMentions: AllowedMentions.None,
+                        components: ReactBoardMethods.GetReactBoardComponents(userMessage)
+                    );
+
+                    await ReactBoardMethods.AddToCacheAndDbAsync(reactBoardChannel, userMessage.Id);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine($"Error handling reaction: {e.Message}");
+                    Console.WriteLine(e.StackTrace);
+                }
+            });
+            return Task.CompletedTask;
+        }
+
         private static async Task InteractionCreated(SocketInteraction interaction)
         {
             try
             {
                 ShardedInteractionContext ctx = new(Client, interaction);
-                await Service.ExecuteCommandAsync(ctx, null);
+                await Service.ExecuteCommandAsync(ctx, Services);
             }
             catch
             {

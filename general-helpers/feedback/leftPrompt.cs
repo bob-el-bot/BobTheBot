@@ -1,8 +1,10 @@
 using System.Threading.Tasks;
+using Bob.Database;
 using Bob.Debug;
 using Discord;
 using Discord.Interactions;
 using Discord.WebSocket;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Bob.Feedback
 {
@@ -41,6 +43,18 @@ namespace Bob.Feedback
             {
                 // User's direct messages are closed, no action needed
             }
+
+            using var scope = Bot.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
+
+            var server = await context.GetServer(guild.Id);
+
+            if (server == null)
+            {
+                return;
+            }
+
+            await context.RemoveServer(server);
         }
 
         [ComponentInteraction("leftGuild:*")]

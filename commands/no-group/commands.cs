@@ -20,7 +20,7 @@ using Bob.Time.Timestamps;
 
 namespace Bob.Commands
 {
-    public class NoGroup : InteractionModuleBase<ShardedInteractionContext>
+    public class NoGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInteractionContext>
     {
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
@@ -125,7 +125,6 @@ namespace Bob.Commands
                 }
                 else
                 {
-                    await DeferAsync();
                     await Challenge.SendMessage(Context.Interaction, new TicTacToe(Context.User, opponent));
                 }
             }
@@ -206,7 +205,6 @@ namespace Bob.Commands
                 }
                 else
                 {
-                    await DeferAsync();
                     await Challenge.SendMessage(Context.Interaction, new Trivia(Context.User, opponent));
                 }
             }
@@ -274,7 +272,6 @@ namespace Bob.Commands
                 }
                 else
                 {
-                    await DeferAsync();
                     await Challenge.SendMessage(Context.Interaction, new RockPaperScissors(Context.User, opponent));
                 }
             }
@@ -350,7 +347,6 @@ namespace Bob.Commands
                 }
                 else
                 {
-                    await DeferAsync();
                     await Challenge.SendMessage(Context.Interaction, new Connect4(Context.User, opponent));
                 }
             }
@@ -571,37 +567,99 @@ namespace Bob.Commands
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("announce", "Bob will create a fancy embed announcement in the channel the command is used in.")]
-        public async Task Announce([Summary("title", "The title of the announcement (the title of the embed).")][MinLength(1)][MaxLength(256)] string title, [Summary("description", "The anouncement (the description of the embed).")][MinLength(1)][MaxLength(4096)] string description, [Summary("color", "A color name (purple), or a valid hex code (#8D52FD) or valid RGB code (141, 82, 253).")] string color)
+        public async Task Announce([Summary("title", "The title of the announcement (the title of the embed).")][MinLength(1)][MaxLength(256)] string title,
+            [Summary("description", "The anouncement (the description of the embed).")][MinLength(1)][MaxLength(4096)] string description,
+            [Summary("color", "A color name (purple), or a valid hex code (#8D52FD) or valid RGB code (141, 82, 253).")] string color,
+            [Summary("image", "An image you would like to use (PNG, JPG, JPEG, WEBP, GIF, BMP).")] Attachment attachment = null)
         {
-            Color? finalColor = Colors.TryGetColor(color);
+            await DeferAsync(ephemeral: true);
 
-            // Check if Bob has permission to send messages in given channel
-            ChannelPermissions permissions = Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel);
-            if (!Context.Interaction.IsDMInteraction && (!permissions.SendMessages || !permissions.ViewChannel || !permissions.EmbedLinks))
+            if (!Context.Interaction.IsDMInteraction)
             {
-                await RespondAsync(text: $"❌ Bob is either missing permissions to view, send messages, *or* embed links in the channel <#{Context.Channel.Id}>\n- Try giving Bob the following pemrissions: `View Channel`, `Embed Links`, and `Send Messages`.", ephemeral: true);
-            }
-            else if (finalColor == null)
-            {
-                await RespondAsync(text: $"❌ `{color}` is an invalid color. Here is a list of valid colors:\n- {Colors.GetSupportedColorsString()}.\n- Valid hex and RGB codes are also accepted.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
-            }
-            else
-            {
-                var embed = new EmbedBuilder
+                IGuildChannel channelToCheck;
+                if (Context.Channel is SocketThreadChannel thread)
                 {
-                    Title = title,
-                    Color = finalColor,
-                    Description = Announcement.FormatDescription(description),
-                    Footer = new EmbedFooterBuilder
-                    {
-                        IconUrl = Context.User.GetAvatarUrl(),
-                        Text = $"Announced by {Context.User.Username}"
-                    }
-                };
+                    channelToCheck = thread.ParentChannel;
+                }
+                else
+                {
+                    channelToCheck = (IGuildChannel)Context.Channel;
+                }
 
-                await RespondAsync(text: "✅ Your announcement has been made.", ephemeral: true);
-                await Context.Channel.SendMessageAsync(embed: embed.Build());
+                var botUser = Context.Guild.GetUser(Context.Client.CurrentUser.Id);
+                ChannelPermissions permissions = botUser.GetPermissions(channelToCheck);
+
+                if (!permissions.SendMessages || !permissions.ViewChannel || !permissions.EmbedLinks)
+                {
+                    await FollowupAsync(
+                        text: $"❌ Bob is either missing permissions to view, send messages, *or* " +
+                              $"embed links in the channel <#{Context.Channel.Id}>\n- Try giving Bob " +
+                              $"the following permissions: `View Channel`, `Embed Links`, " +
+                              $"and `Send Messages`.",
+                        ephemeral: true
+                    );
+                    return;
+                }
             }
+
+            Color? finalColor = Colors.TryGetColor(color);
+            if (finalColor == null)
+            {
+                await FollowupAsync(
+                    text: $"❌ `{color}` is an invalid color. Here is a list of valid colors:\n" +
+                          $"- {Colors.GetSupportedColorsString()}.\n" +
+                          $"- Valid hex and RGB codes are also accepted.\n" +
+                          $"- If you think this is a mistake, let us know here: " +
+                          $"[Bob's Official Server](https://discord.gg/HvGMRZD8jQ)",
+                    ephemeral: true
+                );
+                return;
+            }
+
+            string imageUrl = null;
+            if (attachment != null)
+            {
+                string contentType = attachment.ContentType?.ToLower();
+                if (string.IsNullOrEmpty(contentType) || (contentType != "image/png" && contentType != "image/jpeg" && contentType != "image/jpg" && contentType != "image/webp" && contentType != "image/gif" && contentType != "image/bmp"))
+                {
+                    await FollowupAsync(
+                        "❌ The image must be in either **PNG**, **JPG**, **JPEG**, " +
+                        "**WEBP**, **GIF**, or **BMP** format.",
+                        ephemeral: true
+                    );
+                    return;
+                }
+                imageUrl = attachment.Url;
+            }
+
+            var embed = new EmbedBuilder
+            {
+                Title = title,
+                Color = finalColor,
+                Description = Announcement.FormatDescription(description),
+                ImageUrl = imageUrl,
+                Footer = new EmbedFooterBuilder
+                {
+                    IconUrl = Context.User.GetAvatarUrl(),
+                    Text = $"Announced by {Context.User.Username}"
+                }
+            }.Build();
+
+            try
+            {
+                await Context.Channel.SendMessageAsync(embed: embed);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to send announcement: {ex}");
+                await FollowupAsync(
+                    "❌ I was unable to send the announcement. Please double-check my permissions in this channel.",
+                    ephemeral: true
+                );
+                return;
+            }
+
+            await FollowupAsync(text: "✅ Your announcement has been made.", ephemeral: true);
         }
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
@@ -647,18 +705,21 @@ namespace Bob.Commands
             var embed = new EmbedBuilder
             {
                 Title = $"What's New?",
-                Description = @"### 🗒️ Creator's Notes
-- We realize that subscription models suck, and now that Discord has an option for one-time purchases, we do too! Lifetime ✨ premium goes for ***only $4.99!*** (💜 we hope this makes your life better!)
-- Added `/convert qr-code` to convert text or URLs to a QR code here in Discord!
-- Added random selection of users if left unspecified in `/ship`. Shoutout x_star. for the idea!
-- Revamped `/mastermind` to be more accurate to the original board game. It is now color-based, has three difficulty options, and two game modes. Shoutout intelligenceunknownsh for some of these ideas!
-- Improved the `/connect4` AI to be more challenging by increasing search depth and adding in some randomness to the beginning of games. Shoutout intelligenceunknownsh for catching this!
-- Improved `/ship` calculation to make the distribution more even and less biased towards 60-70%. Shoutout intelligenceunknownsh for catching this!
-- Made `/preview color` and `/random color` faster and more memory efficient by using the WEBP format instead of PNG.
-- Fixed bug where user's game stats were updated on the test bot.
-- Fixed bug where `/quote new` and the message command `Quote` incorrectly handled quotes of 4096 characters which led to uncaught exceptions.
+                Description = @"### 🗒️ Creator's Notes (June 15th, 2025)
+- Due to the over all value increase of premium and the growing number of users Bob needs to look over we have increased the cost tht premium goes for. Monthly is now ***4.99*** and Lifetime is now ***$19.99***. Users who have already purchased premium will not be affected by this change (💜 thanks to everyone who already has).
+- Added image support to 📢 `/announce` command (thanks hbkvxncent for the idea).
+- Added 📌 `/react-board` group to setup and manage a React Baord in your server (thanks hbkvxncent for the idea). Make sure to see the `React Board Commands` section in `/help` for more info.
+- Added 🤬 `/admin confess filter-toggle` to turn confess filtering on or off for your server.
+- Added 🤬 `/profile confessions-filter-toggle` to allow you to decide whether you want to use confess filtering or not.
+- Added 🚫 `/automod remove` to remove a specific automod rule from your server (thanks honey_bunny5130 for the idea).
+- Added 🗑️ `/automod remove-all` to remove all automod rules from your server (thanks honey_bunny5130 for the idea).
+- Added autocomplete to 📏 `/convert units` to make it far easier to use.
+- Moved Bob over to 💎 Sharding to meet Discord's requirements. This means that Bob can now handle more servers, and is more stable than ever!
+- Made the [user] field in `/quote new` default to the user calling the command, so you don't have to specify it every time.
+- Fixed 🪲 bug in Quote creation where if a user had no guild nickname it would show a blank name (thanks hbkvxncent for catching this).
+- Fixed a bug in Announcement creation where if a user had no guild nickname it would show a blank name (thanks hbkvxncent for catching this).
 - Stay 📺 tuned for more awesome updates!",
-                Color = Bot.theme
+                Color = theme
             };
 
             embed.AddField(name: "✨ Latest Update", value: commitMessage, inline: true)
@@ -723,9 +784,7 @@ namespace Bob.Commands
 
             try
             {
-                using var context = new BobEntities();
-
-                var dbUser = await context.GetUser(user.Id);
+                var dbUser = await dbContext.GetUser(user.Id);
 
                 FilterResult filterResult = new();
 
@@ -738,12 +797,12 @@ namespace Bob.Commands
 
                     if (filterResult.BlacklistMatches.Count > 0)
                     {
-                        Server dbServer = Context.Guild?.Id != null ? await context.GetServer(Context.Guild.Id) : null;
+                        Server dbServer = Context.Guild?.Id != null ? await dbContext.GetServer(Context.Guild.Id) : null;
 
                         // If a Guild Install and confess filtering is on for the server, punish.
                         if (dbServer != null && dbServer.ConfessFilteringOff == false)
                         {
-                            var bannedUser = await context.GetUserFromBlackList(Context.User.Id);
+                            var bannedUser = await dbContext.GetUserFromBlackList(Context.User.Id);
                             string reason = $"Sending a message with {Help.GetCommandMention("confess")} that contained: {ConfessFiltering.FormatBannedWords(filterResult.BlacklistMatches)}";
 
                             if (isUserBlacklisted)
@@ -763,7 +822,7 @@ namespace Bob.Commands
 
                     if (isUserBlacklisted)
                     {
-                        var bannedUser = await context.GetUserFromBlackList(Context.User.Id);
+                        var bannedUser = await dbContext.GetUserFromBlackList(Context.User.Id);
                         await FollowupAsync($"❌ This server has confess message filtering turned on. You are currently banned from using {Help.GetCommandMention("confess")}\n{bannedUser.FormatAsString()}\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
                         return;
                     }
@@ -830,8 +889,7 @@ namespace Bob.Commands
             await DeferAsync();
 
             User user;
-            using var context = new BobEntities();
-            user = await context.GetUser(Context.User.Id);
+            user = await dbContext.GetUser(Context.User.Id);
 
             // If user has premium ensure DB is updated.
             bool isPremium = Premium.IsPremium(Context.Interaction.Entitlements);
@@ -850,7 +908,7 @@ namespace Bob.Commands
                     if (entitlementCollection.Any(x => x.SkuId == 1282452500913328180))
                     {
                         user.PremiumExpiration = DateTimeOffset.MaxValue;
-                        await context.UpdateUser(user);
+                        await dbContext.UpdateUser(user);
                     }
                 }
 
