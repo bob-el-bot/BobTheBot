@@ -9,7 +9,7 @@ using Bob.Commands.Helpers;
 
 namespace Bob.Commands.Helpers
 {
-    public class Connect4(IUser player1, IUser player2) : Games.Game(GameType.Connect4, onePerChannel, TimeSpan.FromMinutes(5), player1, player2)
+    public class Connect4(IUser player1, IUser player2) : Games.Game(GameType.Connect4, onePerChannel, TimeSpan.FromMinutes(15), player1, player2)
     {
         public override string Title { get; } = "Connect 4";
         private static readonly bool onePerChannel = false;
@@ -36,7 +36,7 @@ namespace Bob.Commands.Helpers
             Challenge.AddToSpecificGameList(this);
 
             // Reset Expiration Time.
-            UpdateExpirationTime(TimeSpan.FromMinutes(5));
+            UpdateExpirationTime(TimeSpan.FromMinutes(15));
 
             Expired += Challenge.ExpireGame;
 
