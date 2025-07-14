@@ -295,20 +295,20 @@ namespace Bob.Challenges
             switch (winner)
             {
                 case WinCases.Player2:
-                    return $"### 🏆 {game.Player2.Mention} Wins!\n**against** {game.Player1.Mention}";
+                    return $"## 🏆 {game.Player2.Mention} Wins!\n**against** {game.Player1.Mention}";
                 case WinCases.Tie:
-                    return $"### 🤝 {game.Player1.Mention} Drew {game.Player2.Mention}!";
+                    return $"## 🤝 {game.Player1.Mention} Drew {game.Player2.Mention}!";
                 case WinCases.Player1:
-                    return $"### 🏆 {game.Player1.Mention} Wins!\n**against** {game.Player2.Mention}";
+                    return $"## 🏆 {game.Player1.Mention} Wins!\n**against** {game.Player2.Mention}";
                 default:
                     if (game.Type == GameType.Trivia)
                     {
                         var triviaGame = (Trivia)game;
-                        return $"### 💡 {game.Player1.Mention} got {triviaGame.Player1Points}/{TriviaMethods.TotalQuestions}!";
+                        return $"## 💡 {game.Player1.Mention} got {triviaGame.Player1Points}/{TriviaMethods.TotalQuestions}!";
                     }
                     else
                     {
-                        return $"### 🤝 {game.Player1.Mention} Drew {game.Player2.Mention}!";
+                        return $"## 🤝 {game.Player1.Mention} Drew {game.Player2.Mention}!";
                     }
             }
         }
