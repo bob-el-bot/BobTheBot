@@ -96,26 +96,45 @@ namespace Bob.Challenges
             game.Id = game.OnePerChannel ? interaction.Channel.Id : game.Message.Id;
             game.State = GameState.Challenge;
 
-            var components = new ComponentBuilderV2()
-                .WithContainer(new ContainerBuilder()
-                    .WithTextDisplay($"### ⚔️ {game.Player1.Mention} Challenges {game.Player2.Mention} to {game.Title}.\nAccept or decline {Timestamp.FromDateTime(game.ExpirationTime, Timestamp.Formats.Relative)}.")
-                    .WithAccentColor(DefaultColor)
-                    .WithActionRow([
-                        new ButtonBuilder(label: "⚔️ Accept", customId: $"acceptChallenge:{game.Id}", style: ButtonStyle.Success),
-                new ButtonBuilder(label: "🛡️ Decline", customId: $"declineChallenge:{game.Id}", style: ButtonStyle.Danger),
-                    ]))
-                .Build();
-
             AddToSpecificGameList(game);
-
             game.Expired += ExpireGame;
-            await interaction.ModifyOriginalResponseAsync(x =>
+
+            switch (game.Type)
             {
-                x.Content = null;
-                x.Embed = null;
-                x.Components = components;
-                x.Flags = MessageFlags.ComponentsV2;
-            });
+                case GameType.Trivia:
+                    var componentsV2 = new ComponentBuilderV2()
+                        .WithContainer(new ContainerBuilder()
+                            .WithTextDisplay($"### ⚔️ {game.Player1.Mention} Challenges {game.Player2.Mention} to {game.Title}.\nAccept or decline {Timestamp.FromDateTime(game.ExpirationTime, Timestamp.Formats.Relative)}.")
+                            .WithAccentColor(DefaultColor)
+                            .WithActionRow([
+                                new ButtonBuilder(label: "⚔️ Accept", customId: $"acceptChallenge:{game.Id}", style: ButtonStyle.Success),
+                                new ButtonBuilder(label: "🛡️ Decline", customId: $"declineChallenge:{game.Id}", style: ButtonStyle.Danger),
+                            ]))
+                        .Build();
+
+                    await interaction.ModifyOriginalResponseAsync(x =>
+                    {
+                        x.Content = null;
+                        x.Embed = null;
+                        x.Components = componentsV2;
+                        x.Flags = MessageFlags.ComponentsV2;
+                    });
+
+                    break;
+                default:
+                    // Format Message
+                    var embed = new EmbedBuilder
+                    {
+                        Color = DefaultColor,
+                        Description = $"### ⚔️ {game.Player1.Mention} Challenges You to {game.Title}.\nAccept or decline {Timestamp.FromDateTime(game.ExpirationTime, Timestamp.Formats.Relative)}."
+                    };
+
+                    var components = new ComponentBuilder().WithButton(label: "⚔️ Accept", customId: $"acceptChallenge:{game.Id}", style: ButtonStyle.Success)
+                    .WithButton(label: "🛡️ Decline", customId: $"declineChallenge:{game.Id}", style: ButtonStyle.Danger);
+
+                    await interaction.ModifyOriginalResponseAsync(x => { x.Content = game.Player2.Mention; x.Embed = embed.Build(); x.Components = components.Build(); });
+                    break;
+            }
         }
 
         /// <summary>
