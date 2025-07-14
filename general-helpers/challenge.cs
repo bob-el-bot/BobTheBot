@@ -92,27 +92,49 @@ namespace Bob.Challenges
             // Update User Info
             IncrementUserChallenges(game.Player1.Id);
 
-            // Prepare Game
-            game.Message = interaction.GetOriginalResponseAsync().Result;
+            game.Message = await interaction.GetOriginalResponseAsync();
             game.Id = game.OnePerChannel ? interaction.Channel.Id : game.Message.Id;
             game.State = GameState.Challenge;
 
-            // Add to Games List
             AddToSpecificGameList(game);
-
-            // Format Message
-            var embed = new EmbedBuilder
-            {
-                Color = DefaultColor,
-                Description = $"### ⚔️ {game.Player1.Mention} Challenges You to {game.Title}.\nAccept or decline {Timestamp.FromDateTime(game.ExpirationTime, Timestamp.Formats.Relative)}."
-            };
-
-            var components = new ComponentBuilder().WithButton(label: "⚔️ Accept", customId: $"acceptChallenge:{game.Id}", style: ButtonStyle.Success)
-            .WithButton(label: "🛡️ Decline", customId: $"declineChallenge:{game.Id}", style: ButtonStyle.Danger);
-
-            // Start Challenge
             game.Expired += ExpireGame;
-            await interaction.ModifyOriginalResponseAsync(x => { x.Content = game.Player2.Mention; x.Embed = embed.Build(); x.Components = components.Build(); });
+
+            switch (game.Type)
+            {
+                case GameType.Trivia:
+                    var componentsV2 = new ComponentBuilderV2()
+                        .WithContainer(new ContainerBuilder()
+                            .WithTextDisplay($"### ⚔️ {game.Player1.Mention} Challenges {game.Player2.Mention} to {game.Title}.\nAccept or decline {Timestamp.FromDateTime(game.ExpirationTime, Timestamp.Formats.Relative)}.")
+                            .WithAccentColor(DefaultColor)
+                            .WithActionRow([
+                                new ButtonBuilder(label: "⚔️ Accept", customId: $"acceptChallenge:{game.Id}", style: ButtonStyle.Success),
+                                new ButtonBuilder(label: "🛡️ Decline", customId: $"declineChallenge:{game.Id}", style: ButtonStyle.Danger),
+                            ]))
+                        .Build();
+
+                    await interaction.ModifyOriginalResponseAsync(x =>
+                    {
+                        x.Content = null;
+                        x.Embed = null;
+                        x.Components = componentsV2;
+                        x.Flags = MessageFlags.ComponentsV2;
+                    });
+
+                    break;
+                default:
+                    // Format Message
+                    var embed = new EmbedBuilder
+                    {
+                        Color = DefaultColor,
+                        Description = $"### ⚔️ {game.Player1.Mention} Challenges You to {game.Title}.\nAccept or decline {Timestamp.FromDateTime(game.ExpirationTime, Timestamp.Formats.Relative)}."
+                    };
+
+                    var components = new ComponentBuilder().WithButton(label: "⚔️ Accept", customId: $"acceptChallenge:{game.Id}", style: ButtonStyle.Success)
+                    .WithButton(label: "🛡️ Decline", customId: $"declineChallenge:{game.Id}", style: ButtonStyle.Danger);
+
+                    await interaction.ModifyOriginalResponseAsync(x => { x.Content = game.Player2.Mention; x.Embed = embed.Build(); x.Components = components.Build(); });
+                    break;
+            }
         }
 
         /// <summary>
@@ -292,20 +314,20 @@ namespace Bob.Challenges
             switch (winner)
             {
                 case WinCases.Player2:
-                    return $"### 🏆 {game.Player2.Mention} Wins!\n**against** {game.Player1.Mention}";
+                    return $"## 🏆 {game.Player2.Mention} Wins!\n**against** {game.Player1.Mention}";
                 case WinCases.Tie:
-                    return $"### 🤝 {game.Player1.Mention} Drew {game.Player2.Mention}!";
+                    return $"## 🤝 {game.Player1.Mention} Drew {game.Player2.Mention}!";
                 case WinCases.Player1:
-                    return $"### 🏆 {game.Player1.Mention} Wins!\n**against** {game.Player2.Mention}";
+                    return $"## 🏆 {game.Player1.Mention} Wins!\n**against** {game.Player2.Mention}";
                 default:
                     if (game.Type == GameType.Trivia)
                     {
                         var triviaGame = (Trivia)game;
-                        return $"### 💡 {game.Player1.Mention} got {triviaGame.Player1Points}/{TriviaMethods.TotalQuestions}!";
+                        return $"## 💡 {game.Player1.Mention} got {triviaGame.Player1Points}/{TriviaMethods.TotalQuestions}!";
                     }
                     else
                     {
-                        return $"### 🤝 {game.Player1.Mention} Drew {game.Player2.Mention}!";
+                        return $"## 🤝 {game.Player1.Mention} Drew {game.Player2.Mention}!";
                     }
             }
         }
