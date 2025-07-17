@@ -89,6 +89,8 @@ namespace Bob
             Client.EntitlementUpdated += EntitlementUpdated;
             Client.MessageReceived += MessageReceived;
             Client.ReactionAdded += HandleReactionAddedAsync;
+            Client.ReactionRemoved += HandleReactionRemovedAsync;
+            Client.ReactionRemoved += HandleReactionClearedAsync;
 
             await Client.LoginAsync(TokenType.Bot, Token);
             await Client.StartAsync();
@@ -450,7 +452,10 @@ namespace Bob
             }
         }
 
-        private static Task HandleReactionAddedAsync(Cacheable<IUserMessage, ulong> cacheable, Cacheable<IMessageChannel, ulong> channelCache, SocketReaction reaction)
+        private static Task HandleReactionAddedAsync(
+            Cacheable<IUserMessage, ulong> cacheable,
+            Cacheable<IMessageChannel, ulong> channelCache,
+            SocketReaction reaction)
         {
             _ = Task.Run(async () =>
             {
@@ -468,10 +473,15 @@ namespace Bob
                         return;
                     }
 
-                    if (await cacheable.GetOrDownloadAsync() is not IUserMessage userMessage)
+                    var userMessage = await CachedMessages.GetOrDownloadAsync(textChannel, cacheable.Id);
+                    if (userMessage == null)
                     {
                         return;
                     }
+
+                    string key = reaction.Emote is Emote emote ? emote.Id.ToString() : reaction.Emote.Name;
+
+                    userMessage.IncreaseReactionCount(key);
 
                     using var scope = Services.CreateScope();
                     var dbContext = scope.ServiceProvider.GetRequiredService<BobEntities>();
@@ -484,17 +494,17 @@ namespace Bob
 
                     var storedEmojiId = ReactBoardMethods.GetEmojiIdFromString(server.ReactBoardEmoji);
 
-                    bool isMatchingEmoji = reaction.Emote is Emote emote
-                        ? emote.Id.ToString() == storedEmojiId
-                        : reaction.Emote.Name.Equals(server.ReactBoardEmoji, StringComparison.OrdinalIgnoreCase);
+                    bool isMatchingEmoji = (storedEmojiId != null && key == storedEmojiId)
+                        || reaction.Emote.Name.Equals(server.ReactBoardEmoji, StringComparison.OrdinalIgnoreCase);  
 
                     if (!isMatchingEmoji || textChannel.Id == server.ReactBoardChannelId)
                     {
                         return;
                     }
 
-                    if (!userMessage.Reactions.TryGetValue(reaction.Emote, out var reactionMetadata) ||
-                        reactionMetadata.ReactionCount < server.ReactBoardMinimumReactions)
+                    var reactionCount = userMessage.GetReactionCount(key);
+
+                    if (reactionCount == 0 || reactionCount < server.ReactBoardMinimumReactions)
                     {
                         return;
                     }
@@ -510,24 +520,74 @@ namespace Bob
                         return;
                     }
 
-                    if (await ReactBoardMethods.IsMessageOnBoardAsync(reactBoardChannel, userMessage.Id))
+                    if (await ReactBoardMethods.IsMessageOnBoardAsync(reactBoardChannel, userMessage.Message.Id))
                     {
                         return;
                     }
 
                     await reactBoardChannel.SendMessageAsync(
-                        embeds: [.. ReactBoardMethods.GetReactBoardEmbeds(userMessage)],
+                        embeds: [.. ReactBoardMethods.GetReactBoardEmbeds(userMessage.Message)],
                         allowedMentions: AllowedMentions.None,
-                        components: ReactBoardMethods.GetReactBoardComponents(userMessage)
+                        components: ReactBoardMethods.GetReactBoardComponents(userMessage.Message)
                     );
 
-                    await ReactBoardMethods.AddToCacheAndDbAsync(reactBoardChannel, userMessage.Id);
+                    await ReactBoardMethods.AddToCacheAndDbAsync(reactBoardChannel, userMessage.Message.Id);
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine($"Error handling reaction: {e.Message}");
                     Console.WriteLine(e.StackTrace);
                 }
+            });
+            return Task.CompletedTask;
+        }
+
+        public static Task HandleReactionRemovedAsync(
+            Cacheable<IUserMessage, ulong> cacheable,
+            Cacheable<IMessageChannel, ulong> channelCache,
+            SocketReaction reaction)
+        {
+            _ = Task.Run(async () =>
+            {
+                if (await channelCache.GetOrDownloadAsync() is not SocketTextChannel textChannel)
+                {
+                    return;
+                }
+
+                var userMessage = await CachedMessages.GetOrDownloadAsync(textChannel, cacheable.Id);
+                if (userMessage == null)
+                {
+                    return;
+                }
+
+                var key = reaction.Emote is Emote emote ? emote.Id.ToString() : reaction.Emote.Name;
+
+                userMessage.DecrementReactionCount(key);
+            });
+            return Task.CompletedTask;
+        }
+
+        public static Task HandleReactionClearedAsync(
+            Cacheable<IUserMessage, ulong> cacheable,
+            Cacheable<IMessageChannel, ulong> channelCache,
+            SocketReaction reaction)
+        {
+            _ = Task.Run(async () =>
+            {
+                if (await channelCache.GetOrDownloadAsync() is not SocketTextChannel textChannel)
+                {
+                    return;
+                }
+
+                var userMessage = await CachedMessages.GetOrDownloadAsync(textChannel, cacheable.Id);
+                if (userMessage == null)
+                {
+                    return;
+                }
+
+                var key = reaction.Emote is Emote emote ? emote.Id.ToString() : reaction.Emote.Name;
+
+                userMessage.SetReactionCount(key, 0);
             });
             return Task.CompletedTask;
         }
