@@ -8,7 +8,7 @@ using Bob.Games;
 
 namespace Bob.Commands.Helpers
 {
-    public class Wordle(IUser player1, IUser player2) : Games.Game(GameType.Wordle, onePerChannel, TimeSpan.FromMinutes(10), player1, player2)
+    public class Wordle(IUser player1, IUser player2) : Games.Game(GameType.Wordle, onePerChannel, TimeSpan.FromMinutes(20), player1, player2)
     {
         public override string Title { get; } = "Wordle";
         private static readonly bool onePerChannel = true;
@@ -30,7 +30,7 @@ namespace Bob.Commands.Helpers
             Challenge.AddToSpecificGameList(this);
 
             // Reset Expiration Time.
-            UpdateExpirationTime(TimeSpan.FromMinutes(10));
+            UpdateExpirationTime(TimeSpan.FromMinutes(20));
 
             Expired += Challenge.ExpireGame;
 
