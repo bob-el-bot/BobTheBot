@@ -38,6 +38,29 @@ namespace Bob.Commands
             await RespondAsync(text: "👋 hi!");
         }
 
+        [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
+        [IntegrationType(ApplicationIntegrationType.GuildInstall)]
+        [SlashCommand("tag", "Bob will display a tag.")]
+        public async Task Tag([Summary("tag", "The tag you want to use.")][Autocomplete(typeof(TagAutocompleteHandler))] string tagId)
+        {
+            await DeferAsync();
+
+            if (!int.TryParse(tagId, out int id))
+            {
+                await FollowupAsync(text: "❌ Invalid tag ID provided.");
+                return;
+            }
+
+            var tag = await dbContext.GetTag(id);
+            if (tag == null || tag.GuildId != Context.Guild.Id)
+            {
+                await FollowupAsync(text: "❌ Tag not found or does not belong to this server.");
+                return;
+            }
+
+            await FollowupAsync(text: tag.Content);
+        }
+
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("analyze-link", "Bob will check out a link, and see where it takes you.")]
