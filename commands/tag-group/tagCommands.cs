@@ -13,7 +13,7 @@ namespace Bob.Commands;
 public class TagGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInteractionContext>
 {
     [SlashCommand("create", "Create a new tag.")]
-    public async Task create([Summary("name", "The name of the tag (1-50 characters).")][MinLength(1)][MaxLength(50)] string name, [Summary("content", "The content of the tag (5-2000 characters).")][MinLength(5)][MaxLength(2000)] string content)
+    public async Task Create([Summary("name", "The name of the tag (1-50 characters).")][MinLength(1)][MaxLength(50)] string name, [Summary("content", "The content of the tag (5-2000 characters).")][MinLength(5)][MaxLength(2000)] string content)
     {
         await DeferAsync(ephemeral: true);
 
@@ -39,7 +39,7 @@ public class TagGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInte
     }
 
     [SlashCommand("list", "List all tags in the server.")]
-    public async Task list()
+    public async Task List()
     {
         await DeferAsync();
 
@@ -54,8 +54,8 @@ public class TagGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInte
         await FollowupAsync($"🏷️ Tags in this server:\n{tagList}");
     }
 
-    [SlashCommand("delete", "Delete a tag by name.")]
-    public async Task delete([Summary("tag", "The tag to delete.")][Autocomplete(typeof(TagAutocompleteHandler))] string tagId)
+    [SlashCommand("remove", "Delete a tag by name.")]
+    public async Task Remove([Summary("tag", "The tag to delete.")][Autocomplete(typeof(TagAutocompleteHandler))] string tagId)
     {
         await DeferAsync(ephemeral: true);
 

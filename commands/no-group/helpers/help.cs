@@ -756,7 +756,115 @@ namespace Bob.Commands.Helpers
                     }
                 ]
             },
-            new() {
+            new()
+            {
+                Title = "Tag Commands",
+                Name = "tags",
+                Description = "Commands for creating, editing, and managing server tags.",
+                Emoji = "🏷️",
+                Url = "https://docs.bobthebot.net#tags",
+                Commands = [
+                    new CommandInfo
+                    {
+                        Name = "tag",
+                        InheritGroupName = false,
+                        Description = "Displays the content of the specified tag.",
+                        Url = "https://docs.bobthebot.net#tag",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "tag",
+                                Description = "The tag to display."
+                            }
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "create",
+                        InheritGroupName = true,
+                        Description = "Create a new tag.",
+                        Url = "https://docs.bobthebot.net#tags-create",
+                        Parameters = 
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "name",
+                                Description = "The name of the tag (1-50 characters). Tag names are case-insensitive and must be unique."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "content",
+                                Description = "The content of the tag (5-2000 characters)."
+                            }
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "info",
+                        InheritGroupName = true,
+                        Description = "Displays all information about the tag.",
+                        Url = "https://docs.bobthebot.net#tags-info",
+                        Parameters = 
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "tag",
+                                Description = "The tag to get information about."
+                            }
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "edit",
+                        InheritGroupName = true,
+                        Description = "Edit the content of the specified tag.",
+                        Url = "https://docs.bobthebot.net#tags-edit",
+                        Parameters = [
+                            new ParameterInfo
+                            {
+                                Name = "tag",
+                                Description = "The tag to edit."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "content",
+                                Description = "The new content for the tag (5-2000 characters)."
+                            }
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "list",
+                        InheritGroupName = true,
+                        Description = "List all tags in the server.",
+                        Url = "https://docs.bobthebot.net#tags-list"
+                    },
+                    new CommandInfo
+                    {
+                        Name = "remove",
+                        InheritGroupName = true,
+                        Description = "Deletes the specified tag.",
+                        Url = "https://docs.bobthebot.net#tags-remove",
+                        Parameters = [
+                            new ParameterInfo
+                            {
+                                Name = "tag",
+                                Description = "The tag to delete."
+                            }
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "remove-all",
+                        InheritGroupName = true,
+                        Description = "Removes ALL tags from the server.",
+                        Url = "https://docs.bobthebot.net#tags-remove-all"
+                    },
+                ]
+            },
+            new()
+            {
                 Title = "Welcoming",
                 Name = "welcome",
                 Description = "Commands related to welcoming new users.",
