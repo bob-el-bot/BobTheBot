@@ -99,6 +99,14 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/quote set-max-length [length]` Sets the maximum length of quotes for the server.
 - `/quote set-min-length [length]` Sets the minimum length of quotes for the server.
 
+### 🏷️ Tag Commands:
+- `/tag [tag]` Displays the content of the specified tag.
+- `/tags create [name] [content]` Create a new tag.
+- `/tags info [tag]` Displays all information about the tag.
+- `/tags edit [tag] [content]` Edits the content of the specified tag.
+- `/tags remove [tag]` Deletes the specified tag.
+- `/tags [remove-all]` Removes ALL tags from the server.
+
 ### 📌 React Board Commands:
 - `/react-board toggle [enable]` Toggle the react board for the server.
 - `/react-board channel [channel]` Set the channel for the react board.

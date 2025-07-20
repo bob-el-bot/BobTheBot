@@ -7,6 +7,7 @@ using Bob.Database.Types;
 using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Pgvector;
 using Pgvector.EntityFrameworkCore;
 
@@ -31,6 +32,7 @@ namespace Bob.Database
         public virtual DbSet<ScheduledAnnouncement> ScheduledAnnouncement { get; set; }
         public virtual DbSet<ReactBoardMessage> ReactBoardMessage { get; set; }
         public virtual DbSet<Memory> Memory { get; set; }
+        public virtual DbSet<Tag> Tag { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -67,6 +69,17 @@ namespace Bob.Database
             modelBuilder.Entity<Memory>()
                 .Property(m => m.Embedding)
                 .HasColumnType("vector(1536)");
+
+            modelBuilder.Entity<Tag>(entity =>
+            {
+                entity.HasIndex(e => new { e.GuildId, e.AuthorId });
+                entity.HasIndex(e => new { e.GuildId, e.Name }).IsUnique();
+            });
+
+            modelBuilder.Entity<ReactBoardMessage>(entity =>
+            {
+                entity.HasIndex(e => e.GuildId);
+            });
 
             base.OnModelCreating(modelBuilder);
         }
@@ -614,6 +627,84 @@ namespace Bob.Database
                 .ToListAsync();
 
             return memories;
+        }
+
+        /// <summary>
+        /// Retrieves a tag from the database by its ID.
+        /// </summary>
+        /// <param name="id">The unique ID of the tag (usually the server ID).</param>
+        /// <returns>The corresponding <see cref="Tag"/> object if found; otherwise, null.</returns>
+        public virtual async Task<Tag> GetTag(int id)
+        {
+            return await Tag.FindAsync(keyValues: id);
+        }
+
+        /// <summary>
+        /// Retrieves a tag from the database by its guild ID and name.
+        /// </summary>
+        /// <param name="guildId">The unique ID of the guild.</param>
+        /// <param name="name">The name of the tag.</param>
+        /// <returns>The corresponding <see cref="Tag"/> object if found; otherwise, null.</returns>
+        public virtual async Task<Tag> GetTag(ulong guildId, string name)
+        {
+            #pragma warning disable CA1862
+            return await Tag.FirstOrDefaultAsync(t => t.GuildId == guildId &&
+                t.Name == name.Trim().ToLowerInvariant());
+            #pragma warning restore CA1862
+        }
+
+        /// <summary>
+        /// Updates an existing tag in the database.
+        /// </summary>
+        /// <param name="tag">The <see cref="Tag"/> entity containing updated data.</param>
+        /// <returns>A task that represents the asynchronous update operation.</returns>
+        public virtual async Task UpdateTag(Tag tag)
+        {
+            Tag.Update(tag);
+            await SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Removes a tag from the database.
+        /// </summary>
+        /// <param name="tag">The <see cref="Tag"/> entity to remove.</param>
+        /// <returns>A task that represents the asynchronous delete operation.</returns>
+        public virtual async Task RemoveTag(Tag tag)
+        {
+            Tag.Remove(tag);
+            await SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Removes all tags associated with a specific guild ID.
+        /// </summary>
+        /// <param name="guildId">The unique ID of the guild.</param>
+        /// <returns>A task that represents the asynchronous delete operation.</returns>
+        public virtual async Task RemoveTags(List<Tag> tags)
+        {
+            Tag.RemoveRange(tags);
+            await SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Adds a new tag to the database.
+        /// </summary>
+        /// <param name="tag">The <see cref="Tag"/> entity to add.</param>
+        /// <returns>A task that represents the asynchronous insert operation.</returns>
+        public virtual async Task AddTag(Tag tag)
+        {
+            await Tag.AddAsync(tag);
+            await SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Retrieves all tags associated with a specific guild ID.
+        /// </summary>
+        /// <param name="guildId">The unique ID of the guild.</param>
+        /// <returns>A list of <see cref="Tag"/> objects associated with the specified guild ID.</returns>
+        public virtual async Task<List<Tag>> GetTagsByGuildId(ulong guildId)
+        {
+            return await Tag.Where(t => t.GuildId == guildId).ToListAsync();
         }
     }
 }
