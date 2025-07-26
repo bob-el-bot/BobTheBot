@@ -183,7 +183,7 @@ namespace Bob.Commands.Helpers
             }
 
             embed.Color = DefaultColor;
-            embed.WithAuthor(user.GlobalName ?? user.Username, user.GetAvatarUrl());
+            embed.WithAuthor(user.GlobalName ?? user.Username, user.GetAvatarUrl() ?? user.GetDefaultAvatarUrl());
 
             if (!string.IsNullOrWhiteSpace(originalMessageUrl))
             {

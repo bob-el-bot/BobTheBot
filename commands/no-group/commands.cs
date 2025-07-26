@@ -663,7 +663,7 @@ namespace Bob.Commands
                 ImageUrl = imageUrl,
                 Footer = new EmbedFooterBuilder
                 {
-                    IconUrl = Context.User.GetAvatarUrl(),
+                    IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                     Text = $"Announced by {Context.User.Username}"
                 }
             }.Build();

@@ -51,7 +51,7 @@ namespace Bob.Commands.Helpers
                 }
 
                 embed.Color = Bot.theme;
-                embed.Author = new EmbedAuthorBuilder().WithName($"{message.Author.Username}").WithIconUrl(message.Author.GetAvatarUrl());
+                embed.Author = new EmbedAuthorBuilder().WithName($"{message.Author.Username}").WithIconUrl(message.Author.GetAvatarUrl() ?? message.Author.GetDefaultAvatarUrl());
                 embed.Timestamp = message.Timestamp;
                 embed.Footer = new EmbedFooterBuilder().WithIconUrl(channel.Guild.IconUrl).WithText($"Server: {channel.Guild.Name}");
 
