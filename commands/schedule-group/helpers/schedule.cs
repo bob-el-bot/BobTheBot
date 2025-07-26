@@ -223,7 +223,7 @@ namespace Bob.Commands.Helpers
                 Description = Announcement.FormatDescription(announcement.Description),
                 Footer = new EmbedFooterBuilder
                 {
-                    IconUrl = user.GetAvatarUrl(),
+                    IconUrl = user.GetAvatarUrl() ?? user.GetDefaultAvatarUrl(),
                     Text = $"Announced by {user.GlobalName}."
                 }
             };

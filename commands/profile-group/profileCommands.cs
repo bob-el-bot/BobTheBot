@@ -51,7 +51,7 @@ namespace Bob.Commands
                 // Create Embed
                 var embed = new EmbedBuilder
                 {
-                    Author = new EmbedAuthorBuilder().WithName($"{user.Username}'s Profile").WithIconUrl(user.GetAvatarUrl()),
+                    Author = new EmbedAuthorBuilder().WithName($"{user.Username}'s Profile").WithIconUrl(user.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl()),
                     Color = color,
                     Description = description
                 };

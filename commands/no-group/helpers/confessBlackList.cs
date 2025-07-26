@@ -1,7 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Text.RegularExpressions;
+using Cinsor;
+using Cinsor.Models;
 
 namespace Bob.Commands.Helpers
 {
@@ -26,6 +29,19 @@ namespace Bob.Commands.Helpers
     /// </summary>
     public static partial class ConfessFiltering
     {
+        private static readonly CensorEngine cinsorEngine = new();
+        private static readonly CensorOptions cinsorSettings = new()
+        {
+            Preset = CensorPreset.ObfuscationSafe,
+            //CensorBehavior = (text, index, word) => $"||{word}||",
+        };
+
+        static ConfessFiltering()
+        {
+            cinsorEngine.AddPatterns(CensoredWordSets.WordsToCensor);
+            cinsorEngine.BuildFailureLinks();
+        }
+
         /// <summary>
         /// Warning message to be appended when a link is detected in the message.
         /// </summary>
@@ -87,32 +103,52 @@ namespace Bob.Commands.Helpers
         /// Checks a message for banned words and returns the results.
         /// </summary>
         /// <param name="message">The message to check.</param>
-        /// <returns>A <see cref="FilterResult"/> containing the lists of blacklisted words and words to censor.</returns>
-        public static FilterResult ContainsBannedWords(string message)
+        /// <returns>A <see cref="CensorResult"/> containing the lists of blacklisted words and words to censor.</returns>
+        public static CensorResult ContainsBannedWords(string message)
         {
-            List<string> foundWords = [];
-            List<string> wordsToMarkSpoilers = [];
+            // List<string> foundWords = [];
+            // List<string> wordsToMarkSpoilers = [];
 
-            foreach (string word in message.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+            var cinsorResult = cinsorEngine.Censor(message, cinsorSettings);
+
+            foreach (var match in cinsorResult.Matches)
             {
-                if (CensoredWordSets.BannedWords.Contains(word))
+                // Check if the matched word is in the banned words list
+                if (CensoredWordSets.WordsToCensor.Contains(match.Word))
                 {
-                    if (CensoredWordSets.WordsToCensor.Contains(word))
-                    {
-                        wordsToMarkSpoilers.Add(word);
-                    }
-                    else
-                    {
-                        foundWords.Add(word);
-                    }
+                    Console.WriteLine(match.Word);
                 }
             }
 
-            return new FilterResult
-            {
-                BlacklistMatches = foundWords,
-                WordsToCensor = wordsToMarkSpoilers
-            };
+            // foreach (string word in message.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+            // {
+            //     if (CensoredWordSets.BannedWords.Contains(word))
+            //     {
+            //         if (CensoredWordSets.WordsToCensor.Contains(word))
+            //         {
+            //             wordsToMarkSpoilers.Add(word);
+            //         }
+            //         else
+            //         {
+            //             foundWords.Add(word);
+            //         }
+            //     }
+            // }
+
+            return cinsorResult;
+        }
+
+        private static string NormalizeObfuscatedSingleWords(string input, HashSet<char> obfuscationChars)
+        {
+            var tokens = input
+                .Split(obfuscationChars.ToArray(), StringSplitOptions.RemoveEmptyEntries);
+
+            Console.WriteLine("Tokens: " + string.Join(", ", tokens));
+
+            if (tokens.All(t => t.Length == 1 && char.IsLetter(t[0])))
+                return string.Concat(tokens).ToLowerInvariant();
+
+            return input.ToLowerInvariant();
         }
 
         /// <summary>
