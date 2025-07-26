@@ -17,7 +17,6 @@ using Bob.PremiumInterface;
 using Bob.ColorMethods;
 using Bob.Moderation;
 using Bob.Time.Timestamps;
-using Cinsor.Models;
 
 namespace Bob.Commands
 {
@@ -810,16 +809,16 @@ namespace Bob.Commands
             {
                 var dbUser = await dbContext.GetUser(user.Id);
 
-                CensorResult censorResult = new();
+                FilterResult filterResult = new();
 
                 // If user has confess filtering on, check for blacklisted words
                 if (dbUser.ConfessFilteringOff == false)
                 {
                     // Check for blacklisted words
-                    censorResult = ConfessFiltering.ContainsBannedWords($"{message} - {signoff}");
+                    filterResult = ConfessFiltering.ContainsBannedWords($"{message} {signoff}");
                     bool isUserBlacklisted = await BlackList.IsBlacklisted(Context.User.Id);
 
-                    if (false)
+                    if (filterResult.BlacklistMatches.Count > 0)
                     {
                         Server dbServer = Context.Guild?.Id != null ? await dbContext.GetServer(Context.Guild.Id) : null;
 
@@ -827,7 +826,7 @@ namespace Bob.Commands
                         if (dbServer != null && dbServer.ConfessFilteringOff == false)
                         {
                             var bannedUser = await dbContext.GetUserFromBlackList(Context.User.Id);
-                            string reason = ""; //$"Sending a message with {Help.GetCommandMention("confess")} that contained: {ConfessFiltering.FormatBannedWords(censorResult.Matches.ToList<String>())}";
+                            string reason = $"Sending a message with {Help.GetCommandMention("confess")} that contained: {ConfessFiltering.FormatBannedWords(filterResult.BlacklistMatches)}";
 
                             if (isUserBlacklisted)
                             {
@@ -853,13 +852,18 @@ namespace Bob.Commands
                 }
 
                 // If user has confessions off or filtering on and there are blacklisted words, do not send the message.
-                if (dbUser.ConfessionsOff) // ||censorResult.BlacklistMatches.Count > 0)
+                if (dbUser.ConfessionsOff || filterResult.BlacklistMatches.Count > 0)
                 {
                     await FollowupAsync($"❌ Bob could **not** DM {user.Mention}.\n- You could try again, but this *probably* means their DMs are closed which Bob cannot change.", ephemeral: true);
                     return;
                 }
 
-                string formattedMessage = $"{ConfessFiltering.notificationMessage}\n{censorResult.CensoredText}";
+                string formattedMessage = $"{ConfessFiltering.notificationMessage}\n{message} - {signoff}";
+
+                if (filterResult.WordsToCensor.Count > 0)
+                {
+                    formattedMessage = ConfessFiltering.MarkSpoilers(formattedMessage, filterResult.WordsToCensor);
+                }
 
                 if (formattedMessage.Length > 2000)
                 {
@@ -1009,7 +1013,7 @@ namespace Bob.Commands
                     Footer = new EmbedFooterBuilder
                     {
                         Text = footerText,
-                        IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl()
+                        IconUrl = Context.User.GetAvatarUrl()
                     }
                 };
 
