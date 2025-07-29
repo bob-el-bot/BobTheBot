@@ -14,7 +14,7 @@ namespace Bob.Commands
     {
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.GuildInstall)]
-        [RequireBotPermission(ChannelPermission.ViewChannel)]
+        [RequireBotPermission(ChannelPermission.ViewChannel | ChannelPermission.EmbedLinks)]
         [SlashCommand("new-game", "Start a new game of Wordle.")]
         public async Task NewGame()
         {
@@ -32,7 +32,7 @@ namespace Bob.Commands
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.GuildInstall)]
-        [RequireBotPermission(ChannelPermission.ViewChannel)]
+        [RequireBotPermission(ChannelPermission.ViewChannel | ChannelPermission.EmbedLinks)]
         [SlashCommand("guess", "Start a new game of Wordle.")]
         public async Task Guess([Summary("word", "The word you want to guess.")][MinLength(5)][MaxLength(5)] string guess)
         {

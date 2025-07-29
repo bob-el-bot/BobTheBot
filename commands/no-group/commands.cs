@@ -129,7 +129,7 @@ namespace Bob.Commands
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.GuildInstall)]
-        [RequireBotPermission(ChannelPermission.ViewChannel)]
+        [RequireBotPermission(ChannelPermission.ViewChannel | ChannelPermission.EmbedLinks)]
         [SlashCommand("tic-tac-toe", "Play a game of Tic Tac Toe.")]
         public async Task TicTacToe([Summary("opponent", "Leave empty to verse an AI.")] SocketUser opponent = null)
         {
@@ -209,7 +209,7 @@ namespace Bob.Commands
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.GuildInstall)]
-        [RequireBotPermission(ChannelPermission.ViewChannel)]
+        [RequireBotPermission(ChannelPermission.ViewChannel | ChannelPermission.EmbedLinks)]
         [SlashCommand("trivia", "Play a game of trivia.")]
         public async Task Trivia([Summary("opponent", "Leave empty to play alone.")] SocketUser opponent = null)
         {
@@ -276,7 +276,7 @@ namespace Bob.Commands
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.GuildInstall)]
-        [RequireBotPermission(ChannelPermission.ViewChannel)]
+        [RequireBotPermission(ChannelPermission.ViewChannel | ChannelPermission.EmbedLinks)]
         [SlashCommand("rock-paper-scissors", "Play a game of Rock Paper Scissors.")]
         public async Task RPS([Summary("opponent", "Leave empty to verse an AI.")] SocketUser opponent = null)
         {
@@ -351,7 +351,7 @@ namespace Bob.Commands
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.GuildInstall)]
-        [RequireBotPermission(ChannelPermission.ViewChannel)]
+        [RequireBotPermission(ChannelPermission.ViewChannel | ChannelPermission.EmbedLinks)]
         [SlashCommand("connect4", "Play a game of Connect 4.")]
         public async Task Connect4([Summary("opponent", "Leave empty to verse an AI.")] SocketUser opponent = null)
         {

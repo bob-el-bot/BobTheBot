@@ -13,6 +13,7 @@ namespace Bob.Commands
     public class MasterMindGroup : InteractionModuleBase<ShardedInteractionContext>
     {
         [SlashCommand("new-game", "Start a game of Master Mind (rules will be sent upon use of this command).")]
+        [RequireBotPermission(ChannelPermission.ViewChannel | ChannelPermission.EmbedLinks)]
         public async Task NewGame(MasterMindMethods.GameMode mode = MasterMindMethods.GameMode.Classic)
         {
             if (MasterMindMethods.CurrentGames != null && MasterMindMethods.GetGame(Context.Channel.Id) != null)
@@ -36,6 +37,7 @@ namespace Bob.Commands
         }
 
         [SlashCommand("guess", "make a guess in an existing game of Master Mind")]
+        [RequireBotPermission(ChannelPermission.ViewChannel | ChannelPermission.EmbedLinks)]
         public async Task Guess([Summary("color1", "The first color in your guess.")] MasterMindMethods.Color color1, [Summary("color2", "The second color in your guess.")] MasterMindMethods.Color color2, [Summary("color3", "The third color in your guess.")] MasterMindMethods.Color color3, [Summary("color4", "The fourth color in your guess.")] MasterMindMethods.Color color4)
         {
             var game = MasterMindMethods.GetGame(Context.Channel.Id);
