@@ -161,7 +161,7 @@ namespace Bob.Commands.Helpers
             var description = new StringBuilder()
                 .AppendLine(title)
                 .AppendLine(game.Questions.Count > 1 ?
-                    $"**{game.Player1.GlobalName}**: {game.Player1Chart} {(!game.Player2.IsBot ? $"**{game.Player2.GlobalName}**: {game.Player2Chart}" : "")}" : "")
+                    $"**{game.Player1.GlobalName ?? game.Player1.Username}**: {game.Player1Chart} {(!game.Player2.IsBot ? $"**{game.Player2.GlobalName ?? game.Player2.Username}**: {game.Player2Chart}" : "")}" : "")
                 .AppendLine($"Question: {game.Questions.Count}/{TotalQuestions}\n")
                 .AppendLine(FormatQuestionText(lastQuestion))
                 .AppendLine($"(Ends {Timestamp.FromDateTime(game.ExpirationTime, Timestamp.Formats.Relative)}).")
@@ -193,7 +193,7 @@ namespace Bob.Commands.Helpers
             var header = new StringBuilder()
                 .AppendLine(title)
                 .AppendLine(game.Questions.Count > 1
-                    ? $"**{game.Player1.GlobalName}**: {game.Player1Chart} {(!game.Player2.IsBot ? $"**{game.Player2.GlobalName}**: {game.Player2Chart}" : "")}"
+                    ? $"**{game.Player1.GlobalName ?? game.Player1.Username}**: {game.Player1Chart} {(!game.Player2.IsBot ? $"**{game.Player2.GlobalName ?? game.Player2.Username}**: {game.Player2Chart}" : "")}"
                     : "")
                 .AppendLine(FormatQuestionText(lastQuestion));
 
@@ -239,10 +239,10 @@ namespace Bob.Commands.Helpers
                 ThumbnailUrl = thumbnailUrl
             };
 
-            embed.AddField(game.Player1.GlobalName, game.Player1Chart ?? "🟥", inline: true);
+            embed.AddField(game.Player1.GlobalName ?? game.Player1.Username, game.Player1Chart ?? "🟥", inline: true);
             if (!game.Player2.IsBot)
             {
-                embed.AddField(game.Player2.GlobalName, game.Player2Chart ?? "🟥", inline: true);
+                embed.AddField(game.Player2.GlobalName ?? game.Player2.Username, game.Player2Chart ?? "🟥", inline: true);
             }
 
             foreach (var q in game.Questions)
@@ -267,8 +267,8 @@ namespace Bob.Commands.Helpers
         {
             var sb = new StringBuilder();
 
-            var p1 = game.Player1.GlobalName;
-            var p2 = game.Player2.GlobalName;
+            var p1 = game.Player1.GlobalName ?? game.Player1.Username;
+            var p2 = game.Player2.GlobalName ?? game.Player2.Username;
             var c1 = game.Player1Chart ?? "🟥";
             var c2 = game.Player2Chart ?? "🟥";
 

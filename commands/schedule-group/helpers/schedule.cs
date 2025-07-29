@@ -224,7 +224,7 @@ namespace Bob.Commands.Helpers
                 Footer = new EmbedFooterBuilder
                 {
                     IconUrl = user.GetAvatarUrl() ?? user.GetDefaultAvatarUrl(),
-                    Text = $"Announced by {user.GlobalName}."
+                    Text = $"Announced by {user.GlobalName ?? user.Username}."
                 }
             };
 
