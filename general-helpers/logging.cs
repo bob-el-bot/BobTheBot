@@ -60,7 +60,7 @@ namespace Bob.Debug
 
             return $"`{DateTime.Now:dd/MM. H:mm:ss} | {FormatPerformance(cpu, ram)} | " +
                    $"Shard: {(shardId == null ? "N" : shardId.ToString())} | " +
-                   $"Location: {location} | User: {user.GlobalName}, {user.Id}`";
+                   $"Location: {location} | User: {user.GlobalName ?? user.Username}, {user.Id}`";
         }
 
         /// <summary>

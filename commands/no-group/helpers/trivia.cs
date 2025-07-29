@@ -211,8 +211,9 @@ namespace Bob.Commands.Helpers
             {
                 await Message.ModifyAsync(x => { x.Components = TriviaMethods.CreateFinalEmbedCV2(this, forfeited: true, thumbnailUrl: Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome)); });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Console.WriteLine(ex);
                 // Do nothing Because the game will already be deleted.
             }
         }

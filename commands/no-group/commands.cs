@@ -1001,7 +1001,7 @@ namespace Bob.Commands
             else
             {
                 // Setup base data
-                string footerText = Context.User.GlobalName + " created this poll.";
+                string footerText = Context.User.GlobalName ?? Context.User.Username + " created this poll.";
                 string instructions = "React with the corresponding number to cast your vote.";
 
                 // Embed
