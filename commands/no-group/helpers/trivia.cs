@@ -45,7 +45,7 @@ namespace Bob.Commands.Helpers
             // Get a question
             Questions.Add(await TriviaMethods.GetQuestion());
 
-            await Message.ModifyAsync(x => { x.Content = null; x.Embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention}'s Game of {Title}."); x.Components = TriviaMethods.GetButtons(Id).Build(); });
+            await Message.ModifyAsync(x => { x.Content = null; x.Components = TriviaMethods.CreateQuestionEmbedCV2(this, $"### ⚔️ {Player1.Mention}'s Game of {Title}."); x.Flags = MessageFlags.ComponentsV2; });
         }
 
         public override async Task StartGame(SocketMessageComponent interaction)
@@ -59,7 +59,7 @@ namespace Bob.Commands.Helpers
             // Reset Expiration Time.
             UpdateExpirationTime(TimeSpan.FromMinutes(0.5));
 
-            await interaction.ModifyOriginalResponseAsync(x => { x.Content = null; x.Embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}."); x.Components = TriviaMethods.GetButtons(Id).Build(); });
+            await interaction.ModifyOriginalResponseAsync(x => { x.Content = null; x.Components = TriviaMethods.CreateQuestionEmbedCV2(this, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}."); });
         }
 
         public async Task Answer(bool isPlayer1, string answer, SocketMessageComponent component)
@@ -136,7 +136,7 @@ namespace Bob.Commands.Helpers
 
         private async Task UpdateQuestion(SocketMessageComponent component)
         {
-            await component.ModifyOriginalResponseAsync(x => { x.Embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}."); x.Components = TriviaMethods.GetButtons(Id).Build(); });
+            await component.ModifyOriginalResponseAsync(x => { x.Components = TriviaMethods.CreateQuestionEmbedCV2(this, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}."); });
         }
 
         private async Task NextQuestion(SocketMessageComponent component)
@@ -165,7 +165,7 @@ namespace Bob.Commands.Helpers
                 embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.");
             }
 
-            await component.ModifyOriginalResponseAsync(x => { x.Embed = embed; x.Components = TriviaMethods.GetButtons(Id).Build(); });
+            await component.ModifyOriginalResponseAsync(x => { x.Components = TriviaMethods.CreateQuestionEmbedCV2(this, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}."); });
         }
 
         private async Task FinishGame(SocketMessageComponent component)
@@ -184,7 +184,7 @@ namespace Bob.Commands.Helpers
 
             try
             {
-                await component.ModifyOriginalResponseAsync(x => { x.Embed = TriviaMethods.CreateFinalEmbed(this, thumbnailUrl: Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome)); x.Components = TriviaMethods.GetButtons(Id, true).Build(); });
+                await component.ModifyOriginalResponseAsync(x => { x.Components = TriviaMethods.CreateFinalEmbedCV2(this, forfeited: true, thumbnailUrl: Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome)); });
             }
             catch (Exception)
             {
@@ -209,7 +209,7 @@ namespace Bob.Commands.Helpers
 
             try
             {
-                await Message.ModifyAsync(x => { x.Embed = TriviaMethods.CreateFinalEmbed(this, true, Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome)); x.Components = TriviaMethods.GetButtons(Id, true).Build(); });
+                await Message.ModifyAsync(x => { x.Components = TriviaMethods.CreateFinalEmbedCV2(this, forfeited: true, thumbnailUrl: Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome)); });
             }
             catch (Exception)
             {

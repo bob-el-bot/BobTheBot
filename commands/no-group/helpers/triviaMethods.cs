@@ -144,9 +144,7 @@ namespace Bob.Commands.Helpers
         private static string FormatQuestionText(Question question)
         {
             var finalText = new StringBuilder()
-                .AppendLine($"**{question.QuestionText}**\n")
-                .AppendJoin('\n', question.Answers.Select((a, i) => $"{selector[i]} {a}"))
-                .AppendLine();
+                .AppendLine($"**{question.QuestionText}**\n");
 
             return finalText.ToString();
         }
@@ -180,6 +178,53 @@ namespace Bob.Commands.Helpers
         }
 
         /// <summary>
+        /// Creates a Discord message component for displaying a trivia question,
+        /// including player scores, the question text, and interactive answer buttons.
+        /// </summary>
+        /// <param name="game">The <see cref="Trivia"/> game instance containing the current question and state.</param>
+        /// <param name="title">The title or header to display above the question.</param>
+        /// <returns>
+        /// A <see cref="MessageComponent"/> containing the trivia question, player scores, and answer buttons.
+        /// </returns>
+        public static MessageComponent CreateQuestionEmbedCV2(Trivia game, string title)
+        {
+            var lastQuestion = game.Questions.Last();
+
+            var header = new StringBuilder()
+                .AppendLine(title)
+                .AppendLine(game.Questions.Count > 1
+                    ? $"**{game.Player1.GlobalName}**: {game.Player1Chart} {(!game.Player2.IsBot ? $"**{game.Player2.GlobalName}**: {game.Player2Chart}" : "")}"
+                    : "")
+                .AppendLine(FormatQuestionText(lastQuestion));
+
+            var letters = "abcd";
+            var answerButtons = lastQuestion.Answers
+                .Select((choice, i) =>
+                    new ButtonBuilder(
+                        label: choice.Length > 80 ? $"{choice[..77]}..." : choice,
+                        customId: $"trivia:{letters[i]}:{game.Id}",
+                        style: ButtonStyle.Primary
+                    )
+                ).ToArray();
+
+            var description = new StringBuilder()
+                .AppendLine($"\nQuestion: {game.Questions.Count}/{TotalQuestions}")
+                .AppendLine($"(Ends {Timestamp.FromDateTime(game.ExpirationTime, Timestamp.Formats.Relative)}).")
+                .ToString();
+
+            var components = new ComponentBuilderV2()
+                .WithContainer(new ContainerBuilder()
+                    .WithAccentColor(Challenge.BothPlayersColor)
+                    .WithTextDisplay(header.ToString())
+                    .WithActionRow(answerButtons)
+                    .WithTextDisplay(description)
+                )
+                .Build();
+
+            return components;
+        }
+
+        /// <summary>
         /// Creates an embed for displaying the final results of a trivia game in Discord.
         /// </summary>
         /// <param name="game">The trivia game containing the results.</param>
@@ -206,6 +251,71 @@ namespace Bob.Commands.Helpers
             }
 
             return embed.Build();
+        }
+
+        /// <summary>
+        /// Creates a Discord message component representing the final results of a trivia game,
+        /// including player scores, question/answer summary, and an optional thumbnail.
+        /// </summary>
+        /// <param name="game">The <see cref="Trivia"/> game instance containing all game data.</param>
+        /// <param name="forfeited">Indicates if the game was forfeited by a player.</param>
+        /// <param name="thumbnailUrl">Optional URL for a thumbnail image to display in the message.</param>
+        /// <returns>
+        /// A <see cref="MessageComponent"/> containing the formatted final results and summary of the trivia game.
+        /// </returns>
+        public static MessageComponent CreateFinalEmbedCV2(Trivia game, bool forfeited = false, string thumbnailUrl = "")
+        {
+            var sb = new StringBuilder();
+
+            var p1 = game.Player1.GlobalName;
+            var p2 = game.Player2.GlobalName;
+            var c1 = game.Player1Chart ?? "🟥";
+            var c2 = game.Player2Chart ?? "🟥";
+
+            int maxNameLen = Math.Max(p1.Length, p2.Length);
+
+            string line1 = $"{p1.PadRight(maxNameLen)} : {c1}";
+            string line2 = !game.Player2.IsBot
+                ? $"{p2.PadRight(maxNameLen)} : {c2}"
+                : null;
+
+            sb.AppendLine("```");
+            sb.AppendLine(line1);
+            if (line2 != null) sb.AppendLine(line2);
+            sb.AppendLine("```");
+
+            // Questions and answers
+            foreach (var q in game.Questions)
+            {
+                var answer = q.Answers["abcd".IndexOf(q.CorrectAnswer)];
+                sb.AppendLine($"**Q:** {q.QuestionText}");
+                sb.AppendLine($"**A:** {answer}");
+                sb.AppendLine();
+            }
+
+            var container = new ContainerBuilder().WithAccentColor(Challenge.BothPlayersColor);
+
+            if (!string.IsNullOrEmpty(thumbnailUrl))
+            {
+                container = container.WithSection([
+                        new TextDisplayBuilder(Challenge.CreateFinalTitle(game, GetWinner(game, forfeited)))
+                    ],
+                    new ThumbnailBuilder(thumbnailUrl))
+                .WithSeparator(isDivider: true)
+                .WithTextDisplay(sb.ToString());
+            }
+            else
+            {
+                container = container.WithTextDisplay(Challenge.CreateFinalTitle(game, GetWinner(game, forfeited)))
+                    .WithSeparator(isDivider: true)
+                    .WithTextDisplay(sb.ToString());
+            }
+
+            var components = new ComponentBuilderV2()
+                .WithContainer(container)
+                .Build();
+
+            return components;
         }
 
         /// <summary>
