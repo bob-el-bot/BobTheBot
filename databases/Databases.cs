@@ -16,13 +16,6 @@ namespace Bob.Database
 {
     public class BobEntities : DbContext
     {
-        private readonly string _connectionString;
-
-        public BobEntities(string connectionString = null)
-        {
-            _connectionString = connectionString;
-        }
-
         public virtual DbSet<Server> Server { get; set; }
         public virtual DbSet<WelcomeImage> WelcomeImage { get; set; }
         public virtual DbSet<User> User { get; set; }
@@ -59,11 +52,11 @@ namespace Bob.Database
         {
             modelBuilder.Entity<Server>()
                 .Property(s => s.MaxQuoteLength)
-                .HasDefaultValue(4096u); // Set default value for MaxQuoteLength
+                .HasDefaultValue(4096u);
 
             modelBuilder.Entity<User>()
                 .Property(u => u.ProfileColor)
-                .HasDefaultValue("#2C2F33"); // Set default value for ProfileColor
+                .HasDefaultValue("#2C2F33");
 
             modelBuilder.HasPostgresExtension("vector");
             modelBuilder.Entity<Memory>()
