@@ -14,7 +14,7 @@ using Pgvector.EntityFrameworkCore;
 
 namespace Bob.Database
 {
-    public class BobEntities : DbContext
+    public class BobEntities(DbContextOptions<BobEntities> options) : DbContext(options)
     {
         public virtual DbSet<Server> Server { get; set; }
         public virtual DbSet<WelcomeImage> WelcomeImage { get; set; }
@@ -29,23 +29,11 @@ namespace Bob.Database
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            Env.Load();
-            var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-
-            // Parse the database URL
-            var databaseUri = new Uri(databaseUrl);
-            var userInfo = databaseUri.UserInfo.Split(':');
-
-            var npgsqlConnectionString = new NpgsqlConnectionStringBuilder
+            if (!optionsBuilder.IsConfigured)
             {
-                Host = databaseUri.Host,
-                Port = databaseUri.Port,
-                Username = userInfo[0],
-                Password = userInfo[1],
-                Database = databaseUri.AbsolutePath.TrimStart('/')
-            }.ToString();
-
-            optionsBuilder.UseNpgsql(npgsqlConnectionString, o => o.UseVector());
+                var npgsqlConnectionString = DatabaseUtils.GetNpgsqlConnectionString();
+                optionsBuilder.UseNpgsql(npgsqlConnectionString, o => o.UseVector());
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -476,9 +464,9 @@ namespace Bob.Database
         /// <returns>
         /// A task representing the asynchronous operation, with a list of ReactBoardMessage entities for the specified guild.
         /// </returns>
-        public virtual async Task<List<ReactBoardMessage>> GetAllReactBoardMessagesForGuildAsync(ulong guildId)
+        public virtual List<ReactBoardMessage> GetAllReactBoardMessagesForGuild(ulong guildId)
         {
-            return await ReactBoardMessage.Where(x => x.GuildId == guildId).ToListAsync();
+            return [.. ReactBoardMessage.Where(x => x.GuildId == guildId)];
         }
 
         /// <summary>

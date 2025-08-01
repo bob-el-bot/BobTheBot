@@ -63,13 +63,21 @@ namespace Bob
 
             var services = new ServiceCollection();
 
-            services.AddDbContext<BobEntities>(options => options.UseNpgsql(Environment.GetEnvironmentVariable("DATABASE_URL"),
-                npgsqlOptions => npgsqlOptions.EnableRetryOnFailure(
-                    maxRetryCount: 1,
-                    maxRetryDelay: TimeSpan.FromSeconds(5),
-                    errorCodesToAdd: null
-                )
-            ));
+            var npgsqlConnectionString = DatabaseUtils.GetNpgsqlConnectionString();
+
+            services.AddDbContext<BobEntities>(options =>
+            {
+                options.UseNpgsql(
+                    npgsqlConnectionString,
+                    npgsqlOptions => npgsqlOptions
+                        .EnableRetryOnFailure(
+                            maxRetryCount: 1,
+                            maxRetryDelay: TimeSpan.FromSeconds(5),
+                            errorCodesToAdd: null
+                        )
+                        .UseVector()
+                );
+            });
 
             services.AddSingleton(new InteractionService(Client, new InteractionServiceConfig
             {
