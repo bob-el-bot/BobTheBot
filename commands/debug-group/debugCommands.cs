@@ -319,7 +319,7 @@ namespace Bob.Commands
                 {
                     User dbUser = await dbContext.GetUser(user == null ? parsedId : user.Id);
                     dbUser.TotalScheduledAnnouncements = (uint)value;
-                    await dbContext.UpdateUser(dbUser);
+                    await dbContext.SaveChangesAsync();
 
                     await FollowupAsync(text: $"✅ `Announcement Count of User: {discordUser.GlobalName}, {discordUser.Id} updated.`\n{UserDebugging.GetUserPropertyString(dbUser)}");
                 }
@@ -356,7 +356,7 @@ namespace Bob.Commands
                 {
                     User dbUser = await dbContext.GetUser(user == null ? parsedId : user.Id);
                     dbUser.TotalScheduledMessages = (uint)value;
-                    await dbContext.UpdateUser(dbUser);
+                    await dbContext.SaveChangesAsync();
 
                     await FollowupAsync(text: $"✅ `Announcement Count of User: {discordUser.GlobalName}, {discordUser.Id} updated.`\n{UserDebugging.GetUserPropertyString(dbUser)}");
                 }

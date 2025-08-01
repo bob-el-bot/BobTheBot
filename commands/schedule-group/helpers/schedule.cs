@@ -180,7 +180,7 @@ namespace Bob.Commands.Helpers
                 // Only update the user if there were changes
                 if (userChanged)
                 {
-                    await context.UpdateUser(dbUser);
+                    await context.SaveChangesAsync();
                 }
 
                 // Always remove the scheduled item

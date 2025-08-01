@@ -165,7 +165,7 @@ public class TagGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInte
         }
 
         tag.Content = content;
-        await dbContext.UpdateTag(tag);
+        await dbContext.SaveChangesAsync();
 
         TagAutocompleteHandler.UpdateGuildTagInCache(Context.Guild.Id, (tag.Name, tag.Id));
 

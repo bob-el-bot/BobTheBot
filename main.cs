@@ -295,7 +295,7 @@ namespace Bob
                 user.PremiumExpiration = (DateTimeOffset)ent.EndsAt;
             }
 
-            await context.UpdateUser(user);
+            await context.SaveChangesAsync();
         }
 
         private static async Task EntitlementUpdated(Cacheable<SocketEntitlement, ulong> before, SocketEntitlement after)
@@ -306,7 +306,7 @@ namespace Bob
             User user = await context.GetUser(entUser.Id);
 
             user.PremiumExpiration = (DateTimeOffset)after.EndsAt;
-            await context.UpdateUser(user);
+            await context.SaveChangesAsync();
         }
 
         private static Task EntitlementDeleted(Cacheable<SocketEntitlement, ulong> ent)

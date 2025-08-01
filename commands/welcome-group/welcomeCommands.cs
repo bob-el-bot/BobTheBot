@@ -258,7 +258,7 @@ namespace Bob.Commands
             if (welcomeImage != null)
             {
                 welcomeImage.Image = compressedImage;
-                await dbContext.UpdateWelcomeImage(welcomeImage);
+                await dbContext.SaveChangesAsync();
             }
             else
             {

@@ -305,7 +305,7 @@ namespace Bob.Moderation
             {
                 using var scope = Bot.Services.CreateScope();
                 var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
-                await context.UpdateUserFromBlackList(user);
+                await context.SaveChangesAsync();
             }
 
             UpdateCache(user);

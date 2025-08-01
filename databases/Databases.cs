@@ -189,16 +189,6 @@ namespace Bob.Database
         }
 
         /// <summary>
-        /// Updates an existing user asynchronously.
-        /// </summary>
-        /// <param name="user">The user to update.</param>
-        public virtual async Task UpdateUser(User user)
-        {
-            User.Update(user);
-            await SaveChangesAsync();
-        }
-
-        /// <summary>
         /// Adds a new user to the database asynchronously.
         /// </summary>
         /// <param name="user">The user to be added.</param>
@@ -262,16 +252,6 @@ namespace Bob.Database
         }
 
         /// <summary>
-        /// Updates an existing news channel asynchronously.
-        /// </summary>
-        /// <param name="newsChannel">The news channel to update.</param>
-        public virtual async Task UpdateNewsChannel(NewsChannel newsChannel)
-        {
-            NewsChannel.Update(newsChannel);
-            await SaveChangesAsync();
-        }
-
-        /// <summary>
         /// Removes a news channel from the database asynchronously.
         /// </summary>
         /// <param name="newsChannel">The news channel to be removed.</param>
@@ -303,16 +283,6 @@ namespace Bob.Database
         public virtual async Task<BlackListUser> GetUserFromBlackList(ulong id)
         {
             return await BlackListUser.FirstOrDefaultAsync(b => b.Id == id);
-        }
-
-        /// <summary>
-        /// Updates an existing blacklisted user asynchronously.
-        /// </summary>
-        /// <param name="user">The blacklisted user to update.</param>
-        public virtual async Task UpdateUserFromBlackList(BlackListUser user)
-        {
-            BlackListUser.Update(user);
-            await SaveChangesAsync();
         }
 
         /// <summary>
@@ -348,16 +318,6 @@ namespace Bob.Database
         }
 
         /// <summary>
-        /// Updates an existing scheduled message asynchronously.
-        /// </summary>
-        /// <param name="message">The scheduled message to update.</param>
-        public virtual async Task UpdateScheduledMessage(ScheduledMessage message)
-        {
-            ScheduledMessage.Update(message);
-            await SaveChangesAsync();
-        }
-
-        /// <summary>
         /// Removes a scheduled message from the database asynchronously.
         /// </summary>
         /// <param name="messageId">The unique identifier of the scheduled message to be removed.</param>
@@ -384,17 +344,6 @@ namespace Bob.Database
         public virtual async Task<ScheduledAnnouncement> GetScheduledAnnouncement(ulong id)
         {
             return await ScheduledAnnouncement.FirstOrDefaultAsync(a => a.Id == id);
-        }
-
-        /// <summary>
-        /// Updates an existing scheduled announcement in the database.
-        /// </summary>
-        /// <param name="announcement">The scheduled announcement to update.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        public virtual async Task UpdateScheduledAnnouncement(ScheduledAnnouncement announcement)
-        {
-            ScheduledAnnouncement.Update(announcement);
-            await SaveChangesAsync();
         }
 
         /// <summary>
@@ -444,17 +393,6 @@ namespace Bob.Database
         public virtual async Task<WelcomeImage> GetWelcomeImage(ulong id)
         {
             return await WelcomeImage.FirstOrDefaultAsync(w => w.Id == id);
-        }
-
-        /// <summary>
-        /// Updates an existing welcome image in the database.
-        /// </summary>
-        /// <param name="image">The <see cref="WelcomeImage"/> entity containing updated data.</param>
-        /// <returns>A task that represents the asynchronous update operation.</returns>
-        public virtual async Task UpdateWelcomeImage(WelcomeImage image)
-        {
-            WelcomeImage.Update(image);
-            await SaveChangesAsync();
         }
 
         /// <summary>
@@ -639,17 +577,6 @@ namespace Bob.Database
             return await Tag.FirstOrDefaultAsync(t => t.GuildId == guildId &&
                 t.Name == name.Trim().ToLowerInvariant());
             #pragma warning restore CA1862
-        }
-
-        /// <summary>
-        /// Updates an existing tag in the database.
-        /// </summary>
-        /// <param name="tag">The <see cref="Tag"/> entity containing updated data.</param>
-        /// <returns>A task that represents the asynchronous update operation.</returns>
-        public virtual async Task UpdateTag(Tag tag)
-        {
-            Tag.Update(tag);
-            await SaveChangesAsync();
         }
 
         /// <summary>

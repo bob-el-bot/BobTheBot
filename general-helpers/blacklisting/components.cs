@@ -103,7 +103,7 @@ namespace Bob.Moderation
             if (dbUser.ConfessionsOff == false)
             {
                 dbUser.ConfessionsOff = true;
-                await dbContext.UpdateUser(dbUser);
+                await dbContext.SaveChangesAsync();
             }
 
             await Context.Interaction.ModifyOriginalResponseAsync(x =>

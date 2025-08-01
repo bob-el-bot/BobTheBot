@@ -92,7 +92,7 @@ namespace Bob.Commands
 
             await dbContext.AddScheduledMessage(scheduledMessage);
             user.TotalScheduledMessages += 1;
-            await dbContext.UpdateUser(user);
+            await dbContext.SaveChangesAsync();
 
             ScheduleTask(scheduledMessage);
 
@@ -185,7 +185,7 @@ namespace Bob.Commands
 
             await dbContext.AddScheduledAnnouncement(scheduledAnnouncement);
             user.TotalScheduledAnnouncements += 1;
-            await dbContext.UpdateUser(user);
+            await dbContext.SaveChangesAsync();
 
             ScheduleTask(scheduledAnnouncement);
 
@@ -305,7 +305,7 @@ namespace Bob.Commands
 
             var message = await dbContext.GetScheduledMessage(messageId);
             message.Message = modal.Content;
-            await dbContext.UpdateScheduledMessage(message);
+            await dbContext.SaveChangesAsync();
 
             var embed = BuildEditEmbed(message);
             await Context.Interaction.ModifyOriginalResponseAsync(x => { x.Embed = embed.Build(); });
@@ -321,7 +321,7 @@ namespace Bob.Commands
             var announcement = await dbContext.GetScheduledAnnouncement(announcementId);
             announcement.Title = modal.EmbedTitle;
             announcement.Description = modal.Description;
-            await dbContext.UpdateScheduledAnnouncement(announcement);
+            await dbContext.SaveChangesAsync();
 
             var embed = BuildEditEmbed(announcement);
             await Context.Interaction.ModifyOriginalResponseAsync(x => { x.Embed = embed.Build(); });
@@ -342,7 +342,7 @@ namespace Bob.Commands
             {
                 user.TotalScheduledMessages -= 1;
             }
-            await dbContext.UpdateUser(user);
+            await dbContext.SaveChangesAsync();
 
             // Cancel the corresponding task if it exists
             if (ScheduledTasks.TryGetValue(messageId, out var cts))
@@ -381,7 +381,7 @@ namespace Bob.Commands
             {
                 user.TotalScheduledAnnouncements -= 1;
             }
-            await dbContext.UpdateUser(user);
+            await dbContext.SaveChangesAsync();
 
             // Cancel the corresponding task if it exists
             if (ScheduledTasks.TryGetValue(announcementId, out var cts))

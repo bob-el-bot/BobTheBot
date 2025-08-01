@@ -77,7 +77,7 @@ namespace Bob.Commands
             if (user.ConfessionsOff == open)
             {
                 user.ConfessionsOff = !open;
-                await dbContext.UpdateUser(user);
+                await dbContext.SaveChangesAsync();
             }
 
             if (open)
@@ -100,7 +100,7 @@ namespace Bob.Commands
             if (user.ConfessFilteringOff != enable)
             {
                 user.ConfessFilteringOff = enable;
-                await dbContext.UpdateUser(user);
+                await dbContext.SaveChangesAsync();
             }
 
             if (enable)
@@ -157,7 +157,7 @@ namespace Bob.Commands
             if (user.ProfileColor != color)
             {
                 user.ProfileColor = color;
-                await dbContext.UpdateUser(user);
+                await dbContext.SaveChangesAsync();
             }
 
             // Create Embed

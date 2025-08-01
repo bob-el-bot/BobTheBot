@@ -930,7 +930,7 @@ namespace Bob.Commands
                     if (entitlementCollection.Any(x => x.SkuId == 1282452500913328180))
                     {
                         user.PremiumExpiration = DateTimeOffset.MaxValue;
-                        await dbContext.UpdateUser(user);
+                        await dbContext.SaveChangesAsync();
                     }
                 }
 
