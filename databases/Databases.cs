@@ -139,16 +139,6 @@ namespace Bob.Database
         }
 
         /// <summary>
-        /// Adds a new server to the database asynchronously.
-        /// </summary>
-        /// <param name="server">The server to be added.</param>
-        private async Task AddServer(Server server)
-        {
-            await Server.AddAsync(server);
-            await SaveChangesAsync();
-        }
-
-        /// <summary>
         /// Removes a server from the database asynchronously.
         /// </summary>
         /// <param name="server">The server to be removed.</param>
@@ -187,7 +177,7 @@ namespace Bob.Database
         /// <param name="user">The user to be added.</param>
         private async Task AddUser(User user)
         {
-            await User.AddAsync(user);
+            User.Add(user);
             await SaveChangesAsync();
         }
 
@@ -260,7 +250,7 @@ namespace Bob.Database
         /// <param name="newsChannel">The news channel to be added.</param>
         public virtual async Task AddNewsChannel(NewsChannel newsChannel)
         {
-            await NewsChannel.AddAsync(newsChannel);
+            NewsChannel.Add(newsChannel);
             await SaveChangesAsync();
         }
 
@@ -294,7 +284,7 @@ namespace Bob.Database
         /// <param name="user">The blacklisted user to be added.</param>
         public virtual async Task AddUserToBlackList(BlackListUser user)
         {
-            await BlackListUser.AddAsync(user);
+            BlackListUser.Add(user);
             await SaveChangesAsync();
         }
 
@@ -325,7 +315,7 @@ namespace Bob.Database
         /// <param name="message">The scheduled message to be added.</param>
         public virtual async Task AddScheduledMessage(ScheduledMessage message)
         {
-            await ScheduledMessage.AddAsync(message);
+            ScheduledMessage.Add(message);
             await SaveChangesAsync();
         }
 
@@ -356,7 +346,7 @@ namespace Bob.Database
         /// <returns>A task representing the asynchronous operation.</returns>
         public virtual async Task AddScheduledAnnouncement(ScheduledAnnouncement announcement)
         {
-            await ScheduledAnnouncement.AddAsync(announcement);
+            ScheduledAnnouncement.Add(announcement);
             await SaveChangesAsync();
         }
 
@@ -406,7 +396,7 @@ namespace Bob.Database
         /// <returns>A task that represents the asynchronous insert operation.</returns>
         public virtual async Task AddWelcomeImage(WelcomeImage image)
         {
-            await WelcomeImage.AddAsync(image);
+            WelcomeImage.Add(image);
             await SaveChangesAsync();
         }
 
@@ -417,7 +407,7 @@ namespace Bob.Database
         /// <returns>A task representing the asynchronous operation.</returns>
         public virtual async Task AddReactBoardMessageAsync(ReactBoardMessage message)
         {
-            await ReactBoardMessage.AddAsync(message);
+            ReactBoardMessage.Add(message);
             await SaveChangesAsync();
         }
 
@@ -475,7 +465,7 @@ namespace Bob.Database
         /// <returns>A task representing the asynchronous operation.</returns>
         public virtual async Task AddMultipleReactBoardMessagesAsync(List<ReactBoardMessage> messages)
         {
-            await ReactBoardMessage.AddRangeAsync(messages);
+            ReactBoardMessage.AddRange(messages);
             await SaveChangesAsync();
         }
 
@@ -522,7 +512,7 @@ namespace Bob.Database
                 CreatedAt = DateTime.UtcNow
             };
 
-            await Memory.AddAsync(memory);
+            Memory.Add(memory);
             await SaveChangesAsync();
         }
 
@@ -601,7 +591,7 @@ namespace Bob.Database
         /// <returns>A task that represents the asynchronous insert operation.</returns>
         public virtual async Task AddTag(Tag tag)
         {
-            await Tag.AddAsync(tag);
+            Tag.Add(tag);
             await SaveChangesAsync();
         }
 
