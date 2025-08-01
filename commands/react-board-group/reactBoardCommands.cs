@@ -40,7 +40,7 @@ namespace Bob.Commands
             }
 
             // Check Bob's permissions in ReactBoard Channel
-            if (reactBoardChannel != null)
+            if (enable && reactBoardChannel != null)
             {
                 var bobPermissions = Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions(reactBoardChannel);
                 if (!bobPermissions.SendMessages || !bobPermissions.ViewChannel)
@@ -61,7 +61,7 @@ namespace Bob.Commands
             if (server.ReactBoardOn != enable)
             {
                 server.ReactBoardOn = enable;
-                await dbContext.UpdateServer(server);
+                await dbContext.SaveChangesAsync();
             }
 
             // Respond to the user
@@ -106,7 +106,7 @@ namespace Bob.Commands
             var server = await dbContext.GetServer(Context.Guild.Id);
 
             server.ReactBoardChannelId = channel.Id;
-            await dbContext.UpdateServer(server);
+            await dbContext.SaveChangesAsync();
 
             await FollowupAsync(text: $"✅ The react board channel has been set to <#{channel.Id}>.", ephemeral: true);
         }
@@ -129,7 +129,7 @@ namespace Bob.Commands
             var server = await dbContext.GetServer(Context.Guild.Id);
 
             server.ReactBoardEmoji = emoji;
-            await dbContext.UpdateServer(server);
+            await dbContext.SaveChangesAsync();
 
             await FollowupAsync(text: $"✅ The react board emoji has been set to {emoji}.", ephemeral: true);
         }
@@ -152,7 +152,7 @@ namespace Bob.Commands
             var server = await dbContext.GetServer(Context.Guild.Id);
 
             server.ReactBoardMinimumReactions = minimumReactions;
-            await dbContext.UpdateServer(server);
+            await dbContext.SaveChangesAsync();
 
             await FollowupAsync(text: $"✅ The minimum reactions required to post on the react board has been set to {minimumReactions}.", ephemeral: true);
         }

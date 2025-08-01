@@ -34,7 +34,7 @@ namespace Bob.Commands
                 if (server.ConfessFilteringOff == enable)
                 {
                     server.ConfessFilteringOff = !enable;
-                    await dbContext.UpdateServer(server);
+                    await dbContext.SaveChangesAsync();
                 }
 
                 if (enable)

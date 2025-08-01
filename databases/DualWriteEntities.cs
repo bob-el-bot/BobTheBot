@@ -111,14 +111,6 @@ public class DualWriteBobEntities : BobEntities
         }
     }
 
-    public override async Task UpdateServer(Server server)
-    {
-        _oldDb.Server.Update(server);
-        _newDb.Server.Update(server);
-        await _oldDb.SaveChangesAsync();
-        await _newDb.SaveChangesAsync();
-    }
-
     public override async Task RemoveServer(Server server)
     {
         _oldDb.Server.Remove(server);

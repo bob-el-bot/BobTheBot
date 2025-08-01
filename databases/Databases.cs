@@ -133,27 +133,16 @@ namespace Bob.Database
         /// </returns>
         public virtual async Task<Server> GetServer(ulong id)
         {
-            var server = await Server.FindAsync(keyValues: id);
+            var server = await Server.FirstOrDefaultAsync(s => s.Id == id);
+            
             if (server == null)
             {
-                // Add server to DB
-                await AddServer(new Server { Id = id });
-                return await GetServer(id);
+                return new Server { Id = id };
             }
             else
             {
                 return server;
             }
-        }
-
-        /// <summary>
-        /// Updates an existing server asynchronously.
-        /// </summary>
-        /// <param name="server">The server to update.</param>
-        public virtual async Task UpdateServer(Server server)
-        {
-            Server.Update(server);
-            await SaveChangesAsync();
         }
 
         /// <summary>
@@ -187,12 +176,11 @@ namespace Bob.Database
         /// </returns>
         public virtual async Task<User> GetUser(ulong id)
         {
-            var user = await User.FindAsync(keyValues: id);
+            var user = await User.FirstOrDefaultAsync(u => u.Id == id);
+            
             if (user == null)
             {
-                // Add user to DB
-                await AddUser(new User { Id = id });
-                return await GetUser(id);
+                return new User { Id = id };
             }
             else
             {
@@ -270,7 +258,7 @@ namespace Bob.Database
         /// </returns>
         public virtual async Task<NewsChannel> GetNewsChannel(ulong id)
         {
-            return await NewsChannel.FindAsync(keyValues: id);
+            return await NewsChannel.FirstOrDefaultAsync(n => n.Id == id);
         }
 
         /// <summary>
@@ -314,7 +302,7 @@ namespace Bob.Database
         /// </returns>
         public virtual async Task<BlackListUser> GetUserFromBlackList(ulong id)
         {
-            return await BlackListUser.FindAsync(keyValues: id);
+            return await BlackListUser.FirstOrDefaultAsync(b => b.Id == id);
         }
 
         /// <summary>
@@ -356,7 +344,7 @@ namespace Bob.Database
         /// </returns>
         public virtual async Task<ScheduledMessage> GetScheduledMessage(ulong id)
         {
-            return await ScheduledMessage.FindAsync(keyValues: id);
+            return await ScheduledMessage.FirstOrDefaultAsync(m => m.Id == id);
         }
 
         /// <summary>
@@ -395,7 +383,7 @@ namespace Bob.Database
         /// <returns>The scheduled announcement with the specified ID, or null if not found.</returns>
         public virtual async Task<ScheduledAnnouncement> GetScheduledAnnouncement(ulong id)
         {
-            return await ScheduledAnnouncement.FindAsync(keyValues: id);
+            return await ScheduledAnnouncement.FirstOrDefaultAsync(a => a.Id == id);
         }
 
         /// <summary>
@@ -455,7 +443,7 @@ namespace Bob.Database
         /// <returns>The corresponding <see cref="WelcomeImage"/> object if found; otherwise, null.</returns>
         public virtual async Task<WelcomeImage> GetWelcomeImage(ulong id)
         {
-            return await WelcomeImage.FindAsync(keyValues: id);
+            return await WelcomeImage.FirstOrDefaultAsync(w => w.Id == id);
         }
 
         /// <summary>
@@ -522,7 +510,7 @@ namespace Bob.Database
         /// </returns>
         public virtual async Task<ReactBoardMessage> GetReactBoardMessageAsync(ulong originalMessageId)
         {
-            return await ReactBoardMessage.FindAsync(keyValues: originalMessageId);
+            return await ReactBoardMessage.FirstOrDefaultAsync(r => r.OriginalMessageId == originalMessageId);
         }
 
         /// <summary>
@@ -636,7 +624,7 @@ namespace Bob.Database
         /// <returns>The corresponding <see cref="Tag"/> object if found; otherwise, null.</returns>
         public virtual async Task<Tag> GetTag(int id)
         {
-            return await Tag.FindAsync(keyValues: id);
+            return await Tag.FirstOrDefaultAsync(t => t.Id == id);
         }
 
         /// <summary>

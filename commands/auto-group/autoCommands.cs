@@ -94,7 +94,7 @@ namespace Bob.Commands
                 if (server.AutoEmbedGitHubLinks != preview)
                 {
                     server.AutoEmbedGitHubLinks = preview;
-                    await dbContext.UpdateServer(server);
+                    await dbContext.SaveChangesAsync();
                 }
 
                 if (preview == true)
@@ -127,7 +127,7 @@ namespace Bob.Commands
                 if (server.AutoEmbedMessageLinks != preview)
                 {
                     server.AutoEmbedMessageLinks = preview;
-                    await dbContext.UpdateServer(server);
+                    await dbContext.SaveChangesAsync();
                 }
 
                 if (preview == true)
