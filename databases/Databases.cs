@@ -588,9 +588,9 @@ namespace Bob.Database
         /// </summary>
         /// <param name="guildId">The unique ID of the guild.</param>
         /// <returns>A list of <see cref="Tag"/> objects associated with the specified guild ID.</returns>
-        public virtual async Task<List<Tag>> GetTagsByGuildId(ulong guildId)
+        public virtual List<Tag> GetTagsByGuildId(ulong guildId)
         {
-            return await Tag.Where(t => t.GuildId == guildId).ToListAsync();
+            return [.. Tag.Where(t => t.GuildId == guildId)];
         }
     }
 }
