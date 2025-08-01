@@ -38,13 +38,6 @@ namespace Bob
             GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers | GatewayIntents.GuildMessages | GatewayIntents.GuildMessageReactions | GatewayIntents.MessageContent | GatewayIntents.AutoModerationConfiguration,
         });
 
-        private static InteractionService Service = new(Client, new InteractionServiceConfig
-        {
-            UseCompiledLambda = true,
-            ThrowOnError = true,
-            AutoServiceScopes = false
-        });
-
         public static string Token = Environment.GetEnvironmentVariable("DISCORD_TOKEN");
 
         // Purple (normal) Theme: 9261821 | Orange (halloween) Theme: 16760153
@@ -77,6 +70,14 @@ namespace Bob
                     errorCodesToAdd: null
                 )
             ));
+
+            services.AddSingleton(new InteractionService(Client, new InteractionServiceConfig
+            {
+                UseCompiledLambda = true,
+                ThrowOnError = true,
+                AutoServiceScopes = false
+            }));
+
             Services = services.BuildServiceProvider();
 
             Client.ShardReady += ShardReady;
@@ -137,8 +138,10 @@ namespace Bob
 
         private static async Task RegisterSlashCommands()
         {
-            await Service.AddModulesAsync(Assembly.GetEntryAssembly(), Services);
-            var globalCommands = await Service.RegisterCommandsGloballyAsync();
+            var interactionService = Services.GetRequiredService<InteractionService>();
+
+            await interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), Services);
+            var globalCommands = await interactionService.RegisterCommandsGloballyAsync();
 
             // Update command IDs...
             Dictionary<string, ulong> _commandIds = globalCommands.ToDictionary(cmd => cmd.Name, cmd => cmd.Id);
@@ -168,15 +171,15 @@ namespace Bob
             }
 
             // Optional: Register per-guild debug commands
-            ModuleInfo[] debugCommands = Service.Modules
+            ModuleInfo[] debugCommands = interactionService.Modules
                 .Where(module => module.Preconditions.Any(precondition => precondition is RequireGuildAttribute)
                               && module.SlashGroupName == "debug")
                 .ToArray();
             IGuild supportServer = Client.GetGuild(supportServerId);
-            await Service.AddModulesToGuildAsync(supportServer, true, debugCommands);
+            await interactionService.AddModulesToGuildAsync(supportServer, true, debugCommands);
 
             Client.InteractionCreated += InteractionCreated;
-            Service.SlashCommandExecuted += SlashCommandResulted;
+            interactionService.SlashCommandExecuted += SlashCommandResulted;
 
             Console.WriteLine("Slash commands registered successfully.");
         }
@@ -495,7 +498,7 @@ namespace Bob
                     var storedEmojiId = ReactBoardMethods.GetEmojiIdFromString(server.ReactBoardEmoji);
 
                     bool isMatchingEmoji = (storedEmojiId != null && key == storedEmojiId)
-                        || reaction.Emote.Name.Equals(server.ReactBoardEmoji, StringComparison.OrdinalIgnoreCase);  
+                        || reaction.Emote.Name.Equals(server.ReactBoardEmoji, StringComparison.OrdinalIgnoreCase);
 
                     if (!isMatchingEmoji || textChannel.Id == server.ReactBoardChannelId)
                     {
@@ -596,14 +599,16 @@ namespace Bob
         {
             try
             {
-                ShardedInteractionContext ctx = new(Client, interaction);
-                await Service.ExecuteCommandAsync(ctx, Services);
+                var interactionService = Services.GetRequiredService<InteractionService>();
+                var ctx = new ShardedInteractionContext(Client, interaction);
+                await interactionService.ExecuteCommandAsync(ctx, Services);
             }
             catch
             {
                 if (interaction.Type == InteractionType.ApplicationCommand)
                 {
-                    await interaction.GetOriginalResponseAsync().ContinueWith(async (msg) => await msg.Result.DeleteAsync());
+                    await interaction.GetOriginalResponseAsync()
+                        .ContinueWith(async (msg) => await msg.Result.DeleteAsync());
                 }
             }
         }
