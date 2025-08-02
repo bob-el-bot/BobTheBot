@@ -83,7 +83,6 @@ namespace Bob
             {
                 UseCompiledLambda = true,
                 ThrowOnError = true,
-                AutoServiceScopes = false
             }));
 
             Services = services.BuildServiceProvider();
