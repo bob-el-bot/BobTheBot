@@ -125,7 +125,7 @@ namespace Bob.BadgeInterface
         {
             if (GetUserBadges(user.EarnedBadges).Contains(badge) == false)
             {
-                user = GiveUserObjectBadge(user, badge);
+                GiveUserObjectBadge(user, badge);
 
                 using var scope = Bot.Services.CreateScope();
                 var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
@@ -203,7 +203,7 @@ namespace Bob.BadgeInterface
         private static int GetBadgeTier(Badges.Badges badge)
         {
             string badgeName = badge.ToString();
-            Match match = MyRegex().Match(badgeName);
+            Match match = EndDigitRegex().Match(badgeName);
             if (match.Success)
             {
                 return Convert.ToInt32(match.Value);
@@ -329,6 +329,6 @@ namespace Bob.BadgeInterface
         }
 
         [GeneratedRegex(@"\d$")]
-        private static partial Regex MyRegex();
+        private static partial Regex EndDigitRegex();
     }
 }
