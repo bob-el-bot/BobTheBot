@@ -148,7 +148,7 @@ namespace Bob.Commands.Helpers
                         }
                     });
                 }
-                else if (scheduledItem is ScheduledMessage message)
+                else if (scheduledItem is ScheduledMessage)
                 {
                     var messageToSend = await context.GetScheduledMessage(scheduledItem.Id);
                     if (messageToSend != null)
@@ -163,7 +163,7 @@ namespace Bob.Commands.Helpers
                         });
                     }
                 }
-                else if (scheduledItem is ScheduledAnnouncement announcement)
+                else if (scheduledItem is ScheduledAnnouncement)
                 {
                     var announcementToSend = await context.GetScheduledAnnouncement(scheduledItem.Id);
                     if (announcementToSend != null)

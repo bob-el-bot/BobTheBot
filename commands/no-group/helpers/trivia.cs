@@ -145,24 +145,13 @@ namespace Bob.Commands.Helpers
             Player1Answer = null;
             Player2Answer = null;
 
-            // Reset Expiration Time.
-            UpdateExpirationTime(TimeSpan.FromMinutes(0.5));
-
             // Get a question
             Questions.Add(await TriviaMethods.GetQuestion());
 
-            Embed embed;
-
-            if (Player2.IsBot)
-            {
-                embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention}'s Game of {Title}.");
-            }
-            else
+            if (Player2.IsBot == false)
             {
                 // Reset Expiration Time.
                 UpdateExpirationTime(TimeSpan.FromMinutes(0.5));
-
-                embed = TriviaMethods.CreateQuestionEmbed(this, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}.");
             }
 
             await component.ModifyOriginalResponseAsync(x => { x.Components = TriviaMethods.CreateQuestionEmbedCV2(this, $"### ⚔️ {Player1.Mention} Challenges {Player2.Mention} to {Title}."); });
