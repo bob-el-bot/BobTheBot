@@ -43,7 +43,7 @@ public class TagGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInte
     {
         await DeferAsync();
 
-        var tags = dbContext.GetTagsByGuildId(Context.Guild.Id);
+        var tags = await dbContext.GetTagsByGuildId(Context.Guild.Id);
         if (tags.Count == 0)
         {
             await FollowupAsync("❌ No tags found in this server.");
@@ -98,7 +98,7 @@ public class TagGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInte
             return;
         }
 
-        var tags = dbContext.GetTagsByGuildId(Context.Guild.Id);
+        var tags = await dbContext.GetTagsByGuildId(Context.Guild.Id);
         if (tags.Count == 0)
         {
             await FollowupAsync("❌ No tags found in this server.");

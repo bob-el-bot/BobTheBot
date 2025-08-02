@@ -12,7 +12,6 @@ namespace Bob.Commands;
 
 public class TagAutocompleteHandler(BobEntities dbService) : AutocompleteHandler
 {
-    private readonly BobEntities _dbService = dbService;
     private static readonly ConcurrentDictionary<ulong, List<(string Name, int Id)>> _guildTagCache = [];
 
     public override async Task<AutocompletionResult> GenerateSuggestionsAsync(IInteractionContext context, IAutocompleteInteraction autocompleteInteraction, IParameterInfo parameter, IServiceProvider services)
@@ -22,7 +21,7 @@ public class TagAutocompleteHandler(BobEntities dbService) : AutocompleteHandler
 
         if (!_guildTagCache.TryGetValue(guildId, out List<(string Name, int Id)> value))
         {
-            var tags = _dbService.GetTagsByGuildId(guildId);
+            var tags = await dbService.GetTagsByGuildId(guildId);
             value = tags.Select(t => (t.Name, t.Id)).ToList();
             _guildTagCache[guildId] = value;
         }

@@ -464,9 +464,9 @@ namespace Bob.Database
         /// <returns>
         /// A task representing the asynchronous operation, with a list of ReactBoardMessage entities for the specified guild.
         /// </returns>
-        public virtual List<ReactBoardMessage> GetAllReactBoardMessagesForGuild(ulong guildId)
+        public virtual async Task<List<ReactBoardMessage>> GetAllReactBoardMessagesForGuild(ulong guildId)
         {
-            return [.. ReactBoardMessage.Where(x => x.GuildId == guildId)];
+            return await ReactBoardMessage.Where(x => x.GuildId == guildId).ToListAsync();
         }
 
         /// <summary>
@@ -588,9 +588,9 @@ namespace Bob.Database
         /// </summary>
         /// <param name="guildId">The unique ID of the guild.</param>
         /// <returns>A list of <see cref="Tag"/> objects associated with the specified guild ID.</returns>
-        public virtual List<Tag> GetTagsByGuildId(ulong guildId)
+        public virtual async Task<List<Tag>> GetTagsByGuildId(ulong guildId)
         {
-            return [.. Tag.Where(t => t.GuildId == guildId)];
+            return await Tag.Where(t => t.GuildId == guildId).ToListAsync();
         }
     }
 }

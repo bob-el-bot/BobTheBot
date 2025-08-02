@@ -69,7 +69,7 @@ namespace Bob.Commands.Helpers
             using (var scope = Bot.Services.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<BobEntities>();
-                var allreactBoardMessages = db.GetAllReactBoardMessagesForGuild(guildId);
+                var allreactBoardMessages = await db.GetAllReactBoardMessagesForGuild(guildId);
 
                 if (allreactBoardMessages.Count > 0)
                 {
