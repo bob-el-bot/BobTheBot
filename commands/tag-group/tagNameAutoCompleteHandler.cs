@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -9,29 +10,23 @@ using Discord.Interactions;
 
 namespace Bob.Commands;
 
-public class TagAutocompleteHandler : AutocompleteHandler
+public class TagAutocompleteHandler(BobEntities dbService) : AutocompleteHandler
 {
-    private readonly BobEntities _dbService;
-    private static readonly Dictionary<ulong, List<(string Name, int Id)>> _guildTagCache = new();
-
-    public TagAutocompleteHandler(BobEntities dbService)
-    {
-        _dbService = dbService;
-    }
+    private static readonly ConcurrentDictionary<ulong, List<(string Name, int Id)>> _guildTagCache = [];
 
     public override async Task<AutocompletionResult> GenerateSuggestionsAsync(IInteractionContext context, IAutocompleteInteraction autocompleteInteraction, IParameterInfo parameter, IServiceProvider services)
     {
         var userInput = autocompleteInteraction.Data.Current.Value?.ToString() ?? "";
         var guildId = context.Guild.Id;
 
-        if (!_guildTagCache.ContainsKey(guildId))
+        if (!_guildTagCache.TryGetValue(guildId, out List<(string Name, int Id)> value))
         {
-            var tags = await _dbService.GetTagsByGuildId(guildId);
-            _guildTagCache[guildId] = tags.Select(t => (Name: t.Name, Id: t.Id)).ToList();
+            var tags = await dbService.GetTagsByGuildId(guildId);
+            value = tags.Select(t => (t.Name, t.Id)).ToList();
+            _guildTagCache[guildId] = value;
         }
 
-        var suggestions = _guildTagCache[guildId]
-            .Where(tag => tag.Name.Contains(userInput.Trim().ToLowerInvariant()))
+        var suggestions = value.Where(tag => tag.Name.Contains(userInput.Trim(), StringComparison.InvariantCultureIgnoreCase))
             .Take(25)
             .Select(tag => new AutocompleteResult(
                 name: tag.Name,
@@ -42,16 +37,9 @@ public class TagAutocompleteHandler : AutocompleteHandler
         return AutocompletionResult.FromSuccess(suggestions);
     }
 
-    /// <summary>
-    /// Removes all tag entries from the cache for the specified guild.
-    /// </summary>
-    /// <param name="guildId">The unique identifier of the guild.</param>
     public static void RemoveGuildTagsFromCache(ulong guildId)
     {
-        if (_guildTagCache.ContainsKey(guildId))
-        {
-            _guildTagCache.Remove(guildId);
-        }
+        _guildTagCache.TryRemove(guildId, out _);
     }
 
     /// <summary>
@@ -61,9 +49,9 @@ public class TagAutocompleteHandler : AutocompleteHandler
     /// <param name="tag">The tag (name and ID) to add to the cache.</param>
     public static void AddGuildTagToCache(ulong guildId, (string Name, int Id) tag)
     {
-        if (_guildTagCache.ContainsKey(guildId))
+        if (_guildTagCache.TryGetValue(guildId, out List<(string Name, int Id)> value))
         {
-            _guildTagCache[guildId].Add(tag);
+            value.Add(tag);
         }
     }
 
