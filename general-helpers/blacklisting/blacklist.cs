@@ -122,12 +122,18 @@ namespace Bob.Moderation
         /// <returns>The next punishment.</returns>
         private static Punishment GetNextPunishment(DateTime? expiration)
         {
-            if (expiration == null || expiration > DateTime.Now.AddMonths(1))
+            var now = DateTime.UtcNow;
+            if (expiration == null || expiration < now)
+            {
+                return Punishment.FiveMinutes;
+            }
+
+            if (expiration > now.AddMonths(1))
             {
                 return Punishment.Permanent;
             }
 
-            var remainingTime = expiration - DateTime.Now;
+            var remainingTime = expiration - now;
 
             if (remainingTime <= TimeSpan.FromMinutes(5))
             {
@@ -286,21 +292,30 @@ namespace Bob.Moderation
         }
 
         /// <summary>
-        /// Updates the information of a blacklisted user, or adds them if they do not exist.
+        /// Updates the information of a blacklisted user.
         /// </summary>
-        /// <param name="user">The user information to upsert.</param>
+        /// <param name="user">The updated user information.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
         public static async Task UpdateUser(BlackListUser user)
         {
             user.Expiration = user.Expiration?.ToUniversalTime();
 
-            using var scope = Bot.Services.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
-            await context.UpsertBlackListUserAsync(user.Id, u =>
+            var dbUser = await GetUser(user.Id);
+            if (dbUser == null)
             {
-                u.Reason = user.Reason;
-                u.Expiration = user.Expiration;
-            });
+                using var scope = Bot.Services.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
+                await context.AddUserToBlackList(user);
+            }
+            else
+            {
+                using var scope = Bot.Services.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
+                await context.UpsertBlackListUserAsync(user.Id, dbUser => {
+                    dbUser.Expiration = user.Expiration;
+                    dbUser.Reason = user.Reason;
+                });
+            }
 
             UpdateCache(user);
         }
