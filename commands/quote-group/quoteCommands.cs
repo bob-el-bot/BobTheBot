@@ -26,7 +26,7 @@ namespace Bob.Commands
         {
             await DeferAsync(ephemeral: true);
 
-            var server = await QuoteMethods.GetServerAsync(Context.Guild.Id);
+            var server = await dbContext.GetServerOrNew(Context.Guild.Id);
             if (await QuoteMethods.ValidateServerAndChannel(server, Context) == false)
             {
                 return;
@@ -56,7 +56,7 @@ namespace Bob.Commands
             var quote = message.Content;
             var user = (SocketUser)message.Author;
 
-            var server = await QuoteMethods.GetServerAsync(Context.Guild.Id);
+            var server = await dbContext.GetServerOrNew(Context.Guild.Id);
             if (await QuoteMethods.ValidateServerAndChannel(server, Context) == false)
             {
                 return;
@@ -96,7 +96,7 @@ namespace Bob.Commands
             {
                 await DeferAsync(ephemeral: true);
 
-                Server server = await dbContext.GetServer(Context.Guild.Id);
+                Server server = await dbContext.GetOrCreateServerAsync(Context.Guild.Id);
 
                 // Set the channel for this server
                 server.QuoteChannelId = channel.Id;
@@ -111,7 +111,7 @@ namespace Bob.Commands
         {
             await DeferAsync(ephemeral: true);
 
-            Server server = await dbContext.GetServer(Context.Guild.Id);
+            Server server = await dbContext.GetOrCreateServerAsync(Context.Guild.Id);
 
             // Check if the user has manage channels permissions.
             if (!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageChannels)
@@ -155,7 +155,7 @@ namespace Bob.Commands
         {
             await DeferAsync(ephemeral: true);
 
-            Server server = await dbContext.GetServer(Context.Guild.Id);
+            Server server = await dbContext.GetOrCreateServerAsync(Context.Guild.Id);
 
             // Check if the user has manage channels permissions.
             if (!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageChannels)

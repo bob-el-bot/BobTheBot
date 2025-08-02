@@ -227,7 +227,7 @@ namespace Bob
                 using (var scope = Services.CreateScope())
                 {
                     var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
-                    server = await context.GetServer(user.Guild.Id);
+                    server = await context.GetOrCreateServerAsync(user.Guild.Id);
                 }
 
                 if (server.Welcome == true)
@@ -268,7 +268,7 @@ namespace Bob
                     using (var scope = Services.CreateScope())
                     {
                         var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
-                        dbUser = await context.GetUser(user.Id);
+                        dbUser = await context.GetOrCreateUserAsync(user.Id);
                     }
 
                     await Badge.GiveUserBadge(dbUser, Badges.Badges.Friend);
@@ -284,7 +284,7 @@ namespace Bob
         {
             using var scope = Services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
-            await context.GetServer(guild.Id);
+            await context.GetOrCreateServerAsync(guild.Id);
         }
 
         private static async Task EntitlementCreated(SocketEntitlement ent)
@@ -292,7 +292,7 @@ namespace Bob
             using var scope = Services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
             IUser entUser = await ent.User.Value.GetOrDownloadAsync();
-            User user = await context.GetUser(entUser.Id);
+            User user = await context.GetOrCreateUserAsync(entUser.Id);
 
             if (ent.EndsAt == null)
             {
@@ -311,7 +311,7 @@ namespace Bob
             using var scope = Services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
             IUser entUser = await before.Value.User.Value.GetOrDownloadAsync();
-            User user = await context.GetUser(entUser.Id);
+            User user = await context.GetOrCreateUserAsync(entUser.Id);
 
             user.PremiumExpiration = (DateTimeOffset)after.EndsAt;
             await context.SaveChangesAsync();
@@ -404,7 +404,7 @@ namespace Bob
                 using (var scope = Services.CreateScope())
                 {
                     var dbContext = scope.ServiceProvider.GetRequiredService<BobEntities>();
-                    server = await dbContext.GetServer(channel.Guild.Id);
+                    server = await dbContext.GetOrCreateServerAsync(channel.Guild.Id);
                 }
 
                 if (server.AutoEmbedGitHubLinks == true)
@@ -496,7 +496,7 @@ namespace Bob
 
                     using var scope = Services.CreateScope();
                     var dbContext = scope.ServiceProvider.GetRequiredService<BobEntities>();
-                    var server = await dbContext.GetServer(textChannel.Guild.Id);
+                    var server = await dbContext.GetOrCreateServerAsync(textChannel.Guild.Id);
 
                     if (!ReactBoardMethods.IsSetup(server))
                     {

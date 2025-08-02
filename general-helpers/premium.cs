@@ -108,7 +108,7 @@ namespace Bob.PremiumInterface
 
             using var scope = Bot.Services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
-            User user = await context.GetUser(userId);
+            User user = await context.GetUserOrNew(userId);
 
             return IsValidPremium(user.PremiumExpiration);
         }

@@ -286,27 +286,21 @@ namespace Bob.Moderation
         }
 
         /// <summary>
-        /// Updates the information of a blacklisted user.
+        /// Updates the information of a blacklisted user, or adds them if they do not exist.
         /// </summary>
-        /// <param name="user">The updated user information.</param>
+        /// <param name="user">The user information to upsert.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
         public static async Task UpdateUser(BlackListUser user)
         {
             user.Expiration = user.Expiration?.ToUniversalTime();
 
-            var dbUser = await GetUser(user.Id);
-            if (dbUser == null)
+            using var scope = Bot.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
+            await context.UpsertBlackListUserAsync(user.Id, u =>
             {
-                using var scope = Bot.Services.CreateScope();
-                var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
-                await context.AddUserToBlackList(user);
-            }
-            else
-            {
-                using var scope = Bot.Services.CreateScope();
-                var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
-                await context.SaveChangesAsync();
-            }
+                u.Reason = user.Reason;
+                u.Expiration = user.Expiration;
+            });
 
             UpdateCache(user);
         }

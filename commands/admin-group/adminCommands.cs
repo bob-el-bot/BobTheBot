@@ -29,7 +29,7 @@ namespace Bob.Commands
                     return;
                 }
 
-                var server = await dbContext.GetServer(Context.Guild.Id);
+                var server = await dbContext.GetOrCreateServerAsync(Context.Guild.Id);
 
                 if (server.ConfessFilteringOff == enable)
                 {

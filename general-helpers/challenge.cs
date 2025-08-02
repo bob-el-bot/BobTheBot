@@ -61,7 +61,7 @@ namespace Bob.Challenges
         {
             using var scope = Bot.Services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
-            User user = await context.GetUser(player1Id);
+            User user = await context.GetOrCreateUserAsync(player1Id);
 
             if (player1Id == player2Id)
             {
@@ -466,7 +466,7 @@ namespace Bob.Challenges
             using var scope = Bot.Services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
             var userIds = new[] { game.Player1.Id, game.Player2.Id };
-            var users = await context.GetUsers(userIds);
+            var users = await context.GetOrCreateUsersAsync(userIds);
 
             // Ensure users[0] is Player1 and users[1] is Player2
             User player1 = users.First(u => u.Id == game.Player1.Id);
@@ -478,7 +478,7 @@ namespace Bob.Challenges
 
             var updatedUsers = Badge.CheckGivingUserBadge([player1, player2], Bob.Badges.Badges.Winner3);
 
-            await context.UpdateUsers(updatedUsers);
+            await context.UpdateOrAddUsers(updatedUsers);
         }
 
         /// <summary>

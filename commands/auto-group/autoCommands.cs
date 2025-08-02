@@ -88,7 +88,7 @@ namespace Bob.Commands
             // Update github preview information.
             else
             {
-                Server server = await dbContext.GetServer(Context.Guild.Id);
+                Server server = await dbContext.GetOrCreateServerAsync(Context.Guild.Id);
 
                 // Only write to DB if needed.
                 if (server.AutoEmbedGitHubLinks != preview)
@@ -121,7 +121,7 @@ namespace Bob.Commands
             // Update github preview information.
             else
             {
-                Server server = await dbContext.GetServer(Context.Guild.Id);
+                Server server = await dbContext.GetOrCreateServerAsync(Context.Guild.Id);
 
                 // Only write to DB if needed.
                 if (server.AutoEmbedMessageLinks != preview)

@@ -104,32 +104,86 @@ namespace Bob.Database
         }
 
         /// <summary>
-        /// Retrieves a <see cref="Server"/> object by its unique identifier.
-        /// If the server is not found, a new entry is created and returned.
+        /// Retrieves a <see cref="Server"/> by its unique identifier.
+        /// If not found, creates, saves, and returns a new <see cref="Server"/> tracked by the context.
         /// </summary>
         /// <param name="id">The unique identifier of the server.</param>
         /// <returns>
-        /// A task representing the asynchronous operation. 
-        /// The task result contains the retrieved or newly created <see cref="Server"/>.
+        /// A task representing the asynchronous operation.
+        /// The task result contains the existing or newly created <see cref="Server"/> tracked by the context.
         /// </returns>
-        public virtual async Task<Server> GetServer(ulong id)
+        public virtual async Task<Server> GetOrCreateServerAsync(ulong id)
         {
             var server = await Server.FirstOrDefaultAsync(s => s.Id == id);
-            
-            if (server == null)
-            {
-                return new Server { Id = id };
-            }
-            else
-            {
+            if (server != null)
                 return server;
-            }
+
+            server = new Server { Id = id };
+            Server.Add(server);
+            await SaveChangesAsync();
+            return server;
         }
 
         /// <summary>
-        /// Removes a server from the database asynchronously.
+        /// Retrieves a <see cref="Server"/> by its unique identifier.
+        /// If not found, returns a new unsaved <see cref="Server"/> instance with the given ID (not tracked by the context).
         /// </summary>
-        /// <param name="server">The server to be removed.</param>
+        /// <param name="id">The unique identifier of the server.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation.
+        /// The task result contains the existing <see cref="Server"/> from the database, or a new unsaved instance if not found.
+        /// </returns>
+        public virtual async Task<Server> GetServerOrNew(ulong id)
+        {
+            var server = await Server.FirstOrDefaultAsync(s => s.Id == id);
+            return server ?? new Server { Id = id };
+        }
+
+        /// <summary>
+        /// Retrieves a <see cref="Server"/> by its unique identifier from the database.
+        /// </summary>
+        /// <param name="id">The unique identifier of the server.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation.
+        /// The task result contains the <see cref="Server"/> if found, or <c>null</c> if not found.
+        /// </returns>
+        public virtual async Task<Server> GetServer(ulong id)
+        {
+            return await Server.FirstOrDefaultAsync(s => s.Id == id);
+        }
+
+        /// <summary>
+        /// Inserts a new <see cref="Server"/> or updates an existing one by its unique identifier,
+        /// applying the specified update action, and saves changes asynchronously.
+        /// </summary>
+        /// <param name="id">The unique identifier of the server.</param>
+        /// <param name="updateAction">An action to update the <see cref="Server"/> object.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation.
+        /// The task result contains the upserted <see cref="Server"/> entity.
+        /// </returns>
+        public virtual async Task<Server> UpsertServerAsync(ulong id, Action<Server> updateAction)
+        {
+            var server = await Server.FirstOrDefaultAsync(s => s.Id == id);
+            if (server == null)
+            {
+                server = new Server { Id = id };
+                updateAction(server);
+                Server.Add(server);
+            }
+            else
+            {
+                updateAction(server);
+            }
+            await SaveChangesAsync();
+            return server;
+        }
+
+        /// <summary>
+        /// Removes the specified <see cref="Server"/> from the database and saves changes asynchronously.
+        /// </summary>
+        /// <param name="server">The <see cref="Server"/> to be removed.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
         public virtual async Task RemoveServer(Server server)
         {
             Server.Remove(server);
@@ -137,74 +191,130 @@ namespace Bob.Database
         }
 
         /// <summary>
-        /// Retrieves a <see cref="User"/> object by its unique identifier.
-        /// If the user is not found, a new entry is created and returned.
+        /// Retrieves a <see cref="User"/> by its unique identifier.
+        /// If not found, creates, saves, and returns a new <see cref="User"/> tracked by the context.
         /// </summary>
         /// <param name="id">The unique identifier of the user.</param>
         /// <returns>
-        /// A task representing the asynchronous operation. 
-        /// The task result contains the retrieved or newly created <see cref="User"/>.
+        /// A task representing the asynchronous operation.
+        /// The task result contains the existing or newly created <see cref="User"/> tracked by the context.
         /// </returns>
-        public virtual async Task<User> GetUser(ulong id)
+        public virtual async Task<User> GetOrCreateUserAsync(ulong id)
         {
             var user = await User.FirstOrDefaultAsync(u => u.Id == id);
-            
-            if (user == null)
-            {
-                return new User { Id = id };
-            }
-            else
-            {
+            if (user != null)
                 return user;
-            }
+
+            user = new User { Id = id };
+            User.Add(user);
+            await SaveChangesAsync();
+            return user;
         }
 
         /// <summary>
-        /// Adds a new user to the database asynchronously.
+        /// Retrieves a <see cref="User"/> by its unique identifier.
+        /// If not found, returns a new unsaved <see cref="User"/> instance with the given ID (not tracked by the context).
         /// </summary>
-        /// <param name="user">The user to be added.</param>
-        private async Task AddUser(User user)
+        /// <param name="id">The unique identifier of the user.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation.
+        /// The task result contains the existing <see cref="User"/> from the database, or a new unsaved instance if not found.
+        /// </returns>
+        public virtual async Task<User> GetUserOrNew(ulong id)
         {
-            User.Add(user);
+            var user = await User.FirstOrDefaultAsync(u => u.Id == id);
+            return user ?? new User { Id = id };
+        }
+
+        /// <summary>
+        /// Retrieves a <see cref="User"/> by its unique identifier from the database.
+        /// </summary>
+        /// <param name="id">The unique identifier of the user.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation.
+        /// The task result contains the <see cref="User"/> if found, or <c>null</c> if not found.
+        /// </returns>
+        public virtual async Task<User> GetUser(ulong id)
+        {
+            return await User.FirstOrDefaultAsync(u => u.Id == id);
+        }
+
+        /// <summary>
+        /// Inserts a new <see cref="User"/> or updates an existing one by its unique identifier,
+        /// applying the specified update action, and saves changes asynchronously.
+        /// </summary>
+        /// <param name="id">The unique identifier of the user.</param>
+        /// <param name="updateAction">An action to update the <see cref="User"/> object.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation.
+        /// The task result contains the upserted <see cref="User"/> entity.
+        /// </returns>
+        public virtual async Task<User> UpsertUserAsync(ulong id, Action<User> updateAction)
+        {
+            var user = await User.FirstOrDefaultAsync(u => u.Id == id);
+            if (user == null)
+            {
+                user = new User { Id = id };
+                updateAction(user);
+                User.Add(user);
+            }
+            else
+            {
+                updateAction(user);
+            }
             await SaveChangesAsync();
+            return user;
         }
 
         /// <summary>
         /// Retrieves a list of <see cref="User"/> objects by their unique identifiers.
-        /// If any user is not found, a new entry is created and returned for that user.
+        /// For any missing users, creates and saves new <see cref="User"/> entries with those IDs.
         /// </summary>
-        /// <param name="ids">An array of user IDs.</param>
+        /// <param name="ids">A collection of user IDs.</param>
         /// <returns>
-        /// A task representing the asynchronous operation. 
-        /// The task result contains a list of retrieved or newly created <see cref="User"/> objects.
+        /// A task representing the asynchronous operation.
+        /// The task result contains a list of all found and newly created <see cref="User"/> objects.
         /// </returns>
-        public virtual async Task<List<User>> GetUsers(IEnumerable<ulong> ids)
+        public virtual async Task<List<User>> GetOrCreateUsersAsync(IEnumerable<ulong> ids)
         {
             var users = await User.Where(u => ids.Contains(u.Id)).ToListAsync();
-            var missingIds = ids.Except(users.Select(u => u.Id));
+            var existingIds = users.Select(u => u.Id).ToHashSet();
+            var newUsers = ids.Except(existingIds).Select(id => new User { Id = id }).ToList();
 
-            foreach (var id in missingIds)
+            if (newUsers.Count > 0)
             {
-                // Add missing users to the database
-                var newUser = new User { Id = id };
-                await AddUser(newUser);
-                users.Add(newUser);
+                User.AddRange(newUsers);
+                await SaveChangesAsync();
+                users.AddRange(newUsers);
             }
 
             return users;
         }
 
         /// <summary>
-        /// Updates existing users asynchronously.
+        /// Updates or adds the specified <see cref="User"/> entities in the database and saves changes asynchronously.
+        /// For each user, adds it if it does not exist, or updates it if it does.
         /// </summary>
-        /// <param name="users">A list of <see cref="User"/> objects to update.</param>
-        public virtual async Task UpdateUsers(IEnumerable<User> users)
+        /// <param name="users">A collection of <see cref="User"/> objects to update or add.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public virtual async Task UpdateOrAddUsers(IEnumerable<User> users)
         {
             foreach (var user in users)
             {
-                User.Update(user);
+                var entry = Entry(user);
+                if (entry.State == EntityState.Detached)
+                {
+                    bool exists = await User.AnyAsync(u => u.Id == user.Id);
+                    if (exists)
+                        User.Update(user);
+                    else
+                        User.Add(user);
+                }
+                else
+                {
+                    User.Update(user);
+                }
             }
-
             await SaveChangesAsync();
         }
 
@@ -254,6 +364,38 @@ namespace Bob.Database
         public virtual async Task<BlackListUser> GetUserFromBlackList(ulong id)
         {
             return await BlackListUser.FirstOrDefaultAsync(b => b.Id == id);
+        }
+
+        /// <summary>
+        /// Inserts a new <see cref="BlackListUser"/> or updates an existing one by its unique identifier,
+        /// applies the specified update action, and saves changes asynchronously.
+        /// </summary>
+        /// <param name="id">The unique identifier of the user to upsert.</param>
+        /// <param name="updateAction">
+        /// An action to apply updates to the <see cref="BlackListUser"/> object.
+        /// This action is invoked whether the user is newly created or already exists.
+        /// </param>
+        /// <returns>
+        /// A task representing the asynchronous operation.
+        /// The task result contains the upserted <see cref="BlackListUser"/> entity.
+        /// </returns>
+        public virtual async Task<BlackListUser> UpsertBlackListUserAsync(ulong id, Action<BlackListUser> updateAction)
+        {
+            var user = await BlackListUser.FirstOrDefaultAsync(u => u.Id == id);
+
+            if (user == null)
+            {
+                user = new BlackListUser { Id = id };
+                updateAction(user);
+                BlackListUser.Add(user);
+            }
+            else
+            {
+                updateAction(user);
+            }
+
+            await SaveChangesAsync();
+            return user;
         }
 
         /// <summary>
@@ -544,10 +686,10 @@ namespace Bob.Database
         /// <returns>The corresponding <see cref="Tag"/> object if found; otherwise, null.</returns>
         public virtual async Task<Tag> GetTag(ulong guildId, string name)
         {
-            #pragma warning disable CA1862
+#pragma warning disable CA1862
             return await Tag.FirstOrDefaultAsync(t => t.GuildId == guildId &&
                 t.Name == name.Trim().ToLowerInvariant());
-            #pragma warning restore CA1862
+#pragma warning restore CA1862
         }
 
         /// <summary>

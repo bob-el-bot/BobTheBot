@@ -55,7 +55,7 @@ namespace Bob.Commands
             }
 
             // Update server welcome information
-            var server = await dbContext.GetServer(Context.Guild.Id);
+            var server = await dbContext.GetOrCreateServerAsync(Context.Guild.Id);
 
             if (server.Welcome != welcome)
             {
@@ -114,7 +114,7 @@ namespace Bob.Commands
             }
 
             // Update server welcome information.
-            var server = await dbContext.GetServer(Context.Guild.Id);
+            var server = await dbContext.GetOrCreateServerAsync(Context.Guild.Id);
 
             // Only write to DB if needed.
             if (server.CustomWelcomeMessage != message)
@@ -244,7 +244,7 @@ namespace Bob.Commands
             Console.WriteLine($"Image size: {compressedImage.Length}");
 
             // Update server welcome information.
-            var server = await dbContext.GetServer(Context.Guild.Id);
+            var server = await dbContext.GetOrCreateServerAsync(Context.Guild.Id);
 
             // Only write to DB if needed.
             if (server.HasWelcomeImage != true)
@@ -322,7 +322,7 @@ namespace Bob.Commands
             // Update server welcome information.
             else
             {
-                Server server = await dbContext.GetServer(Context.Guild.Id);
+                Server server = await dbContext.GetOrCreateServerAsync(Context.Guild.Id);
 
                 // Only write to DB if needed.
                 if (server.HasWelcomeImage == true)
@@ -366,7 +366,7 @@ namespace Bob.Commands
             // Update server welcome information.
             else
             {
-                Server server = await dbContext.GetServer(Context.Guild.Id);
+                Server server = await dbContext.GetOrCreateServerAsync(Context.Guild.Id);
 
                 // Only write to DB if needed.
                 if (!string.IsNullOrEmpty(server.CustomWelcomeMessage))

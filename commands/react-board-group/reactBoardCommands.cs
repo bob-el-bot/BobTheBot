@@ -20,7 +20,7 @@ namespace Bob.Commands
 
             var discordUser = Context.Guild.GetUser(Context.User.Id);
 
-            var server = await dbContext.GetServer(Context.Guild.Id);
+            var server = await dbContext.GetOrCreateServerAsync(Context.Guild.Id);
 
             SocketTextChannel reactBoardChannel = null;
             if (server.ReactBoardChannelId is ulong channelId)
@@ -31,6 +31,12 @@ namespace Bob.Commands
             // Check if user is an administrator
             if (!discordUser.GuildPermissions.Administrator)
             {
+                if (reactBoardChannel == null)
+                {
+                    await FollowupAsync("❌ No react board channel is set.", ephemeral: true);
+                    return;
+                }
+
                 // Check user permissions for managing the ReactBoard Channel
                 if (!discordUser.GetPermissions(reactBoardChannel).ManageChannel)
                 {
@@ -103,7 +109,7 @@ namespace Bob.Commands
             await DeferAsync(ephemeral: true);
 
             // Update database with the new channel ID
-            var server = await dbContext.GetServer(Context.Guild.Id);
+            var server = await dbContext.GetServerOrNew(Context.Guild.Id);
 
             server.ReactBoardChannelId = channel.Id;
             await dbContext.SaveChangesAsync();
@@ -125,11 +131,7 @@ namespace Bob.Commands
 
             await DeferAsync(ephemeral: true);
 
-            // Update database with the new emoji
-            var server = await dbContext.GetServer(Context.Guild.Id);
-
-            server.ReactBoardEmoji = emoji;
-            await dbContext.SaveChangesAsync();
+            await dbContext.UpsertServerAsync(Context.Guild.Id, s => s.ReactBoardEmoji = emoji);
 
             await FollowupAsync(text: $"✅ The react board emoji has been set to {emoji}.", ephemeral: true);
         }
@@ -149,10 +151,7 @@ namespace Bob.Commands
             await DeferAsync(ephemeral: true);
 
             // Update database with the new minimum reactions
-            var server = await dbContext.GetServer(Context.Guild.Id);
-
-            server.ReactBoardMinimumReactions = minimumReactions;
-            await dbContext.SaveChangesAsync();
+            await dbContext.UpsertServerAsync(Context.Guild.Id, s => s.ReactBoardMinimumReactions = minimumReactions);
 
             await FollowupAsync(text: $"✅ The minimum reactions required to post on the react board has been set to {minimumReactions}.", ephemeral: true);
         }
@@ -162,7 +161,7 @@ namespace Bob.Commands
         {
             await DeferAsync(ephemeral: true);
 
-            var server = await dbContext.GetServer(Context.Guild.Id);
+            var server = await dbContext.GetServerOrNew(Context.Guild.Id);
 
             var reactBoardChannel = Context.Guild.GetTextChannel(server.ReactBoardChannelId ?? 0);
             var emoji = server.ReactBoardEmoji ?? "Not set";

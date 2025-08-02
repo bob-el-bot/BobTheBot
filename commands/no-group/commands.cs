@@ -807,7 +807,7 @@ namespace Bob.Commands
 
             try
             {
-                var dbUser = await dbContext.GetUser(user.Id);
+                var dbUser = await dbContext.GetUserOrNew(user.Id);
 
                 FilterResult filterResult = new();
 
@@ -820,7 +820,7 @@ namespace Bob.Commands
 
                     if (filterResult.BlacklistMatches.Count > 0)
                     {
-                        Server dbServer = Context.Guild?.Id != null ? await dbContext.GetServer(Context.Guild.Id) : null;
+                        Server dbServer = Context.Guild?.Id != null ? await dbContext.GetServerOrNew(Context.Guild.Id) : null;
 
                         // If a Guild Install and confess filtering is on for the server, punish.
                         if (dbServer != null && dbServer.ConfessFilteringOff == false)
@@ -911,7 +911,7 @@ namespace Bob.Commands
             await DeferAsync();
 
             User user;
-            user = await dbContext.GetUser(Context.User.Id);
+            user = await dbContext.GetUserOrNew(Context.User.Id);
 
             // If user has premium ensure DB is updated.
             bool isPremium = Premium.IsPremium(Context.Interaction.Entitlements);

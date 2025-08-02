@@ -31,10 +31,10 @@ namespace Bob.Commands
             [Summary("timezone", "Your timezone.")] Timezone timezone)
         {
             await DeferAsync();
-            
+
             DateTime scheduledTime;
 
-            var user = await dbContext.GetUser(Context.User.Id);
+            var user = await dbContext.GetUserOrNew(Context.User.Id);
 
             try
             {
@@ -91,8 +91,9 @@ namespace Bob.Commands
             };
 
             await dbContext.AddScheduledMessage(scheduledMessage);
-            user.TotalScheduledMessages += 1;
-            await dbContext.SaveChangesAsync();
+            await dbContext.UpsertUserAsync(user.Id, updateAction: u => {
+                u.TotalScheduledMessages += 1;
+            });
 
             ScheduleTask(scheduledMessage);
 
@@ -114,11 +115,11 @@ namespace Bob.Commands
            [Summary("timezone", "Your timezone.")] Timezone timezone)
         {
             await DeferAsync();
-            
+
             DateTime scheduledTime;
             Color? finalColor = Colors.TryGetColor(color);
 
-            var user = await dbContext.GetUser(Context.User.Id);
+            var user = await dbContext.GetUserOrNew(Context.User.Id);
 
             try
             {
@@ -184,8 +185,9 @@ namespace Bob.Commands
             };
 
             await dbContext.AddScheduledAnnouncement(scheduledAnnouncement);
-            user.TotalScheduledAnnouncements += 1;
-            await dbContext.SaveChangesAsync();
+            await dbContext.UpsertUserAsync(user.Id, updateAction: u => {
+                u.TotalScheduledAnnouncements += 1;
+            });
 
             ScheduleTask(scheduledAnnouncement);
 
@@ -337,12 +339,13 @@ namespace Bob.Commands
 
             await dbContext.RemoveScheduledMessage(messageId);
 
-            User user = await dbContext.GetUser(Context.User.Id);
-            if (user.TotalScheduledMessages > 0)
+            await dbContext.UpsertUserAsync(Context.User.Id, u =>
             {
-                user.TotalScheduledMessages -= 1;
-            }
-            await dbContext.SaveChangesAsync();
+                if (u.TotalScheduledMessages > 0)
+                {
+                    u.TotalScheduledMessages -= 1;
+                }
+            });
 
             // Cancel the corresponding task if it exists
             if (ScheduledTasks.TryGetValue(messageId, out var cts))
@@ -376,12 +379,13 @@ namespace Bob.Commands
 
             await dbContext.RemoveScheduledAnnouncement(announcementId);
 
-            User user = await dbContext.GetUser(Context.User.Id);
-            if (user.TotalScheduledAnnouncements > 0)
+            await dbContext.UpsertUserAsync(Context.User.Id, u =>
             {
-                user.TotalScheduledAnnouncements -= 1;
-            }
-            await dbContext.SaveChangesAsync();
+                if (u.TotalScheduledAnnouncements > 0)
+                {
+                    u.TotalScheduledAnnouncements -= 1;
+                }
+            });
 
             // Cancel the corresponding task if it exists
             if (ScheduledTasks.TryGetValue(announcementId, out var cts))

@@ -98,7 +98,7 @@ namespace Bob.Moderation
 
             var userId = Convert.ToUInt64(id);
 
-            var dbUser = await dbContext.GetUser(userId);
+            var dbUser = await dbContext.GetOrCreateUserAsync(userId);
 
             if (dbUser.ConfessionsOff == false)
             {
