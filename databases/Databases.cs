@@ -306,13 +306,9 @@ namespace Bob.Database
                 {
                     bool exists = await User.AnyAsync(u => u.Id == user.Id);
                     if (exists)
-                        User.Update(user);
+                        User.Attach(user);
                     else
                         User.Add(user);
-                }
-                else
-                {
-                    User.Update(user);
                 }
             }
             await SaveChangesAsync();
