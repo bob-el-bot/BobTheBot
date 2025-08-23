@@ -24,9 +24,13 @@ jobs:
         run: |
           FILE="main.cs"
 
-          if ! grep -Eq "^\s*${REQUIRED_LINE}\s*$" "$FILE"; then
-            echo "❌ Required line not uncommented"
+          # Match REQUIRED_LINE with optional leading/trailing whitespace
+          # but ensure it is not preceded by //
+          if ! grep -Eq "^[[:space:]]*${REQUIRED_LINE}([[:space:]]*(//.*)?)?$" "$FILE"; then
+            echo "❌ Required line '${REQUIRED_LINE}' is missing or commented out"
+            echo "Here are the lines I found:"
+            grep -n "${REQUIRED_LINE}" "$FILE" || echo "No occurrences at all"
             exit 1
           fi
 
-          echo "✅ Required line is present and uncommented."
+          echo "✅ Required line '${REQUIRED_LINE}' is present and uncommented."
