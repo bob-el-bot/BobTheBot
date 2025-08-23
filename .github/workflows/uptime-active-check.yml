@@ -9,7 +9,7 @@ jobs:
   check-line:
     runs-on: [self-hosted, homelab]
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Ensure main.cs exists
         run: |
@@ -18,23 +18,34 @@ jobs:
             exit 1
           fi
 
-      - name: Check main.cs for uncommented line
-        env:
-          REQUIRED_LINE: "Uptime.StartHttpListener();"
+      - name: Check main.cs for at least one uncommented Uptime.StartHttpListener();
         run: |
           FILE="main.cs"
 
-          # Check if the line exists (ignoring leading whitespace)
-          if ! grep -Fq "${REQUIRED_LINE}" "$FILE"; then
-            echo "❌ Required line '${REQUIRED_LINE}' is missing"
-            grep -n -F "${REQUIRED_LINE}" "$FILE" || echo "No occurrences at all"
-            exit 1
-          fi
-
-          # Check if the line is commented out
-          if grep -Fq "//${REQUIRED_LINE}" "$FILE"; then
-            echo "❌ Required line '${REQUIRED_LINE}' is commented out"
-            exit 1
-          fi
-
-          echo "✅ Required line '${REQUIRED_LINE}' is present and uncommented."
+          awk '
+            {
+              line = $0
+              startPos = 1
+              # Find all matches on the line
+              while (match(substr(line, startPos), /Uptime[[:space:]]*\.[[:space:]]*StartHttpListener[[:space:]]*\([[:space:]]*\)[[:space:]]*;/)) {
+                absStart = startPos + RSTART - 1
+                prefix = substr(line, 1, absStart - 1)
+                # If no // appears before the match, this instance is uncommented
+                if (prefix !~ /\/\//) {
+                  found = 1
+                  exit
+                }
+                # Continue searching after this match
+                startPos = absStart + RLENGTH
+              }
+            }
+            END {
+              if (found) {
+                print "✅ Found uncommented Uptime.StartHttpListener();"
+                exit 0
+              } else {
+                print "❌ No uncommented Uptime.StartHttpListener(); found. Ensure at least one instance is uncommented."
+                exit 1
+              }
+            }
+          ' "$FILE"
