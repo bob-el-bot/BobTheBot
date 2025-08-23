@@ -24,12 +24,16 @@ jobs:
         run: |
           FILE="main.cs"
 
-          # Match REQUIRED_LINE with optional leading/trailing whitespace
-          # but ensure it is not preceded by //
-          if ! grep -Eq "^[[:space:]]*${REQUIRED_LINE}([[:space:]]*(//.*)?)?$" "$FILE"; then
-            echo "❌ Required line '${REQUIRED_LINE}' is missing or commented out"
-            echo "Here are the lines I found:"
+          # Check if the line exists (ignoring leading whitespace)
+          if ! grep -q "^[[:space:]]*${REQUIRED_LINE}" "$FILE"; then
+            echo "❌ Required line '${REQUIRED_LINE}' is missing"
             grep -n "${REQUIRED_LINE}" "$FILE" || echo "No occurrences at all"
+            exit 1
+          fi
+
+          # Check if the line is commented out
+          if grep -q "^[[:space:]]*//[[:space:]]*${REQUIRED_LINE}" "$FILE"; then
+            echo "❌ Required line '${REQUIRED_LINE}' is commented out"
             exit 1
           fi
 
