@@ -25,14 +25,14 @@ jobs:
           FILE="main.cs"
 
           # Check if the line exists (ignoring leading whitespace)
-          if ! grep -q "^[[:space:]]*${REQUIRED_LINE}" "$FILE"; then
+          if ! grep -Fq "${REQUIRED_LINE}" "$FILE"; then
             echo "❌ Required line '${REQUIRED_LINE}' is missing"
-            grep -n "${REQUIRED_LINE}" "$FILE" || echo "No occurrences at all"
+            grep -n -F "${REQUIRED_LINE}" "$FILE" || echo "No occurrences at all"
             exit 1
           fi
 
           # Check if the line is commented out
-          if grep -q "^[[:space:]]*//[[:space:]]*${REQUIRED_LINE}" "$FILE"; then
+          if grep -Fq "//${REQUIRED_LINE}" "$FILE"; then
             echo "❌ Required line '${REQUIRED_LINE}' is commented out"
             exit 1
           fi
