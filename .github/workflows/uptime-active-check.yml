@@ -1,0 +1,32 @@
+name: Ensure Uptime Line Uncommented
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check-line:
+    runs-on: [self-hosted, homelab]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Ensure main.cs exists
+        run: |
+          if [ ! -f "main.cs" ]; then
+            echo "❌ main.cs not found!"
+            exit 1
+          fi
+
+      - name: Check main.cs for uncommented line
+        env:
+          REQUIRED_LINE: "Uptime.StartHttpListener();"
+        run: |
+          FILE="main.cs"
+
+          if ! grep -Eq "^\s*${REQUIRED_LINE}\s*$" "$FILE"; then
+            echo "❌ Required line not uncommented"
+            exit 1
+          fi
+
+          echo "✅ Required line is present and uncommented."
