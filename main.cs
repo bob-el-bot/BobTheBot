@@ -115,7 +115,7 @@ namespace Bob
             var ramUsage = GetRamUsageForProcess();
             Console.WriteLine("RAM at Ready: " + ramUsage.ToString() + "%");
 
-            UpdateSiteStats();
+         //   UpdateSiteStats();
 
             // Restart / reset scheduled messages and announcements
             _ = Task.Run(Schedule.LoadAndScheduleItemsAsync<ScheduledAnnouncement>);
