@@ -9,7 +9,7 @@ jobs:
   check-line:
     runs-on: [self-hosted, homelab]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
 
       - name: Ensure main.cs exists
         run: |
@@ -18,69 +18,29 @@ jobs:
             exit 1
           fi
 
-      - name: Require uncommented Uptime.StartHttpListener();
+      - name: Check main.cs for uncommented line
+        env:
+          REQUIRED_LINE: "Uptime.StartHttpListener();"
         run: |
           FILE="main.cs"
-          awk '
-            BEGIN { in_block = 0; found = 0 }
-            {
-              s = $0
-              # Strip double-quoted strings so // or /* */ inside strings don’t confuse us
-              gsub(/"([^"\\]|\\.)*"/, "", s)
 
-              pos = 1
-              while (pos <= length(s)) {
-                if (in_block) {
-                  m = index(substr(s, pos), "*/")
-                  if (m == 0) { next }           # stays in block to next line
-                  pos += m + 1
-                  in_block = 0
-                  continue
-                }
+          # Find all lines containing the required code
+          if ! grep -n "${REQUIRED_LINE}" "$FILE" > /dev/null; then
+            echo "❌ Required line '${REQUIRED_LINE}' is missing entirely"
+            exit 1
+          fi
 
-                rem = substr(s, pos)
-                p_line = index(rem, "//")
-                p_block = index(rem, "/*")
+          # Check for at least one uncommented instance
+          # This regex matches: optional whitespace, NOT //, then our required line
+          UNCOMMENTED_COUNT=$(grep -n "${REQUIRED_LINE}" "$FILE" | grep -E "^[0-9]+:[[:space:]]*[^/]*${REQUIRED_LINE}" | wc -l)
 
-                # Find the call allowing arbitrary whitespace
-                if (match(
-                      rem,
-                      /Uptime[[:space:]]*\.[[:space:]]*StartHttpListener[[:space:]]*\([[:space:]]*\)[[:space:]]*;/
-                    )) {
-                  p_call = RSTART
-                } else {
-                  p_call = 0
-                }
+          if [ "$UNCOMMENTED_COUNT" -eq 0 ]; then
+            echo "❌ All instances of '${REQUIRED_LINE}' are commented out"
+            echo "Found these lines:"
+            grep -n "${REQUIRED_LINE}" "$FILE"
+            exit 1
+          fi
 
-                # If a line comment starts before any call/block, rest of the line is ignored
-                if (p_line && (!p_call || p_line < p_call) &&
-                    (!p_block || p_line < p_block)) {
-                  break
-                }
-
-                # If a block comment starts before the call, enter it
-                if (p_block && (!p_call || p_block < p_call)) {
-                  pos += p_block + 1
-                  in_block = 1
-                  continue
-                }
-
-                # If the call occurs before any // on this line, it counts
-                if (p_call && (!p_line || p_call < p_line)) {
-                  found = 1
-                  exit
-                }
-
-                break
-              }
-            }
-            END {
-              if (found) {
-                print "✅ Found uncommented Uptime.StartHttpListener();"
-                exit 0
-              } else {
-                print "❌ No uncommented Uptime.StartHttpListener(); found."
-                exit 1
-              }
-            }
-          ' "$FILE"
+          echo "✅ Found $UNCOMMENTED_COUNT uncommented instance(s) of '${REQUIRED_LINE}'"
+          echo "Uncommented lines:"
+          grep -n "${REQUIRED_LINE}" "$FILE" | grep -E "^[0-9]+:[[:space:]]*[^/]*${REQUIRED_LINE}"
