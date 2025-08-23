@@ -24,29 +24,34 @@ jobs:
         run: |
           FILE="main.cs"
 
-          # Find all lines containing the required code
+          # First check if the line exists at all
           if ! grep -F "${REQUIRED_LINE}" "$FILE" > /dev/null; then
             echo "❌ Required line '${REQUIRED_LINE}' is missing entirely"
             exit 1
           fi
 
-          # Check each line to see if at least one is not commented
-          FOUND_UNCOMMENTED=false
+          echo "Found these lines containing '${REQUIRED_LINE}':"
+          grep -n -F "${REQUIRED_LINE}" "$FILE"
           
-          while IFS= read -r line; do
-            # Remove leading whitespace and check if it starts with //
-            trimmed=$(echo "$line" | sed 's/^[[:space:]]*//')
-            if [[ ! "$trimmed" =~ ^// ]]; then
-              FOUND_UNCOMMENTED=true
-              echo "✅ Found uncommented line: $line"
-            else
-              echo "Found commented line: $line"
-            fi
-          done < <(grep -F "${REQUIRED_LINE}" "$FILE")
+          # Check if ANY line with our required text is NOT preceded by // (ignoring whitespace)
+          # Use awk to be more explicit about the logic
+          UNCOMMENTED_EXISTS=$(awk -v target="${REQUIRED_LINE}" '
+            $0 ~ target {
+              # Remove leading whitespace
+              line = $0
+              gsub(/^[ \t]*/, "", line)
+              
+              # Check if line starts with //
+              if (line !~ /^\/\//) {
+                print "FOUND_UNCOMMENTED"
+                exit 0
+              }
+            }
+          ' "$FILE")
 
-          if [ "$FOUND_UNCOMMENTED" = false ]; then
+          if [ "$UNCOMMENTED_EXISTS" = "FOUND_UNCOMMENTED" ]; then
+            echo "✅ Found at least one uncommented instance of '${REQUIRED_LINE}'"
+          else
             echo "❌ All instances of '${REQUIRED_LINE}' are commented out"
             exit 1
           fi
-
-          echo "✅ At least one uncommented instance of '${REQUIRED_LINE}' found"
