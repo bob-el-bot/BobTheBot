@@ -18,25 +18,60 @@ jobs:
             exit 1
           fi
 
-      - name: Check main.cs for at least one uncommented Uptime.StartHttpListener();
+      - name: Require uncommented Uptime.StartHttpListener();
         run: |
           FILE="main.cs"
-
           awk '
+            BEGIN { in_block = 0; found = 0 }
             {
-              line = $0
-              startPos = 1
-              # Find all matches on the line
-              while (match(substr(line, startPos), /Uptime[[:space:]]*\.[[:space:]]*StartHttpListener[[:space:]]*\([[:space:]]*\)[[:space:]]*;/)) {
-                absStart = startPos + RSTART - 1
-                prefix = substr(line, 1, absStart - 1)
-                # If no // appears before the match, this instance is uncommented
-                if (prefix !~ /\/\//) {
+              s = $0
+              # Strip double-quoted strings so // or /* */ inside strings don’t confuse us
+              gsub(/"([^"\\]|\\.)*"/, "", s)
+
+              pos = 1
+              while (pos <= length(s)) {
+                if (in_block) {
+                  m = index(substr(s, pos), "*/")
+                  if (m == 0) { next }           # stays in block to next line
+                  pos += m + 1
+                  in_block = 0
+                  continue
+                }
+
+                rem = substr(s, pos)
+                p_line = index(rem, "//")
+                p_block = index(rem, "/*")
+
+                # Find the call allowing arbitrary whitespace
+                if (match(
+                      rem,
+                      /Uptime[[:space:]]*\.[[:space:]]*StartHttpListener[[:space:]]*\([[:space:]]*\)[[:space:]]*;/
+                    )) {
+                  p_call = RSTART
+                } else {
+                  p_call = 0
+                }
+
+                # If a line comment starts before any call/block, rest of the line is ignored
+                if (p_line && (!p_call || p_line < p_call) &&
+                    (!p_block || p_line < p_block)) {
+                  break
+                }
+
+                # If a block comment starts before the call, enter it
+                if (p_block && (!p_call || p_block < p_call)) {
+                  pos += p_block + 1
+                  in_block = 1
+                  continue
+                }
+
+                # If the call occurs before any // on this line, it counts
+                if (p_call && (!p_line || p_call < p_line)) {
                   found = 1
                   exit
                 }
-                # Continue searching after this match
-                startPos = absStart + RLENGTH
+
+                break
               }
             }
             END {
@@ -44,7 +79,7 @@ jobs:
                 print "✅ Found uncommented Uptime.StartHttpListener();"
                 exit 0
               } else {
-                print "❌ No uncommented Uptime.StartHttpListener(); found. Ensure at least one instance is uncommented."
+                print "❌ No uncommented Uptime.StartHttpListener(); found."
                 exit 1
               }
             }
