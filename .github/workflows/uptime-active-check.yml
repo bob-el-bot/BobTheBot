@@ -25,22 +25,28 @@ jobs:
           FILE="main.cs"
 
           # Find all lines containing the required code
-          if ! grep -n "${REQUIRED_LINE}" "$FILE" > /dev/null; then
+          if ! grep -F "${REQUIRED_LINE}" "$FILE" > /dev/null; then
             echo "❌ Required line '${REQUIRED_LINE}' is missing entirely"
             exit 1
           fi
 
-          # Check for at least one uncommented instance
-          # This regex matches: optional whitespace, NOT //, then our required line
-          UNCOMMENTED_COUNT=$(grep -n "${REQUIRED_LINE}" "$FILE" | grep -E "^[0-9]+:[[:space:]]*[^/]*${REQUIRED_LINE}" | wc -l)
+          # Check each line to see if at least one is not commented
+          FOUND_UNCOMMENTED=false
+          
+          while IFS= read -r line; do
+            # Remove leading whitespace and check if it starts with //
+            trimmed=$(echo "$line" | sed 's/^[[:space:]]*//')
+            if [[ ! "$trimmed" =~ ^// ]]; then
+              FOUND_UNCOMMENTED=true
+              echo "✅ Found uncommented line: $line"
+            else
+              echo "Found commented line: $line"
+            fi
+          done < <(grep -F "${REQUIRED_LINE}" "$FILE")
 
-          if [ "$UNCOMMENTED_COUNT" -eq 0 ]; then
+          if [ "$FOUND_UNCOMMENTED" = false ]; then
             echo "❌ All instances of '${REQUIRED_LINE}' are commented out"
-            echo "Found these lines:"
-            grep -n "${REQUIRED_LINE}" "$FILE"
             exit 1
           fi
 
-          echo "✅ Found $UNCOMMENTED_COUNT uncommented instance(s) of '${REQUIRED_LINE}'"
-          echo "Uncommented lines:"
-          grep -n "${REQUIRED_LINE}" "$FILE" | grep -E "^[0-9]+:[[:space:]]*[^/]*${REQUIRED_LINE}"
+          echo "✅ At least one uncommented instance of '${REQUIRED_LINE}' found"
