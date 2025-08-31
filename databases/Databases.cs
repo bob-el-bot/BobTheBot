@@ -615,5 +615,48 @@ namespace Bob.Database
 
             return memories;
         }
+
+        public async Task<List<Memory>> GetHybridMemoriesAsync(
+            string userId,
+            Vector queryEmbedding,
+            DateTime? from = null,
+            DateTime? to = null,
+            int semanticLimit = 5,
+            int temporalLimit = 5)
+        {
+            // Semantic search
+            var sql = @"SELECT * FROM ""Memory"" 
+                WHERE ""UserId"" = @userId 
+                ORDER BY ""Embedding"" <-> @embedding 
+                LIMIT @limit;";
+
+            var semanticMemories = await Memory
+                .FromSqlRaw(sql,
+                    new NpgsqlParameter("userId", userId),
+                    new NpgsqlParameter("embedding", queryEmbedding),
+                    new NpgsqlParameter("limit", semanticLimit))
+                .ToListAsync();
+
+            // Temporal search (if requested)
+            List<Memory> temporalMemories = [];
+            if (from.HasValue && to.HasValue)
+            {
+                var f = DateTime.SpecifyKind(from.Value, DateTimeKind.Utc);
+                var t = DateTime.SpecifyKind(to.Value, DateTimeKind.Utc);
+
+                temporalMemories = await Memory
+                    .Where(m => m.UserId == userId && m.CreatedAt >= f && m.CreatedAt <= t)
+                    .OrderBy(m => m.CreatedAt)
+                    .Take(temporalLimit)
+                    .ToListAsync();
+            }
+
+            // Merge and deduplicate
+            return semanticMemories
+                .Concat(temporalMemories)
+                .GroupBy(m => m.Id)
+                .Select(g => g.First())
+                .ToList();
+        }
     }
 }

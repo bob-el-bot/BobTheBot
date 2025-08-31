@@ -340,49 +340,11 @@ namespace Bob
                     if (message.Author.IsBot)
                         return;
 
-                    // // Mention handling
-                    // if (message.Content.StartsWith("<@705680059809398804>"))
-                    // {
-                    //     string cleanedMessage = message.Content
-                    //         .Replace("<@705680059809398804>", "")
-                    //         .Trim();
-
-                    //     float[] embeddingArray = await OpenAI.GetEmbedding(cleanedMessage);
-                    //     var queryEmbedding = new Pgvector.Vector(embeddingArray);
-
-                    //     using var scope = Services.CreateScope();
-                    //     var dbContext = scope.ServiceProvider.GetRequiredService<BobEntities>();
-
-                    //     var relevantMemories = await dbContext.GetRelevantMemoriesAsync(
-                    //         message.Author.Id.ToString(),
-                    //         queryEmbedding,
-                    //         limit: 5
-                    //     );
-
-                    //     var messages = new List<object>
-                    //     {
-                    // new
-                    // {
-                    //     role = "system",
-                    //     content = "You are Bob, a helpful, friendly, and a little fancy Discord bot."
-                    // }
-                    //     };
-
-                    //     foreach (var mem in relevantMemories)
-                    //         messages.Add(new { role = "user", content = mem.Content });
-
-                    //     messages.Add(new { role = "user", content = cleanedMessage });
-
-                    //     string response = await OpenAI.PostToOpenAI(messages);
-
-                    //     await dbContext.StoreMemoryAsync(
-                    //         message.Author.Id.ToString(),
-                    //         cleanedMessage,
-                    //         queryEmbedding
-                    //     );
-
-                    //     await message.Channel.SendMessageAsync(response);
-                    // }
+                    // Mention handling
+                    if (message.Content.StartsWith("<@705680059809398804>"))
+                    {
+                        await ChatHandling.HandleMentionAsync(message);
+                    }
 
                     // GitHub auto-embeds
                     Server server;
