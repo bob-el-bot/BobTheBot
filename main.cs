@@ -303,145 +303,150 @@ namespace Bob
             return Task.CompletedTask;
         }
 
-        private static async Task MessageReceived(SocketMessage message)
+        private static Task MessageReceived(SocketMessage message)
         {
-            // Ensure channel is not null (Ensures this is method is only handling messages received form guilds).
-            if (message.Channel is not SocketGuildChannel channel)
+            _ = Task.Run(async () =>
             {
-                return;
-            }
-
-            SocketGuildUser fetchedBot = Client.GetGuild(channel.Guild.Id).GetUser(Client.CurrentUser.Id);
-            var botPerms = fetchedBot.GetPermissions(channel);
-
-            // Ensure Bob can send messages in the channel.
-            if (botPerms.SendMessages != true)
-            {
-                return;
-            }
-
-            try
-            {
-                // Auto Publish if in a News Channel
-                if (channel.GetChannelType() == ChannelType.News && message.Components == null)
+                try
                 {
-                    NewsChannel newsChannel;
+                    // Ensure channel is not null (guild messages only)
+                    if (message.Channel is not SocketGuildChannel channel)
+                        return;
+
+                    SocketGuildUser fetchedBot = Client.GetGuild(channel.Guild.Id)
+                        .GetUser(Client.CurrentUser.Id);
+                    var botPerms = fetchedBot.GetPermissions(channel);
+
+                    if (!botPerms.SendMessages)
+                        return;
+
+                    // Auto Publish if in a News Channel
+                    if (channel.GetChannelType() == ChannelType.News &&
+                        message.Components == null)
+                    {
+                        using var scope = Services.CreateScope();
+                        var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
+                        var newsChannel = await context.GetNewsChannel(channel.Id);
+
+                        if (newsChannel != null)
+                        {
+                            if (message is IUserMessage userMessage)
+                                await userMessage.CrosspostAsync();
+                            return;
+                        }
+                    }
+
+                    // Ignore bots
+                    if (message.Author.IsBot)
+                        return;
+
+                    // // Mention handling
+                    // if (message.Content.StartsWith("<@705680059809398804>"))
+                    // {
+                    //     string cleanedMessage = message.Content
+                    //         .Replace("<@705680059809398804>", "")
+                    //         .Trim();
+
+                    //     float[] embeddingArray = await OpenAI.GetEmbedding(cleanedMessage);
+                    //     var queryEmbedding = new Pgvector.Vector(embeddingArray);
+
+                    //     using var scope = Services.CreateScope();
+                    //     var dbContext = scope.ServiceProvider.GetRequiredService<BobEntities>();
+
+                    //     var relevantMemories = await dbContext.GetRelevantMemoriesAsync(
+                    //         message.Author.Id.ToString(),
+                    //         queryEmbedding,
+                    //         limit: 5
+                    //     );
+
+                    //     var messages = new List<object>
+                    //     {
+                    // new
+                    // {
+                    //     role = "system",
+                    //     content = "You are Bob, a helpful, friendly, and a little fancy Discord bot."
+                    // }
+                    //     };
+
+                    //     foreach (var mem in relevantMemories)
+                    //         messages.Add(new { role = "user", content = mem.Content });
+
+                    //     messages.Add(new { role = "user", content = cleanedMessage });
+
+                    //     string response = await OpenAI.PostToOpenAI(messages);
+
+                    //     await dbContext.StoreMemoryAsync(
+                    //         message.Author.Id.ToString(),
+                    //         cleanedMessage,
+                    //         queryEmbedding
+                    //     );
+
+                    //     await message.Channel.SendMessageAsync(response);
+                    // }
+
+                    // GitHub auto-embeds
+                    Server server;
                     using (var scope = Services.CreateScope())
                     {
-                        var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
-                        newsChannel = await context.GetNewsChannel(channel.Id);
+                        var dbContext = scope.ServiceProvider.GetRequiredService<BobEntities>();
+                        server = await dbContext.GetServer(channel.Guild.Id);
                     }
 
-                    if (newsChannel != null)
+                    if (server.AutoEmbedGitHubLinks)
                     {
-                        IUserMessage userMessage = (IUserMessage)message;
-                        await userMessage.CrosspostAsync();
-                        return;
-                    }
-                }
-
-                // Ensure message was not from a Bot.
-                if (message.Author.IsBot)
-                {
-                    return;
-                }
-
-    //             if (message.Content.StartsWith("<@705680059809398804>"))
-    //             {
-    //                 string cleanedMessage = message.Content.Replace("<@705680059809398804>", "").Trim();
-
-    //                 // 1. Get embedding for the new message
-    //                 float[] embeddingArray = await OpenAI.GetEmbedding(cleanedMessage);
-    //                 var queryEmbedding = new Pgvector.Vector(embeddingArray);
-
-    //                 // 2. Retrieve relevant memories from Postgres (vector search)
-    //                 var relevantMemories = await dbContext.GetRelevantMemoriesAsync(
-    //                     message.Author.Id.ToString(), queryEmbedding, limit: 5);
-
-    //                 // 3. Build the prompt
-    //                 var messages = new List<object>
-    // {
-    //     new { role = "system", content = "You are Bob, a helpful, friendly, and a little fancy Discord bot." }
-    // };
-
-    //                 foreach (var mem in relevantMemories)
-    //                     messages.Add(new { role = "user", content = mem.Content });
-
-    //                 messages.Add(new { role = "user", content = cleanedMessage });
-
-    //                 // 4. Send to OpenAI
-    //                 string response = await OpenAI.PostToOpenAI(messages);
-
-    //                 // 5. Store the new message and its embedding in memory
-    //                 await dbContext.StoreMemoryAsync(
-    //                     message.Author.Id.ToString(), cleanedMessage, queryEmbedding);
-
-    //                 await message.Channel.SendMessageAsync(response);
-    //             }
-
-                // Auto Embed if GitHub Link and Server has Auto Embeds for GitHub 
-                Server server;
-
-                using (var scope = Services.CreateScope())
-                {
-                    var dbContext = scope.ServiceProvider.GetRequiredService<BobEntities>();
-                    server = await dbContext.GetServer(channel.Guild.Id);
-                }
-
-                if (server.AutoEmbedGitHubLinks == true)
-                {
-                    GitHubLinkParse.GitHubLink gitHubLink = GitHubLinkParse.GetUrl(message.Content);
-
-                    if (gitHubLink != null)
-                    {
-                        switch (gitHubLink.Type)
+                        var gitHubLink = GitHubLinkParse.GetUrl(message.Content);
+                        if (gitHubLink != null)
                         {
-                            case GitHubLinkParse.GitHubLinkType.CodeFile:
-                                FileLinkInfo linkInfo = CodeReader.CreateFileLinkInfo(gitHubLink.Url, true);
+                            switch (gitHubLink.Type)
+                            {
+                                case GitHubLinkParse.GitHubLinkType.CodeFile:
+                                    var linkInfo = CodeReader.CreateFileLinkInfo(gitHubLink.Url, true);
+                                    string previewLines = await CodeReader.GetPreview(linkInfo);
+                                    string preview =
+                                        $"🔎 Showing {CodeReader.GetFormattedLineNumbers(linkInfo.LineNumbers)} of " +
+                                        $"[{linkInfo.Repository}/{linkInfo.Branch}/{linkInfo.File}](<{gitHubLink.Url}>)\n" +
+                                        $"```{linkInfo.File[(linkInfo.File.IndexOf('.') + 1)..]}\n{previewLines}```";
+                                    await message.Channel.SendMessageAsync(preview);
+                                    break;
 
-                                string previewLines = await CodeReader.GetPreview(linkInfo);
+                                case GitHubLinkParse.GitHubLinkType.PullRequest:
+                                    var prInfo = PullRequestReader.CreatePullRequestInfo(gitHubLink.Url);
+                                    await message.Channel.SendMessageAsync(
+                                        embed: await PullRequestReader.GetPreview(prInfo)
+                                    );
+                                    break;
 
-                                // Format final response
-                                string preview = $"🔎 Showing {CodeReader.GetFormattedLineNumbers(linkInfo.LineNumbers)} of [{linkInfo.Repository}/{linkInfo.Branch}/{linkInfo.File}](<{gitHubLink.Url}>)\n```{linkInfo.File[(linkInfo.File.IndexOf('.') + 1)..]}\n{previewLines}```";
-                                await message.Channel.SendMessageAsync(text: preview);
-
-                                break;
-                            case GitHubLinkParse.GitHubLinkType.PullRequest:
-                                PullRequestInfo pullRequestInfo = PullRequestReader.CreatePullRequestInfo(gitHubLink.Url);
-                                await message.Channel.SendMessageAsync(embed: await PullRequestReader.GetPreview(pullRequestInfo));
-
-                                break;
-                            case GitHubLinkParse.GitHubLinkType.Issue:
-                                IssueInfo issueInfo = IssueReader.CreateIssueInfo(gitHubLink.Url);
-                                await message.Channel.SendMessageAsync(embed: await IssueReader.GetPreview(issueInfo));
-
-                                break;
+                                case GitHubLinkParse.GitHubLinkType.Issue:
+                                    var issueInfo = IssueReader.CreateIssueInfo(gitHubLink.Url);
+                                    await message.Channel.SendMessageAsync(
+                                        embed: await IssueReader.GetPreview(issueInfo)
+                                    );
+                                    break;
+                            }
+                            return;
                         }
-
-                        return;
                     }
-                }
 
-                // Auto Embed if Message Link and Server has Auto Embeds for Message Links
-                if (server.AutoEmbedMessageLinks)
-                {
-                    DiscordMessageLinkParse.DiscordLink discordLink = DiscordMessageLinkParse.GetUrl(message.Content);
-
-                    if (discordLink != null)
+                    // Discord message link auto-embeds
+                    if (server.AutoEmbedMessageLinks)
                     {
-                        DiscordLinkInfo linkInfo = CreateMessageInfo(discordLink.Url);
-                        Embed preview = await GetPreview(linkInfo);
-                        if (preview != null)
+                        var discordLink = DiscordMessageLinkParse.GetUrl(message.Content);
+                        if (discordLink != null)
                         {
-                            await message.Channel.SendMessageAsync(embed: preview);
+                            var linkInfo = CreateMessageInfo(discordLink.Url);
+                            var preview = await GetPreview(linkInfo);
+                            if (preview != null)
+                                await message.Channel.SendMessageAsync(embed: preview);
                         }
                     }
                 }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                }
+            });
+
+            return Task.CompletedTask;
         }
 
         private static Task HandleReactionAddedAsync(Cacheable<IUserMessage, ulong> cacheable, Cacheable<IMessageChannel, ulong> channelCache, SocketReaction reaction)
