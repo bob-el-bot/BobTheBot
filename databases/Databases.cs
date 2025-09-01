@@ -578,14 +578,16 @@ namespace Bob.Database
         /// Stores a new memory record for a user with the given content and embedding.
         /// </summary>
         /// <param name="userId">The user's unique identifier.</param>
-        /// <param name="content">The message content to store.</param>
+        /// <param name="userMessage">The message content to store.</param>
+        /// <param name="botResponse">The bot's response to the user message.</param>
         /// <param name="embedding">The vector embedding of the content.</param>
-        public async Task StoreMemoryAsync(string userId, string content, Vector embedding)
+        public async Task StoreMemoryAsync(string userId, string userMessage, string botResponse, Vector embedding)
         {
             var memory = new Memory
             {
                 UserId = userId,
-                Content = content,
+                UserMessage = userMessage,
+                BotResponse = botResponse,
                 Embedding = embedding,
                 CreatedAt = DateTime.UtcNow
             };

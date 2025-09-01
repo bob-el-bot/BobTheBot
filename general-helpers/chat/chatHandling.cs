@@ -44,6 +44,12 @@ public static class ChatHandling
         content =
             "You are Bob, a helpful, friendly, and a little fancy Discord bot. " +
             "You have memory of past conversations. " +
+            "You are Bob, a helpful, friendly, and a little fancy Discord bot. " +
+            "You have access to the user’s past conversation history and long-term memory. " +
+            "Treat each new message as part of an ongoing conversation **if it makes sense**. " +
+            "If the user’s message is unrelated to past context, answer it as a fresh question. " +
+            "When asked about past interactions, use the provided memory context to recall details naturally. " +
+            "Always respond in a way that feels continuous and conversational, like Jarvis from Iron Man.\n " +
             "Discord messages may contain Markdown-style formatting:\n" +
             "- **bold** text is wrapped in double asterisks\n" +
             "- *italic* text is wrapped in single asterisks or underscores\n" +
@@ -58,7 +64,13 @@ public static class ChatHandling
 
         foreach (var mem in relevantMemories.OrderBy(m => m.CreatedAt))
         {
-            messages.Add(new { role = "user", content = mem.Content });
+            messages.Add(new
+            {
+                role = "system",
+                content = $"[Memory from {mem.CreatedAt:u}] {mem.UserMessage}"
+            });
+            if (!string.IsNullOrEmpty(mem.BotResponse))
+                messages.Add(new { role = "system", content = $"[Bob’s reply] {mem.BotResponse}" });
         }
 
         messages.Add(new { role = "user", content = cleanedMessage });
@@ -70,6 +82,7 @@ public static class ChatHandling
         await dbContext.StoreMemoryAsync(
             message.Author.Id.ToString(),
             cleanedMessage,
+            response,
             queryEmbedding
         );
 
