@@ -12,13 +12,11 @@ using Discord;
 using Discord.Webhook;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
+using BobTheBot.RateLimits;
 
 public static partial class ChatHandling
 {
-    private static int globalRemaining = 50;
-
     private static readonly ConcurrentDictionary<ulong, DiscordWebhookClient> WebhookCache = new();
-
     private static readonly HashSet<ulong> NoWebhookChannels = [];
 
     public static async Task HandleMentionAsync(SocketMessage message)
@@ -92,40 +90,36 @@ public static partial class ChatHandling
 
     private static async Task SafeSendAsync(ISocketMessageChannel channel, string response)
     {
-        bool preferWebhook = globalRemaining < 10;
-        var webhookClient = preferWebhook ? await GetOrCreateWebhookClientAsync(channel) : null;
-
         if (response.Length <= 2000)
         {
-            await SendSingleAsync(channel, webhookClient, response);
+            await SendSingleAsync(channel, null, response);
         }
         else if (response.Length <= 8000)
         {
             foreach (var chunk in SplitDiscordMessage(response))
-                await SendSingleAsync(channel, webhookClient, chunk);
+            {
+                await SendSingleAsync(channel, null, chunk);
+            }
         }
         else
         {
             using var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(response));
-            if (webhookClient != null)
-            {
-                await webhookClient.SendFileAsync(stream, "response.txt",
-                    text: "This was too long, here’s the full text:",
-                    username: "BobTheBot",
-                    avatarUrl: Bot.Client.CurrentUser.GetAvatarUrl());
-            }
-            else
-            {
-                await channel.SendFileAsync(stream, "response.txt",
-                    text: "This was too long, here’s the full text:");
-            }
+            await channel.SendFileAsync(stream, "response.txt",
+                text: "This was too long, here’s the full text:");
         }
     }
 
     private static async Task SendSingleAsync(ISocketMessageChannel channel, DiscordWebhookClient? webhookClient, string text)
     {
         if (string.IsNullOrWhiteSpace(text))
+        {
             return;
+        }
+
+        if (RateLimitHandling.IsUnderload() && webhookClient == null)
+        {
+            webhookClient = await GetOrCreateWebhookClientAsync(channel);
+        }
 
         if (webhookClient != null)
         {
@@ -136,7 +130,7 @@ public static partial class ChatHandling
         }
         else
         {
-            var options = new RequestOptions { RatelimitCallback = GlobalRatelimitCallback };
+            var options = new RequestOptions { RatelimitCallback = RateLimitHandling.GlobalRatelimitCallback };
             await channel.SendMessageAsync(text, options: options);
         }
     }
@@ -191,17 +185,6 @@ public static partial class ChatHandling
         }
 
         return (null, null);
-    }
-
-    public static async Task GlobalRatelimitCallback(IRateLimitInfo info)
-    {
-        if (info.IsGlobal && info.Remaining.HasValue)
-        {
-            globalRemaining = info.Remaining.Value;
-            Console.WriteLine($"[Ratelimit] Global remaining: {globalRemaining}, Reset at {info.Reset}");
-        }
-
-        await Task.CompletedTask;
     }
 
     public static IEnumerable<string> SplitDiscordMessage(string text, int chunkSize = 2000)
