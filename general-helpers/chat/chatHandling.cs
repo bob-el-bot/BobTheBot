@@ -14,6 +14,8 @@ using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using BobTheBot.RateLimits;
 
+namespace BobTheBot.Chat;
+
 public static partial class ChatHandling
 {
     private static readonly ConcurrentDictionary<ulong, DiscordWebhookClient> WebhookCache = new();

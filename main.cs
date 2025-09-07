@@ -28,6 +28,7 @@ using System.Linq.Expressions;
 using Commands.Helpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
+using BobTheBot.Chat;
 
 namespace Bob
 {
