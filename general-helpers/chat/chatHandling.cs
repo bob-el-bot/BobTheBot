@@ -23,6 +23,9 @@ public static partial class ChatHandling
 
     public static async Task HandleMentionAsync(SocketMessage message)
     {
+        var channel = message.Channel;
+        await channel.TriggerTypingAsync();
+
         string cleanedMessage = message.Content
             .Replace("<@705680059809398804>", "")
             .Trim();
