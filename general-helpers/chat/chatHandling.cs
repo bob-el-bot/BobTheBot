@@ -106,8 +106,25 @@ public static partial class ChatHandling
         else
         {
             using var stream = new MemoryStream(System.Text.Encoding.UTF8.GetBytes(response));
-            await channel.SendFileAsync(stream, "response.txt",
-                text: "This was too long, here’s the full text:");
+
+            DiscordWebhookClient webhookClient = null;
+            if (RateLimitHandling.IsUnderload())
+            {
+                webhookClient = await GetOrCreateWebhookClientAsync(channel);
+            }
+
+            if (webhookClient != null)
+            {
+                await webhookClient.SendFileAsync(stream, "response.txt",
+                    text: "This was too long for Discord, here’s the full text:",
+                    username: "BobTheBot",
+                    avatarUrl: Bot.Client.CurrentUser.GetAvatarUrl());
+            }
+            else
+            {
+                await channel.SendFileAsync(stream, "response.txt",
+                    text: "This was too long for Discord, here’s the full text:");
+            }
         }
     }
 
