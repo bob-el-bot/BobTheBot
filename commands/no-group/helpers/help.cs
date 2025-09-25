@@ -191,7 +191,7 @@ namespace Bob.Commands.Helpers
         /// <summary>
         /// A button linking to the support server.
         /// </summary>
-        private static readonly ButtonBuilder SupportServerButton = new()
+        public static readonly ButtonBuilder SupportServerButton = new()
         {
             Label = "Support Server",
             Style = ButtonStyle.Link,
@@ -202,7 +202,7 @@ namespace Bob.Commands.Helpers
         /// <summary>
         /// A button linking to the web documentation.
         /// </summary>
-        private static readonly ButtonBuilder DocsButton = new()
+        public static readonly ButtonBuilder DocsButton = new()
         {
             Label = "Web Docs",
             Style = ButtonStyle.Link,
