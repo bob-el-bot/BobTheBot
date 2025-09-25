@@ -91,6 +91,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/profile badge-info [badge]` Shows how to unlock the given badge.
 
 ### ⚖️ Admin Commands:
+- `/admin info` Displays this server's configuration and how to update each setting.
 - `/admin confess filter-toggle [enable]` Enable or disable censoring and/or blocking of `/confess` messages in this server.
 
 ### 🖊️ Quoting Commands:

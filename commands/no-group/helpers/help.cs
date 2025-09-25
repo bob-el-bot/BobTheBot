@@ -191,7 +191,7 @@ namespace Bob.Commands.Helpers
         /// <summary>
         /// A button linking to the support server.
         /// </summary>
-        private static readonly ButtonBuilder SupportServerButton = new()
+        public static readonly ButtonBuilder SupportServerButton = new()
         {
             Label = "Support Server",
             Style = ButtonStyle.Link,
@@ -202,7 +202,7 @@ namespace Bob.Commands.Helpers
         /// <summary>
         /// A button linking to the web documentation.
         /// </summary>
-        private static readonly ButtonBuilder DocsButton = new()
+        public static readonly ButtonBuilder DocsButton = new()
         {
             Label = "Web Docs",
             Style = ButtonStyle.Link,
@@ -490,6 +490,13 @@ namespace Bob.Commands.Helpers
                 Url = "https://docs.bobthebot.net#admin",
                 Commands =
                 [
+                    new CommandInfo
+                    {
+                        Name = "info",
+                        InheritGroupName = true,
+                        Description = "Displays this server's configuration and how to update each setting.",
+                        Url = "https://docs.bobthebot.net#admin-info",
+                    },
                     new CommandInfo
                     {
                         Name = "confess filter-toggle",
@@ -785,7 +792,7 @@ namespace Bob.Commands.Helpers
                         InheritGroupName = true,
                         Description = "Create a new tag.",
                         Url = "https://docs.bobthebot.net#tags-create",
-                        Parameters = 
+                        Parameters =
                         [
                             new ParameterInfo
                             {
@@ -805,7 +812,7 @@ namespace Bob.Commands.Helpers
                         InheritGroupName = true,
                         Description = "Displays all information about the tag.",
                         Url = "https://docs.bobthebot.net#tags-info",
-                        Parameters = 
+                        Parameters =
                         [
                             new ParameterInfo
                             {

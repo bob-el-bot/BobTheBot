@@ -11,8 +11,23 @@ namespace Bob.Commands
     [CommandContextType(InteractionContextType.Guild)]
     [IntegrationType(ApplicationIntegrationType.GuildInstall)]
     [Group("admin", "All commands relevant to administration features.")]
-    public class AdminGroup : InteractionModuleBase<ShardedInteractionContext>
+    public class AdminGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInteractionContext>
     {
+        [SlashCommand("info", "Displays this server's configuration and how to update each setting.")]
+        public async Task InfoAsync()
+        {
+            var server = await dbContext.GetOrCreateServerAsync(Context.Guild.Id);
+
+            var embed = AdminUtils.BuildSettingsEmbed(server, Context.Guild);
+
+            var component = new ComponentBuilder()
+                .WithButton(Help.SupportServerButton)
+                .WithButton(Help.DocsButton)
+                .Build();
+
+            await RespondAsync(embed: embed, components: component);
+        }
+
         [Group("confess", "All commands relevant to confession administration features.")]
         public class ConfessGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInteractionContext>
         {
