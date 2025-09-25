@@ -492,6 +492,13 @@ namespace Bob.Commands.Helpers
                 [
                     new CommandInfo
                     {
+                        Name = "info",
+                        InheritGroupName = true,
+                        Description = "Displays this server's configuration and how to update each setting.",
+                        Url = "https://docs.bobthebot.net#admin-info",
+                    },
+                    new CommandInfo
+                    {
                         Name = "confess filter-toggle",
                         InheritGroupName = true,
                         Description = "Enable or disable censoring and/or blocking of `/confess` messages in this server.",
@@ -785,7 +792,7 @@ namespace Bob.Commands.Helpers
                         InheritGroupName = true,
                         Description = "Create a new tag.",
                         Url = "https://docs.bobthebot.net#tags-create",
-                        Parameters = 
+                        Parameters =
                         [
                             new ParameterInfo
                             {
@@ -805,7 +812,7 @@ namespace Bob.Commands.Helpers
                         InheritGroupName = true,
                         Description = "Displays all information about the tag.",
                         Url = "https://docs.bobthebot.net#tags-info",
-                        Parameters = 
+                        Parameters =
                         [
                             new ParameterInfo
                             {

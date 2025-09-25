@@ -13,7 +13,7 @@ namespace Bob.Commands
     [Group("admin", "All commands relevant to administration features.")]
     public class AdminGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInteractionContext>
     {
-        [SlashCommand("info", "Displays this server's configuration and how to update it.")]
+        [SlashCommand("info", "Displays this server's configuration and how to update each setting.")]
         public async Task InfoAsync()
         {
             var server = await dbContext.GetOrCreateServerAsync(Context.Guild.Id);
