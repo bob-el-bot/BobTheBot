@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Bob.Commands.Helpers;
 using Bob.Database.Types;
+using BobTheBot.Chat.MemoryHandling;
 using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -626,14 +627,16 @@ namespace Bob.Database
         /// Stores a new memory record for a user with the given content and embedding.
         /// </summary>
         /// <param name="userId">The user's unique identifier.</param>
-        /// <param name="content">The message content to store.</param>
+        /// <param name="userMessage">The message content to store.</param>
+        /// <param name="botResponse">The bot's response to the user message.</param>
         /// <param name="embedding">The vector embedding of the content.</param>
-        public async Task StoreMemoryAsync(string userId, string content, Vector embedding)
+        public async Task StoreMemoryAsync(string userId, string userMessage, string botResponse, Vector embedding)
         {
             var memory = new Memory
             {
                 UserId = userId,
-                Content = content,
+                UserMessage = userMessage,
+                BotResponse = botResponse,
                 Embedding = embedding,
                 CreatedAt = DateTime.UtcNow
             };
@@ -664,6 +667,75 @@ namespace Bob.Database
             return memories;
         }
 
+        public async Task<HybridMemoryResult> GetHybridMemoriesAsync(
+            string userId,
+            Vector queryEmbedding,
+            DateTime? from = null,
+            DateTime? to = null,
+            int semanticLimit = 5,
+            int temporalLimit = 5)
+        {
+            List<Memory> semanticMemories = [];
+            List<Memory> temporalMemories = [];
+
+            if (from.HasValue && to.HasValue)
+            {
+                var f = DateTime.SpecifyKind(from.Value, DateTimeKind.Utc);
+                var t = DateTime.SpecifyKind(to.Value, DateTimeKind.Utc);
+
+                // Semantic search within the timeframe
+                var sql = @"SELECT * FROM ""Memory"" 
+                    WHERE ""UserId"" = @userId
+                      AND ""CreatedAt"" >= @from
+                      AND ""CreatedAt"" <= @to
+                    ORDER BY ""Embedding"" <-> @embedding 
+                    LIMIT @limit;";
+
+                semanticMemories = await Memory
+                    .FromSqlRaw(sql,
+                        new NpgsqlParameter("userId", userId),
+                        new NpgsqlParameter("embedding", queryEmbedding),
+                        new NpgsqlParameter("from", f),
+                        new NpgsqlParameter("to", t),
+                        new NpgsqlParameter("limit", semanticLimit))
+                    .ToListAsync();
+
+                // Temporal (pure chronological) within timeframe
+                temporalMemories = await Memory
+                    .Where(m => m.UserId == userId && m.CreatedAt >= f && m.CreatedAt <= t)
+                    .OrderBy(m => m.CreatedAt)
+                    .Take(temporalLimit)
+                    .ToListAsync();
+            }
+            else
+            {
+                // No temporal filter, just semantic search globally
+                var sql = @"SELECT * FROM ""Memory"" 
+                    WHERE ""UserId"" = @userId
+                    ORDER BY ""Embedding"" <-> @embedding 
+                    LIMIT @limit;";
+
+                semanticMemories = await Memory
+                    .FromSqlRaw(sql,
+                        new NpgsqlParameter("userId", userId),
+                        new NpgsqlParameter("embedding", queryEmbedding),
+                        new NpgsqlParameter("limit", semanticLimit))
+                    .ToListAsync();
+            }
+
+            // Merge result (deduplicated, so GPT sees clean list)
+            var merged = semanticMemories
+                .Concat(temporalMemories)
+                .GroupBy(m => m.Id)
+                .Select(g => g.First())
+                .ToList();
+
+            return new HybridMemoryResult(
+                merged,
+                SemanticCount: semanticMemories.Count,
+                TemporalCount: temporalMemories.Count
+            );
+          
         /// <summary>
         /// Retrieves a tag from the database by its ID.
         /// </summary>
