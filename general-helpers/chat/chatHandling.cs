@@ -13,6 +13,7 @@ using Discord.Webhook;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using BobTheBot.RateLimits;
+using BobTheBot.Chat.TemporalHandling;
 
 namespace BobTheBot.Chat;
 
@@ -36,7 +37,9 @@ public static partial class ChatHandling
         using var scope = Bot.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<BobEntities>();
 
-        var (from, to) = DetectTemporalRange(cleanedMessage);
+        var temporalResult = TemporalRangeDetector.DetectTemporalRange(cleanedMessage);
+        var from = temporalResult.From;
+        var to = temporalResult.To;
 
         var relevantMemories = await dbContext.GetHybridMemoriesAsync(
             message.Author.Id.ToString(),
@@ -131,7 +134,7 @@ public static partial class ChatHandling
         }
     }
 
-    private static async Task SendSingleAsync(ISocketMessageChannel channel, DiscordWebhookClient? webhookClient, string text)
+    private static async Task SendSingleAsync(ISocketMessageChannel channel, DiscordWebhookClient webhookClient, string text)
     {
         if (string.IsNullOrWhiteSpace(text))
         {
@@ -180,33 +183,6 @@ public static partial class ChatHandling
             NoWebhookChannels.Add(channel.Id);
             return null;
         }
-    }
-
-    private static (DateTime? from, DateTime? to) DetectTemporalRange(string query)
-    {
-        var now = DateTime.UtcNow;
-
-        if (query.Contains("last thing", StringComparison.OrdinalIgnoreCase) ||
-            query.Contains("last message", StringComparison.OrdinalIgnoreCase))
-            return (now.AddMinutes(-10), now);
-
-        if (query.Contains("yesterday", StringComparison.OrdinalIgnoreCase))
-        {
-            var yesterday = now.Date.AddDays(-1);
-            return (yesterday, yesterday.AddDays(1));
-        }
-
-        if (query.Contains("last week", StringComparison.OrdinalIgnoreCase))
-            return (now.Date.AddDays(-7), now);
-
-        if (query.Contains("last year", StringComparison.OrdinalIgnoreCase))
-        {
-            var start = new DateTime(now.Year - 1, 1, 1);
-            var end = new DateTime(now.Year - 1, 12, 31, 23, 59, 59);
-            return (start, end);
-        }
-
-        return (null, null);
     }
 
     public static IEnumerable<string> SplitDiscordMessage(string text, int chunkSize = 2000)
