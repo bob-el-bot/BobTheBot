@@ -735,7 +735,8 @@ namespace Bob.Database
                 SemanticCount: semanticMemories.Count,
                 TemporalCount: temporalMemories.Count
             );
-          
+        }
+
         /// <summary>
         /// Retrieves a tag from the database by its ID.
         /// </summary>
