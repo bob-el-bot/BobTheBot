@@ -41,15 +41,6 @@ public static partial class ChatHandling
         var from = temporalResult.From;
         var to = temporalResult.To;
 
-        var relevantMemories = await dbContext.GetHybridMemoriesAsync(
-            message.Author.Id.ToString(),
-            queryEmbedding,
-            from,
-            to,
-            semanticLimit: 5,
-            temporalLimit: 5
-        );
-
         var messages = new List<object>
         {
             new
@@ -57,12 +48,12 @@ public static partial class ChatHandling
                 role = "system",
                 content =
                     "You are Bob, a helpful, friendly, and a little fancy Discord bot. " +
-                    "You have memory of past conversations. " +
-                    "You have access to the user’s past conversation history and long-term memory. " +
+                    "You have memory of past conversations and access to the user’s past conversation history and long-term memory. " +
                     "Treat each new message as part of an ongoing conversation **if it makes sense**. " +
                     "If the user’s message is unrelated to past context, answer it as a fresh question. " +
                     "When asked about past interactions, use the provided memory context to recall details naturally. " +
-                    "Always respond in a way that feels continuous and conversational, like Jarvis from Iron Man.\n " +
+                    "If no past memories exist for a requested time period, clearly say so instead of assuming continuity. " +
+                    "Always respond in a way that feels continuous and conversational, like Jarvis from Iron Man.\n\n" +
                     "Discord messages may contain Markdown-style formatting:\n" +
                     "- **bold** text is wrapped in double asterisks\n" +
                     "- *italic* text is wrapped in single asterisks or underscores\n" +
@@ -71,15 +62,37 @@ public static partial class ChatHandling
                     "- > blockquotes start with a greater-than sign\n" +
                     "- <@123456789> are user mentions (treat them as the user's name if known)\n" +
                     "- :emoji: are emojis\n\n" +
-                    "When responding, preserve the formatting so it renders correctly in Discord."
+                    "IMPORTANT: If no memories exist for a requested time, you must directly state that no past conversations are available. " +
+                    "Do not pretend continuity if there is no memory data."
             }
         };
 
-        foreach (var mem in relevantMemories.OrderBy(m => m.CreatedAt))
+        var hybridResult = await dbContext.GetHybridMemoriesAsync(
+            message.Author.Id.ToString(),
+            queryEmbedding,
+            temporalResult.From,
+            temporalResult.To,
+            semanticLimit: 5,
+            temporalLimit: 5
+        );
+
+        if (temporalResult.Mode != TemporalMode.None && hybridResult.TemporalCount == 0)
         {
-            messages.Add(new { role = "system", content = $"[Memory from {mem.CreatedAt:u}] {mem.UserMessage}" });
-            if (!string.IsNullOrEmpty(mem.BotResponse))
-                messages.Add(new { role = "system", content = $"[Bob’s reply] {mem.BotResponse}" });
+            messages.Add(new
+            {
+                role = "system",
+                content = $"[Memory system note] No past memories were found for {temporalResult.Mode}. " +
+                          "Do NOT claim a conversation happened. Politely explain there are no saved conversations in that timeframe."
+            });
+        }
+        else
+        {
+            foreach (var mem in hybridResult.Memories.OrderBy(m => m.CreatedAt))
+            {
+                messages.Add(new { role = "system", content = $"[Memory from {mem.CreatedAt:u}] {mem.UserMessage}" });
+                if (!string.IsNullOrEmpty(mem.BotResponse))
+                    messages.Add(new { role = "system", content = $"[Bob’s reply] {mem.BotResponse}" });
+            }
         }
 
         messages.Add(new { role = "user", content = cleanedMessage });

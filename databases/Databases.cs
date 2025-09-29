@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Bob.Commands.Helpers;
 using Bob.Database.Types;
+using BobTheBot.Chat.MemoryHandling;
 using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
@@ -618,7 +619,7 @@ namespace Bob.Database
             return memories;
         }
 
-        public async Task<List<Memory>> GetHybridMemoriesAsync(
+        public async Task<HybridMemoryResult> GetHybridMemoriesAsync(
             string userId,
             Vector queryEmbedding,
             DateTime? from = null,
@@ -626,39 +627,66 @@ namespace Bob.Database
             int semanticLimit = 5,
             int temporalLimit = 5)
         {
-            // Semantic search
-            var sql = @"SELECT * FROM ""Memory"" 
-                WHERE ""UserId"" = @userId 
-                ORDER BY ""Embedding"" <-> @embedding 
-                LIMIT @limit;";
-
-            var semanticMemories = await Memory
-                .FromSqlRaw(sql,
-                    new NpgsqlParameter("userId", userId),
-                    new NpgsqlParameter("embedding", queryEmbedding),
-                    new NpgsqlParameter("limit", semanticLimit))
-                .ToListAsync();
-
-            // Temporal search (if requested)
+            List<Memory> semanticMemories = [];
             List<Memory> temporalMemories = [];
+
             if (from.HasValue && to.HasValue)
             {
                 var f = DateTime.SpecifyKind(from.Value, DateTimeKind.Utc);
                 var t = DateTime.SpecifyKind(to.Value, DateTimeKind.Utc);
 
+                // Semantic search within the timeframe
+                var sql = @"SELECT * FROM ""Memory"" 
+                    WHERE ""UserId"" = @userId
+                      AND ""CreatedAt"" >= @from
+                      AND ""CreatedAt"" <= @to
+                    ORDER BY ""Embedding"" <-> @embedding 
+                    LIMIT @limit;";
+
+                semanticMemories = await Memory
+                    .FromSqlRaw(sql,
+                        new NpgsqlParameter("userId", userId),
+                        new NpgsqlParameter("embedding", queryEmbedding),
+                        new NpgsqlParameter("from", f),
+                        new NpgsqlParameter("to", t),
+                        new NpgsqlParameter("limit", semanticLimit))
+                    .ToListAsync();
+
+                // Temporal (pure chronological) within timeframe
                 temporalMemories = await Memory
                     .Where(m => m.UserId == userId && m.CreatedAt >= f && m.CreatedAt <= t)
                     .OrderBy(m => m.CreatedAt)
                     .Take(temporalLimit)
                     .ToListAsync();
             }
+            else
+            {
+                // No temporal filter, just semantic search globally
+                var sql = @"SELECT * FROM ""Memory"" 
+                    WHERE ""UserId"" = @userId
+                    ORDER BY ""Embedding"" <-> @embedding 
+                    LIMIT @limit;";
 
-            // Merge and deduplicate
-            return semanticMemories
+                semanticMemories = await Memory
+                    .FromSqlRaw(sql,
+                        new NpgsqlParameter("userId", userId),
+                        new NpgsqlParameter("embedding", queryEmbedding),
+                        new NpgsqlParameter("limit", semanticLimit))
+                    .ToListAsync();
+            }
+
+            // Merge result (deduplicated, so GPT sees clean list)
+            var merged = semanticMemories
                 .Concat(temporalMemories)
                 .GroupBy(m => m.Id)
                 .Select(g => g.First())
                 .ToList();
+
+            return new HybridMemoryResult(
+                merged,
+                SemanticCount: semanticMemories.Count,
+                TemporalCount: temporalMemories.Count
+            );
         }
     }
 }
