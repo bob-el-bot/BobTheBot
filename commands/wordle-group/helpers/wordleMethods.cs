@@ -89,16 +89,6 @@ namespace Bob.Commands.Helpers
             defaultEmbed.AddField("Guesses:", GetDescriptionString(game.Guesses), true);
             defaultEmbed.AddField("Guesses Left:", $"`{game.GuessesLeft}`", true);
 
-            // if (isSolved)
-            // {
-            //     defaultEmbed.Description += $" (solved)\n{GetCongrats()}";
-            // }
-            // else if (game.GuessesLeft <= 0)
-            // {
-            //     defaultEmbed.Description += " (lost)\nYou have lost, but don't be sad you can just start a new game with `/wordle new-game`";
-            //     defaultEmbed.AddField("Answer:", $"{GetFormattedGuess(game.Word)}");
-            // }
-
             return defaultEmbed.Build();
         }
 

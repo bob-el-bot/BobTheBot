@@ -38,6 +38,29 @@ namespace Bob.Commands
             await RespondAsync(text: "👋 hi!");
         }
 
+        [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
+        [IntegrationType(ApplicationIntegrationType.GuildInstall)]
+        [SlashCommand("tag", "Bob will display a tag.")]
+        public async Task Tag([Summary("tag", "The tag you want to use.")][Autocomplete(typeof(TagAutocompleteHandler))] string tagId)
+        {
+            await DeferAsync();
+
+            if (!int.TryParse(tagId, out int id))
+            {
+                await FollowupAsync(text: "❌ Invalid tag ID provided.");
+                return;
+            }
+
+            var tag = await dbContext.GetTag(id);
+            if (tag == null || tag.GuildId != Context.Guild.Id)
+            {
+                await FollowupAsync(text: "❌ Tag not found or does not belong to this server.");
+                return;
+            }
+
+            await FollowupAsync(text: tag.Content);
+        }
+
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("analyze-link", "Bob will check out a link, and see where it takes you.")]
@@ -106,7 +129,7 @@ namespace Bob.Commands
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.GuildInstall)]
-        [RequireBotPermission(ChannelPermission.ViewChannel)]
+        [RequireBotPermission(ChannelPermission.ViewChannel | ChannelPermission.EmbedLinks)]
         [SlashCommand("tic-tac-toe", "Play a game of Tic Tac Toe.")]
         public async Task TicTacToe([Summary("opponent", "Leave empty to verse an AI.")] SocketUser opponent = null)
         {
@@ -186,7 +209,7 @@ namespace Bob.Commands
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.GuildInstall)]
-        [RequireBotPermission(ChannelPermission.ViewChannel)]
+        [RequireBotPermission(ChannelPermission.ViewChannel | ChannelPermission.EmbedLinks)]
         [SlashCommand("trivia", "Play a game of trivia.")]
         public async Task Trivia([Summary("opponent", "Leave empty to play alone.")] SocketUser opponent = null)
         {
@@ -253,7 +276,7 @@ namespace Bob.Commands
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.GuildInstall)]
-        [RequireBotPermission(ChannelPermission.ViewChannel)]
+        [RequireBotPermission(ChannelPermission.ViewChannel | ChannelPermission.EmbedLinks)]
         [SlashCommand("rock-paper-scissors", "Play a game of Rock Paper Scissors.")]
         public async Task RPS([Summary("opponent", "Leave empty to verse an AI.")] SocketUser opponent = null)
         {
@@ -328,7 +351,7 @@ namespace Bob.Commands
 
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.GuildInstall)]
-        [RequireBotPermission(ChannelPermission.ViewChannel)]
+        [RequireBotPermission(ChannelPermission.ViewChannel | ChannelPermission.EmbedLinks)]
         [SlashCommand("connect4", "Play a game of Connect 4.")]
         public async Task Connect4([Summary("opponent", "Leave empty to verse an AI.")] SocketUser opponent = null)
         {
@@ -640,7 +663,7 @@ namespace Bob.Commands
                 ImageUrl = imageUrl,
                 Footer = new EmbedFooterBuilder
                 {
-                    IconUrl = Context.User.GetAvatarUrl(),
+                    IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
                     Text = $"Announced by {Context.User.Username}"
                 }
             }.Build();
@@ -784,7 +807,7 @@ namespace Bob.Commands
 
             try
             {
-                var dbUser = await dbContext.GetUser(user.Id);
+                var dbUser = await dbContext.GetUserOrNew(user.Id);
 
                 FilterResult filterResult = new();
 
@@ -797,7 +820,7 @@ namespace Bob.Commands
 
                     if (filterResult.BlacklistMatches.Count > 0)
                     {
-                        Server dbServer = Context.Guild?.Id != null ? await dbContext.GetServer(Context.Guild.Id) : null;
+                        Server dbServer = Context.Guild?.Id != null ? await dbContext.GetServerOrNew(Context.Guild.Id) : null;
 
                         // If a Guild Install and confess filtering is on for the server, punish.
                         if (dbServer != null && dbServer.ConfessFilteringOff == false)
@@ -874,9 +897,8 @@ namespace Bob.Commands
                 await sentMessage.ModifyAsync(x => x.Components = components.Build());
                 await FollowupAsync($"✉️ Sent!\n**Message:** {message} - {signoff}\n**To:** **{user.Mention}**", ephemeral: true);
             }
-            catch (Exception e)
+            catch
             {
-                Console.WriteLine(e);
                 await FollowupAsync($"❌ Bob could **not** DM {user.Mention}.\n- You could try again, but this *probably* means their DMs are closed which Bob cannot change.", ephemeral: true);
             }
         }
@@ -889,7 +911,7 @@ namespace Bob.Commands
             await DeferAsync();
 
             User user;
-            user = await dbContext.GetUser(Context.User.Id);
+            user = await dbContext.GetUserOrNew(Context.User.Id);
 
             // If user has premium ensure DB is updated.
             bool isPremium = Premium.IsPremium(Context.Interaction.Entitlements);
@@ -908,7 +930,7 @@ namespace Bob.Commands
                     if (entitlementCollection.Any(x => x.SkuId == 1282452500913328180))
                     {
                         user.PremiumExpiration = DateTimeOffset.MaxValue;
-                        await dbContext.UpdateUser(user);
+                        await dbContext.SaveChangesAsync();
                     }
                 }
 
@@ -979,7 +1001,7 @@ namespace Bob.Commands
             else
             {
                 // Setup base data
-                string footerText = Context.User.GlobalName + " created this poll.";
+                string footerText = Context.User.GlobalName ?? Context.User.Username + " created this poll.";
                 string instructions = "React with the corresponding number to cast your vote.";
 
                 // Embed
@@ -1053,6 +1075,30 @@ namespace Bob.Commands
         [SlashCommand("ship", "Bob will determine how good of a couple two users would make")]
         public async Task Ship(SocketUser person1 = null, SocketUser person2 = null)
         {
+            if (!Context.Interaction.IsDMInteraction)
+            {
+                IGuildChannel channelToCheck;
+                if (Context.Channel is SocketThreadChannel thread)
+                {
+                    channelToCheck = thread.ParentChannel;
+                }
+                else
+                {
+                    channelToCheck = (IGuildChannel)Context.Channel;
+                }
+
+                var botUser = Context.Guild.GetUser(Context.Client.CurrentUser.Id);
+                ChannelPermissions permissions = botUser.GetPermissions(channelToCheck);
+
+                if (!permissions.EmbedLinks)
+                {
+                    await RespondAsync("❌ Bob is missing permissions to " +
+                        $"embed links in the channel <#{Context.Channel.Id}>\n- Try giving Bob " +
+                        $"the following permission: `Embed Links`", ephemeral: true);
+                    return;
+                }
+            }
+
             await DeferAsync();
 
             if (person1 == null)

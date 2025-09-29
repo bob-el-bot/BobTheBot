@@ -32,7 +32,7 @@ namespace Bob.Commands
                 await DeferAsync();
 
                 // Get Stats
-                User userToDisplay = await dbContext.GetUser(user.Id);
+                User userToDisplay = await dbContext.GetUserOrNew(user.Id);
 
                 float rpsWinPercent = (float)Math.Round(userToDisplay.TotalRockPaperScissorsGames != 0 ? userToDisplay.RockPaperScissorsWins / userToDisplay.TotalRockPaperScissorsGames * 100 : 0, 2);
                 float tttWinPercent = (float)Math.Round(userToDisplay.TotalTicTacToeGames != 0 ? userToDisplay.TicTacToeWins / userToDisplay.TotalTicTacToeGames * 100 : 0, 2);
@@ -51,7 +51,7 @@ namespace Bob.Commands
                 // Create Embed
                 var embed = new EmbedBuilder
                 {
-                    Author = new EmbedAuthorBuilder().WithName($"{user.Username}'s Profile").WithIconUrl(user.GetAvatarUrl()),
+                    Author = new EmbedAuthorBuilder().WithName($"{user.Username}'s Profile").WithIconUrl(user.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl()),
                     Color = color,
                     Description = description
                 };
@@ -72,12 +72,12 @@ namespace Bob.Commands
         {
             await DeferAsync(ephemeral: true);
 
-            User user = await dbContext.GetUser(Context.User.Id);
+            User user = await dbContext.GetOrCreateUserAsync(Context.User.Id);
 
             if (user.ConfessionsOff == open)
             {
                 user.ConfessionsOff = !open;
-                await dbContext.UpdateUser(user);
+                await dbContext.SaveChangesAsync();
             }
 
             if (open)
@@ -95,13 +95,9 @@ namespace Bob.Commands
         {
             await DeferAsync(ephemeral: true);
 
-            User user = await dbContext.GetUser(Context.User.Id);
-
-            if (user.ConfessFilteringOff != enable)
-            {
-                user.ConfessFilteringOff = enable;
-                await dbContext.UpdateUser(user);
-            }
+            await dbContext.UpsertUserAsync(Context.User.Id, u => {
+                u.ConfessFilteringOff = enable;
+            });
 
             if (enable)
             {
@@ -144,7 +140,7 @@ namespace Bob.Commands
                 return;
             }
 
-            User user = await dbContext.GetUser(Context.User.Id);
+            User user = await dbContext.GetUserOrNew(Context.User.Id);
 
             // Check if the user has premium.
             if (Premium.IsPremium(Context.Interaction.Entitlements, user) == false)
@@ -156,8 +152,7 @@ namespace Bob.Commands
             // Only write to DB if needed.
             if (user.ProfileColor != color)
             {
-                user.ProfileColor = color;
-                await dbContext.UpdateUser(user);
+                await dbContext.UpsertUserAsync(user.Id, u => u.ProfileColor = color);
             }
 
             // Create Embed

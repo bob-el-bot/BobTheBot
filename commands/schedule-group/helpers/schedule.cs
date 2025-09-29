@@ -137,50 +137,47 @@ namespace Bob.Commands.Helpers
                 using var scope = Bot.Services.CreateScope();
                 var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
 
-                var dbUser = await context.GetUser(scheduledItem.UserId);
-                bool userChanged = false; // Flag to track if user properties change
-
                 if (Bot.Client.GetChannel(scheduledItem.ChannelId) is not IMessageChannel channel)
                 {
-                    Console.WriteLine($"Channel with ID: {scheduledItem.ChannelId} not found.");
-                    if (dbUser.TotalScheduledMessages > 0)
+                    // Channel not found, decrement scheduled messages if needed
+                    await context.UpsertUserAsync(scheduledItem.UserId, u =>
                     {
-                        dbUser.TotalScheduledMessages -= 1;
-                        userChanged = true; // Mark that the user was changed
-                    }
+                        if (u.TotalScheduledMessages > 0)
+                        {
+                            u.TotalScheduledMessages -= 1;
+                        }
+                    });
                 }
-                else if (scheduledItem is ScheduledMessage message)
+                else if (scheduledItem is ScheduledMessage)
                 {
                     var messageToSend = await context.GetScheduledMessage(scheduledItem.Id);
                     if (messageToSend != null)
                     {
                         await channel.SendMessageAsync(messageToSend.Message);
-                        if (dbUser.TotalScheduledMessages > 0)
+                        await context.UpsertUserAsync(scheduledItem.UserId, u =>
                         {
-                            dbUser.TotalScheduledMessages -= 1;
-                            userChanged = true; // Mark that the user was changed
-                        }
+                            if (u.TotalScheduledMessages > 0)
+                            {
+                                u.TotalScheduledMessages -= 1;
+                            }
+                        });
                     }
                 }
-                else if (scheduledItem is ScheduledAnnouncement announcement)
+                else if (scheduledItem is ScheduledAnnouncement)
                 {
                     var announcementToSend = await context.GetScheduledAnnouncement(scheduledItem.Id);
                     if (announcementToSend != null)
                     {
                         var embed = await BuildAnnouncementEmbed(announcementToSend);
                         await channel.SendMessageAsync(embed: embed);
-                        if (dbUser.TotalScheduledAnnouncements > 0)
+                        await context.UpsertUserAsync(scheduledItem.UserId, u =>
                         {
-                            dbUser.TotalScheduledAnnouncements -= 1;
-                            userChanged = true; // Mark that the user was changed
-                        }
+                            if (u.TotalScheduledAnnouncements > 0)
+                            {
+                                u.TotalScheduledAnnouncements -= 1;
+                            }
+                        });
                     }
-                }
-
-                // Only update the user if there were changes
-                if (userChanged)
-                {
-                    await context.UpdateUser(dbUser);
                 }
 
                 // Always remove the scheduled item
@@ -223,8 +220,8 @@ namespace Bob.Commands.Helpers
                 Description = Announcement.FormatDescription(announcement.Description),
                 Footer = new EmbedFooterBuilder
                 {
-                    IconUrl = user.GetAvatarUrl(),
-                    Text = $"Announced by {user.GlobalName}."
+                    IconUrl = user.GetAvatarUrl() ?? user.GetDefaultAvatarUrl(),
+                    Text = $"Announced by {user.GlobalName ?? user.Username}."
                 }
             };
 

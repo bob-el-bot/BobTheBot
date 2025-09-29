@@ -8,21 +8,15 @@ using BobTheBot.Chat.MemoryHandling;
 using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
 using Npgsql;
+using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Pgvector;
 using Pgvector.EntityFrameworkCore;
 
 
 namespace Bob.Database
 {
-    public class BobEntities : DbContext
+    public class BobEntities(DbContextOptions<BobEntities> options) : DbContext(options)
     {
-        private readonly string _connectionString;
-
-        public BobEntities(string connectionString = null)
-        {
-            _connectionString = connectionString;
-        }
-
         public virtual DbSet<Server> Server { get; set; }
         public virtual DbSet<WelcomeImage> WelcomeImage { get; set; }
         public virtual DbSet<User> User { get; set; }
@@ -32,42 +26,42 @@ namespace Bob.Database
         public virtual DbSet<ScheduledAnnouncement> ScheduledAnnouncement { get; set; }
         public virtual DbSet<ReactBoardMessage> ReactBoardMessage { get; set; }
         public virtual DbSet<Memory> Memory { get; set; }
+        public virtual DbSet<Tag> Tag { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            Env.Load();
-            var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
-
-            // Parse the database URL
-            var databaseUri = new Uri(databaseUrl);
-            var userInfo = databaseUri.UserInfo.Split(':');
-
-            var npgsqlConnectionString = new NpgsqlConnectionStringBuilder
+            if (!optionsBuilder.IsConfigured)
             {
-                Host = databaseUri.Host,
-                Port = databaseUri.Port,
-                Username = userInfo[0],
-                Password = userInfo[1],
-                Database = databaseUri.AbsolutePath.TrimStart('/')
-            }.ToString();
-
-            optionsBuilder.UseNpgsql(npgsqlConnectionString, o => o.UseVector());
+                var npgsqlConnectionString = DatabaseUtils.GetNpgsqlConnectionString();
+                optionsBuilder.UseNpgsql(npgsqlConnectionString, o => o.UseVector());
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Server>()
                 .Property(s => s.MaxQuoteLength)
-                .HasDefaultValue(4096u); // Set default value for MaxQuoteLength
+                .HasDefaultValue(4096u);
 
             modelBuilder.Entity<User>()
                 .Property(u => u.ProfileColor)
-                .HasDefaultValue("#2C2F33"); // Set default value for ProfileColor
+                .HasDefaultValue("#2C2F33");
 
             modelBuilder.HasPostgresExtension("vector");
             modelBuilder.Entity<Memory>()
                 .Property(m => m.Embedding)
                 .HasColumnType("vector(1536)");
+
+            modelBuilder.Entity<Tag>(entity =>
+            {
+                entity.HasIndex(e => new { e.GuildId, e.AuthorId });
+                entity.HasIndex(e => new { e.GuildId, e.Name }).IsUnique();
+            });
+
+            modelBuilder.Entity<ReactBoardMessage>(entity =>
+            {
+                entity.HasIndex(e => e.GuildId);
+            });
 
             base.OnModelCreating(modelBuilder);
         }
@@ -76,7 +70,7 @@ namespace Bob.Database
         /// Retrieves the total size of the database in bytes.
         /// </summary>
         /// <returns>The size of the database in bytes.</returns>
-        public async Task<double> GetDatabaseSizeBytes()
+        public virtual async Task<double> GetDatabaseSizeBytes()
         {
             using var command = Database.GetDbConnection().CreateCommand();
             command.CommandText = "SELECT pg_database_size(current_database());";
@@ -90,7 +84,7 @@ namespace Bob.Database
         /// Retrieves the total number of entries in the entire database.
         /// </summary>
         /// <returns>The total number of entries in the database.</returns>
-        public async Task<ulong> GetTotalEntries()
+        public virtual async Task<ulong> GetTotalEntries()
         {
             ulong totalCount = 0;
 
@@ -111,139 +105,213 @@ namespace Bob.Database
         }
 
         /// <summary>
-        /// Retrieves a <see cref="Server"/> object by its unique identifier.
-        /// If the server is not found, a new entry is created and returned.
+        /// Retrieves a <see cref="Server"/> by its unique identifier.
+        /// If not found, creates, saves, and returns a new <see cref="Server"/> tracked by the context.
         /// </summary>
         /// <param name="id">The unique identifier of the server.</param>
         /// <returns>
-        /// A task representing the asynchronous operation. 
-        /// The task result contains the retrieved or newly created <see cref="Server"/>.
+        /// A task representing the asynchronous operation.
+        /// The task result contains the existing or newly created <see cref="Server"/> tracked by the context.
         /// </returns>
-        public async Task<Server> GetServer(ulong id)
+        public virtual async Task<Server> GetOrCreateServerAsync(ulong id)
         {
-            var server = await Server.FindAsync(keyValues: id);
+            var server = await Server.FirstOrDefaultAsync(s => s.Id == id);
+            if (server != null)
+                return server;
+
+            server = new Server { Id = id };
+            Server.Add(server);
+            await SaveChangesAsync();
+            return server;
+        }
+
+        /// <summary>
+        /// Retrieves a <see cref="Server"/> by its unique identifier.
+        /// If not found, returns a new unsaved <see cref="Server"/> instance with the given ID (not tracked by the context).
+        /// </summary>
+        /// <param name="id">The unique identifier of the server.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation.
+        /// The task result contains the existing <see cref="Server"/> from the database, or a new unsaved instance if not found.
+        /// </returns>
+        public virtual async Task<Server> GetServerOrNew(ulong id)
+        {
+            var server = await Server.FirstOrDefaultAsync(s => s.Id == id);
+            return server ?? new Server { Id = id };
+        }
+
+        /// <summary>
+        /// Retrieves a <see cref="Server"/> by its unique identifier from the database.
+        /// </summary>
+        /// <param name="id">The unique identifier of the server.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation.
+        /// The task result contains the <see cref="Server"/> if found, or <c>null</c> if not found.
+        /// </returns>
+        public virtual async Task<Server> GetServer(ulong id)
+        {
+            return await Server.FirstOrDefaultAsync(s => s.Id == id);
+        }
+
+        /// <summary>
+        /// Inserts a new <see cref="Server"/> or updates an existing one by its unique identifier,
+        /// applying the specified update action, and saves changes asynchronously.
+        /// </summary>
+        /// <param name="id">The unique identifier of the server.</param>
+        /// <param name="updateAction">An action to update the <see cref="Server"/> object.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation.
+        /// The task result contains the upserted <see cref="Server"/> entity.
+        /// </returns>
+        public virtual async Task<Server> UpsertServerAsync(ulong id, Action<Server> updateAction)
+        {
+            var server = await Server.FirstOrDefaultAsync(s => s.Id == id);
             if (server == null)
             {
-                // Add server to DB
-                await AddServer(new Server { Id = id });
-                return await GetServer(id);
+                server = new Server { Id = id };
+                updateAction(server);
+                Server.Add(server);
             }
             else
             {
-                return server;
+                updateAction(server);
             }
-        }
-
-        /// <summary>
-        /// Updates an existing server asynchronously.
-        /// </summary>
-        /// <param name="server">The server to update.</param>
-        public async Task UpdateServer(Server server)
-        {
-            Server.Update(server);
             await SaveChangesAsync();
+            return server;
         }
 
         /// <summary>
-        /// Adds a new server to the database asynchronously.
+        /// Removes the specified <see cref="Server"/> from the database and saves changes asynchronously.
         /// </summary>
-        /// <param name="server">The server to be added.</param>
-        private async Task AddServer(Server server)
-        {
-            await Server.AddAsync(server);
-            await SaveChangesAsync();
-        }
-
-        /// <summary>
-        /// Removes a server from the database asynchronously.
-        /// </summary>
-        /// <param name="server">The server to be removed.</param>
-        public async Task RemoveServer(Server server)
+        /// <param name="server">The <see cref="Server"/> to be removed.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public virtual async Task RemoveServer(Server server)
         {
             Server.Remove(server);
             await SaveChangesAsync();
         }
 
         /// <summary>
-        /// Retrieves a <see cref="User"/> object by its unique identifier.
-        /// If the user is not found, a new entry is created and returned.
+        /// Retrieves a <see cref="User"/> by its unique identifier.
+        /// If not found, creates, saves, and returns a new <see cref="User"/> tracked by the context.
         /// </summary>
         /// <param name="id">The unique identifier of the user.</param>
         /// <returns>
-        /// A task representing the asynchronous operation. 
-        /// The task result contains the retrieved or newly created <see cref="User"/>.
+        /// A task representing the asynchronous operation.
+        /// The task result contains the existing or newly created <see cref="User"/> tracked by the context.
         /// </returns>
-        public async Task<User> GetUser(ulong id)
+        public virtual async Task<User> GetOrCreateUserAsync(ulong id)
         {
-            var user = await User.FindAsync(keyValues: id);
+            var user = await User.FirstOrDefaultAsync(u => u.Id == id);
+            if (user != null)
+                return user;
+
+            user = new User { Id = id };
+            User.Add(user);
+            await SaveChangesAsync();
+            return user;
+        }
+
+        /// <summary>
+        /// Retrieves a <see cref="User"/> by its unique identifier.
+        /// If not found, returns a new unsaved <see cref="User"/> instance with the given ID (not tracked by the context).
+        /// </summary>
+        /// <param name="id">The unique identifier of the user.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation.
+        /// The task result contains the existing <see cref="User"/> from the database, or a new unsaved instance if not found.
+        /// </returns>
+        public virtual async Task<User> GetUserOrNew(ulong id)
+        {
+            var user = await User.FirstOrDefaultAsync(u => u.Id == id);
+            return user ?? new User { Id = id };
+        }
+
+        /// <summary>
+        /// Retrieves a <see cref="User"/> by its unique identifier from the database.
+        /// </summary>
+        /// <param name="id">The unique identifier of the user.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation.
+        /// The task result contains the <see cref="User"/> if found, or <c>null</c> if not found.
+        /// </returns>
+        public virtual async Task<User> GetUser(ulong id)
+        {
+            return await User.FirstOrDefaultAsync(u => u.Id == id);
+        }
+
+        /// <summary>
+        /// Inserts a new <see cref="User"/> or updates an existing one by its unique identifier,
+        /// applying the specified update action, and saves changes asynchronously.
+        /// </summary>
+        /// <param name="id">The unique identifier of the user.</param>
+        /// <param name="updateAction">An action to update the <see cref="User"/> object.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation.
+        /// The task result contains the upserted <see cref="User"/> entity.
+        /// </returns>
+        public virtual async Task<User> UpsertUserAsync(ulong id, Action<User> updateAction)
+        {
+            var user = await User.FirstOrDefaultAsync(u => u.Id == id);
             if (user == null)
             {
-                // Add user to DB
-                await AddUser(new User { Id = id });
-                return await GetUser(id);
+                user = new User { Id = id };
+                updateAction(user);
+                User.Add(user);
             }
             else
             {
-                return user;
+                updateAction(user);
             }
-        }
-
-        /// <summary>
-        /// Updates an existing user asynchronously.
-        /// </summary>
-        /// <param name="user">The user to update.</param>
-        public async Task UpdateUser(User user)
-        {
-            User.Update(user);
             await SaveChangesAsync();
-        }
-
-        /// <summary>
-        /// Adds a new user to the database asynchronously.
-        /// </summary>
-        /// <param name="user">The user to be added.</param>
-        private async Task AddUser(User user)
-        {
-            await User.AddAsync(user);
-            await SaveChangesAsync();
+            return user;
         }
 
         /// <summary>
         /// Retrieves a list of <see cref="User"/> objects by their unique identifiers.
-        /// If any user is not found, a new entry is created and returned for that user.
+        /// For any missing users, creates and saves new <see cref="User"/> entries with those IDs.
         /// </summary>
-        /// <param name="ids">An array of user IDs.</param>
+        /// <param name="ids">A collection of user IDs.</param>
         /// <returns>
-        /// A task representing the asynchronous operation. 
-        /// The task result contains a list of retrieved or newly created <see cref="User"/> objects.
+        /// A task representing the asynchronous operation.
+        /// The task result contains a list of all found and newly created <see cref="User"/> objects.
         /// </returns>
-        public async Task<List<User>> GetUsers(IEnumerable<ulong> ids)
+        public virtual async Task<List<User>> GetOrCreateUsersAsync(IEnumerable<ulong> ids)
         {
             var users = await User.Where(u => ids.Contains(u.Id)).ToListAsync();
-            var missingIds = ids.Except(users.Select(u => u.Id));
+            var existingIds = users.Select(u => u.Id).ToHashSet();
+            var newUsers = ids.Except(existingIds).Select(id => new User { Id = id }).ToList();
 
-            foreach (var id in missingIds)
+            if (newUsers.Count > 0)
             {
-                // Add missing users to the database
-                var newUser = new User { Id = id };
-                await AddUser(newUser);
-                users.Add(newUser);
+                User.AddRange(newUsers);
+                await SaveChangesAsync();
+                users.AddRange(newUsers);
             }
 
             return users;
         }
 
         /// <summary>
-        /// Updates existing users asynchronously.
+        /// Updates or adds the specified <see cref="User"/> entities in the database and saves changes asynchronously.
+        /// For each user, adds it if it does not exist, or updates it if it does.
         /// </summary>
-        /// <param name="users">A list of <see cref="User"/> objects to update.</param>
-        public async Task UpdateUsers(IEnumerable<User> users)
+        /// <param name="users">A collection of <see cref="User"/> objects to update or add.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public virtual async Task UpdateOrAddUsers(IEnumerable<User> users)
         {
             foreach (var user in users)
             {
-                User.Update(user);
+                var entry = Entry(user);
+                if (entry.State == EntityState.Detached)
+                {
+                    bool exists = await User.AnyAsync(u => u.Id == user.Id);
+                    if (exists)
+                        User.Attach(user);
+                    else
+                        User.Add(user);
+                }
             }
-
             await SaveChangesAsync();
         }
 
@@ -256,26 +324,16 @@ namespace Bob.Database
         /// A task representing the asynchronous operation. 
         /// The task result contains the retrieved <see cref="NewsChannel"/> or <c>null</c> if not found.
         /// </returns>
-        public async Task<NewsChannel> GetNewsChannel(ulong id)
+        public virtual async Task<NewsChannel> GetNewsChannel(ulong id)
         {
-            return await NewsChannel.FindAsync(keyValues: id);
-        }
-
-        /// <summary>
-        /// Updates an existing news channel asynchronously.
-        /// </summary>
-        /// <param name="newsChannel">The news channel to update.</param>
-        public async Task UpdateNewsChannel(NewsChannel newsChannel)
-        {
-            NewsChannel.Update(newsChannel);
-            await SaveChangesAsync();
+            return await NewsChannel.FirstOrDefaultAsync(n => n.Id == id);
         }
 
         /// <summary>
         /// Removes a news channel from the database asynchronously.
         /// </summary>
         /// <param name="newsChannel">The news channel to be removed.</param>
-        public async Task RemoveNewsChannel(NewsChannel newsChannel)
+        public virtual async Task RemoveNewsChannel(NewsChannel newsChannel)
         {
             NewsChannel.Remove(newsChannel);
             await SaveChangesAsync();
@@ -285,9 +343,9 @@ namespace Bob.Database
         /// Adds a new news channel to the database asynchronously.
         /// </summary>
         /// <param name="newsChannel">The news channel to be added.</param>
-        public async Task AddNewsChannel(NewsChannel newsChannel)
+        public virtual async Task AddNewsChannel(NewsChannel newsChannel)
         {
-            await NewsChannel.AddAsync(newsChannel);
+            NewsChannel.Add(newsChannel);
             await SaveChangesAsync();
         }
 
@@ -300,26 +358,48 @@ namespace Bob.Database
         /// A task representing the asynchronous operation. 
         /// The task result contains the retrieved <see cref="BlackListUser"/> or <c>null</c> if not found.
         /// </returns>
-        public async Task<BlackListUser> GetUserFromBlackList(ulong id)
+        public virtual async Task<BlackListUser> GetUserFromBlackList(ulong id)
         {
-            return await BlackListUser.FindAsync(keyValues: id);
+            return await BlackListUser.FirstOrDefaultAsync(b => b.Id == id);
         }
 
         /// <summary>
-        /// Updates an existing blacklisted user asynchronously.
+        /// Inserts a new <see cref="BlackListUser"/> or updates an existing one by its unique identifier,
+        /// applies the specified update action, and saves changes asynchronously.
         /// </summary>
-        /// <param name="user">The blacklisted user to update.</param>
-        public async Task UpdateUserFromBlackList(BlackListUser user)
+        /// <param name="id">The unique identifier of the user to upsert.</param>
+        /// <param name="updateAction">
+        /// An action to apply updates to the <see cref="BlackListUser"/> object.
+        /// This action is invoked whether the user is newly created or already exists.
+        /// </param>
+        /// <returns>
+        /// A task representing the asynchronous operation.
+        /// The task result contains the upserted <see cref="BlackListUser"/> entity.
+        /// </returns>
+        public virtual async Task<BlackListUser> UpsertBlackListUserAsync(ulong id, Action<BlackListUser> updateAction)
         {
-            BlackListUser.Update(user);
+            var user = await BlackListUser.FirstOrDefaultAsync(u => u.Id == id);
+
+            if (user == null)
+            {
+                user = new BlackListUser { Id = id };
+                updateAction(user);
+                BlackListUser.Add(user);
+            }
+            else
+            {
+                updateAction(user);
+            }
+
             await SaveChangesAsync();
+            return user;
         }
 
         /// <summary>
         /// Removes a blacklisted user from the database asynchronously.
         /// </summary>
         /// <param name="user">The blacklisted user to be removed.</param>
-        public async Task RemoveUserFromBlackList(BlackListUser user)
+        public virtual async Task RemoveUserFromBlackList(BlackListUser user)
         {
             BlackListUser.Remove(user);
             await SaveChangesAsync();
@@ -329,9 +409,9 @@ namespace Bob.Database
         /// Adds a new blacklisted user to the database asynchronously.
         /// </summary>
         /// <param name="user">The blacklisted user to be added.</param>
-        public async Task AddUserToBlackList(BlackListUser user)
+        public virtual async Task AddUserToBlackList(BlackListUser user)
         {
-            await BlackListUser.AddAsync(user);
+            BlackListUser.Add(user);
             await SaveChangesAsync();
         }
 
@@ -342,26 +422,16 @@ namespace Bob.Database
         /// <returns>
         /// A task representing the asynchronous operation. The task result contains the retrieved <see cref="Types.ScheduledMessage"/>.
         /// </returns>
-        public async Task<ScheduledMessage> GetScheduledMessage(ulong id)
+        public virtual async Task<ScheduledMessage> GetScheduledMessage(ulong id)
         {
-            return await ScheduledMessage.FindAsync(keyValues: id);
-        }
-
-        /// <summary>
-        /// Updates an existing scheduled message asynchronously.
-        /// </summary>
-        /// <param name="message">The scheduled message to update.</param>
-        public async Task UpdateScheduledMessage(ScheduledMessage message)
-        {
-            ScheduledMessage.Update(message);
-            await SaveChangesAsync();
+            return await ScheduledMessage.FirstOrDefaultAsync(m => m.Id == id);
         }
 
         /// <summary>
         /// Removes a scheduled message from the database asynchronously.
         /// </summary>
         /// <param name="messageId">The unique identifier of the scheduled message to be removed.</param>
-        public async Task RemoveScheduledMessage(ulong messageId)
+        public virtual async Task RemoveScheduledMessage(ulong messageId)
         {
             await Database.ExecuteSqlRawAsync("DELETE FROM \"ScheduledMessage\" WHERE \"Id\" = @p0", messageId);
         }
@@ -370,9 +440,9 @@ namespace Bob.Database
         /// Adds a new scheduled message to the database asynchronously.
         /// </summary>
         /// <param name="message">The scheduled message to be added.</param>
-        public async Task AddScheduledMessage(ScheduledMessage message)
+        public virtual async Task AddScheduledMessage(ScheduledMessage message)
         {
-            await ScheduledMessage.AddAsync(message);
+            ScheduledMessage.Add(message);
             await SaveChangesAsync();
         }
 
@@ -381,20 +451,9 @@ namespace Bob.Database
         /// </summary>
         /// <param name="id">The unique identifier of the scheduled announcement.</param>
         /// <returns>The scheduled announcement with the specified ID, or null if not found.</returns>
-        public async Task<ScheduledAnnouncement> GetScheduledAnnouncement(ulong id)
+        public virtual async Task<ScheduledAnnouncement> GetScheduledAnnouncement(ulong id)
         {
-            return await ScheduledAnnouncement.FindAsync(keyValues: id);
-        }
-
-        /// <summary>
-        /// Updates an existing scheduled announcement in the database.
-        /// </summary>
-        /// <param name="announcement">The scheduled announcement to update.</param>
-        /// <returns>A task representing the asynchronous operation.</returns>
-        public async Task UpdateScheduledAnnouncement(ScheduledAnnouncement announcement)
-        {
-            ScheduledAnnouncement.Update(announcement);
-            await SaveChangesAsync();
+            return await ScheduledAnnouncement.FirstOrDefaultAsync(a => a.Id == id);
         }
 
         /// <summary>
@@ -402,7 +461,7 @@ namespace Bob.Database
         /// </summary>
         /// <param name="announcementId">The unique identifier of the scheduled announcement to remove.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        public async Task RemoveScheduledAnnouncement(ulong announcementId)
+        public virtual async Task RemoveScheduledAnnouncement(ulong announcementId)
         {
             await Database.ExecuteSqlRawAsync("DELETE FROM \"ScheduledAnnouncement\" WHERE \"Id\" = @p0", announcementId);
         }
@@ -412,9 +471,9 @@ namespace Bob.Database
         /// </summary>
         /// <param name="announcement">The scheduled announcement to add.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        public async Task AddScheduledAnnouncement(ScheduledAnnouncement announcement)
+        public virtual async Task AddScheduledAnnouncement(ScheduledAnnouncement announcement)
         {
-            await ScheduledAnnouncement.AddAsync(announcement);
+            ScheduledAnnouncement.Add(announcement);
             await SaveChangesAsync();
         }
 
@@ -423,7 +482,7 @@ namespace Bob.Database
         /// </summary>
         /// <param name="item">The scheduled item to remove.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        public async Task RemoveScheduledItem(IScheduledItem item)
+        public virtual async Task RemoveScheduledItem(IScheduledItem item)
         {
             switch (item)
             {
@@ -441,20 +500,9 @@ namespace Bob.Database
         /// </summary>
         /// <param name="id">The unique ID of the welcome image (usually the server ID).</param>
         /// <returns>The corresponding <see cref="WelcomeImage"/> object if found; otherwise, null.</returns>
-        public async Task<WelcomeImage> GetWelcomeImage(ulong id)
+        public virtual async Task<WelcomeImage> GetWelcomeImage(ulong id)
         {
-            return await WelcomeImage.FindAsync(keyValues: id);
-        }
-
-        /// <summary>
-        /// Updates an existing welcome image in the database.
-        /// </summary>
-        /// <param name="image">The <see cref="WelcomeImage"/> entity containing updated data.</param>
-        /// <returns>A task that represents the asynchronous update operation.</returns>
-        public async Task UpdateWelcomeImage(WelcomeImage image)
-        {
-            WelcomeImage.Update(image);
-            await SaveChangesAsync();
+            return await WelcomeImage.FirstOrDefaultAsync(w => w.Id == id);
         }
 
         /// <summary>
@@ -462,7 +510,7 @@ namespace Bob.Database
         /// </summary>
         /// <param name="image">The <see cref="WelcomeImage"/> entity to remove.</param>
         /// <returns>A task that represents the asynchronous delete operation.</returns>
-        public async Task RemoveWelcomeImage(WelcomeImage image)
+        public virtual async Task RemoveWelcomeImage(WelcomeImage image)
         {
             WelcomeImage.Remove(image);
             await SaveChangesAsync();
@@ -473,9 +521,9 @@ namespace Bob.Database
         /// </summary>
         /// <param name="image">The <see cref="WelcomeImage"/> entity to add.</param>
         /// <returns>A task that represents the asynchronous insert operation.</returns>
-        public async Task AddWelcomeImage(WelcomeImage image)
+        public virtual async Task AddWelcomeImage(WelcomeImage image)
         {
-            await WelcomeImage.AddAsync(image);
+            WelcomeImage.Add(image);
             await SaveChangesAsync();
         }
 
@@ -484,9 +532,9 @@ namespace Bob.Database
         /// </summary>
         /// <param name="message">The ReactBoardMessage entity to add.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        public async Task AddReactBoardMessageAsync(ReactBoardMessage message)
+        public virtual async Task AddReactBoardMessageAsync(ReactBoardMessage message)
         {
-            await ReactBoardMessage.AddAsync(message);
+            ReactBoardMessage.Add(message);
             await SaveChangesAsync();
         }
 
@@ -495,7 +543,7 @@ namespace Bob.Database
         /// </summary>
         /// <param name="message">The ReactBoardMessage entity to remove.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        public async Task RemoveReactBoardMessageAsync(ReactBoardMessage message)
+        public virtual async Task RemoveReactBoardMessageAsync(ReactBoardMessage message)
         {
             ReactBoardMessage.Remove(message);
             await SaveChangesAsync();
@@ -508,9 +556,9 @@ namespace Bob.Database
         /// <returns>
         /// A task representing the asynchronous operation, with the ReactBoardMessage entity if found; otherwise, null.
         /// </returns>
-        public async Task<ReactBoardMessage> GetReactBoardMessageAsync(ulong originalMessageId)
+        public virtual async Task<ReactBoardMessage> GetReactBoardMessageAsync(ulong originalMessageId)
         {
-            return await ReactBoardMessage.FindAsync(keyValues: originalMessageId);
+            return await ReactBoardMessage.FirstOrDefaultAsync(r => r.OriginalMessageId == originalMessageId);
         }
 
         /// <summary>
@@ -519,7 +567,7 @@ namespace Bob.Database
         /// </summary>
         /// <param name="guildId">The unique identifier of the guild.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        public async Task AddInitialReactBoardMessageAsync(ulong guildId)
+        public virtual async Task AddInitialReactBoardMessageAsync(ulong guildId)
         {
             bool anyExist = await ReactBoardMessage.AnyAsync(x => x.GuildId == guildId);
 
@@ -542,9 +590,9 @@ namespace Bob.Database
         /// </summary>
         /// <param name="messages">The collection of ReactBoardMessage entities to add. Each should have the GuildId property set appropriately.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        public async Task AddMultipleReactBoardMessagesAsync(List<ReactBoardMessage> messages)
+        public virtual async Task AddMultipleReactBoardMessagesAsync(List<ReactBoardMessage> messages)
         {
-            await ReactBoardMessage.AddRangeAsync(messages);
+            ReactBoardMessage.AddRange(messages);
             await SaveChangesAsync();
         }
 
@@ -555,7 +603,7 @@ namespace Bob.Database
         /// <returns>
         /// A task representing the asynchronous operation, with a list of ReactBoardMessage entities for the specified guild.
         /// </returns>
-        public async Task<List<ReactBoardMessage>> GetAllReactBoardMessagesForGuildAsync(ulong guildId)
+        public virtual async Task<List<ReactBoardMessage>> GetAllReactBoardMessagesForGuild(ulong guildId)
         {
             return await ReactBoardMessage.Where(x => x.GuildId == guildId).ToListAsync();
         }
@@ -565,7 +613,7 @@ namespace Bob.Database
         /// </summary>
         /// <param name="guildId">The unique identifier of the guild whose ReactBoardMessages should be removed.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
-        public async Task RemoveAllReactBoardMessagesForGuildAsync(ulong guildId)
+        public virtual async Task RemoveAllReactBoardMessagesForGuildAsync(ulong guildId)
         {
             var messages = await ReactBoardMessage
                 .Where(x => x.GuildId == guildId)
@@ -593,7 +641,7 @@ namespace Bob.Database
                 CreatedAt = DateTime.UtcNow
             };
 
-            await Memory.AddAsync(memory);
+            Memory.Add(memory);
             await SaveChangesAsync();
         }
 
@@ -687,6 +735,72 @@ namespace Bob.Database
                 SemanticCount: semanticMemories.Count,
                 TemporalCount: temporalMemories.Count
             );
+          
+        /// <summary>
+        /// Retrieves a tag from the database by its ID.
+        /// </summary>
+        /// <param name="id">The unique ID of the tag (usually the server ID).</param>
+        /// <returns>The corresponding <see cref="Tag"/> object if found; otherwise, null.</returns>
+        public virtual async Task<Tag> GetTag(int id)
+        {
+            return await Tag.FirstOrDefaultAsync(t => t.Id == id);
+        }
+
+        /// <summary>
+        /// Retrieves a tag from the database by its guild ID and name.
+        /// </summary>
+        /// <param name="guildId">The unique ID of the guild.</param>
+        /// <param name="name">The name of the tag.</param>
+        /// <returns>The corresponding <see cref="Tag"/> object if found; otherwise, null.</returns>
+        public virtual async Task<Tag> GetTag(ulong guildId, string name)
+        {
+#pragma warning disable CA1862
+            return await Tag.FirstOrDefaultAsync(t => t.GuildId == guildId &&
+                t.Name == name.Trim().ToLowerInvariant());
+#pragma warning restore CA1862
+        }
+
+        /// <summary>
+        /// Removes a tag from the database.
+        /// </summary>
+        /// <param name="tag">The <see cref="Tag"/> entity to remove.</param>
+        /// <returns>A task that represents the asynchronous delete operation.</returns>
+        public virtual async Task RemoveTag(Tag tag)
+        {
+            Tag.Remove(tag);
+            await SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Removes all tags associated with a specific guild ID.
+        /// </summary>
+        /// <param name="guildId">The unique ID of the guild.</param>
+        /// <returns>A task that represents the asynchronous delete operation.</returns>
+        public virtual async Task RemoveTags(List<Tag> tags)
+        {
+            Tag.RemoveRange(tags);
+            await SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Adds a new tag to the database.
+        /// </summary>
+        /// <param name="tag">The <see cref="Tag"/> entity to add.</param>
+        /// <returns>A task that represents the asynchronous insert operation.</returns>
+        public virtual async Task AddTag(Tag tag)
+        {
+            Tag.Add(tag);
+            await SaveChangesAsync();
+        }
+
+        /// <summary>
+        /// Retrieves all tags associated with a specific guild ID.
+        /// </summary>
+        /// <param name="guildId">The unique ID of the guild.</param>
+        /// <returns>A list of <see cref="Tag"/> objects associated with the specified guild ID.</returns>
+        public virtual async Task<List<Tag>> GetTagsByGuildId(ulong guildId)
+        {
+            return await Tag.Where(t => t.GuildId == guildId).ToListAsync();
         }
     }
 }

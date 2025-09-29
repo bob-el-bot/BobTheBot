@@ -32,7 +32,7 @@ namespace Bob.Commands
 
             if (avatarUrl == "")
             {
-                avatarUrl = Context.User.GetAvatarUrl();  // Default avatar URL if none provided
+                avatarUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(); 
             }
             else if (!Uri.IsWellFormedUriString(avatarUrl, UriKind.Absolute))
             {

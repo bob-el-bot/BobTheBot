@@ -10,9 +10,25 @@ namespace Bob.Commands
 {
     [CommandContextType(InteractionContextType.Guild)]
     [IntegrationType(ApplicationIntegrationType.GuildInstall)]
+    [DefaultMemberPermissions(GuildPermission.Administrator | GuildPermission.ManageGuild)]
     [Group("admin", "All commands relevant to administration features.")]
-    public class AdminGroup : InteractionModuleBase<ShardedInteractionContext>
+    public class AdminGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInteractionContext>
     {
+        [SlashCommand("info", "Displays this server's configuration and how to update each setting.")]
+        public async Task InfoAsync()
+        {
+            var server = await dbContext.GetOrCreateServerAsync(Context.Guild.Id);
+
+            var embed = AdminUtils.BuildSettingsEmbed(server, Context.Guild);
+
+            var component = new ComponentBuilder()
+                .WithButton(Help.SupportServerButton)
+                .WithButton(Help.DocsButton)
+                .Build();
+
+            await RespondAsync(embed: embed, components: component);
+        }
+
         [Group("confess", "All commands relevant to confession administration features.")]
         public class ConfessGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInteractionContext>
         {
@@ -21,20 +37,12 @@ namespace Bob.Commands
             {
                 await DeferAsync(ephemeral: true);
 
-                var discordUser = Context.Guild.GetUser(Context.User.Id);
-
-                if (!discordUser.GuildPermissions.Administrator)
-                {
-                    await FollowupAsync(text: "❌ You must have the `Administrator` permission to use this command.", ephemeral: true);
-                    return;
-                }
-
-                var server = await dbContext.GetServer(Context.Guild.Id);
+                var server = await dbContext.GetOrCreateServerAsync(Context.Guild.Id);
 
                 if (server.ConfessFilteringOff == enable)
                 {
                     server.ConfessFilteringOff = !enable;
-                    await dbContext.UpdateServer(server);
+                    await dbContext.SaveChangesAsync();
                 }
 
                 if (enable)

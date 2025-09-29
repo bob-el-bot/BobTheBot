@@ -282,7 +282,7 @@ namespace Bob.Commands
                 }
                 else
                 {
-                    User dbUser = await dbContext.GetUser(user == null ? parsedId : user.Id);
+                    User dbUser = await dbContext.GetOrCreateUserAsync(user == null ? parsedId : user.Id);
 
                     await FollowupAsync(text: $"✅ `Showing User: {discordUser.GlobalName}, {discordUser.Id}`\n{UserDebugging.GetUserPropertyString(dbUser)}");
                 }
@@ -317,9 +317,9 @@ namespace Bob.Commands
                 }
                 else
                 {
-                    User dbUser = await dbContext.GetUser(user == null ? parsedId : user.Id);
+                    User dbUser = await dbContext.GetOrCreateUserAsync(user == null ? parsedId : user.Id);
                     dbUser.TotalScheduledAnnouncements = (uint)value;
-                    await dbContext.UpdateUser(dbUser);
+                    await dbContext.SaveChangesAsync();
 
                     await FollowupAsync(text: $"✅ `Announcement Count of User: {discordUser.GlobalName}, {discordUser.Id} updated.`\n{UserDebugging.GetUserPropertyString(dbUser)}");
                 }
@@ -354,9 +354,9 @@ namespace Bob.Commands
                 }
                 else
                 {
-                    User dbUser = await dbContext.GetUser(user == null ? parsedId : user.Id);
+                    User dbUser = await dbContext.GetOrCreateUserAsync(user == null ? parsedId : user.Id);
                     dbUser.TotalScheduledMessages = (uint)value;
-                    await dbContext.UpdateUser(dbUser);
+                    await dbContext.SaveChangesAsync();
 
                     await FollowupAsync(text: $"✅ `Announcement Count of User: {discordUser.GlobalName}, {discordUser.Id} updated.`\n{UserDebugging.GetUserPropertyString(dbUser)}");
                 }
@@ -387,7 +387,7 @@ namespace Bob.Commands
                 }
                 else
                 {
-                    User dbUser = await dbContext.GetUser(user == null ? parsedId : user.Id);
+                    User dbUser = await dbContext.GetOrCreateUserAsync(user == null ? parsedId : user.Id);
 
                     await Badge.GiveUserBadge(dbUser, badge);
 
@@ -420,7 +420,7 @@ namespace Bob.Commands
                 }
                 else
                 {
-                    User dbUser = await dbContext.GetUser(user == null ? parsedId : user.Id);
+                    User dbUser = await dbContext.GetOrCreateUserAsync(user == null ? parsedId : user.Id);
 
                     await Badge.RemoveUserBadge(dbUser, badge);
 
@@ -448,7 +448,7 @@ namespace Bob.Commands
                 }
                 else
                 {
-                    Server dbServer = await dbContext.GetServer(parsedId);
+                    Server dbServer = await dbContext.GetOrCreateServerAsync(parsedId);
 
                     await FollowupAsync(text: $"✅ `Showing Server: {discordServer.Name}, {discordServer.Id}`\n{ServerDebugging.GetServerPropertyString(dbServer)}");
                 }

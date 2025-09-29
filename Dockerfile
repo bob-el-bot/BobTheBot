@@ -4,12 +4,17 @@ FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy the .csproj files and restore dependencies
-COPY *.csproj ./
-RUN dotnet restore
-
-# Copy the rest of the application source code into the container
+# Copy everything first (including your nuget.config with placeholder)
 COPY . ./
+
+# Replace placeholder token in nuget.config with actual PAT from build arg
+ARG GITHUB_PACKAGE_PAT
+RUN if [ -n "$GITHUB_PACKAGE_PAT" ]; then \
+      sed -i "s|__GITHUB_PACKAGE_PAT__|$GITHUB_PACKAGE_PAT|g" ./nuget.config; \
+    fi
+
+# Restore dependencies (now with real token in nuget.config)
+RUN dotnet restore
 
 # Build the application in Release configuration and output to the /out directory
 RUN dotnet publish -c Release -o out
@@ -26,7 +31,6 @@ RUN apt-get update && \
 WORKDIR /app
 
 # Copy the wordlist and answerlist files into the container (ensure paths are correct)
-# These files must exist in the build context (the directory you're running `docker build` from)
 COPY ./commands/wordle-group/helpers/wordList.txt /app/commands/wordle-group/helpers/wordList.txt
 COPY ./commands/wordle-group/helpers/answerList.txt /app/commands/wordle-group/helpers/answerList.txt
 

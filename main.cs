@@ -39,13 +39,6 @@ namespace Bob
             GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers | GatewayIntents.GuildMessages | GatewayIntents.GuildMessageReactions | GatewayIntents.MessageContent | GatewayIntents.AutoModerationConfiguration,
         });
 
-        private static InteractionService Service = new(Client, new InteractionServiceConfig
-        {
-            UseCompiledLambda = true,
-            ThrowOnError = true,
-            AutoServiceScopes = false
-        });
-
         public static string Token = Environment.GetEnvironmentVariable("DISCORD_TOKEN");
 
         // Purple (normal) Theme: 9261821 | Orange (halloween) Theme: 16760153
@@ -71,7 +64,28 @@ namespace Bob
 
             var services = new ServiceCollection();
 
-            services.AddDbContext<BobEntities>(options => options.UseNpgsql(Environment.GetEnvironmentVariable("DATABASE_URL")));
+            var npgsqlConnectionString = DatabaseUtils.GetNpgsqlConnectionString();
+
+            services.AddDbContext<BobEntities>(options =>
+            {
+                options.UseNpgsql(
+                    npgsqlConnectionString,
+                    npgsqlOptions => npgsqlOptions
+                        .EnableRetryOnFailure(
+                            maxRetryCount: 1,
+                            maxRetryDelay: TimeSpan.FromSeconds(5),
+                            errorCodesToAdd: null
+                        )
+                        .UseVector()
+                );
+            });
+
+            services.AddSingleton(new InteractionService(Client, new InteractionServiceConfig
+            {
+                UseCompiledLambda = true,
+                ThrowOnError = true,
+            }));
+
             Services = services.BuildServiceProvider();
 
             Client.ShardReady += ShardReady;
@@ -84,6 +98,8 @@ namespace Bob
             Client.EntitlementUpdated += EntitlementUpdated;
             Client.MessageReceived += MessageReceived;
             Client.ReactionAdded += HandleReactionAddedAsync;
+            Client.ReactionRemoved += HandleReactionRemovedAsync;
+            Client.ReactionRemoved += HandleReactionClearedAsync;
 
             await Client.LoginAsync(TokenType.Bot, Token);
             await Client.StartAsync();
@@ -130,8 +146,10 @@ namespace Bob
 
         private static async Task RegisterSlashCommands()
         {
-            await Service.AddModulesAsync(Assembly.GetEntryAssembly(), Services);
-            var globalCommands = await Service.RegisterCommandsGloballyAsync();
+            var interactionService = Services.GetRequiredService<InteractionService>();
+
+            await interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), Services);
+            var globalCommands = await interactionService.RegisterCommandsGloballyAsync();
 
             // Update command IDs...
             Dictionary<string, ulong> _commandIds = globalCommands.ToDictionary(cmd => cmd.Name, cmd => cmd.Id);
@@ -161,15 +179,15 @@ namespace Bob
             }
 
             // Optional: Register per-guild debug commands
-            ModuleInfo[] debugCommands = Service.Modules
+            ModuleInfo[] debugCommands = interactionService.Modules
                 .Where(module => module.Preconditions.Any(precondition => precondition is RequireGuildAttribute)
                               && module.SlashGroupName == "debug")
                 .ToArray();
             IGuild supportServer = Client.GetGuild(supportServerId);
-            await Service.AddModulesToGuildAsync(supportServer, true, debugCommands);
+            await interactionService.AddModulesToGuildAsync(supportServer, true, debugCommands);
 
             Client.InteractionCreated += InteractionCreated;
-            Service.SlashCommandExecuted += SlashCommandResulted;
+            interactionService.SlashCommandExecuted += SlashCommandResulted;
 
             Console.WriteLine("Slash commands registered successfully.");
         }
@@ -209,7 +227,7 @@ namespace Bob
                 using (var scope = Services.CreateScope())
                 {
                     var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
-                    server = await context.GetServer(user.Guild.Id);
+                    server = await context.GetOrCreateServerAsync(user.Guild.Id);
                 }
 
                 if (server.Welcome == true)
@@ -250,7 +268,7 @@ namespace Bob
                     using (var scope = Services.CreateScope())
                     {
                         var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
-                        dbUser = await context.GetUser(user.Id);
+                        dbUser = await context.GetOrCreateUserAsync(user.Id);
                     }
 
                     await Badge.GiveUserBadge(dbUser, Badges.Badges.Friend);
@@ -266,7 +284,7 @@ namespace Bob
         {
             using var scope = Services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
-            await context.GetServer(guild.Id);
+            await context.GetOrCreateServerAsync(guild.Id);
         }
 
         private static async Task EntitlementCreated(SocketEntitlement ent)
@@ -274,7 +292,7 @@ namespace Bob
             using var scope = Services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
             IUser entUser = await ent.User.Value.GetOrDownloadAsync();
-            User user = await context.GetUser(entUser.Id);
+            User user = await context.GetOrCreateUserAsync(entUser.Id);
 
             if (ent.EndsAt == null)
             {
@@ -285,7 +303,7 @@ namespace Bob
                 user.PremiumExpiration = (DateTimeOffset)ent.EndsAt;
             }
 
-            await context.UpdateUser(user);
+            await context.SaveChangesAsync();
         }
 
         private static async Task EntitlementUpdated(Cacheable<SocketEntitlement, ulong> before, SocketEntitlement after)
@@ -293,10 +311,10 @@ namespace Bob
             using var scope = Services.CreateScope();
             var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
             IUser entUser = await before.Value.User.Value.GetOrDownloadAsync();
-            User user = await context.GetUser(entUser.Id);
+            User user = await context.GetOrCreateUserAsync(entUser.Id);
 
             user.PremiumExpiration = (DateTimeOffset)after.EndsAt;
-            await context.UpdateUser(user);
+            await context.SaveChangesAsync();
         }
 
         private static Task EntitlementDeleted(Cacheable<SocketEntitlement, ulong> ent)
@@ -412,7 +430,10 @@ namespace Bob
             return Task.CompletedTask;
         }
 
-        private static Task HandleReactionAddedAsync(Cacheable<IUserMessage, ulong> cacheable, Cacheable<IMessageChannel, ulong> channelCache, SocketReaction reaction)
+        private static Task HandleReactionAddedAsync(
+            Cacheable<IUserMessage, ulong> cacheable,
+            Cacheable<IMessageChannel, ulong> channelCache,
+            SocketReaction reaction)
         {
             _ = Task.Run(async () =>
             {
@@ -430,14 +451,19 @@ namespace Bob
                         return;
                     }
 
-                    if (await cacheable.GetOrDownloadAsync() is not IUserMessage userMessage)
+                    var userMessage = await CachedMessages.GetOrDownloadAsync(textChannel, cacheable.Id);
+                    if (userMessage == null)
                     {
                         return;
                     }
 
+                    string key = reaction.Emote is Emote emote ? emote.Id.ToString() : reaction.Emote.Name;
+
+                    userMessage.IncreaseReactionCount(key);
+
                     using var scope = Services.CreateScope();
                     var dbContext = scope.ServiceProvider.GetRequiredService<BobEntities>();
-                    var server = await dbContext.GetServer(textChannel.Guild.Id);
+                    var server = await dbContext.GetOrCreateServerAsync(textChannel.Guild.Id);
 
                     if (!ReactBoardMethods.IsSetup(server))
                     {
@@ -446,17 +472,17 @@ namespace Bob
 
                     var storedEmojiId = ReactBoardMethods.GetEmojiIdFromString(server.ReactBoardEmoji);
 
-                    bool isMatchingEmoji = reaction.Emote is Emote emote
-                        ? emote.Id.ToString() == storedEmojiId
-                        : reaction.Emote.Name.Equals(server.ReactBoardEmoji, StringComparison.OrdinalIgnoreCase);
+                    bool isMatchingEmoji = (storedEmojiId != null && key == storedEmojiId)
+                        || reaction.Emote.Name.Equals(server.ReactBoardEmoji, StringComparison.OrdinalIgnoreCase);
 
                     if (!isMatchingEmoji || textChannel.Id == server.ReactBoardChannelId)
                     {
                         return;
                     }
 
-                    if (!userMessage.Reactions.TryGetValue(reaction.Emote, out var reactionMetadata) ||
-                        reactionMetadata.ReactionCount < server.ReactBoardMinimumReactions)
+                    var reactionCount = userMessage.GetReactionCount(key);
+
+                    if (reactionCount == 0 || reactionCount < server.ReactBoardMinimumReactions)
                     {
                         return;
                     }
@@ -472,18 +498,18 @@ namespace Bob
                         return;
                     }
 
-                    if (await ReactBoardMethods.IsMessageOnBoardAsync(reactBoardChannel, userMessage.Id))
+                    if (await ReactBoardMethods.IsMessageOnBoardAsync(reactBoardChannel, userMessage.Message.Id))
                     {
                         return;
                     }
 
                     await reactBoardChannel.SendMessageAsync(
-                        embeds: [.. ReactBoardMethods.GetReactBoardEmbeds(userMessage)],
+                        embeds: [.. ReactBoardMethods.GetReactBoardEmbeds(userMessage.Message)],
                         allowedMentions: AllowedMentions.None,
-                        components: ReactBoardMethods.GetReactBoardComponents(userMessage)
+                        components: ReactBoardMethods.GetReactBoardComponents(userMessage.Message)
                     );
 
-                    await ReactBoardMethods.AddToCacheAndDbAsync(reactBoardChannel, userMessage.Id);
+                    await ReactBoardMethods.AddToCacheAndDbAsync(reactBoardChannel, userMessage.Message.Id);
                 }
                 catch (Exception e)
                 {
@@ -494,18 +520,70 @@ namespace Bob
             return Task.CompletedTask;
         }
 
+        public static Task HandleReactionRemovedAsync(
+            Cacheable<IUserMessage, ulong> cacheable,
+            Cacheable<IMessageChannel, ulong> channelCache,
+            SocketReaction reaction)
+        {
+            _ = Task.Run(async () =>
+            {
+                if (await channelCache.GetOrDownloadAsync() is not SocketTextChannel textChannel)
+                {
+                    return;
+                }
+
+                var userMessage = await CachedMessages.GetOrDownloadAsync(textChannel, cacheable.Id);
+                if (userMessage == null)
+                {
+                    return;
+                }
+
+                var key = reaction.Emote is Emote emote ? emote.Id.ToString() : reaction.Emote.Name;
+
+                userMessage.DecrementReactionCount(key);
+            });
+            return Task.CompletedTask;
+        }
+
+        public static Task HandleReactionClearedAsync(
+            Cacheable<IUserMessage, ulong> cacheable,
+            Cacheable<IMessageChannel, ulong> channelCache,
+            SocketReaction reaction)
+        {
+            _ = Task.Run(async () =>
+            {
+                if (await channelCache.GetOrDownloadAsync() is not SocketTextChannel textChannel)
+                {
+                    return;
+                }
+
+                var userMessage = await CachedMessages.GetOrDownloadAsync(textChannel, cacheable.Id);
+                if (userMessage == null)
+                {
+                    return;
+                }
+
+                var key = reaction.Emote is Emote emote ? emote.Id.ToString() : reaction.Emote.Name;
+
+                userMessage.SetReactionCount(key, 0);
+            });
+            return Task.CompletedTask;
+        }
+
         private static async Task InteractionCreated(SocketInteraction interaction)
         {
             try
             {
-                ShardedInteractionContext ctx = new(Client, interaction);
-                await Service.ExecuteCommandAsync(ctx, Services);
+                var interactionService = Services.GetRequiredService<InteractionService>();
+                var ctx = new ShardedInteractionContext(Client, interaction);
+                await interactionService.ExecuteCommandAsync(ctx, Services);
             }
             catch
             {
                 if (interaction.Type == InteractionType.ApplicationCommand)
                 {
-                    await interaction.GetOriginalResponseAsync().ContinueWith(async (msg) => await msg.Result.DeleteAsync());
+                    await interaction.GetOriginalResponseAsync()
+                        .ContinueWith(async (msg) => await msg.Result.DeleteAsync());
                 }
             }
         }

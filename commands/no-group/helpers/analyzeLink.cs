@@ -14,7 +14,11 @@ namespace Bob.Commands.Helpers
 {
     public partial class Analyze
     {
+        private static readonly int requestTimeoutSeconds = 10;
         public static readonly int maximumRedirectCount = 4;
+
+        private static int _userAgentIndex = 0;
+        private static readonly object _userAgentLock = new();
 
         public class LinkInfo
         {
@@ -57,7 +61,8 @@ namespace Bob.Commands.Helpers
                     isRickRoll = true;
                 }
 
-                if (l.SpecialCase != null && !containsSpecialRedirect)
+                string[] redirectSpecialCases = ["Meta-Refresh Redirect", "JavaScript Redirect", "URL Redirect"];
+                if (l.SpecialCase != null && Array.Exists(redirectSpecialCases, sc => sc == l.SpecialCase) && !containsSpecialRedirect)
                 {
                     warnings.AppendLine("- Contains a hard-coded redirect. ");
                     containsSpecialRedirect = true;
@@ -75,10 +80,11 @@ namespace Bob.Commands.Helpers
                 }
                 else
                 {
-                    description.AppendLine($"❌ <{l.Link}> **Failed to visit link.**");
+                    string errorMessage = l.SpecialCase != null ? $"**Failed to visit link:** {l.SpecialCase}" : "**Failed to visit link.**";
+                    description.AppendLine($"❌ <{l.Link}> {errorMessage}");
                     if (!failed)
                     {
-                        warnings.AppendLine("- For an unknown reason, Bob could not open this page (it might not exist). ");
+                        warnings.AppendLine($"- {l.SpecialCase ?? "For an unknown reason, Bob could not open this page (it might not exist)"}. ");
                         failed = true;
                     }
                 }
@@ -135,20 +141,33 @@ namespace Bob.Commands.Helpers
 
         static readonly List<string> UserAgents =
         [
-            "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.85 Safari/537.36",
-            "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/45.0.2454.85 Safari/537.36",
-            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/42.0.2311.135 Safari/537.36 Edge/12.10240",
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_5) AppleWebKit/600.8.9 (KHTML, like Gecko) Version/7.1.8 Safari/537.85.17",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36"
         ];
 
         private static async Task<List<LinkInfo>> GetUrlTrail(string link)
         {
             List<LinkInfo> trail = [];
+            HashSet<string> visitedUrls = [];
             int redirectCount = 0;
             Random random = new();
 
             while (redirectCount <= maximumRedirectCount && !string.IsNullOrWhiteSpace(link))
             {
+                if (visitedUrls.Contains(link))
+                {
+                    trail.Add(new LinkInfo
+                    {
+                        Link = link,
+                        Failed = true,
+                        SpecialCase = "Redirect Loop Detected"
+                    });
+                    break;
+                }
+                visitedUrls.Add(link);
+
                 // Validate the URL
                 if (!Uri.TryCreate(link, UriKind.Absolute, out _))
                 {
@@ -162,8 +181,9 @@ namespace Bob.Commands.Helpers
                 };
 
                 using HttpClient httpClient = new(handler);
+                httpClient.Timeout = TimeSpan.FromSeconds(requestTimeoutSeconds);
                 HttpRequestMessage request = new(HttpMethod.Head, link);
-                string customUserAgent = UserAgents[random.Next(UserAgents.Count)];
+                string customUserAgent = GetNextUserAgent();
                 httpClient.DefaultRequestHeaders.Add("User-Agent", customUserAgent);
 
                 try
@@ -279,7 +299,9 @@ namespace Bob.Commands.Helpers
 
                         if (response.Headers.Location != null)
                         {
-                            link = response.Headers.Location.ToString();
+                            Uri baseUri = new(link);
+                            Uri resolvedUri = new(baseUri, response.Headers.Location);
+                            link = resolvedUri.ToString();
                             redirectCount++;
                         }
                         else
@@ -288,6 +310,26 @@ namespace Bob.Commands.Helpers
                         }
                     }
                 }
+                catch (TaskCanceledException)
+                {
+                    trail.Add(new LinkInfo
+                    {
+                        Link = link,
+                        Failed = true,
+                        SpecialCase = "Request Timeout"
+                    });
+                    break;
+                }
+                catch (HttpRequestException ex)
+                {
+                    trail.Add(new LinkInfo
+                    {
+                        Link = link,
+                        Failed = true,
+                        SpecialCase = $"Network Error: {ex.Message}"
+                    });
+                    break;
+                }
                 catch (Exception ex)
                 {
                     trail.Add(new LinkInfo
@@ -295,7 +337,6 @@ namespace Bob.Commands.Helpers
                         Link = $"{link}",
                         Failed = true
                     });
-                    // Log the exception or handle it appropriately
                     Console.WriteLine($"Exception while processing link {link}: {ex.Message}");
                     Console.WriteLine($"Inner exception: {ex.InnerException?.Message}");
                     link = null;
@@ -448,6 +489,16 @@ namespace Bob.Commands.Helpers
                 return content[(urlIndex + 4)..].Trim('"', '\'');
             }
             return string.Empty;
+        }
+
+        private static string GetNextUserAgent()
+        {
+            lock (_userAgentLock)
+            {
+                var userAgent = UserAgents[_userAgentIndex];
+                _userAgentIndex = (_userAgentIndex + 1) % UserAgents.Count;
+                return userAgent;
+            }
         }
 
         [GeneratedRegex(@"(?:v=|\/)([a-zA-Z0-9_-]{11})")]

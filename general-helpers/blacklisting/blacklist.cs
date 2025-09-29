@@ -122,12 +122,18 @@ namespace Bob.Moderation
         /// <returns>The next punishment.</returns>
         private static Punishment GetNextPunishment(DateTime? expiration)
         {
-            if (expiration == null || expiration > DateTime.Now.AddMonths(1))
+            var now = DateTime.UtcNow;
+            if (expiration == null || expiration < now)
+            {
+                return Punishment.FiveMinutes;
+            }
+
+            if (expiration > now.AddMonths(1))
             {
                 return Punishment.Permanent;
             }
 
-            var remainingTime = expiration - DateTime.Now;
+            var remainingTime = expiration - now;
 
             if (remainingTime <= TimeSpan.FromMinutes(5))
             {
@@ -305,7 +311,10 @@ namespace Bob.Moderation
             {
                 using var scope = Bot.Services.CreateScope();
                 var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
-                await context.UpdateUserFromBlackList(user);
+                await context.UpsertBlackListUserAsync(user.Id, dbUser => {
+                    dbUser.Expiration = user.Expiration;
+                    dbUser.Reason = user.Reason;
+                });
             }
 
             UpdateCache(user);

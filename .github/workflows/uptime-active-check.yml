@@ -1,0 +1,48 @@
+name: Ensure Uptime Line Uncommented
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check-line:
+    runs-on: [self-hosted, homelab]
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Ensure main.cs exists
+        run: |
+          if [ ! -f "main.cs" ]; then
+            echo "❌ main.cs not found!"
+            exit 1
+          fi
+
+      - name: Check main.cs for uncommented line
+        env:
+          REQUIRED_LINE: "Uptime.StartHttpListener();"
+        run: |
+          FILE="main.cs"
+
+          echo "Searching for '${REQUIRED_LINE}' in $FILE"
+
+          # Find all lines containing the required string (with line numbers)
+          matches=$(grep -n -F "${REQUIRED_LINE}" "$FILE" || true)
+
+          if [ -z "$matches" ]; then
+            echo "❌ Required line '${REQUIRED_LINE}' is missing entirely"
+            exit 1
+          fi
+
+          echo "Found these lines containing '${REQUIRED_LINE}':"
+          echo "$matches"
+
+          # Strip line numbers before checking for comments
+          uncommented=$(echo "$matches" | cut -d: -f2- | grep -v '^[[:space:]]*//')
+
+          if [ -z "$uncommented" ]; then
+            echo "❌ All instances of '${REQUIRED_LINE}' are commented out"
+            exit 1
+          fi
+
+          echo "✅ Found at least one uncommented instance of '${REQUIRED_LINE}'"

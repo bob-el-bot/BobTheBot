@@ -62,9 +62,6 @@ namespace Bob.Time.Timestamps
                 dateTime = DateTimeOffset.MaxValue.UtcDateTime;
             }
 
-            // Log the time before conversion
-            Console.WriteLine("FromDateTime() before goes to DateTimeOffset: " + dateTime);
-
             // Handle unspecified DateTime.Kind explicitly
             if (dateTime.Kind == DateTimeKind.Unspecified)
             {

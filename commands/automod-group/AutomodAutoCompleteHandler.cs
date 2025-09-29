@@ -31,8 +31,6 @@ public class AutomodAutocompleteHandler : AutocompleteHandler
             })
             .ToList();
 
-        Console.WriteLine($"Number of suggestions: {suggestions.Count}");
-
         // Return suggestions
         return AutocompletionResult.FromSuccess(suggestions);
     }

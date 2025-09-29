@@ -26,7 +26,7 @@ namespace Bob.Commands
         {
             await DeferAsync(ephemeral: true);
 
-            var server = await QuoteMethods.GetServerAsync(Context.Guild.Id);
+            var server = await dbContext.GetServerOrNew(Context.Guild.Id);
             if (await QuoteMethods.ValidateServerAndChannel(server, Context) == false)
             {
                 return;
@@ -56,7 +56,7 @@ namespace Bob.Commands
             var quote = message.Content;
             var user = (SocketUser)message.Author;
 
-            var server = await QuoteMethods.GetServerAsync(Context.Guild.Id);
+            var server = await dbContext.GetServerOrNew(Context.Guild.Id);
             if (await QuoteMethods.ValidateServerAndChannel(server, Context) == false)
             {
                 return;
@@ -96,11 +96,11 @@ namespace Bob.Commands
             {
                 await DeferAsync(ephemeral: true);
 
-                Server server = await dbContext.GetServer(Context.Guild.Id);
+                Server server = await dbContext.GetOrCreateServerAsync(Context.Guild.Id);
 
                 // Set the channel for this server
                 server.QuoteChannelId = channel.Id;
-                await dbContext.UpdateServer(server);
+                await dbContext.SaveChangesAsync();
 
                 await FollowupAsync(text: $"✅ <#{channel.Id}> is now the quote channel for the server.", ephemeral: true);
             }
@@ -111,7 +111,7 @@ namespace Bob.Commands
         {
             await DeferAsync(ephemeral: true);
 
-            Server server = await dbContext.GetServer(Context.Guild.Id);
+            Server server = await dbContext.GetOrCreateServerAsync(Context.Guild.Id);
 
             // Check if the user has manage channels permissions.
             if (!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageChannels)
@@ -143,7 +143,7 @@ namespace Bob.Commands
                 if (server.MaxQuoteLength != length)
                 {
                     server.MaxQuoteLength = (uint)length;
-                    await dbContext.UpdateServer(server);
+                    await dbContext.SaveChangesAsync();
                 }
 
                 await FollowupAsync(text: $"✅ Your server now has a maximum quote length of **{length}**.");
@@ -155,7 +155,7 @@ namespace Bob.Commands
         {
             await DeferAsync(ephemeral: true);
 
-            Server server = await dbContext.GetServer(Context.Guild.Id);
+            Server server = await dbContext.GetOrCreateServerAsync(Context.Guild.Id);
 
             // Check if the user has manage channels permissions.
             if (!Context.Guild.GetUser(Context.User.Id).GuildPermissions.ManageChannels)
@@ -187,7 +187,7 @@ namespace Bob.Commands
                 if (server.MinQuoteLength != length)
                 {
                     server.MinQuoteLength = (uint)length;
-                    await dbContext.UpdateServer(server);
+                    await dbContext.SaveChangesAsync();
                 }
 
                 await FollowupAsync(text: $"✅ Your server now has a minimum quote length of **{length}**.");

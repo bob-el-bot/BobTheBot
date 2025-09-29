@@ -17,13 +17,6 @@ namespace Bob.Commands.Helpers
     {
         private static readonly Color DefaultColor = new(0x2C2F33);
 
-        public static async Task<Server> GetServerAsync(ulong guildId)
-        {
-            using var scope = Bot.Services.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
-            return await context.GetServer(guildId);
-        }
-
         /// <summary>
         /// Validates that the server has a quote channel set, that the channel exists, 
         /// and that the bot has the necessary permissions in that channel.
@@ -183,7 +176,7 @@ namespace Bob.Commands.Helpers
             }
 
             embed.Color = DefaultColor;
-            embed.WithAuthor(user.GlobalName ?? user.Username, user.GetAvatarUrl());
+            embed.WithAuthor(user.GlobalName ?? user.Username, user.GetAvatarUrl() ?? user.GetDefaultAvatarUrl());
 
             if (!string.IsNullOrWhiteSpace(originalMessageUrl))
             {

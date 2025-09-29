@@ -8,6 +8,7 @@ using Discord;
 using Discord.Interactions;
 using Bob.PremiumInterface;
 using static Bob.ApiInteractions.Interface;
+using Microsoft.EntityFrameworkCore;
 
 namespace Bob.Commands
 {
@@ -42,7 +43,7 @@ namespace Bob.Commands
             }
 
             // If the system channel is null
-            if (systemChannel != null)
+            if (welcome && systemChannel != null)
             {
                 // Check if Bob has permission to send messages in the system channel
                 var bobPermissions = Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions(systemChannel);
@@ -54,11 +55,12 @@ namespace Bob.Commands
             }
 
             // Update server welcome information
-            var server = await dbContext.GetServer(Context.Guild.Id);
+            var server = await dbContext.GetOrCreateServerAsync(Context.Guild.Id);
+
             if (server.Welcome != welcome)
             {
                 server.Welcome = welcome;
-                await dbContext.UpdateServer(server);
+                await dbContext.SaveChangesAsync();
             }
 
             // Send response based on welcome setting
@@ -112,13 +114,13 @@ namespace Bob.Commands
             }
 
             // Update server welcome information.
-            var server = await dbContext.GetServer(Context.Guild.Id);
+            var server = await dbContext.GetOrCreateServerAsync(Context.Guild.Id);
 
             // Only write to DB if needed.
             if (server.CustomWelcomeMessage != message)
             {
                 server.CustomWelcomeMessage = message;
-                await dbContext.UpdateServer(server);
+                await dbContext.SaveChangesAsync();
             }
 
             if (server.Welcome)
@@ -242,13 +244,13 @@ namespace Bob.Commands
             Console.WriteLine($"Image size: {compressedImage.Length}");
 
             // Update server welcome information.
-            var server = await dbContext.GetServer(Context.Guild.Id);
+            var server = await dbContext.GetOrCreateServerAsync(Context.Guild.Id);
 
             // Only write to DB if needed.
             if (server.HasWelcomeImage != true)
             {
                 server.HasWelcomeImage = true;
-                await dbContext.UpdateServer(server);
+                await dbContext.SaveChangesAsync();
             }
 
             var welcomeImage = await dbContext.GetWelcomeImage(Context.Guild.Id);
@@ -256,7 +258,7 @@ namespace Bob.Commands
             if (welcomeImage != null)
             {
                 welcomeImage.Image = compressedImage;
-                await dbContext.UpdateWelcomeImage(welcomeImage);
+                await dbContext.SaveChangesAsync();
             }
             else
             {
@@ -320,13 +322,13 @@ namespace Bob.Commands
             // Update server welcome information.
             else
             {
-                Server server = await dbContext.GetServer(Context.Guild.Id);
+                Server server = await dbContext.GetOrCreateServerAsync(Context.Guild.Id);
 
                 // Only write to DB if needed.
                 if (server.HasWelcomeImage == true)
                 {
                     server.HasWelcomeImage = false;
-                    await dbContext.UpdateServer(server);
+                    await dbContext.SaveChangesAsync();
 
                     var welcomeImage = await dbContext.GetWelcomeImage(Context.Guild.Id);
                     if (welcomeImage != null)
@@ -364,13 +366,13 @@ namespace Bob.Commands
             // Update server welcome information.
             else
             {
-                Server server = await dbContext.GetServer(Context.Guild.Id);
+                Server server = await dbContext.GetOrCreateServerAsync(Context.Guild.Id);
 
                 // Only write to DB if needed.
                 if (!string.IsNullOrEmpty(server.CustomWelcomeMessage))
                 {
                     server.CustomWelcomeMessage = "";
-                    await dbContext.UpdateServer(server);
+                    await dbContext.SaveChangesAsync();
                 }
 
                 await FollowupAsync(text: $"✅ Bob will no longer greet people with the custom message.", ephemeral: true);

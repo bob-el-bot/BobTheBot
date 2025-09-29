@@ -91,6 +91,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/profile badge-info [badge]` Shows how to unlock the given badge.
 
 ### ⚖️ Admin Commands:
+- `/admin info` Displays this server's configuration and how to update each setting.
 - `/admin confess filter-toggle [enable]` Enable or disable censoring and/or blocking of `/confess` messages in this server.
 
 ### 🖊️ Quoting Commands:
@@ -98,6 +99,14 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/quote channel [channel]` Sets the quote channel for the server.
 - `/quote set-max-length [length]` Sets the maximum length of quotes for the server.
 - `/quote set-min-length [length]` Sets the minimum length of quotes for the server.
+
+### 🏷️ Tag Commands:
+- `/tag [tag]` Displays the content of the specified tag.
+- `/tags create [name] [content]` Create a new tag.
+- `/tags info [tag]` Displays all information about the tag.
+- `/tags edit [tag] [content]` Edits the content of the specified tag.
+- `/tags remove [tag]` Deletes the specified tag.
+- `/tags [remove-all]` Removes ALL tags from the server.
 
 ### 📌 React Board Commands:
 - `/react-board toggle [enable]` Toggle the react board for the server.
