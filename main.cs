@@ -342,7 +342,7 @@ namespace Bob
                         return;
 
                     // Mention handling
-                    if (message.Content.StartsWith("<@705680059809398804>"))
+                    if (channel.Guild.Id == supportServerId && message.Content.StartsWith("<@705680059809398804>"))
                     {
                         await ChatHandling.HandleMentionAsync(message);
                     }
