@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -7,13 +6,13 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Bob;
 using Bob.Database;
-using Commands.Helpers;
 using Discord;
 using Discord.Webhook;
 using Discord.WebSocket;
 using Microsoft.Extensions.DependencyInjection;
 using BobTheBot.RateLimits;
 using BobTheBot.Chat.TemporalHandling;
+using BobTheBot.Chat.AiServiceHandling;
 
 namespace BobTheBot.Chat;
 
