@@ -27,8 +27,6 @@ namespace BobTheBot.Chat.Routing
             }
             cleanedText = cleanedText.ToLowerInvariant();
 
-            var geminiMessages = ConvertMessages(messages);
-
             // Image handling
             if (imageAttachments != null && imageAttachments.Count > 0)
             {
@@ -47,6 +45,7 @@ namespace BobTheBot.Chat.Routing
 
             if (IsComplex(cleanedText))
             {
+                var geminiMessages = ConvertMessages(messages);
                 return await Gemini.GenerateTextAsync(geminiMessages, useFlashThinking: true);
             }
 
