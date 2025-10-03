@@ -13,6 +13,7 @@ using Microsoft.Extensions.DependencyInjection;
 using BobTheBot.RateLimits;
 using BobTheBot.Chat.TemporalHandling;
 using BobTheBot.Chat.AiServiceHandling;
+using BobTheBot.Chat.Routing;
 
 namespace BobTheBot.Chat;
 
@@ -32,6 +33,17 @@ public static partial class ChatHandling
 
         float[] embeddingArray = await OpenAI.GetEmbedding(cleanedMessage);
         var queryEmbedding = new Pgvector.Vector(embeddingArray);
+
+        var imageAttachments = message.Attachments
+            .Where(static a => Regex.IsMatch(a.Filename, @"\.(png|jpe?g|gif|webp|bmp|tiff)$", RegexOptions.IgnoreCase))
+            .Select(a => new ImageAttachment
+            {
+                Url = a.Url,
+                MimeType = a.ContentType ?? "image/png",
+                FileName = a.Filename
+            })
+            .ToList();
+
 
         using var scope = Bot.Services.CreateScope();
         var dbContext = scope.ServiceProvider.GetRequiredService<BobEntities>();
@@ -96,7 +108,7 @@ public static partial class ChatHandling
 
         messages.Add(new { role = "user", content = cleanedMessage });
 
-        string response = await OpenAI.PostToOpenAI(messages);
+        string response = await ModelRouter.GetResponseAsync(messages, imageAttachments);
 
         await dbContext.StoreMemoryAsync(
             message.Author.Id.ToString(),
