@@ -14,6 +14,7 @@ using BobTheBot.RateLimits;
 using BobTheBot.Chat.TemporalHandling;
 using BobTheBot.Chat.AiServiceHandling;
 using BobTheBot.Chat.Routing;
+using System;
 
 namespace BobTheBot.Chat;
 
@@ -109,6 +110,27 @@ public static partial class ChatHandling
         messages.Add(new { role = "user", content = cleanedMessage });
 
         string response = await ModelRouter.GetResponseAsync(messages, imageAttachments);
+
+        if (imageAttachments != null
+            && imageAttachments.Count > 0
+            && !string.IsNullOrWhiteSpace(response)
+            && !response.Contains("too large or unreadable", StringComparison.OrdinalIgnoreCase))
+        {
+            string imageSummary = response.Trim();
+            string imageLabel = "[Image Upload: " +
+                string.Join(", ", imageAttachments.Select(i => i.FileName)) +
+                "]";
+
+            float[] embedding = await OpenAI.GetEmbedding(imageSummary);
+            var vec = new Pgvector.Vector(embedding);
+
+            await dbContext.StoreMemoryAsync(
+                message.Author.Id.ToString(),
+                imageLabel,
+                imageSummary,
+                vec
+            );
+        }
 
         await dbContext.StoreMemoryAsync(
             message.Author.Id.ToString(),

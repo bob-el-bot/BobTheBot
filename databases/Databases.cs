@@ -723,7 +723,7 @@ namespace Bob.Database
                     .ToListAsync();
             }
 
-            // Merge result (deduplicated, so GPT sees clean list)
+            // Merge result (deduplicated, so AI sees clean list)
             var merged = semanticMemories
                 .Concat(temporalMemories)
                 .GroupBy(m => m.Id)
