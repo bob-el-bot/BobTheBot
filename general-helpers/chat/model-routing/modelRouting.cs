@@ -14,9 +14,17 @@ public static class ModelRouter
         List<object> messages,
         List<ImageAttachment> imageAttachments = null)
     {
-        string cleanedText = string.Join(" ",
-            messages.Select(m => m.GetType().GetProperty("content")?.GetValue(m)?.ToString() ?? "")
-        ).ToLowerInvariant();
+        var lastUserObj = messages
+            .LastOrDefault(m =>
+                (m.GetType().GetProperty("role")?.GetValue(m)?.ToString() ?? "")
+                    .Equals("user", StringComparison.OrdinalIgnoreCase));
+
+        string cleanedText = lastUserObj?
+            .GetType()
+            .GetProperty("content")?
+            .GetValue(lastUserObj)?
+            .ToString()
+            .ToLowerInvariant() ?? string.Empty;
 
         bool hasImages = imageAttachments != null && imageAttachments.Count > 0;
         bool complex = IsComplex(cleanedText);
@@ -74,8 +82,17 @@ public static class ModelRouter
 
     private static bool IsComplex(string text)
     {
+        foreach (var word in text.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+        {
+            if (FuzzyKeywords.MatchesComplex(word))
+            {
+                Console.WriteLine($"[Router‑Debug] FuzzyComplexWord: {word}");
+                return true;
+            }
+        }
+
         int words = text.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length;
-        int qMarks = Regex.Matches(text, @"\\?").Count;
+        int qMarks = Regex.Matches(text, @"\?").Count;
 
         foreach (var word in text.Split(' ', StringSplitOptions.RemoveEmptyEntries))
             if (FuzzyKeywords.MatchesComplex(word))

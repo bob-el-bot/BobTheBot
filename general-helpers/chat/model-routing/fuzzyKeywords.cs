@@ -10,18 +10,17 @@ public static class FuzzyKeywords
 
     public static bool MatchesComplex(string query, double maxDistanceRatio = 0.25)
     {
-        if (string.IsNullOrWhiteSpace(query))
-            return false;
+        if (string.IsNullOrWhiteSpace(query) || query.Length < 5)
+            return false;    // too short to be analytical
+
+        query = query.ToLowerInvariant();
 
         foreach (var keyword in ComplexKeywords)
         {
             int distance = Levenshtein(query, keyword);
-
-            // distance normalized by keyword length
             double ratio = (double)distance / keyword.Length;
-
             if (ratio <= maxDistanceRatio)
-                return true;        // typo‑close enough
+                return true;
         }
 
         return false;
