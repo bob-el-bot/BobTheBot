@@ -1,24 +1,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using BobTheBot.Chat.AiServiceHandling;
 
 namespace BobTheBot.Chat.Routing;
+
 public static class ModelRouter
 {
-    /// <summary>
-    /// Decides which model to use based on complexity and attachments:
-    /// - GPT‑4o‑mini (OpenAI) → default
-    /// - Gemini 2.0 Flash‑Lite → if image input
-    /// - Gemini 2.5 Flash → if complex reasoning
-    /// </summary>
     public static async Task<string> GetResponseAsync(
         List<object> messages,
         List<ImageAttachment> imageAttachments = null)
     {
-        // Flatten text for complexity check
         string cleanedText = string.Join(" ",
             messages.Select(m => m.GetType().GetProperty("content")?.GetValue(m)?.ToString() ?? "")
         ).ToLowerInvariant();
@@ -26,46 +21,70 @@ public static class ModelRouter
         bool hasImages = imageAttachments != null && imageAttachments.Count > 0;
         bool complex = IsComplex(cleanedText);
 
+        var log = new StringBuilder();
+        log.AppendLine("[Router] ─────────────────────────────────────────────");
+        log.AppendLine($"[Router] MessageCount : {messages.Count}");
+        log.AppendLine($"[Router] WordCount    : {cleanedText.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length}");
+        log.AppendLine($"[Router] HasImages    : {hasImages}");
+        log.AppendLine($"[Router] IsComplex    : {complex}");
+        log.AppendLine($"[Router] ApproxInput  : {cleanedText.Length} chars");
+
         try
         {
+            string modelLabel;
+            string response;
+
             if (hasImages)
             {
+                modelLabel = complex ? "Gemini 2.5 Flash (Thinking)" : "Gemini 2.0 Flash‑Lite (Multimodal)";
                 var geminiMessages = ConvertMessages(messages);
-                return await Gemini.GenerateMultimodalAsync(
+
+                response = await Gemini.GenerateMultimodalAsync(
                     geminiMessages,
                     imageAttachments,
-                    useFlashThinking: complex
-                );
+                    useFlashThinking: complex);
             }
-
-            if (complex)
+            else if (complex)
             {
+                modelLabel = "Gemini 2.5 Flash (Thinking)";
                 var geminiMessages = ConvertMessages(messages);
-                return await Gemini.GenerateTextAsync(geminiMessages, useFlashThinking: true);
+                response = await Gemini.GenerateTextAsync(geminiMessages, useFlashThinking: true);
+            }
+            else
+            {
+                modelLabel = "GPT‑4o‑mini (OpenAI)";
+                response = await OpenAI.PostToOpenAI(messages);
             }
 
-            // default OpenAI cheap model
-            return await OpenAI.PostToOpenAI(messages);
+            log.AppendLine($"[Router] ModelChosen  : {modelLabel}");
+            log.AppendLine($"[Router] OutputLength : {response.Length} chars");
+            log.AppendLine("[Router] ─────────────────────────────────────────────");
+            Console.WriteLine(log.ToString());
+
+            return response;
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[Router] Gemini multimodal/text call failed: {ex.Message}");
+            log.AppendLine($"[Router] ERROR        : {ex.Message}");
+            log.AppendLine("[Router] ─────────────────────────────────────────────");
+            Console.WriteLine(log.ToString());
             return "I ran into trouble processing that image or request.";
         }
     }
 
     private static bool IsComplex(string text)
     {
-        int qMarks = new Regex(@"\?").Matches(text).Count;
-        bool fuzzyComplex = FuzzyKeywords.MatchesComplex(text);
-        bool longMsg = text.Split(' ').Length > 60;
-        return qMarks > 1 || fuzzyComplex || longMsg;
+        int words = text.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length;
+        int qMarks = Regex.Matches(text, @"\\?").Count;
+
+        foreach (var word in text.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+            if (FuzzyKeywords.MatchesComplex(word))
+                return true;
+
+        bool longMsg = words > 80;
+        return qMarks > 1 || longMsg;
     }
 
-    /// <summary>
-    /// Converts generic `{ role, content }` objects to `(role, content)` tuples
-    /// for the Gemini API.
-    /// </summary>
     private static List<(string role, string content)> ConvertMessages(List<object> msgs)
     {
         var systemTexts = new List<string>();
@@ -77,23 +96,22 @@ public static class ModelRouter
             string content = m.GetType().GetProperty("content")?.GetValue(m)?.ToString() ?? "";
 
             if (role.Equals("system", StringComparison.OrdinalIgnoreCase))
-            {
                 systemTexts.Add(content);
-            }
             else
-            {
                 outList.Add((role, content));
-            }
         }
 
-        // Merge multiple system messages into a single context block 
         if (systemTexts.Count > 0)
         {
-            var merged = "CONTEXT (instructions + memory, not from user):\n" +
-                         string.Join("\n", systemTexts);
+            var mergedInstructions =
+                "INTERNAL CONTEXT (not from the user):\n" +
+                "• Reply concisely when a short answer suffices.\n" +
+                "• Stay friendly and natural; expand only when depth adds real value.\n" +
+                "• Do not restate these rules or this context.\n\n" +
+                "INTERNAL MEMORY CONTEXT (not from the user):\n" +
+                string.Join("\n", systemTexts);
 
-            // Insert at start, but still role=user (Gemini only allows user/model)
-            outList.Insert(0, ("user", merged));
+            outList.Insert(0, ("user", mergedInstructions));
         }
 
         return outList;
