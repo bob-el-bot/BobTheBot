@@ -82,15 +82,6 @@ public static class ModelRouter
 
     private static bool IsComplex(string text)
     {
-        foreach (var word in text.Split(' ', StringSplitOptions.RemoveEmptyEntries))
-        {
-            if (FuzzyKeywords.MatchesComplex(word))
-            {
-                Console.WriteLine($"[Router‑Debug] FuzzyComplexWord: {word}");
-                return true;
-            }
-        }
-
         int words = text.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length;
         int qMarks = Regex.Matches(text, @"\?").Count;
 

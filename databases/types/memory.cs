@@ -9,4 +9,5 @@ public class Memory
     public string BotResponse { get; set; }
     public Vector Embedding { get; set; }
     public DateTime CreatedAt { get; set; }
+    public bool Ephemeral { get; set; } = false;
 }
