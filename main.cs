@@ -223,6 +223,11 @@ namespace Bob
         {
             try
             {
+                if (user.IsBot)
+                {
+                    return;
+                }
+
                 Server server;
                 using (var scope = Services.CreateScope())
                 {
@@ -230,35 +235,59 @@ namespace Bob
                     server = await context.GetOrCreateServerAsync(user.Guild.Id);
                 }
 
-                if (server.Welcome == true)
+                if (server.Welcome == false)
                 {
-                    ChannelPermissions permissions = user.Guild.GetUser(Client.CurrentUser.Id).GetPermissions(user.Guild.SystemChannel);
-                    if (user.Guild.SystemChannel != null && permissions.SendMessages && permissions.ViewChannel)
-                    {
-                        if (server.HasWelcomeImage)
-                        {
-                            WelcomeImage welcomeImage = null;
-                            using (var scope = Services.CreateScope())
-                            {
-                                var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
-                                welcomeImage = await context.GetWelcomeImage(user.Guild.Id);
-                            }
+                    return;
+                }
 
-                            if (welcomeImage != null)
-                            {
-                                await user.Guild.SystemChannel.SendFileAsync(new MemoryStream(welcomeImage.Image), "welcome.webp", text: Welcome.FormatCustomMessage(server.CustomWelcomeMessage, user.Mention));
-                            }
-                        }
-                        else if (server.CustomWelcomeMessage != null && server.CustomWelcomeMessage != "")
-                        {
-                            await user.Guild.SystemChannel.SendMessageAsync(text: Welcome.FormatCustomMessage(server.CustomWelcomeMessage, user.Mention));
-                        }
-                        else
-                        {
-                            // Get random greeting
-                            await user.Guild.SystemChannel.SendMessageAsync(text: Welcome.GetRandomMessage(user.Mention));
-                        }
+                var systemChannel = user.Guild.SystemChannel;
+
+                if (systemChannel is not SocketTextChannel textChannel)
+                {
+                    return;
+                }
+
+                var botUser = user.Guild.GetUser(Client.CurrentUser.Id);
+                if (botUser == null)
+                {
+                    return;
+                }
+
+                var permissions = botUser.GetPermissions(textChannel);
+                if (!permissions.SendMessages || !permissions.ViewChannel)
+                {
+                    return;
+                }
+
+                if (server.HasWelcomeImage)
+                {
+                    WelcomeImage welcomeImage = null;
+                    using (var scope = Services.CreateScope())
+                    {
+                        var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
+                        welcomeImage = await context.GetWelcomeImage(user.Guild.Id);
                     }
+
+                    if (welcomeImage != null)
+                    {
+                        var messageText = !string.IsNullOrWhiteSpace(server.CustomWelcomeMessage)
+                            ? Welcome.FormatCustomMessage(server.CustomWelcomeMessage ?? string.Empty, user.Mention)
+                            : Welcome.GetRandomMessage(user.Mention);
+
+                        await textChannel.SendFileAsync(
+                            new MemoryStream(welcomeImage.Image),
+                            "welcome.webp",
+                            text: messageText
+                        );
+                    }
+                }
+                else
+                {
+                    var messageText = !string.IsNullOrWhiteSpace(server.CustomWelcomeMessage)
+                        ? Welcome.FormatCustomMessage(server.CustomWelcomeMessage ?? string.Empty, user.Mention)
+                        : Welcome.GetRandomMessage(user.Mention);
+
+                    await textChannel.SendMessageAsync(text: messageText);
                 }
 
                 // If support server, then give the user the Friend badge
