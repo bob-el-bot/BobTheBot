@@ -42,7 +42,6 @@ namespace Bob.Commands
                 }
             }
 
-            // If the system channel is null
             if (welcome && systemChannel != null)
             {
                 // Check if Bob has permission to send messages in the system channel
@@ -139,9 +138,6 @@ namespace Bob.Commands
                 await FollowupAsync($"✅ Bob knows what to say, but you **need** to enable welcome messages with {Help.GetCommandMention("welcome toggle")} for it to take effect.\nYour welcome message will look like so:\n\n{Welcome.FormatCustomMessage(message, Context.User.Mention)}", ephemeral: true);
             }
         }
-
-        // Make sure you have this using statement for your new helper class
-        // using YourProject.Helpers; // Or wherever you placed ImageProcessor.cs
 
         [SlashCommand("set-image", "Set a custom welcome image for your server!")]
         public async Task SetCustomWelcomeImage(
@@ -282,6 +278,14 @@ namespace Bob.Commands
                 }
                 else
                 {
+                    // Check if Bob has permission to send messages in the system channel
+                    var bobPermissions = Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions(systemChannel);
+                    if (!bobPermissions.SendMessages || !bobPermissions.ViewChannel || !bobPermissions.AttachFiles)
+                    {
+                        await FollowupAsync($"❌ Bob cannot view or send messages in <#{systemChannel.Id}>.\n- Give Bob `View Channel`, `Send Messages`, and `Attach Files` permissions.", ephemeral: true);
+                        return;
+                    }
+
                     await FollowupAsync(
                         $"✅ Bob will now greet people in <#{systemChannel.Id}> with the given image.",
                         ephemeral: true
