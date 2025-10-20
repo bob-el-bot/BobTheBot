@@ -258,7 +258,7 @@ namespace Bob
                     return;
                 }
 
-                if (server.HasWelcomeImage)
+                if (server.HasWelcomeImage && permissions.AttachFiles)
                 {
                     WelcomeImage welcomeImage = null;
                     using (var scope = Services.CreateScope())
