@@ -6,6 +6,53 @@ namespace Bob.Commands.Helpers
 {
     public static class Welcome
     {
+        private static readonly string[] Greetings =
+        [
+            "Welcome @!",
+            "Who invited this guy? Just kidding, welcome @!",
+            "Happy to have you here @!",
+            "Looking good @!",
+            "@ is here, everybody play cool.",
+            "@ has entered the building.",
+            "Never fear, @ is here.",
+            "A wild @ appeared.",
+            "Everybody get loud because @ is here!",
+            "@ has graced us with their presence.",
+            "@ is not the droid we're looking for. Also... they are here!",
+            "Stand down, it's just @.",
+            "Make way for @!",
+            "@ is here, in the flesh!",
+            "Open the gate for @!",
+            "Prepare yourselves, @ has joined.",
+            "Look what the cat dragged in, @ is here.",
+            "Speak of the devil, @ joined.",
+            "Better late than never, @ joined.",
+            "@ has revealed themselves from the shadows."
+        ];
+
+        private static readonly Random Random = new();
+
+        /// <summary>
+        /// Prepares the final welcome message for a user by either formatting a custom
+        /// message (if provided) or selecting a random predefined one.
+        /// </summary>
+        /// <param name="customMessage">
+        /// The custom welcome message template. Use '@' as a placeholder to insert the user's mention.
+        /// If null or whitespace, a randomized greeting will be used instead.
+        /// </param>
+        /// <param name="mention">The Discord mention string for the new user.</param>
+        /// <returns>
+        /// A complete welcome message string with the user's mention inserted.
+        /// </returns>
+        public static string PrepareWelcomeMessage(string customMessage, string mention)
+        {
+            var messageText = !string.IsNullOrWhiteSpace(customMessage)
+                ? FormatCustomMessage(customMessage ?? string.Empty, mention)
+                : GetRandomMessage(mention);
+
+            return messageText;
+        }
+
         /// <summary>
         /// Formats a custom message by replacing occurrences of '@' with a specified mention string.
         /// </summary>
@@ -36,29 +83,11 @@ namespace Bob.Commands.Helpers
         /// Generates a random welcome message with a mention string included.
         /// </summary>
         /// <param name="mention">The string representing the mention.</param>
-        /// <returns>A randomly selected welcome message containing the mention.</returns>
-        public static string GetRandomMessage(string mention)
+        /// <returns>A randomly selected welcome message containing the mention.</returns>=
+        private static string GetRandomMessage(string mention)
         {
-            // Get random greeting
-            Random random = new();
-            string[] greetings = [$"Welcome {mention}!", $"Who invited this guy? Just kidding, welcome {mention}!", $"Happy to have you here {mention}!", $"Looking good {mention}!", $"{mention} is here, everybody play cool.", $"{mention} has entered the building.", $"Never fear, {mention} is here.", $"A wild {mention} appeared.", $"Everybody get loud because {mention} is here!", $"{mention} has graced us with their presence.", $"{mention} is not the droid we're looking for. Also... they are here!", $"Stand down, it's just {mention}.", $"Make way for {mention}!", $"{mention} is here, in the flesh!", $"Open the gate for {mention}!", $"Prepare yourselves, {mention} has joined.", $"Look what the cat dragged in, {mention} is here.", $"Speak of the devil, {mention} joined.", $"Better late than never, {mention} joined.", $"{mention} has revealed themselves from the shadows."];
-            return greetings[random.Next(0, greetings.Length)];
-        }
-
-        /// <summary>
-        /// Converts an image to WebP format.
-        /// </summary>
-        /// <param name="imageData">The byte array of the input image.</param>
-        /// <param name="quality">Compression quality (0-100).</param>
-        /// <returns>Byte array of the WebP image.</returns>
-        public static byte[] ConvertToWebP(byte[] imageData, int quality = 80)
-        {
-            using var inputStream = new SKMemoryStream(imageData);
-            using var bitmap = SKBitmap.Decode(inputStream) ?? throw new InvalidOperationException("Invalid image format");
-            using var webpStream = new SKDynamicMemoryWStream();
-            bitmap.Encode(webpStream, SKEncodedImageFormat.Webp, quality);
-
-            return webpStream.DetachAsData().ToArray();
+            var template = Greetings[Random.Next(Greetings.Length)];
+            return template.Replace("@", mention);
         }
     }
 }
