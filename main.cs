@@ -270,24 +270,16 @@ namespace Bob
 
                     if (welcomeImage != null)
                     {
-                        var messageText = !string.IsNullOrWhiteSpace(server.CustomWelcomeMessage)
-                            ? Welcome.FormatCustomMessage(server.CustomWelcomeMessage ?? string.Empty, user.Mention)
-                            : Welcome.GetRandomMessage(user.Mention);
-
                         await textChannel.SendFileAsync(
                             new MemoryStream(welcomeImage.Image),
                             "welcome.webp",
-                            text: messageText
+                            text: Welcome.PrepareWelcomeMessage(server.CustomWelcomeMessage, user.Mention)
                         );
                     }
                 }
                 else
                 {
-                    var messageText = !string.IsNullOrWhiteSpace(server.CustomWelcomeMessage)
-                        ? Welcome.FormatCustomMessage(server.CustomWelcomeMessage ?? string.Empty, user.Mention)
-                        : Welcome.GetRandomMessage(user.Mention);
-
-                    await textChannel.SendMessageAsync(text: messageText);
+                    await textChannel.SendMessageAsync(text: Welcome.PrepareWelcomeMessage(server.CustomWelcomeMessage, user.Mention));
                 }
 
                 // If support server, then give the user the Friend badge

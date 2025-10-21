@@ -160,6 +160,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 
 ### 🔎 Preview Commands:
 - `/preview code [link]` Preview specific lines of code from a file on GitHub.
+- `/preview repository [link]` Preview A GitHub repository's stats in Discord.
 - `/preview pull-request [link]` Preview a pull request from GitHub right on Discord.
 - `/preview issue [link]` Preview an issue from GitHub right on Discord.
 - `/preview message [link]` Preview a Discord message from any server Bob is in.

@@ -1580,6 +1580,37 @@ namespace Bob.Commands.Helpers
                     },
                     new CommandInfo
                     {
+                        Name = "repository",
+                        InheritGroupName = true,
+                        Description = "Preview a GitHub repository's stats in Discord.",
+                        Url = "https://docs.bobthebot.net#preview-repository",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "link",
+                                Description = "The link to the GitHub repository. Valid formats include: `https://github.com/bob-el-bot/BobTheBot`"
+                            }
+                        ]
+                    },
+
+                    new CommandInfo
+                    {
+                        Name = "pull-request",
+                        InheritGroupName = true,
+                        Description = "Preview a pull request from GitHub right on Discord.",
+                        Url = "https://docs.bobthebot.net#preview-pull-request",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "link",
+                                Description = "The link to the GitHub pull request. Valid formats include: `https://github.com/bob-el-bot/BobTheBot/pull/149`"
+                            }
+                        ]
+                    },
+                    new CommandInfo
+                    {
                         Name = "pull-request",
                         InheritGroupName = true,
                         Description = "Preview a pull request from GitHub right on Discord.",
