@@ -15,6 +15,44 @@ namespace Bob.Commands
     [Group("preview", "All commands relevant to previewing.")]
     public class PreviewGroup : InteractionModuleBase<ShardedInteractionContext>
     {
+        [SlashCommand("repository", "Preview a GitHub repository with details like stars, forks, and language stats.")]
+        public async Task RepositoryPreview([Summary("link", "A GitHub repository link.")] string link)
+        {
+            try
+            {
+                // Ensure link format
+                if ((link.Contains('.', StringComparison.Ordinal) && link.Length < 7) ||
+                    (link.Length >= 7 && link[..7] != "http://" && link.Length >= 8 && link[..8] != "https://"))
+                {
+                    link = $"https://{link}";
+                }
+
+                Uri uri = new(link);
+                if (!uri.Host.Contains("github.com"))
+                    throw new InvalidOperationException("Invalid host");
+
+                var pathParts = uri.AbsolutePath.Trim('/').Split('/');
+                if (pathParts.Length < 2)
+                    throw new InvalidOperationException("Invalid repository path");
+
+                string owner = pathParts[0];
+                string repo = pathParts[1];
+
+                var embed = await GitHubRepositoryReader.GetRepositoryEmbed(owner, repo);
+                await RespondAsync(embed: embed);
+            }
+            catch
+            {
+                await RespondAsync(
+                    text:
+                    "❌ Your link is not valid. Here are some things to know: \n" +
+                    "- The link must start with `https://github.com/`.\n" +
+                    "- The link must point to a repository, e.g. `https://github.com/bob-el-bot/BobTheBot`.\n" +
+                    "- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)",
+                    ephemeral: true);
+            }
+        }
+
         [SlashCommand("code", "Preview specific lines from a file on GitHub right on Discord.")]
         public async Task CodePreview([Summary("link", "A GitHub Link to specific lines of code.")] string link)
         {
