@@ -9,7 +9,10 @@ public static class FuzzyKeyword
         "yesterday", "today", "tomorrow",
         "last week", "the last week", "past week", "previous week",
         "last month", "the last month", "past month", "previous month",
-        "last year", "the last year", "this past year", "past year", "previous year"
+        "last year", "the last year", "this past year", "past year", "previous year",
+        "last thing", "the last thing", "last subject", "last time", "the last time", "last session", "the last session",
+        "recently", "recent", "last chat", "last conversation", "last talk", "last discussion",
+        "what did we last talk about", "when did we last talk", "what was our last conversation"
     };
 
     public static string ClosestMatch(string query, int maxDistance = 2)

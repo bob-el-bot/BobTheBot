@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Bob.Commands.Helpers;
@@ -7,6 +8,7 @@ using Bob.Database.Types;
 using BobTheBot.Chat.MemoryHandling;
 using DotNetEnv;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
 using Npgsql;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Pgvector;
@@ -15,6 +17,18 @@ using Pgvector.EntityFrameworkCore;
 
 namespace Bob.Database
 {
+    public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<BobEntities>
+    {
+        public BobEntities CreateDbContext(string[] args)
+        {
+            var optionsBuilder = new DbContextOptionsBuilder<BobEntities>();
+            var npgsqlConnectionString = DatabaseUtils.GetNpgsqlConnectionString();
+            optionsBuilder.UseNpgsql(npgsqlConnectionString, o => o.UseVector());
+
+            return new BobEntities(optionsBuilder.Options);
+        }
+    }
+
     public class BobEntities(DbContextOptions<BobEntities> options) : DbContext(options)
     {
         public virtual DbSet<Server> Server { get; set; }
@@ -632,13 +646,32 @@ namespace Bob.Database
         /// <param name="embedding">The vector embedding of the content.</param>
         public async Task StoreMemoryAsync(string userId, string userMessage, string botResponse, Vector embedding)
         {
+            bool ephemeral = false;
+            if (!string.IsNullOrWhiteSpace(botResponse))
+            {
+                var lower = botResponse.ToLowerInvariant();
+                ephemeral = lower.Contains("last conversation was") ||
+                            lower.Contains("today") ||
+                            lower.Contains("yesterday") ||
+                            lower.Contains("this morning") ||
+                            lower.Contains("this evening");
+            }
+
+            // Remove stale time‑sensitive rows for this user
+            if (ephemeral)
+            {
+                var oldEphemeral = Memory.Where(m => m.UserId == userId && m.Ephemeral);
+                Memory.RemoveRange(oldEphemeral);
+            }
+
             var memory = new Memory
             {
                 UserId = userId,
                 UserMessage = userMessage,
                 BotResponse = botResponse,
                 Embedding = embedding,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                Ephemeral = ephemeral
             };
 
             Memory.Add(memory);
@@ -654,14 +687,17 @@ namespace Bob.Database
         /// <returns>A list of relevant <see cref="Memory"/> objects.</returns>
         public async Task<List<Memory>> GetRelevantMemoriesAsync(string userId, Vector queryEmbedding, int limit = 5)
         {
-            var sql = @"SELECT * FROM ""Memory"" WHERE ""UserId"" = @userId ORDER BY ""Embedding"" <-> @embedding LIMIT @limit;";
-
-            var embeddingParam = new NpgsqlParameter("embedding", queryEmbedding);
-            var userIdParam = new NpgsqlParameter("userId", userId);
-            var limitParam = new NpgsqlParameter("limit", limit);
+            var sql = @"SELECT * FROM ""Memory""
+                WHERE ""UserId"" = @userId
+                  AND (""Ephemeral"" = FALSE OR ""CreatedAt"" > NOW() - INTERVAL '2 days')
+                ORDER BY ""Embedding"" <-> @embedding
+                LIMIT @limit;";
 
             var memories = await Memory
-                .FromSqlRaw(sql, userIdParam, embeddingParam, limitParam)
+                .FromSqlRaw(sql,
+                    new NpgsqlParameter("userId", userId),
+                    new NpgsqlParameter("embedding", queryEmbedding),
+                    new NpgsqlParameter("limit", limit))
                 .ToListAsync();
 
             return memories;
@@ -683,12 +719,13 @@ namespace Bob.Database
                 var f = DateTime.SpecifyKind(from.Value, DateTimeKind.Utc);
                 var t = DateTime.SpecifyKind(to.Value, DateTimeKind.Utc);
 
-                // Semantic search within the timeframe
-                var sql = @"SELECT * FROM ""Memory"" 
+                // semantic search inside timeframe
+                var sql = @"SELECT * FROM ""Memory""
                     WHERE ""UserId"" = @userId
                       AND ""CreatedAt"" >= @from
                       AND ""CreatedAt"" <= @to
-                    ORDER BY ""Embedding"" <-> @embedding 
+                      AND (""Ephemeral"" = FALSE OR ""CreatedAt"" > NOW() - INTERVAL '2 days')
+                    ORDER BY ""Embedding"" <-> @embedding
                     LIMIT @limit;";
 
                 semanticMemories = await Memory
@@ -700,19 +737,23 @@ namespace Bob.Database
                         new NpgsqlParameter("limit", semanticLimit))
                     .ToListAsync();
 
-                // Temporal (pure chronological) within timeframe
+                // temporal (chronological) inside timeframe
                 temporalMemories = await Memory
-                    .Where(m => m.UserId == userId && m.CreatedAt >= f && m.CreatedAt <= t)
+                    .Where(m => m.UserId == userId
+                             && m.CreatedAt >= f
+                             && m.CreatedAt <= t
+                             && (!m.Ephemeral || m.CreatedAt > DateTime.UtcNow.AddDays(-2)))
                     .OrderBy(m => m.CreatedAt)
                     .Take(temporalLimit)
                     .ToListAsync();
             }
             else
             {
-                // No temporal filter, just semantic search globally
-                var sql = @"SELECT * FROM ""Memory"" 
+                // global semantic search
+                var sql = @"SELECT * FROM ""Memory""
                     WHERE ""UserId"" = @userId
-                    ORDER BY ""Embedding"" <-> @embedding 
+                      AND (""Ephemeral"" = FALSE OR ""CreatedAt"" > NOW() - INTERVAL '2 days')
+                    ORDER BY ""Embedding"" <-> @embedding
                     LIMIT @limit;";
 
                 semanticMemories = await Memory
@@ -723,7 +764,7 @@ namespace Bob.Database
                     .ToListAsync();
             }
 
-            // Merge result (deduplicated, so GPT sees clean list)
+            // merge + deduplicate
             var merged = semanticMemories
                 .Concat(temporalMemories)
                 .GroupBy(m => m.Id)
@@ -735,6 +776,40 @@ namespace Bob.Database
                 SemanticCount: semanticMemories.Count,
                 TemporalCount: temporalMemories.Count
             );
+        }
+
+        public async Task<List<Memory>> GetRecentConversationAsync(
+            string userId,
+            int limit = 5,
+            TimeSpan? maxGap = null)
+        {
+            maxGap ??= TimeSpan.FromMinutes(30); // defines what “continuous” means
+
+            var ordered = await Memory
+                .Where(m => m.UserId == userId && !m.Ephemeral)
+                .OrderByDescending(m => m.CreatedAt)
+                .Take(limit * 3) // grab a bit extra to detect spacing
+                .ToListAsync();
+
+            if (ordered.Count == 0)
+                return [];
+
+            ordered.Reverse(); // chronological order
+
+            // Filter messages that are reasonably close in time
+            var cluster = new List<Memory> { ordered.Last() };
+            for (int i = ordered.Count - 2; i >= 0; i--)
+            {
+                var newer = cluster.First();
+                var older = ordered[i];
+                if (newer.CreatedAt - older.CreatedAt > maxGap)
+                    break; // stop if this older message is too far apart in time
+                cluster.Insert(0, older);
+                if (cluster.Count >= limit)
+                    break;
+            }
+
+            return cluster;
         }
 
         /// <summary>

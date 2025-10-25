@@ -37,8 +37,7 @@ public static class TemporalRangeDetector
 
     public static TemporalRangeResult DetectTemporalRange(
         string query,
-        DateTime? reference = null
-    )
+        DateTime? reference = null)
     {
         var now = (reference ?? DateTime.UtcNow).Date; // normalize to UTC midnight
         if (string.IsNullOrWhiteSpace(query))
@@ -46,18 +45,29 @@ public static class TemporalRangeDetector
 
         query = QueryNormalizer.Normalize(query);
 
-        if (query.Length <= 20)
+        if (query.Length <= 60)
         {
             var fuzzy = FuzzyKeyword.ClosestMatch(query);
-            if (fuzzy != null)
+            if (!string.IsNullOrEmpty(fuzzy))
                 query = fuzzy;
         }
 
         if (query.Contains("last thing") || query.Contains("last message"))
             return new TemporalRangeResult(TemporalMode.LastThing, null, null);
 
-        if (query.Contains("last time"))
+        if (query.Contains("last time") ||
+            query.Contains("last chat") ||
+            query.Contains("last conversation") ||
+            query.Contains("last talk") ||
+            query.Contains("last discussion") ||
+            query.Contains("our last conversation") ||
+            query.Contains("our last talk") ||
+            query.Contains("what did we last talk") ||
+            query.Contains("when did we last talk") ||
+            query.Contains("what was our last conversation"))
+        {
             return new TemporalRangeResult(TemporalMode.LastTime, null, null);
+        }
 
         if (query.Contains("yesterday"))
         {
@@ -108,7 +118,7 @@ public static class TemporalRangeDetector
         if (CalendarYearRegex.IsMatch(query))
         {
             var start = new DateTime(now.Year - 1, 1, 1);
-            var end   = new DateTime(now.Year - 1, 12, 31, 23, 59, 59, DateTimeKind.Utc);
+            var end = new DateTime(now.Year - 1, 12, 31, 23, 59, 59, DateTimeKind.Utc);
             return new TemporalRangeResult(TemporalMode.Range, start, end);
         }
 

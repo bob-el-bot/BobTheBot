@@ -4,10 +4,9 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
-using Bob.ApiInteractions;
 using Newtonsoft.Json;
 
-namespace Commands.Helpers
+namespace BobTheBot.Chat.AiServiceHandling
 {
     public static class OpenAI
     {
