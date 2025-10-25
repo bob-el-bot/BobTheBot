@@ -711,8 +711,8 @@ namespace Bob.Database
             int semanticLimit = 5,
             int temporalLimit = 5)
         {
-            List<Memory> semanticMemories = new();
-            List<Memory> temporalMemories = new();
+            List<Memory> semanticMemories = [];
+            List<Memory> temporalMemories = [];
 
             if (from.HasValue && to.HasValue)
             {
@@ -776,6 +776,40 @@ namespace Bob.Database
                 SemanticCount: semanticMemories.Count,
                 TemporalCount: temporalMemories.Count
             );
+        }
+
+        public async Task<List<Memory>> GetRecentConversationAsync(
+            string userId,
+            int limit = 5,
+            TimeSpan? maxGap = null)
+        {
+            maxGap ??= TimeSpan.FromMinutes(30); // defines what “continuous” means
+
+            var ordered = await Memory
+                .Where(m => m.UserId == userId && !m.Ephemeral)
+                .OrderByDescending(m => m.CreatedAt)
+                .Take(limit * 3) // grab a bit extra to detect spacing
+                .ToListAsync();
+
+            if (ordered.Count == 0)
+                return [];
+
+            ordered.Reverse(); // chronological order
+
+            // Filter messages that are reasonably close in time
+            var cluster = new List<Memory> { ordered.Last() };
+            for (int i = ordered.Count - 2; i >= 0; i--)
+            {
+                var newer = cluster.First();
+                var older = ordered[i];
+                if (newer.CreatedAt - older.CreatedAt > maxGap)
+                    break; // stop if this older message is too far apart in time
+                cluster.Insert(0, older);
+                if (cluster.Count >= limit)
+                    break;
+            }
+
+            return cluster;
         }
 
         /// <summary>
