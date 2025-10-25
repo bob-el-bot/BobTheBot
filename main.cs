@@ -103,7 +103,7 @@ namespace Bob
             await Client.LoginAsync(TokenType.Bot, Token);
             await Client.StartAsync();
 
-            //            Uptime.StartHttpListener();
+            Uptime.StartHttpListener();
 
             // Wait for all shards to be ready before proceeding
             await _allShardsReady.Task;
@@ -338,7 +338,7 @@ namespace Bob
                     if (!botPerms.SendMessages)
                         return;
 
-// Auto Publish if in a News Channel
+                    // Auto Publish if in a News Channel
                     if (channel.GetChannelType() == ChannelType.News &&
                         message.Components == null)
                     {
