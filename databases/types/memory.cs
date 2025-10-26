@@ -1,6 +1,8 @@
 using System;
 using Pgvector;
 
+namespace Bob.Database.Types;
+
 public class Memory
 {
     public int Id { get; set; }
