@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Bob.Database.Types;
 
 namespace BobTheBot.Chat.MemoryHandling;
 
