@@ -45,7 +45,7 @@ namespace Bob.Commands
         public async Task Vigenere([Summary("message", "the text you want to encrypt")] string message, [Summary("key", "the key for the encryption")] string key)
         {
             await DeferAsync(ephemeral: true);
-            if (key.Any(char.IsLetter) == false)
+            if (key.All(char.IsLetter) == false)
             {
                 await FollowupAsync(text: "❌ The message *cannot* be encrypted because the key contains non-alphabetic characters.", ephemeral: true);
             }
