@@ -36,7 +36,6 @@ namespace Bob
         public static readonly DiscordShardedClient Client = new(new DiscordSocketConfig
         {
             GatewayIntents = GatewayIntents.Guilds | GatewayIntents.GuildMembers | GatewayIntents.GuildMessages | GatewayIntents.GuildMessageReactions | GatewayIntents.MessageContent | GatewayIntents.AutoModerationConfiguration,
-            UseInteractionSnowflakeDate = false
         });
 
         public static string Token = Environment.GetEnvironmentVariable("DISCORD_TOKEN");
