@@ -148,43 +148,50 @@ namespace Bob
         {
             var interactionService = Services.GetRequiredService<InteractionService>();
 
-            await interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), Services);
-            var globalCommands = await interactionService.RegisterCommandsGloballyAsync();
-
-            // Update command IDs...
-            Dictionary<string, ulong> _commandIds = globalCommands.ToDictionary(cmd => cmd.Name, cmd => cmd.Id);
-
-            foreach (var group in Help.CommandGroups)
+            try
             {
-                foreach (var command in group.Commands)
-                {
-                    if (command.InheritGroupName)
-                    {
-                        if (_commandIds.TryGetValue(group.Name, out ulong commandId))
-                        {
-                            command.Id = commandId;
-                        }
-                    }
-                    else
-                    {
-                        var commandNameParts = command.Name.Split(' ');
-                        string lookupName = commandNameParts.Length > 1 ? commandNameParts[0] : command.Name;
+                await interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), Services);
+                var globalCommands = await interactionService.RegisterCommandsGloballyAsync();
 
-                        if (_commandIds.TryGetValue(lookupName, out ulong commandId))
+                // Update command IDs...
+                Dictionary<string, ulong> _commandIds = globalCommands.ToDictionary(cmd => cmd.Name, cmd => cmd.Id);
+
+                foreach (var group in Help.CommandGroups)
+                {
+                    foreach (var command in group.Commands)
+                    {
+                        if (command.InheritGroupName)
                         {
-                            command.Id = commandId;
+                            if (_commandIds.TryGetValue(group.Name, out ulong commandId))
+                            {
+                                command.Id = commandId;
+                            }
+                        }
+                        else
+                        {
+                            var commandNameParts = command.Name.Split(' ');
+                            string lookupName = commandNameParts.Length > 1 ? commandNameParts[0] : command.Name;
+
+                            if (_commandIds.TryGetValue(lookupName, out ulong commandId))
+                            {
+                                command.Id = commandId;
+                            }
                         }
                     }
                 }
-            }
 
-            // Optional: Register per-guild debug commands
-            ModuleInfo[] debugCommands = interactionService.Modules
-                .Where(module => module.Preconditions.Any(precondition => precondition is RequireGuildAttribute)
-                              && module.SlashGroupName == "debug")
-                .ToArray();
-            IGuild supportServer = Client.GetGuild(supportServerId);
-            await interactionService.AddModulesToGuildAsync(supportServer, true, debugCommands);
+                // Optional: Register per-guild debug commands
+                ModuleInfo[] debugCommands = interactionService.Modules
+                    .Where(module => module.Preconditions.Any(precondition => precondition is RequireGuildAttribute)
+                                  && module.SlashGroupName == "debug")
+                    .ToArray();
+                IGuild supportServer = Client.GetGuild(supportServerId);
+                await interactionService.AddModulesToGuildAsync(supportServer, true, debugCommands);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
 
             Client.InteractionCreated += InteractionCreated;
             interactionService.SlashCommandExecuted += SlashCommandResulted;
