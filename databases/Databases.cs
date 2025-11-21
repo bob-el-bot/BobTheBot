@@ -4,16 +4,28 @@ using System.Linq;
 using System.Threading.Tasks;
 using Bob.Commands.Helpers;
 using Bob.Database.Types;
-using DotNetEnv;
+using Bob.Database.Types.DataTransferObjects;
+using BobTheBot.Chat.MemoryHandling;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Design;
 using Npgsql;
-using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using Pgvector;
-using Pgvector.EntityFrameworkCore;
 
 
 namespace Bob.Database
 {
+    public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<BobEntities>
+    {
+        public BobEntities CreateDbContext(string[] args)
+        {
+            var optionsBuilder = new DbContextOptionsBuilder<BobEntities>();
+            var npgsqlConnectionString = DatabaseUtils.GetNpgsqlConnectionString();
+            optionsBuilder.UseNpgsql(npgsqlConnectionString, o => o.UseVector());
+
+            return new BobEntities(optionsBuilder.Options);
+        }
+    }
+
     public class BobEntities(DbContextOptions<BobEntities> options) : DbContext(options)
     {
         public virtual DbSet<Server> Server { get; set; }
@@ -25,6 +37,7 @@ namespace Bob.Database
         public virtual DbSet<ScheduledAnnouncement> ScheduledAnnouncement { get; set; }
         public virtual DbSet<ReactBoardMessage> ReactBoardMessage { get; set; }
         public virtual DbSet<Memory> Memory { get; set; }
+        public DbSet<MemoryDTO> MemoryDTOs { get; set; }   // Only for projection queries
         public virtual DbSet<Tag> Tag { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
@@ -626,42 +639,194 @@ namespace Bob.Database
         /// Stores a new memory record for a user with the given content and embedding.
         /// </summary>
         /// <param name="userId">The user's unique identifier.</param>
-        /// <param name="content">The message content to store.</param>
+        /// <param name="userMessage">The message content to store.</param>
+        /// <param name="botResponse">The bot's response to the user message.</param>
         /// <param name="embedding">The vector embedding of the content.</param>
-        public async Task StoreMemoryAsync(string userId, string content, Vector embedding)
+        public async Task StoreMemoryAsync(string userId, string userMessage, string botResponse, Vector embedding)
         {
+            bool ephemeral = false;
+            if (!string.IsNullOrWhiteSpace(botResponse))
+            {
+                var lower = botResponse.ToLowerInvariant();
+                ephemeral = lower.Contains("last conversation was") ||
+                            lower.Contains("today") ||
+                            lower.Contains("yesterday") ||
+                            lower.Contains("this morning") ||
+                            lower.Contains("this evening");
+            }
+
+            // Remove stale time‑sensitive rows for this user
+            if (ephemeral)
+            {
+                var oldEphemeral = Memory.Where(m => m.UserId == userId && m.Ephemeral);
+                Memory.RemoveRange(oldEphemeral);
+            }
+
             var memory = new Memory
             {
                 UserId = userId,
-                Content = content,
+                UserMessage = userMessage,
+                BotResponse = botResponse,
                 Embedding = embedding,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = DateTime.UtcNow,
+                Ephemeral = ephemeral
             };
 
             Memory.Add(memory);
             await SaveChangesAsync();
         }
 
-        /// <summary>
-        /// Retrieves the most relevant memories for a user based on vector similarity.
-        /// </summary>
-        /// <param name="userId">The user's unique identifier.</param>
-        /// <param name="queryEmbedding">The embedding to compare against stored memories.</param>
-        /// <param name="limit">The maximum number of memories to return.</param>
-        /// <returns>A list of relevant <see cref="Memory"/> objects.</returns>
-        public async Task<List<Memory>> GetRelevantMemoriesAsync(string userId, Vector queryEmbedding, int limit = 5)
+        public async Task<HybridMemoryResult> GetHybridMemoriesAsync(
+            string userId,
+            Vector queryEmbedding,
+            DateTime? from = null,
+            DateTime? to = null,
+            int semanticLimit = 5,
+            int temporalLimit = 5)
         {
-            var sql = @"SELECT * FROM ""Memory"" WHERE ""UserId"" = @userId ORDER BY ""Embedding"" <-> @embedding LIMIT @limit;";
+            List<Memory> semanticMemories = [];
+            List<Memory> temporalMemories = [];
 
-            var embeddingParam = new NpgsqlParameter("embedding", queryEmbedding);
-            var userIdParam = new NpgsqlParameter("userId", userId);
-            var limitParam = new NpgsqlParameter("limit", limit);
+            if (from.HasValue && to.HasValue)
+            {
+                var f = DateTime.SpecifyKind(from.Value, DateTimeKind.Utc);
+                var t = DateTime.SpecifyKind(to.Value, DateTimeKind.Utc);
 
-            var memories = await Memory
-                .FromSqlRaw(sql, userIdParam, embeddingParam, limitParam)
+                const string sql = @"
+            SELECT ""Id"", ""UserId"", ""CreatedAt"",
+                   ""UserMessage"", ""BotResponse"", ""Ephemeral""
+            FROM ""Memory""
+            WHERE ""UserId"" = @userId
+              AND ""CreatedAt"" BETWEEN @from AND @to
+              AND (""Ephemeral"" = FALSE OR ""CreatedAt"" > NOW() - INTERVAL '2 days')
+            ORDER BY ""Embedding"" <-> @embedding
+            LIMIT @limit;";
+
+                var semanticDto = await MemoryDTOs
+                    .FromSqlRaw(sql,
+                        new NpgsqlParameter("userId", userId),
+                        new NpgsqlParameter("embedding", queryEmbedding),
+                        new NpgsqlParameter("from", f),
+                        new NpgsqlParameter("to", t),
+                        new NpgsqlParameter("limit", semanticLimit))
+                    .AsNoTracking()
+                    .ToListAsync();
+
+                semanticMemories = [.. semanticDto.Select(d => new Memory
+                {
+                    Id = d.Id,
+                    UserId = d.UserId,
+                    CreatedAt = d.CreatedAt,
+                    UserMessage = d.UserMessage,
+                    BotResponse = d.BotResponse,
+                    Ephemeral = d.Ephemeral
+                })];
+
+                temporalMemories = await Memory
+                    .Where(m => m.UserId == userId &&
+                                m.CreatedAt >= f &&
+                                m.CreatedAt <= t &&
+                                (!m.Ephemeral || m.CreatedAt > DateTime.UtcNow.AddDays(-2)))
+                    .OrderBy(m => m.CreatedAt)
+                    .Take(temporalLimit)
+                    .Select(m => new Memory
+                    {
+                        Id = m.Id,
+                        UserId = m.UserId,
+                        CreatedAt = m.CreatedAt,
+                        UserMessage = m.UserMessage,
+                        BotResponse = m.BotResponse,
+                        Ephemeral = m.Ephemeral
+                    })
+                    .AsNoTracking()
+                    .ToListAsync();
+            }
+            else
+            {
+                const string sql = @"
+            SELECT ""Id"", ""UserId"", ""CreatedAt"",
+                   ""UserMessage"", ""BotResponse"", ""Ephemeral""
+            FROM ""Memory""
+            WHERE ""UserId"" = @userId
+              AND (""Ephemeral"" = FALSE OR ""CreatedAt"" > NOW() - INTERVAL '2 days')
+            ORDER BY ""Embedding"" <-> @embedding
+            LIMIT @limit;";
+
+                var semanticDto = await MemoryDTOs
+                    .FromSqlRaw(sql,
+                        new NpgsqlParameter("userId", userId),
+                        new NpgsqlParameter("embedding", queryEmbedding),
+                        new NpgsqlParameter("limit", semanticLimit))
+                    .AsNoTracking()
+                    .ToListAsync();
+
+                semanticMemories = [.. semanticDto.Select(d => new Memory
+                {
+                    Id = d.Id,
+                    UserId = d.UserId,
+                    CreatedAt = d.CreatedAt,
+                    UserMessage = d.UserMessage,
+                    BotResponse = d.BotResponse,
+                    Ephemeral = d.Ephemeral
+                })];
+
+                temporalMemories = [];
+            }
+
+            // merge and deduplicate with dictionary
+            var merged = new Dictionary<int, Memory>();
+            foreach (var m in semanticMemories)
+                merged[m.Id] = m;
+            foreach (var m in temporalMemories)
+                merged.TryAdd(m.Id, m);
+
+            return new HybridMemoryResult(
+                [.. merged.Values],
+                SemanticCount: semanticMemories.Count,
+                TemporalCount: temporalMemories.Count);
+        }
+
+        public async Task<List<Memory>> GetRecentConversationAsync(
+            string userId,
+            int limit = 5,
+            TimeSpan? maxGap = null)
+        {
+            maxGap ??= TimeSpan.FromMinutes(30);
+
+            var ordered = await Memory
+                .Where(m => m.UserId == userId && !m.Ephemeral)
+                .OrderByDescending(m => m.CreatedAt)
+                .Take(limit * 3)
+                .Select(m => new Memory
+                {
+                    Id = m.Id,
+                    UserId = m.UserId,
+                    CreatedAt = m.CreatedAt,
+                    UserMessage = m.UserMessage,
+                    BotResponse = m.BotResponse,
+                    Ephemeral = m.Ephemeral
+                })
+                .AsNoTracking()
                 .ToListAsync();
 
-            return memories;
+            if (ordered.Count == 0)
+                return [];
+
+            ordered.Reverse();
+
+            var cluster = new List<Memory> { ordered.Last() };
+            for (int i = ordered.Count - 2; i >= 0; i--)
+            {
+                var newer = cluster.First();
+                var older = ordered[i];
+                if (newer.CreatedAt - older.CreatedAt > maxGap)
+                    break;
+                cluster.Insert(0, older);
+                if (cluster.Count >= limit)
+                    break;
+            }
+
+            return cluster;
         }
 
         /// <summary>
