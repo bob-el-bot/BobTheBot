@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Discord;
+using Discord.Rest;
 
 namespace Bob.Commands.Helpers
 {
@@ -99,6 +100,43 @@ namespace Bob.Commands.Helpers
     /// </summary>
     public static class Help
     {
+        /// <summary>
+        /// Updates the in-memory command metadata with the IDs assigned by Discord.
+        /// </summary>
+        /// <param name="globalCommands">
+        /// The collection of globally registered Discord commands returned after
+        /// registration. Each command's name and ID are used to update corresponding
+        /// entries in the local <c>Help.CommandGroups</c> structure.
+        /// </param>
+        public static void PopulateCommandIds(IReadOnlyCollection<RestGlobalCommand> globalCommands)
+        {
+            Dictionary<string, ulong> _commandIds = globalCommands.ToDictionary(cmd => cmd.Name, cmd => cmd.Id);
+
+            foreach (var group in Help.CommandGroups)
+            {
+                foreach (var command in group.Commands)
+                {
+                    if (command.InheritGroupName)
+                    {
+                        if (_commandIds.TryGetValue(group.Name, out ulong commandId))
+                        {
+                            command.Id = commandId;
+                        }
+                    }
+                    else
+                    {
+                        var commandNameParts = command.Name.Split(' ');
+                        string lookupName = commandNameParts.Length > 1 ? commandNameParts[0] : command.Name;
+
+                        if (_commandIds.TryGetValue(lookupName, out ulong commandId))
+                        {
+                            command.Id = commandId;
+                        }
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Generates an embed containing information about a command group and its commands.
         /// </summary>

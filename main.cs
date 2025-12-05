@@ -135,11 +135,11 @@ namespace Bob
                     // Throwaway as to not block Gateway Tasks.
                     // Top GG
                     var topGGResult = await PostToAPI("https://top.gg/api/bots/705680059809398804/stats", Environment.GetEnvironmentVariable("TOP_GG_TOKEN"), new StringContent("{\"server_count\":" + Client.Guilds.Count + "}", Encoding.UTF8, "application/json"));
-                    Console.WriteLine($"TopGG POST status: {topGGResult}");
+                    Console.WriteLine($"[Notice] TopGG POST status: {topGGResult}");
 
                     // Discord Bots GG
                     var discordBotsResult = await PostToAPI("https://discord.bots.gg/api/v1/bots/705680059809398804/stats", Environment.GetEnvironmentVariable("DISCORD_BOTS_TOKEN"), new StringContent("{\"guildCount\":" + Client.Guilds.Count + "}", Encoding.UTF8, "application/json"));
-                    Console.WriteLine($"Discord Bots GG POST status: {discordBotsResult}");
+                    Console.WriteLine($"[Notice] Discord Bots GG POST status: {discordBotsResult}");
                 });
             }
         }
@@ -147,38 +147,14 @@ namespace Bob
         private static async Task RegisterSlashCommands()
         {
             var interactionService = Services.GetRequiredService<InteractionService>();
+            Dictionary<string, ulong> _commandIds = [];
 
             try
             {
                 await interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), Services);
                 var globalCommands = await interactionService.RegisterCommandsGloballyAsync();
 
-                // Update command IDs...
-                Dictionary<string, ulong> _commandIds = globalCommands.ToDictionary(cmd => cmd.Name, cmd => cmd.Id);
-
-                foreach (var group in Help.CommandGroups)
-                {
-                    foreach (var command in group.Commands)
-                    {
-                        if (command.InheritGroupName)
-                        {
-                            if (_commandIds.TryGetValue(group.Name, out ulong commandId))
-                            {
-                                command.Id = commandId;
-                            }
-                        }
-                        else
-                        {
-                            var commandNameParts = command.Name.Split(' ');
-                            string lookupName = commandNameParts.Length > 1 ? commandNameParts[0] : command.Name;
-
-                            if (_commandIds.TryGetValue(lookupName, out ulong commandId))
-                            {
-                                command.Id = commandId;
-                            }
-                        }
-                    }
-                }
+                Help.PopulateCommandIds(globalCommands);
 
                 // Optional: Register per-guild debug commands
                 ModuleInfo[] debugCommands = interactionService.Modules
@@ -188,15 +164,37 @@ namespace Bob
                 IGuild supportServer = Client.GetGuild(supportServerId);
                 await interactionService.AddModulesToGuildAsync(supportServer, true, debugCommands);
             }
+            catch (Discord.Net.HttpException ex)
+            {
+                // Only ignore BASE_TYPE_REQUIRED errors
+                if (ex.Message.Contains("BASE_TYPE_REQUIRED") ||
+                    ex.Reason.Contains("BASE_TYPE_REQUIRED", StringComparison.OrdinalIgnoreCase))
+                {
+                    Console.WriteLine("[Notice] Ignoring known Discord API bug BASE_TYPE_REQUIRED. Continuing startup...");
+
+                    if (_commandIds == null || _commandIds.Count == 0)
+                    {
+                        Console.WriteLine("[Notice] Attempting to fetch global command IDs via the REST client.");
+                        var ids = await interactionService.RestClient.GetGlobalApplicationCommands();
+                        Help.PopulateCommandIds(ids);
+                        Console.WriteLine("[Notice] Successfully populated command IDs via the REST client.");
+                    }
+                }
+                else
+                {
+                    // Not known benign error
+                    throw;
+                }
+            }
             catch (Exception ex)
             {
-                Console.WriteLine(ex);
+                Console.WriteLine("[Unhandled] " + ex);
             }
 
             Client.InteractionCreated += InteractionCreated;
             interactionService.SlashCommandExecuted += SlashCommandResulted;
 
-            Console.WriteLine("Slash commands registered successfully.");
+            Console.WriteLine("[Notice] Slash commands registered successfully.");
         }
 
         private static Task ShardReady(DiscordSocketClient shard)
