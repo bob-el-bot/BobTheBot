@@ -112,7 +112,7 @@ namespace Bob.Commands.Helpers
         {
             Dictionary<string, ulong> _commandIds = globalCommands.ToDictionary(cmd => cmd.Name, cmd => cmd.Id);
 
-            foreach (var group in Help.CommandGroups)
+            foreach (var group in CommandGroups)
             {
                 foreach (var command in group.Commands)
                 {
@@ -268,6 +268,135 @@ namespace Bob.Commands.Helpers
             return $"</{commandName}:{command.Id}>"; // Example: </command:1234567890>
         }
 
+        /// <summary>
+        /// Retrieves information about a command by its full name.
+        /// </summary>
+        /// <param name="commandName">The name of the command (including group prefix if applicable).</param>
+        /// <returns>
+        /// The <see cref="CommandInfo"/> if found; otherwise, <c>null</c>.
+        /// </returns>
+        public static CommandInfo GetCommandInfo(string commandName)
+        {
+            CommandLookup.TryGetValue(commandName, out var command);
+            return command;
+        }
+
+        /// <summary>
+        /// Retrieves the group information for a specified command name.
+        /// </summary>
+        /// <param name="commandName">The name of the command.</param>
+        /// <returns>
+        /// The <see cref="CommandInfoGroup"/> containing the command if found; otherwise, <c>null</c>.
+        /// </returns>
+        public static CommandInfoGroup GetCommandInfoGroupOfCommand(string commandName)
+        {
+            return GetCommandInfoGroupOfCommand(GetCommandInfo(commandName));
+        }
+
+        /// <summary>
+        /// Retrieves the group that owns the given command.
+        /// </summary>
+        /// <param name="command">The command to locate the group for.</param>
+        /// <returns>
+        /// The <see cref="CommandInfoGroup"/> containing the command if found; otherwise, <c>null</c>.
+        /// </returns>
+        public static CommandInfoGroup GetCommandInfoGroupOfCommand(CommandInfo command)
+        {
+            return command is null ? null : CommandToGroup.GetValueOrDefault(command);
+        }
+
+        /// <summary>
+        /// Builds an embed showing command information for an exact or partial match.
+        /// </summary>
+        /// <param name="search">The search string to match command names or descriptions against.</param>
+        /// <returns>
+        /// An <see cref="Embed"/> showing command details or similar matches if no exact match is found.
+        /// </returns>
+        public static Embed GetCommandSearchEmbed(string search)
+        {
+            var command = GetCommandInfo(search);
+
+            if (command != null)
+                return GetCommandEmbed(command);
+
+            var similar = CommandGroups
+                .SelectMany(g => g.Commands.Select(c => new
+                {
+                    Group = g,
+                    Command = c,
+                    FullName = c.InheritGroupName ? $"{g.Name} {c.Name}" : c.Name
+                }))
+                .Where(x =>
+                    x.FullName.Contains(search, StringComparison.OrdinalIgnoreCase) ||
+                    (x.Command.Description?.Contains(search, StringComparison.OrdinalIgnoreCase) ?? false))
+                .Take(10)
+                .ToList();
+
+            var embedBuilder = new EmbedBuilder
+            {
+                Title = $"🔎 No exact match found for `{search}`",
+                Color = Bot.theme
+            };
+
+            if (similar.Count == 0)
+            {
+                embedBuilder.Description = $"No similar commands found. Use {GetCommandMention("/Help")} to see all available commands.";
+            }
+            else
+            {
+                embedBuilder.Description = "Did you mean:";
+                foreach (var s in similar)
+                {
+                    var mention = GetCommandMention(s.FullName, s.Command.Id);
+                    embedBuilder.Description += $"\n- {mention} — {Truncate(s.Command.Description, 75)}";
+                }
+            }
+
+            return embedBuilder.Build();
+        }
+
+        /// <summary>
+        /// Truncates a string to a specified length, adding an ellipsis if needed.
+        /// </summary>
+        /// <param name="text">The input string.</param>
+        /// <param name="limit">The maximum allowed length.</param>
+        /// <returns>The truncated string.</returns>
+        private static string Truncate(string text, int limit)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                return "";
+            return text.Length > limit ? text[..limit] + "…" : text;
+        }
+
+        /// <summary>
+        /// Builds an embed containing detailed information about a specific command.
+        /// </summary>
+        /// <param name="command">The command to display details for.</param>
+        /// <returns>
+        /// An <see cref="Embed"/> containing the command's name, description, parameters, and documentation links.
+        /// </returns>
+        public static Embed GetCommandEmbed(CommandInfo command)
+        {
+            StringBuilder description = new();
+            var commandInfoGroup = GetCommandInfoGroupOfCommand(command);
+            var name = command.InheritGroupName ? $"{commandInfoGroup.Name} {command.Name}" : command.Name;
+            description.AppendLine($"- [Docs]({command.Url}) </{name}:{command.Id}> {command.Description}");
+
+            if (command.Parameters != null)
+            {
+                foreach (var parameter in command.Parameters)
+                    description.AppendLine($"  - `{parameter.Name}` {parameter.Description}");
+            }
+
+            var embed = new EmbedBuilder
+            {
+                Title = $"{commandInfoGroup.Emoji} {commandInfoGroup.Title} | `/{name}` Info.",
+                Description = description.ToString(),
+                Color = Bot.theme
+            };
+
+            return embed.Build();
+        }
 
         public static readonly CommandInfoGroup[] CommandGroups =
         [
@@ -1877,6 +2006,30 @@ namespace Bob.Commands.Helpers
                 [
                     new CommandInfo
                     {
+                        Name = "search-commands",
+                        InheritGroupName = false,
+                        Description =
+                            "Search for commands by name or description and get detailed help information. If you make a typo or partial search, Bob will suggest what you might have meant.",
+                        Url = "https://docs.bobthebot.net#search-commands",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "command",
+                                Description = "The command you want to find or learn about. Filters by name and description."
+                            }
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "help",
+                        InheritGroupName = false,
+                        Description =
+                            "Bob will share info about every command sorted by category.",
+                        Url = "https://docs.bobthebot.net#help"
+                    },
+                    new CommandInfo
+                    {
                         Name = "premium",
                         InheritGroupName = false,
                         Description =
@@ -1928,6 +2081,10 @@ namespace Bob.Commands.Helpers
                 ]
             }
         ];
+
+        private static readonly Dictionary<CommandInfo, CommandInfoGroup> CommandToGroup =
+            CommandGroups.SelectMany(g => g.Commands.Select(c => (g, c)))
+                 .ToDictionary(x => x.c, x => x.g);
 
         private static readonly Dictionary<string, CommandInfo> CommandLookup = CommandGroups
             .SelectMany(group => group.Commands.Select(cmd => new
