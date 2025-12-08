@@ -786,6 +786,16 @@ namespace Bob.Commands
             await component.ModifyOriginalResponseAsync(x => { x.Embed = Help.GetCategoryEmbed(int.Parse(component.Data.Values.FirstOrDefault())); });
         }
 
+        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
+        [SlashCommand("search-commands", "Search for a command by name and description.")]
+        public async Task SearchCommands([Autocomplete(typeof(CommandAutocompleteHandler))][Summary("command", "The command you want to find or learn about. Filters by name and description.")] string command)
+        {
+            await DeferAsync();
+
+            await FollowupAsync(embed: Help.GetCommandSearchEmbed(command), components: Help.GetComponents());
+        }
+
         [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("confess", "Bob will send someone a message anonymously (saying inappropriate things will result in punishment)")]

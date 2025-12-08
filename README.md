@@ -187,6 +187,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 
 ### 🗄️ Informational / Help Commands:
 - `/premium` Ensures Bob knows you have premium! If not you will be given a button to get it!
+- `/search-commands` Search for commands by name or description and view detailed help information.
 - `/help` Get DMed information for *all* commands.
 - `/new` See the latest updates to Bob.
 - `/quote-prompts` See all valid prompts for `/random quote`.

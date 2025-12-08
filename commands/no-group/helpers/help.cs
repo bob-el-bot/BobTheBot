@@ -397,7 +397,7 @@ namespace Bob.Commands.Helpers
 
             return embed.Build();
         }
-        
+
         public static readonly CommandInfoGroup[] CommandGroups =
         [
             new() {
@@ -2004,6 +2004,22 @@ namespace Bob.Commands.Helpers
                 Url = "https://docs.bobthebot.net#info",
                 Commands =
                 [
+                    new CommandInfo
+                    {
+                        Name = "search-commands",
+                        InheritGroupName = false,
+                        Description =
+                            "Search for commands by name or description and get detailed help information. If you make a typo or partial search, Bob will suggest what you might have meant.",
+                        Url = "https://docs.bobthebot.net#search-commands",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "command",
+                                Description = "The command you want to find or learn about. Filters by name and description."
+                            }
+                        ]
+                    },
                     new CommandInfo
                     {
                         Name = "help",
