@@ -357,6 +357,9 @@ namespace Bob
                     // Ensure channel is not null (guild messages only)
                     if (message.Channel is not SocketGuildChannel channel)
                         return;
+                    
+                    if (channel.Guild == null) 
+                        return;
 
                     SocketGuildUser fetchedBot = Client.GetGuild(channel.Guild.Id)
                         .GetUser(Client.CurrentUser.Id);
@@ -396,7 +399,7 @@ namespace Bob
                     using (var scope = Services.CreateScope())
                     {
                         var dbContext = scope.ServiceProvider.GetRequiredService<BobEntities>();
-                        server = await dbContext.GetServer(channel.Guild.Id);
+                        server = await dbContext.GetOrCreateServerAsync(channel.Guild.Id);
                     }
 
                     if (server.AutoEmbedGitHubLinks)
