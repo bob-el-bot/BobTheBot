@@ -9,6 +9,7 @@ using Discord.Interactions;
 using Bob.PremiumInterface;
 using static Bob.ApiInteractions.Interface;
 using Microsoft.EntityFrameworkCore;
+using System.IO;
 
 namespace Bob.Commands
 {
@@ -73,6 +74,73 @@ namespace Bob.Commands
             {
                 await FollowupAsync("✅ Bob will not greet people anymore.", ephemeral: true);
             }
+        }
+
+        [SlashCommand("simulate", "See what your current welcome settings look like!")]
+        public async Task SimulateWelcome()
+        {
+            await DeferAsync(ephemeral: true);
+
+            var server = await dbContext.GetOrCreateServerAsync(Context.Guild.Id);
+            var systemChannel = Context.Guild.SystemChannel;
+
+            if (!server.Welcome)
+            {
+                await FollowupAsync(
+                    $"⚠️ Welcome messages are currently **disabled**. Use {Help.GetCommandMention("welcome toggle")} to enable them.",
+                    ephemeral: true
+                );
+                return;
+            }
+
+            if (systemChannel == null)
+            {
+                await FollowupAsync(
+                    "❌ You do not have a **System Messages** channel set in your server settings. Bob has nowhere to send the message!",
+                    ephemeral: true
+                );
+                return;
+            }
+
+            var bobPermissions = Context.Guild
+                .GetUser(Context.Client.CurrentUser.Id)
+                .GetPermissions(systemChannel);
+
+            if (!bobPermissions.ViewChannel || !bobPermissions.SendMessages)
+            {
+                await FollowupAsync(
+                    $"❌ Bob cannot view or send messages in <#{systemChannel.Id}>.\n- Give Bob `View Channel` and `Send Messages` permissions.",
+                    ephemeral: true
+                );
+                return;
+            }
+
+            if (server.HasWelcomeImage && !bobPermissions.AttachFiles)
+            {
+                await FollowupAsync(
+                    $"❌ Bob is configured to send an image, but lacks `Attach Files` permissions in <#{systemChannel.Id}>.",
+                    ephemeral: true
+                );
+                return;
+            }
+
+            string welcomeText = Welcome.PrepareWelcomeMessage(
+                server.CustomWelcomeMessage,
+                Context.User.Mention
+            );
+
+            if (server.HasWelcomeImage)
+            {
+                var welcomeImage = await dbContext.GetWelcomeImage(Context.Guild.Id);
+                if (welcomeImage?.Image != null)
+                {
+                    using var ms = new MemoryStream(welcomeImage.Image);
+                    await FollowupWithFileAsync(ms, "welcome.webp", welcomeText, ephemeral: true);
+                    return;
+                }
+            }
+
+            await FollowupAsync(welcomeText, ephemeral: true);
         }
 
         [SlashCommand("set-message", "Create a custom welcome message for your server!")]
