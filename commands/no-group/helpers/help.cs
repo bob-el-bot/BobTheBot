@@ -1063,6 +1063,13 @@ namespace Bob.Commands.Helpers
                     },
                     new CommandInfo
                     {
+                        Name = "simulate",
+                        InheritGroupName = true,
+                        Description = "See what your current welcome settings look like and check if you set permissions correctly! ",
+                        Url = "https://docs.bobthebot.net#welcome-simulate",
+                    },
+                    new CommandInfo
+                    {
                         Name = "set-message",
                         InheritGroupName = true,
                         Description = "Set a custom message to welcome new users with.",

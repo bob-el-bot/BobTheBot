@@ -121,6 +121,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/welcome remove-message` Bob will stop using the custom message to welcome users.
 - `/welcome set-image [image]` Set a custom image to welcome new users with.
 - `/welcome remove-image` Bob will stop using the custom image to welcome users.
+- `/welcome simulate` See what your current welcome settings look like and check if you set permissions correctly!
 
 ### 🔒 Encryption Commands:
 - `/encrypt a1z26 [message]` Encrypts your message by swapping letters to their corresponding number.
