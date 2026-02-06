@@ -157,6 +157,7 @@ namespace Bob.Commands
                 int scheduledMessageEntriesCount = await dbContext.ScheduledMessage.CountAsync();
                 int scheduledAnnouncementEntriesCount = await dbContext.ScheduledAnnouncement.CountAsync();
                 int welcomeImageEntriesCount = await dbContext.WelcomeImage.CountAsync();
+                int memoryEntriesCount = await dbContext.Memory.CountAsync();
                 double size = await dbContext.GetDatabaseSizeBytes();
 
                 var embed = new EmbedBuilder
@@ -173,6 +174,7 @@ namespace Bob.Commands
                     .AddField(name: "NewsChannel Entries", value: $"`{newsChannelEntriesCount}`", inline: true)
                     .AddField(name: "Scheduled Message Entries", value: $"`{scheduledMessageEntriesCount}`", inline: true)
                     .AddField(name: "Scheduled Announcement Entries", value: $"`{scheduledAnnouncementEntriesCount}`", inline: true)
+                    .AddField(name: "Memory Entries", value: $"{memoryEntriesCount}`", inline: true)
                     .AddField(name: "Size (Bytes)", value: $"`{size}`", inline: true)
                     .AddField(name: "Size (MegaBytes)", value: $"`{size / 1024 / 1024}`", inline: true)
                     .AddField(name: "Size (GigaBytes)", value: $"`{size / 1024 / 1024 / 1024}`", inline: true);
