@@ -63,6 +63,8 @@ namespace Bob.Database
             modelBuilder.Entity<Memory>()
                 .Property(m => m.Embedding)
                 .HasColumnType("vector(1536)");
+            
+            modelBuilder.Entity<MemoryDTO>().HasNoKey();
 
             modelBuilder.Entity<Tag>(entity =>
             {
@@ -103,7 +105,7 @@ namespace Bob.Database
             foreach (var property in this.GetType().GetProperties())
             {
                 if (property.PropertyType.IsGenericType &&
-                    property.PropertyType.GetGenericTypeDefinition() == typeof(DbSet<>))
+                    property.PropertyType.GetGenericTypeDefinition() == typeof(DbSet<>) && property.Name != nameof(MemoryDTOs))
                 {
                     var dbSet = property.GetValue(this) as IQueryable<object>;
 
