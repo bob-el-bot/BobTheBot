@@ -104,7 +104,7 @@ namespace Bob
             await Client.LoginAsync(TokenType.Bot, Token);
             await Client.StartAsync();
 
-            Uptime.StartHttpListener();
+            //            Uptime.StartHttpListener();
 
             // Wait for all shards to be ready before proceeding
             await _allShardsReady.Task;
@@ -224,123 +224,143 @@ namespace Bob
             return Task.CompletedTask;
         }
 
-        private static async Task UserJoined(SocketGuildUser user)
+        private static Task UserJoined(SocketGuildUser user)
         {
-            try
+            _ = Task.Run(async () =>
             {
-                if (user.IsBot)
+                try
                 {
-                    return;
-                }
+                    if (user.IsBot)
+                    {
+                        return;
+                    }
 
-                Server server;
-                using (var scope = Services.CreateScope())
-                {
-                    var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
-                    server = await context.GetOrCreateServerAsync(user.Guild.Id);
-                }
-
-                if (server.Welcome == false)
-                {
-                    return;
-                }
-
-                var systemChannel = user.Guild.SystemChannel;
-
-                if (systemChannel is not SocketTextChannel textChannel)
-                {
-                    return;
-                }
-
-                var botUser = user.Guild.GetUser(Client.CurrentUser.Id);
-                if (botUser == null)
-                {
-                    return;
-                }
-
-                var permissions = botUser.GetPermissions(textChannel);
-                if (!permissions.SendMessages || !permissions.ViewChannel)
-                {
-                    return;
-                }
-
-                if (server.HasWelcomeImage && permissions.AttachFiles)
-                {
-                    WelcomeImage welcomeImage = null;
+                    Server server;
                     using (var scope = Services.CreateScope())
                     {
                         var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
-                        welcomeImage = await context.GetWelcomeImage(user.Guild.Id);
+                        server = await context.GetOrCreateServerAsync(user.Guild.Id);
                     }
 
-                    if (welcomeImage != null)
+                    if (server.Welcome == false)
                     {
-                        await textChannel.SendFileAsync(
-                            new MemoryStream(welcomeImage.Image),
-                            "welcome.webp",
-                            text: Welcome.PrepareWelcomeMessage(server.CustomWelcomeMessage, user.Mention)
-                        );
+                        return;
                     }
+
+                    var systemChannel = user.Guild.SystemChannel;
+
+                    if (systemChannel is not SocketTextChannel textChannel)
+                    {
+                        return;
+                    }
+
+                    var botUser = user.Guild.GetUser(Client.CurrentUser.Id);
+                    if (botUser == null)
+                    {
+                        return;
+                    }
+
+                    var permissions = botUser.GetPermissions(textChannel);
+                    if (!permissions.SendMessages || !permissions.ViewChannel)
+                    {
+                        return;
+                    }
+
+                    if (server.HasWelcomeImage && permissions.AttachFiles)
+                    {
+                        WelcomeImage welcomeImage = null;
+                        using (var scope = Services.CreateScope())
+                        {
+                            var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
+                            welcomeImage = await context.GetWelcomeImage(user.Guild.Id);
+                        }
+
+                        if (welcomeImage != null)
+                        {
+                            await textChannel.SendFileAsync(
+                                            new MemoryStream(welcomeImage.Image),
+                                            "welcome.webp",
+                                            text: Welcome.PrepareWelcomeMessage(server.CustomWelcomeMessage, user.Mention)
+                                        );
+                        }
+                    }
+                    else
+                    {
+                        await textChannel.SendMessageAsync(text: Welcome.PrepareWelcomeMessage(server.CustomWelcomeMessage, user.Mention));
+                    }
+
+                    // If support server, then give the user the Friend badge
+                    if (user.Guild.Id == supportServerId)
+                    {
+                        User dbUser;
+                        using (var scope = Services.CreateScope())
+                        {
+                            var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
+                            dbUser = await context.GetOrCreateUserAsync(user.Id);
+                        }
+
+                        await Badge.GiveUserBadge(dbUser, Badges.Badges.Friend);
+                    }
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
+            });
+
+            return Task.CompletedTask;
+        }
+
+        private static Task JoinedGuild(SocketGuild guild)
+        {
+            _ = Task.Run(async () =>
+            {
+                using var scope = Services.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
+                await context.GetOrCreateServerAsync(guild.Id);
+            });
+
+            return Task.CompletedTask;
+        }
+
+        private static Task EntitlementCreated(SocketEntitlement ent)
+        {
+            _ = Task.Run(async () =>
+            {
+                using var scope = Services.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
+                IUser entUser = await ent.User.Value.GetOrDownloadAsync();
+                User user = await context.GetOrCreateUserAsync(entUser.Id);
+
+                if (ent.EndsAt == null)
+                {
+                    user.PremiumExpiration = DateTimeOffset.MaxValue;
                 }
                 else
                 {
-                    await textChannel.SendMessageAsync(text: Welcome.PrepareWelcomeMessage(server.CustomWelcomeMessage, user.Mention));
+                    user.PremiumExpiration = (DateTimeOffset)ent.EndsAt;
                 }
 
-                // If support server, then give the user the Friend badge
-                if (user.Guild.Id == supportServerId)
-                {
-                    User dbUser;
-                    using (var scope = Services.CreateScope())
-                    {
-                        var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
-                        dbUser = await context.GetOrCreateUserAsync(user.Id);
-                    }
+                await context.SaveChangesAsync();
+            });
 
-                    await Badge.GiveUserBadge(dbUser, Badges.Badges.Friend);
-                }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
+            return Task.CompletedTask;
         }
 
-        private static async Task JoinedGuild(SocketGuild guild)
+        private static Task EntitlementUpdated(Cacheable<SocketEntitlement, ulong> before, SocketEntitlement after)
         {
-            using var scope = Services.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
-            await context.GetOrCreateServerAsync(guild.Id);
-        }
-
-        private static async Task EntitlementCreated(SocketEntitlement ent)
-        {
-            using var scope = Services.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
-            IUser entUser = await ent.User.Value.GetOrDownloadAsync();
-            User user = await context.GetOrCreateUserAsync(entUser.Id);
-
-            if (ent.EndsAt == null)
+            _ = Task.Run(async () =>
             {
-                user.PremiumExpiration = DateTimeOffset.MaxValue;
-            }
-            else
-            {
-                user.PremiumExpiration = (DateTimeOffset)ent.EndsAt;
-            }
+                using var scope = Services.CreateScope();
+                var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
+                IUser entUser = await before.Value.User.Value.GetOrDownloadAsync();
+                User user = await context.GetOrCreateUserAsync(entUser.Id);
 
-            await context.SaveChangesAsync();
-        }
+                user.PremiumExpiration = (DateTimeOffset)after.EndsAt;
+                await context.SaveChangesAsync();
+            });
 
-        private static async Task EntitlementUpdated(Cacheable<SocketEntitlement, ulong> before, SocketEntitlement after)
-        {
-            using var scope = Services.CreateScope();
-            var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
-            IUser entUser = await before.Value.User.Value.GetOrDownloadAsync();
-            User user = await context.GetOrCreateUserAsync(entUser.Id);
-
-            user.PremiumExpiration = (DateTimeOffset)after.EndsAt;
-            await context.SaveChangesAsync();
+            return Task.CompletedTask;
         }
 
         private static Task EntitlementDeleted(Cacheable<SocketEntitlement, ulong> ent)
@@ -357,8 +377,8 @@ namespace Bob
                     // Ensure channel is not null (guild messages only)
                     if (message.Channel is not SocketGuildChannel channel)
                         return;
-                    
-                    if (channel.Guild == null) 
+
+                    if (channel.Guild == null)
                         return;
 
                     SocketGuildUser fetchedBot = Client.GetGuild(channel.Guild.Id)
