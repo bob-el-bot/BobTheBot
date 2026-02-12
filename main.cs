@@ -104,7 +104,7 @@ namespace Bob
             await Client.LoginAsync(TokenType.Bot, Token);
             await Client.StartAsync();
 
-            //            Uptime.StartHttpListener();
+            Uptime.StartHttpListener();
 
             // Wait for all shards to be ready before proceeding
             await _allShardsReady.Task;
