@@ -72,7 +72,13 @@ namespace BobTheBot.Chat.AiServiceHandling
                 var response = await client.SendAsync(requestMessage);
 
                 // Ensure the request was successful
-                response.EnsureSuccessStatusCode();
+                if (!response.IsSuccessStatusCode)
+                {
+                    string errorBody = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"[OpenAI Error] Status: {response.StatusCode}");
+                    Console.WriteLine($"[OpenAI Error] Body: {errorBody}");
+                    response.EnsureSuccessStatusCode();
+                }
 
                 // Deserialize the response to get the embeddings
                 var responseBody = await response.Content.ReadAsStringAsync();

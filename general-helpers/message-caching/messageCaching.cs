@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Threading;
 using System.Threading.Tasks;
 using Discord;
 using Discord.Net;
@@ -74,9 +75,11 @@ public static class CachedMessages
         IMessageChannel channel,
         ulong messageId)
     {
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
         try
         {
-            if (await channel.GetMessageAsync(messageId) is not IUserMessage msg)
+            if (await channel.GetMessageAsync(messageId, options: new RequestOptions { CancelToken = cts.Token }) is not IUserMessage msg)
                 return null;
 
             if (msg.Flags.HasValue &&
