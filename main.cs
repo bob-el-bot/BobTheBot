@@ -514,7 +514,9 @@ namespace Bob
                     }
 
                     var botUser = textChannel.GetUser(Client.CurrentUser.Id);
-                    if (botUser == null || !botUser.GetPermissions(textChannel).ReadMessageHistory)
+                    var permissions = botUser?.GetPermissions(textChannel);
+
+                    if (permissions == null || !permissions.Value.ViewChannel || !permissions.Value.ReadMessageHistory)
                     {
                         return;
                     }
