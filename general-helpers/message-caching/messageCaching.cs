@@ -75,11 +75,11 @@ public static class CachedMessages
         IMessageChannel channel,
         ulong messageId)
     {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(15));
 
         try
         {
-            if (await channel.GetMessageAsync(messageId, options: new RequestOptions { CancelToken = cts.Token }) is not IUserMessage msg)
+            if (await channel.GetMessageAsync(messageId, options: new RequestOptions { CancelToken = cts.Token, RetryMode = RetryMode.RetryRatelimit}) is not IUserMessage msg)
                 return null;
 
             if (msg.Flags.HasValue &&

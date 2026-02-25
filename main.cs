@@ -493,8 +493,27 @@ namespace Bob
                         return;
                     }
 
-                    var botUser = textChannel.GetUser(Client.CurrentUser.Id);
+                    using var scope = Services.CreateScope();
+                    var dbContext = scope.ServiceProvider.GetRequiredService<BobEntities>();
+                    var server = await dbContext.GetOrCreateServerAsync(textChannel.Guild.Id);
 
+                    if (!ReactBoardMethods.IsSetup(server))
+                    {
+                        return;
+                    }
+
+                    string key = reaction.Emote is Emote emote ? emote.Id.ToString() : reaction.Emote.Name;
+                    var storedEmojiId = ReactBoardMethods.GetEmojiIdFromString(server.ReactBoardEmoji);
+
+                    bool isMatchingEmoji = (storedEmojiId != null && key == storedEmojiId)
+                        || reaction.Emote.Name.Equals(server.ReactBoardEmoji, StringComparison.OrdinalIgnoreCase);
+
+                    if (!isMatchingEmoji || textChannel.Id == server.ReactBoardChannelId)
+                    {
+                        return;
+                    }
+
+                    var botUser = textChannel.GetUser(Client.CurrentUser.Id);
                     if (botUser == null || !botUser.GetPermissions(textChannel).ReadMessageHistory)
                     {
                         return;
@@ -506,29 +525,7 @@ namespace Bob
                         return;
                     }
 
-                    string key = reaction.Emote is Emote emote ? emote.Id.ToString() : reaction.Emote.Name;
-
                     userMessage.IncreaseReactionCount(key);
-
-                    using var scope = Services.CreateScope();
-                    var dbContext = scope.ServiceProvider.GetRequiredService<BobEntities>();
-                    var server = await dbContext.GetOrCreateServerAsync(textChannel.Guild.Id);
-
-                    if (!ReactBoardMethods.IsSetup(server))
-                    {
-                        return;
-                    }
-
-                    var storedEmojiId = ReactBoardMethods.GetEmojiIdFromString(server.ReactBoardEmoji);
-
-                    bool isMatchingEmoji = (storedEmojiId != null && key == storedEmojiId)
-                        || reaction.Emote.Name.Equals(server.ReactBoardEmoji, StringComparison.OrdinalIgnoreCase);
-
-                    if (!isMatchingEmoji || textChannel.Id == server.ReactBoardChannelId)
-                    {
-                        return;
-                    }
-
                     var reactionCount = userMessage.GetReactionCount(key);
 
                     if (reactionCount == 0 || reactionCount < server.ReactBoardMinimumReactions)
