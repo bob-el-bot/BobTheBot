@@ -18,543 +18,574 @@ using Bob.ColorMethods;
 using Bob.Moderation;
 using Bob.Time.Timestamps;
 
-namespace Bob.Commands
+namespace Bob.Commands;
+
+public class NoGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInteractionContext>
 {
-    public class NoGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInteractionContext>
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+    [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
+    [SlashCommand("ping", "Bob will share his ping.")]
+    public async Task Ping()
     {
-        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
-        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
-        [SlashCommand("ping", "Bob will share his ping.")]
-        public async Task Ping()
+        await RespondAsync(text: $"🏓 Pong! The client latency is **{Client.Latency}** ms.");
+    }
+
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+    [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
+    [SlashCommand("hi", "Say hi to Bob.")]
+    public async Task Hi()
+    {
+        await RespondAsync(text: "👋 hi!");
+    }
+
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
+    [IntegrationType(ApplicationIntegrationType.GuildInstall)]
+    [SlashCommand("tag", "Bob will display a tag.")]
+    public async Task Tag([Summary("tag", "The tag you want to use.")][Autocomplete(typeof(TagAutocompleteHandler))] string tagId)
+    {
+        await DeferAsync();
+
+        if (!int.TryParse(tagId, out int id))
         {
-            await RespondAsync(text: $"🏓 Pong! The client latency is **{Client.Latency}** ms.");
+            await FollowupAsync(text: "❌ Invalid tag ID provided.");
+            return;
         }
 
-        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
-        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
-        [SlashCommand("hi", "Say hi to Bob.")]
-        public async Task Hi()
+        var tag = await dbContext.GetTag(id);
+        if (tag == null || tag.GuildId != Context.Guild.Id)
         {
-            await RespondAsync(text: "👋 hi!");
+            await FollowupAsync(text: "❌ Tag not found or does not belong to this server.");
+            return;
         }
 
-        [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
-        [IntegrationType(ApplicationIntegrationType.GuildInstall)]
-        [SlashCommand("tag", "Bob will display a tag.")]
-        public async Task Tag([Summary("tag", "The tag you want to use.")][Autocomplete(typeof(TagAutocompleteHandler))] string tagId)
+        await FollowupAsync(text: tag.Content);
+    }
+
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+    [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
+    [SlashCommand("analyze-link", "Bob checks a link, IP, or Port and sees where it takes you.")]
+    public async Task AnalyzeLink([Summary("link", "The link, IP, or Host to analyze.")] string link)
+    {
+        string originalInput = link.Trim();
+
+        // Add protocol if it's missing (helps Uri.TryCreate handle IPs/Ports)
+        if (!originalInput.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
+            !originalInput.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            link = $"https://{originalInput}";
+        }
+
+        // Try to create the URI. If https fails, it might be a raw IP/Port that only supports http
+        if (!Uri.TryCreate(link, UriKind.Absolute, out Uri uriResult))
+        {
+            await RespondAsync(text: "❌ Bob can't parse that. Make sure it's a valid URL or IP (e.g., `1.1.1.1` or `[::1]:8080`).", ephemeral: true);
+            return;
+        }
+
+        // SSRF SECURITY CHECK: Prevent Bob from attacking its own server.
+        if (Analyze.IsPrivateIP(uriResult.Host))
+        {
+            await RespondAsync(text: "🚫 Bob is not allowed to visit local or internal addresses (localhost/private IPs).", ephemeral: true);
+            return;
+        }
+
+        await DeferAsync();
+
+        // Pass the well-formed URI string to your helper
+        await FollowupAsync(embed: await Analyze.AnalyzeLink(uriResult.ToString()));
+    }
+
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+    [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
+    [MessageCommand("Analyze Link")]
+    public async Task AnalyzeMessageLink(IMessage message)
+    {
+        // 1. Extract potential links from the message content
+        string pattern = @"(https?://\S+)|(www\.\S+)|(\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?\b)|(\b\S+\.\S+\b)";
+        Regex regex = new(pattern);
+        MatchCollection matches = regex.Matches(message.Content);
+
+        if (matches.Count == 0)
+        {
+            await RespondAsync(text: "❌ Bob couldn't find a valid link or IP in that message.", ephemeral: true);
+            return;
+        }
+
+        // Take the first match and normalize it
+        string foundLink = matches[0].Value.Trim();
+
+        if (!foundLink.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
+            !foundLink.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            foundLink = $"https://{foundLink}";
+        }
+
+        if (!Uri.TryCreate(foundLink, UriKind.Absolute, out Uri uriResult))
+        {
+            await RespondAsync(text: "❌ Bob found a link, but it's not a valid format.", ephemeral: true);
+            return;
+        }
+
+        // SSRF SECURITY CHECK: Use the same logic as the Slash Command
+        if (Analyze.IsPrivateIP(uriResult.Host))
+        {
+            await RespondAsync(text: "🚫 Bob is not allowed to visit local or internal addresses (localhost/private IPs).", ephemeral: true);
+            return;
+        }
+
+        await DeferAsync();
+        await FollowupAsync(embed: await Analyze.AnalyzeLink(uriResult.ToString()));
+    }
+
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+    [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
+    [SlashCommand("hug", "Hug your friends! (up to 5 people in a group hug!)")]
+    public async Task Hug(SocketUser person1, SocketUser person2 = null, SocketUser person3 = null, SocketUser person4 = null, SocketUser person5 = null)
+    {
+        StringBuilder response = new();
+        response.Append(Context.User.Mention + " *hugs* " + person1.Mention);
+
+        SocketUser[] people = [person2, person3, person4, person5];
+
+        for (int i = 0; i < people.Length; i++)
+        {
+            if (people[i] != null)
+            {
+                response.Append(", " + people[i].Mention);
+            }
+        }
+
+        await RespondAsync(text: $"🤗🫂 {response}" + "!");
+    }
+
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
+    [IntegrationType(ApplicationIntegrationType.GuildInstall)]
+    [RequireBotPermission(ChannelPermission.ViewChannel | ChannelPermission.EmbedLinks)]
+    [SlashCommand("tic-tac-toe", "Play a game of Tic Tac Toe.")]
+    public async Task TicTacToe([Summary("opponent", "Leave empty to verse an AI.")] SocketUser opponent = null)
+    {
+        if (opponent == null || opponent.IsBot)
         {
             await DeferAsync();
-
-            if (!int.TryParse(tagId, out int id))
-            {
-                await FollowupAsync(text: "❌ Invalid tag ID provided.");
-                return;
-            }
-
-            var tag = await dbContext.GetTag(id);
-            if (tag == null || tag.GuildId != Context.Guild.Id)
-            {
-                await FollowupAsync(text: "❌ Tag not found or does not belong to this server.");
-                return;
-            }
-
-            await FollowupAsync(text: tag.Content);
+            TicTacToe game = new(Context.User, opponent ?? Bot.Client.CurrentUser);
+            await game.StartBotGame(Context.Interaction);
         }
-
-        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
-        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
-        [SlashCommand("analyze-link", "Bob will check out a link, and see where it takes you.")]
-        public async Task AnalyzeLink([Summary("link", "The link in question.")] string link)
+        else
         {
-            if (link.Contains('.') && link.Length < 7 || (link.Length >= 7 && link[..7] != "http://" && link.Length >= 8 && link[..8] != "https://"))
+            (bool, string) canChallenge = await Challenge.CanChallengeAsync(Context.User.Id, opponent.Id);
+            if (!canChallenge.Item1)
             {
-                link = $"https://{link}";
+                await RespondAsync(text: canChallenge.Item2, ephemeral: true);
             }
-
-            if (!Uri.IsWellFormedUriString(link, UriKind.Absolute))
+            else
             {
-                await RespondAsync(text: "❌ Your link is not valid. Here are some things to know:\n- Your link could look like this `http://bobthebot.net`, `https://bobthebot.net`, or `bobthebot.net`.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                await Challenge.SendMessage(Context.Interaction, new TicTacToe(Context.User, opponent));
+            }
+        }
+    }
+
+    [ComponentInteraction("ttt:*:*")]
+    public async Task TTTButtonHandler(string coordinate, string Id)
+    {
+        SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
+
+        Challenge.TicTacToeGames.TryGetValue(Convert.ToUInt64(Id), out TicTacToe game);
+
+        if (game == null)
+        {
+            await component.RespondAsync(text: $"❌ This game no longer exists\n- Use {Help.GetCommandMention("tic-tac-toe")} to start a new game.", ephemeral: true);
+        }
+        else
+        {
+            bool isPlayer1 = component.User.Id == game.Player1.Id;
+            bool isPlayer2 = component.User.Id == game.Player2.Id;
+
+            if (!isPlayer1 && !isPlayer2)
+            {
+                await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.", ephemeral: true);
+            }
+            else if (game.IsPlayer1Turn && !isPlayer1 || !game.IsPlayer1Turn && isPlayer1)
+            {
+                await component.RespondAsync(text: $"❌ It is **not** your turn.", ephemeral: true);
             }
             else
             {
                 await DeferAsync();
-                await FollowupAsync(embed: await Analyze.AnalyzeLink(link));
-            }
-        }
 
-        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
-        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
-        [MessageCommand("Analyze Link")]
-        public async Task AnalyzeMessageLink(IMessage message)
-        {
-            string pattern = @"(https?://\S+)|(www\.\S+)";
+                // Prepare Position
+                string[] coords = coordinate.Split('-');
+                int[] position = [Convert.ToInt16(coords[0]), Convert.ToInt16(coords[1])];
 
-            // Create a Regex object with the pattern
-            Regex regex = new(pattern);
-
-            // Find all matches in the input string
-            MatchCollection matches = regex.Matches(message.Content);
-
-            if (matches.Count == 0)
-            {
-                await RespondAsync(text: "❌ Your link is not valid. Here are some things to know:\n- Your link could look like this `http://bobthebot.net`, or `https://bobthebot.net`.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
-            }
-            else
-            {
-                await DeferAsync();
-                await FollowupAsync(embed: await Analyze.AnalyzeLink(matches[0].Value));
-            }
-        }
-
-        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
-        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
-        [SlashCommand("hug", "Hug your friends! (up to 5 people in a group hug!)")]
-        public async Task Hug(SocketUser person1, SocketUser person2 = null, SocketUser person3 = null, SocketUser person4 = null, SocketUser person5 = null)
-        {
-            StringBuilder response = new();
-            response.Append(Context.User.Mention + " *hugs* " + person1.Mention);
-
-            SocketUser[] people = [person2, person3, person4, person5];
-
-            for (int i = 0; i < people.Length; i++)
-            {
-                if (people[i] != null)
+                // Check if the chosen move is valid and within bounds
+                if (game.Grid[position[0], position[1]] == 0)
                 {
-                    response.Append(", " + people[i].Mention);
-                }
-            }
-
-            await RespondAsync(text: $"🤗🫂 {response}" + "!");
-        }
-
-        [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
-        [IntegrationType(ApplicationIntegrationType.GuildInstall)]
-        [RequireBotPermission(ChannelPermission.ViewChannel | ChannelPermission.EmbedLinks)]
-        [SlashCommand("tic-tac-toe", "Play a game of Tic Tac Toe.")]
-        public async Task TicTacToe([Summary("opponent", "Leave empty to verse an AI.")] SocketUser opponent = null)
-        {
-            if (opponent == null || opponent.IsBot)
-            {
-                await DeferAsync();
-                TicTacToe game = new(Context.User, opponent ?? Bot.Client.CurrentUser);
-                await game.StartBotGame(Context.Interaction);
-            }
-            else
-            {
-                (bool, string) canChallenge = await Challenge.CanChallengeAsync(Context.User.Id, opponent.Id);
-                if (!canChallenge.Item1)
-                {
-                    await RespondAsync(text: canChallenge.Item2, ephemeral: true);
-                }
-                else
-                {
-                    await Challenge.SendMessage(Context.Interaction, new TicTacToe(Context.User, opponent));
-                }
-            }
-        }
-
-        [ComponentInteraction("ttt:*:*")]
-        public async Task TTTButtonHandler(string coordinate, string Id)
-        {
-            SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
-
-            Challenge.TicTacToeGames.TryGetValue(Convert.ToUInt64(Id), out TicTacToe game);
-
-            if (game == null)
-            {
-                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use {Help.GetCommandMention("tic-tac-toe")} to start a new game.", ephemeral: true);
-            }
-            else
-            {
-                bool isPlayer1 = component.User.Id == game.Player1.Id;
-                bool isPlayer2 = component.User.Id == game.Player2.Id;
-
-                if (!isPlayer1 && !isPlayer2)
-                {
-                    await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.", ephemeral: true);
-                }
-                else if (game.IsPlayer1Turn && !isPlayer1 || !game.IsPlayer1Turn && isPlayer1)
-                {
-                    await component.RespondAsync(text: $"❌ It is **not** your turn.", ephemeral: true);
-                }
-                else
-                {
-                    await DeferAsync();
-
-                    // Prepare Position
-                    string[] coords = coordinate.Split('-');
-                    int[] position = [Convert.ToInt16(coords[0]), Convert.ToInt16(coords[1])];
-
-                    // Check if the chosen move is valid and within bounds
-                    if (game.Grid[position[0], position[1]] == 0)
-                    {
-                        game.Grid[position[0], position[1]] = game.IsPlayer1Turn ? 1 : 2;
-                        if (game.Player2.IsBot)
-                        {
-                            await game.EndBotTurn(component);
-                        }
-                        else
-                        {
-                            await game.EndTurn(component);
-                        }
-                    }
-                    else
-                    {
-                        // Handle the case where the chosen move is not valid or out of bounds
-                        await component.RespondAsync(text: $"❌ Invalid move.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
-                    }
-                }
-            }
-        }
-
-        [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
-        [IntegrationType(ApplicationIntegrationType.GuildInstall)]
-        [RequireBotPermission(ChannelPermission.ViewChannel | ChannelPermission.EmbedLinks)]
-        [SlashCommand("trivia", "Play a game of trivia.")]
-        public async Task Trivia([Summary("opponent", "Leave empty to play alone.")] SocketUser opponent = null)
-        {
-            if (opponent == null || opponent.IsBot)
-            {
-                await DeferAsync();
-                Trivia game = new(Context.User, opponent ?? Bot.Client.CurrentUser);
-                await game.StartBotGame(Context.Interaction);
-            }
-            else
-            {
-                (bool, string) canChallenge = await Challenge.CanChallengeAsync(Context.User.Id, opponent.Id);
-                if (!canChallenge.Item1)
-                {
-                    await RespondAsync(text: canChallenge.Item2, ephemeral: true);
-                }
-                else
-                {
-                    await Challenge.SendMessage(Context.Interaction, new Trivia(Context.User, opponent));
-                }
-            }
-        }
-
-        [ComponentInteraction("trivia:*:*")]
-        public async Task TriviaButtonHandler(string answer, string Id)
-        {
-            SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
-
-            Challenge.TriviaGames.TryGetValue(Convert.ToUInt64(Id), out Trivia game);
-
-            if (game == null)
-            {
-                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use {Help.GetCommandMention("trivia")} to start a new game.", ephemeral: true);
-            }
-            else
-            {
-                bool isPlayer1 = component.User.Id == game.Player1.Id;
-                bool isPlayer2 = component.User.Id == game.Player2.Id;
-
-                if (!isPlayer1 && !isPlayer2)
-                {
-                    await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.", ephemeral: true);
-                }
-                else if (game.Player1Answer != null && isPlayer1 || game.Player2Answer != null && isPlayer2)
-                {
-                    await component.RespondAsync(text: $"❌ You have already answered.", ephemeral: true);
-                }
-                else
-                {
-                    await DeferAsync();
-
-                    // Answer
+                    game.Grid[position[0], position[1]] = game.IsPlayer1Turn ? 1 : 2;
                     if (game.Player2.IsBot)
                     {
-                        await game.AloneAnswer(answer, component);
+                        await game.EndBotTurn(component);
                     }
                     else
                     {
-                        await game.Answer(isPlayer1, answer, component);
+                        await game.EndTurn(component);
                     }
+                }
+                else
+                {
+                    // Handle the case where the chosen move is not valid or out of bounds
+                    await component.RespondAsync(text: $"❌ Invalid move.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
                 }
             }
         }
+    }
 
-        [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
-        [IntegrationType(ApplicationIntegrationType.GuildInstall)]
-        [RequireBotPermission(ChannelPermission.ViewChannel | ChannelPermission.EmbedLinks)]
-        [SlashCommand("rock-paper-scissors", "Play a game of Rock Paper Scissors.")]
-        public async Task RPS([Summary("opponent", "Leave empty to verse an AI.")] SocketUser opponent = null)
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
+    [IntegrationType(ApplicationIntegrationType.GuildInstall)]
+    [RequireBotPermission(ChannelPermission.ViewChannel | ChannelPermission.EmbedLinks)]
+    [SlashCommand("trivia", "Play a game of trivia.")]
+    public async Task Trivia([Summary("opponent", "Leave empty to play alone.")] SocketUser opponent = null)
+    {
+        if (opponent == null || opponent.IsBot)
         {
-            if (opponent == null || opponent.IsBot)
+            await DeferAsync();
+            Trivia game = new(Context.User, opponent ?? Bot.Client.CurrentUser);
+            await game.StartBotGame(Context.Interaction);
+        }
+        else
+        {
+            (bool, string) canChallenge = await Challenge.CanChallengeAsync(Context.User.Id, opponent.Id);
+            if (!canChallenge.Item1)
+            {
+                await RespondAsync(text: canChallenge.Item2, ephemeral: true);
+            }
+            else
+            {
+                await Challenge.SendMessage(Context.Interaction, new Trivia(Context.User, opponent));
+            }
+        }
+    }
+
+    [ComponentInteraction("trivia:*:*")]
+    public async Task TriviaButtonHandler(string answer, string Id)
+    {
+        SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
+
+        Challenge.TriviaGames.TryGetValue(Convert.ToUInt64(Id), out Trivia game);
+
+        if (game == null)
+        {
+            await component.RespondAsync(text: $"❌ This game no longer exists\n- Use {Help.GetCommandMention("trivia")} to start a new game.", ephemeral: true);
+        }
+        else
+        {
+            bool isPlayer1 = component.User.Id == game.Player1.Id;
+            bool isPlayer2 = component.User.Id == game.Player2.Id;
+
+            if (!isPlayer1 && !isPlayer2)
+            {
+                await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.", ephemeral: true);
+            }
+            else if (game.Player1Answer != null && isPlayer1 || game.Player2Answer != null && isPlayer2)
+            {
+                await component.RespondAsync(text: $"❌ You have already answered.", ephemeral: true);
+            }
+            else
             {
                 await DeferAsync();
-                RockPaperScissors game = new(Context.User, opponent ?? Bot.Client.CurrentUser);
-                await game.StartBotGame(Context.Interaction);
-            }
-            else
-            {
-                (bool, string) canChallenge = await Challenge.CanChallengeAsync(Context.User.Id, opponent.Id);
-                if (!canChallenge.Item1)
+
+                // Answer
+                if (game.Player2.IsBot)
                 {
-                    await RespondAsync(text: canChallenge.Item2, ephemeral: true);
+                    await game.AloneAnswer(answer, component);
                 }
                 else
                 {
-                    await Challenge.SendMessage(Context.Interaction, new RockPaperScissors(Context.User, opponent));
+                    await game.Answer(isPlayer1, answer, component);
                 }
             }
         }
+    }
 
-        [ComponentInteraction("rps:*:*")]
-        public async Task RPSButtonHandler(string rps, string Id)
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
+    [IntegrationType(ApplicationIntegrationType.GuildInstall)]
+    [RequireBotPermission(ChannelPermission.ViewChannel | ChannelPermission.EmbedLinks)]
+    [SlashCommand("rock-paper-scissors", "Play a game of Rock Paper Scissors.")]
+    public async Task RPS([Summary("opponent", "Leave empty to verse an AI.")] SocketUser opponent = null)
+    {
+        if (opponent == null || opponent.IsBot)
         {
-            SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
-
-            Challenge.RockPaperScissorsGames.TryGetValue(Convert.ToUInt64(Id), out RockPaperScissors game);
-
-            if (game == null)
+            await DeferAsync();
+            RockPaperScissors game = new(Context.User, opponent ?? Bot.Client.CurrentUser);
+            await game.StartBotGame(Context.Interaction);
+        }
+        else
+        {
+            (bool, string) canChallenge = await Challenge.CanChallengeAsync(Context.User.Id, opponent.Id);
+            if (!canChallenge.Item1)
             {
-                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use {Help.GetCommandMention("rock-paper-scissors")} to start a new game.", ephemeral: true);
+                await RespondAsync(text: canChallenge.Item2, ephemeral: true);
             }
             else
             {
-                int choice = Convert.ToInt16(rps);
-                bool isPlayer1 = component.User.Id == game.Player1.Id;
-                bool isPlayer2 = component.User.Id == game.Player2.Id;
+                await Challenge.SendMessage(Context.Interaction, new RockPaperScissors(Context.User, opponent));
+            }
+        }
+    }
 
-                if (!isPlayer1 && !isPlayer2)
+    [ComponentInteraction("rps:*:*")]
+    public async Task RPSButtonHandler(string rps, string Id)
+    {
+        SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
+
+        Challenge.RockPaperScissorsGames.TryGetValue(Convert.ToUInt64(Id), out RockPaperScissors game);
+
+        if (game == null)
+        {
+            await component.RespondAsync(text: $"❌ This game no longer exists\n- Use {Help.GetCommandMention("rock-paper-scissors")} to start a new game.", ephemeral: true);
+        }
+        else
+        {
+            int choice = Convert.ToInt16(rps);
+            bool isPlayer1 = component.User.Id == game.Player1.Id;
+            bool isPlayer2 = component.User.Id == game.Player2.Id;
+
+            if (!isPlayer1 && !isPlayer2)
+            {
+                await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.", ephemeral: true);
+            }
+            else if ((isPlayer1 && game.Player1Choice != -1) || (isPlayer2 && game.Player2Choice != -1))
+            {
+                await component.RespondAsync(text: $"❌ You **cannot** change your choice.", ephemeral: true);
+            }
+            else
+            {
+                if (isPlayer1)
                 {
-                    await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.", ephemeral: true);
+                    game.Player1Choice = choice;
                 }
-                else if ((isPlayer1 && game.Player1Choice != -1) || (isPlayer2 && game.Player2Choice != -1))
+                else if (isPlayer2)
                 {
-                    await component.RespondAsync(text: $"❌ You **cannot** change your choice.", ephemeral: true);
+                    game.Player2Choice = choice;
+                }
+
+                if (game.Player1Choice != -1 && game.Player2Choice != -1)
+                {
+                    await game.FinishGame(component);
                 }
                 else
                 {
-                    if (isPlayer1)
-                    {
-                        game.Player1Choice = choice;
-                    }
-                    else if (isPlayer2)
-                    {
-                        game.Player2Choice = choice;
-                    }
-
-                    if (game.Player1Choice != -1 && game.Player2Choice != -1)
-                    {
-                        await game.FinishGame(component);
-                    }
-                    else
-                    {
-                        string[] options = ["🪨", "📃", "✂️"];
-                        await component.RespondAsync($"You picked {options[choice]}", ephemeral: true);
-                    }
+                    string[] options = ["🪨", "📃", "✂️"];
+                    await component.RespondAsync($"You picked {options[choice]}", ephemeral: true);
                 }
             }
         }
+    }
 
-        [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
-        [IntegrationType(ApplicationIntegrationType.GuildInstall)]
-        [RequireBotPermission(ChannelPermission.ViewChannel | ChannelPermission.EmbedLinks)]
-        [SlashCommand("connect4", "Play a game of Connect 4.")]
-        public async Task Connect4([Summary("opponent", "Leave empty to verse an AI.")] SocketUser opponent = null)
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
+    [IntegrationType(ApplicationIntegrationType.GuildInstall)]
+    [RequireBotPermission(ChannelPermission.ViewChannel | ChannelPermission.EmbedLinks)]
+    [SlashCommand("connect4", "Play a game of Connect 4.")]
+    public async Task Connect4([Summary("opponent", "Leave empty to verse an AI.")] SocketUser opponent = null)
+    {
+        if (opponent == null || opponent.IsBot)
         {
-            if (opponent == null || opponent.IsBot)
+            await DeferAsync();
+            Connect4 game = new(Context.User, opponent ?? Bot.Client.CurrentUser);
+            await game.StartBotGame(Context.Interaction);
+        }
+        else
+        {
+            (bool, string) canChallenge = await Challenge.CanChallengeAsync(Context.User.Id, opponent.Id);
+            if (!canChallenge.Item1)
+            {
+                await RespondAsync(text: canChallenge.Item2, ephemeral: true);
+            }
+            else
+            {
+                await Challenge.SendMessage(Context.Interaction, new Connect4(Context.User, opponent));
+            }
+        }
+    }
+
+    [ComponentInteraction("connect4:*:*")]
+    public async Task Connect4ButtonHandler(string column, string Id)
+    {
+        SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
+
+        Challenge.Connect4Games.TryGetValue(Convert.ToUInt64(Id), out Connect4 game);
+
+        if (game == null)
+        {
+            await component.RespondAsync(text: $"❌ This game no longer exists\n- Use {Help.GetCommandMention("connect4")} to start a new game.", ephemeral: true);
+        }
+        else
+        {
+            bool isPlayer1 = component.User.Id == game.Player1.Id;
+            bool isPlayer2 = component.User.Id == game.Player2.Id;
+
+            if (!isPlayer1 && !isPlayer2)
+            {
+                await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.", ephemeral: true);
+            }
+            else if (game.IsPlayer1Turn && !isPlayer1 || !game.IsPlayer1Turn && isPlayer1)
+            {
+                await component.RespondAsync(text: $"❌ It is **not** your turn.", ephemeral: true);
+            }
+            else
             {
                 await DeferAsync();
-                Connect4 game = new(Context.User, opponent ?? Bot.Client.CurrentUser);
-                await game.StartBotGame(Context.Interaction);
-            }
-            else
-            {
-                (bool, string) canChallenge = await Challenge.CanChallengeAsync(Context.User.Id, opponent.Id);
-                if (!canChallenge.Item1)
-                {
-                    await RespondAsync(text: canChallenge.Item2, ephemeral: true);
-                }
-                else
-                {
-                    await Challenge.SendMessage(Context.Interaction, new Connect4(Context.User, opponent));
-                }
-            }
-        }
 
-        [ComponentInteraction("connect4:*:*")]
-        public async Task Connect4ButtonHandler(string column, string Id)
-        {
-            SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
-
-            Challenge.Connect4Games.TryGetValue(Convert.ToUInt64(Id), out Connect4 game);
-
-            if (game == null)
-            {
-                await component.RespondAsync(text: $"❌ This game no longer exists\n- Use {Help.GetCommandMention("connect4")} to start a new game.", ephemeral: true);
-            }
-            else
-            {
-                bool isPlayer1 = component.User.Id == game.Player1.Id;
-                bool isPlayer2 = component.User.Id == game.Player2.Id;
-
-                if (!isPlayer1 && !isPlayer2)
+                if (int.TryParse(column, out int col))
                 {
-                    await component.RespondAsync(text: $"❌ You **cannot** play this game because you are not a participant.", ephemeral: true);
-                }
-                else if (game.IsPlayer1Turn && !isPlayer1 || !game.IsPlayer1Turn && isPlayer1)
-                {
-                    await component.RespondAsync(text: $"❌ It is **not** your turn.", ephemeral: true);
-                }
-                else
-                {
-                    await DeferAsync();
-
-                    if (int.TryParse(column, out int col))
+                    // Find the lowest empty row in the selected column
+                    for (int row = 5; row >= 0; row--)
                     {
-                        // Find the lowest empty row in the selected column
-                        for (int row = 5; row >= 0; row--)
+                        if (game.Grid[col - 1, row] == 0)
                         {
-                            if (game.Grid[col - 1, row] == 0)
+                            game.Grid[col - 1, row] = isPlayer1 ? 1 : 2;
+                            game.LastMoveColumn = col - 1;
+                            game.LastMoveRow = row;
+
+                            if (game.Player2.IsBot)
                             {
-                                game.Grid[col - 1, row] = isPlayer1 ? 1 : 2;
-                                game.LastMoveColumn = col - 1;
-                                game.LastMoveRow = row;
-
-                                if (game.Player2.IsBot)
-                                {
-                                    await game.EndBotTurn(component);
-                                }
-                                else
-                                {
-                                    await game.EndTurn(component);
-                                }
-
-                                return;
+                                await game.EndBotTurn(component);
                             }
+                            else
+                            {
+                                await game.EndTurn(component);
+                            }
+
+                            return;
                         }
-
-                        // If no empty cells in the selected column
-                        await component.RespondAsync(text: "❌ This column is full.", ephemeral: true);
                     }
-                    else
-                    {
-                        // Handle the case where the chosen move is not valid or out of bounds
-                        await component.RespondAsync(text: $"❌ Invalid move.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
-                    }
-                }
-            }
-        }
 
-        [ComponentInteraction("acceptChallenge:*")]
-        public async Task AcceptChallengeButtonHandler(string Id)
-        {
-            Challenge.Games.TryGetValue(Convert.ToUInt64(Id), out Games.Game challenge);
-            if (challenge == null)
-            {
-                await Context.Interaction.RespondAsync(text: $"❌ This challenge no longer exists.", ephemeral: true);
-            }
-            else
-            {
-                if (Context.Interaction.User.Id != challenge.Player2.Id)
-                {
-                    await Context.Interaction.RespondAsync(text: $"❌ **Only** {challenge.Player2.Mention} can **accept** this challenge.", ephemeral: true);
+                    // If no empty cells in the selected column
+                    await component.RespondAsync(text: "❌ This column is full.", ephemeral: true);
                 }
                 else
                 {
-                    await DeferAsync();
-
-                    // Update User Info
-                    Challenge.IncrementUserChallenges(challenge.Player2.Id);
-
-                    await challenge.StartGame((SocketMessageComponent)Context.Interaction);
+                    // Handle the case where the chosen move is not valid or out of bounds
+                    await component.RespondAsync(text: $"❌ Invalid move.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
                 }
             }
         }
+    }
 
-        [ComponentInteraction("declineChallenge:*")]
-        public async Task DeclineChallengeButtonHandler(string Id)
+    [ComponentInteraction("acceptChallenge:*")]
+    public async Task AcceptChallengeButtonHandler(string Id)
+    {
+        Challenge.Games.TryGetValue(Convert.ToUInt64(Id), out Games.Game challenge);
+        if (challenge == null)
         {
-            SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
-            Challenge.Games.TryGetValue(Convert.ToUInt64(Id), out Games.Game challenge);
-
-            if (challenge == null)
+            await Context.Interaction.RespondAsync(text: $"❌ This challenge no longer exists.", ephemeral: true);
+        }
+        else
+        {
+            if (Context.Interaction.User.Id != challenge.Player2.Id)
             {
-                await Context.Interaction.RespondAsync(text: $"❌ This challenge no longer exists.", ephemeral: true);
+                await Context.Interaction.RespondAsync(text: $"❌ **Only** {challenge.Player2.Mention} can **accept** this challenge.", ephemeral: true);
             }
             else
             {
-                if (Context.Interaction.User.Id != challenge.Player2.Id)
-                {
-                    await component.RespondAsync(text: $"❌ **Only** {challenge.Player2.Mention} can **decline** this challenge.", ephemeral: true);
-                }
-                else
-                {
-                    await DeferAsync();
+                await DeferAsync();
 
-                    // Update User Info
-                    Challenge.DecrementUserChallenges(challenge.Player1.Id);
+                // Update User Info
+                Challenge.IncrementUserChallenges(challenge.Player2.Id);
 
-                    // Format Message
-                    var embed = new EmbedBuilder
-                    {
-                        Color = Challenge.DefaultColor,
-                        Description = $"### ⚔️ {challenge.Player1.Mention} Challenged {challenge.Player2.Mention} to {challenge.Title}.\n{challenge.Player2.Mention} declined."
-                    };
-
-                    var components = new ComponentBuilder().WithButton(label: "⚔️ Accept", customId: $"acceptedChallenge", style: ButtonStyle.Success, disabled: true)
-                    .WithButton(label: "🛡️ Decline", customId: $"declinedChallenge", style: ButtonStyle.Danger, disabled: true);
-
-                    await component.ModifyOriginalResponseAsync(x => { x.Embed = embed.Build(); x.Content = null; x.Components = components.Build(); });
-
-                    Challenge.RemoveFromSpecificGameList(challenge);
-                    challenge.Dispose();
-                }
+                await challenge.StartGame((SocketMessageComponent)Context.Interaction);
             }
         }
+    }
 
-        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
-        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
-        [SlashCommand("review", "Leave a review for Bob on Top.gg")]
-        public async Task Review()
+    [ComponentInteraction("declineChallenge:*")]
+    public async Task DeclineChallengeButtonHandler(string Id)
+    {
+        SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
+        Challenge.Games.TryGetValue(Convert.ToUInt64(Id), out Games.Game challenge);
+
+        if (challenge == null)
         {
-            var embed = new EmbedBuilder
-            {
-                Title = "<:bob:1161511472791293992> Review Bob on Top.GG",
-                Color = Bot.theme,
-                Footer = new EmbedFooterBuilder
-                {
-                    Text = "Top.gg is not associated with BobTheBot."
-                }
-            };
-
-            var components = new ComponentBuilder().WithButton(label: "Review Bob!", style: ButtonStyle.Link, emote: new Emoji("✍️"), url: "https://top.gg/bot/705680059809398804#reviews");
-
-            // Respond
-            await RespondAsync(embed: embed.Build(), components: components.Build());
+            await Context.Interaction.RespondAsync(text: $"❌ This challenge no longer exists.", ephemeral: true);
         }
-
-        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
-        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
-        [SlashCommand("vote", "Vote for Bob on Top.gg")]
-        public async Task Vote()
+        else
         {
-            var embed = new EmbedBuilder
+            if (Context.Interaction.User.Id != challenge.Player2.Id)
             {
-                Title = "<:bob:1161511472791293992> Upvote Bob on Top.GG",
-                Color = Bot.theme,
-                Footer = new EmbedFooterBuilder
+                await component.RespondAsync(text: $"❌ **Only** {challenge.Player2.Mention} can **decline** this challenge.", ephemeral: true);
+            }
+            else
+            {
+                await DeferAsync();
+
+                // Update User Info
+                Challenge.DecrementUserChallenges(challenge.Player1.Id);
+
+                // Format Message
+                var embed = new EmbedBuilder
                 {
-                    Text = "Top.gg is not associated with BobTheBot."
-                }
-            };
+                    Color = Challenge.DefaultColor,
+                    Description = $"### ⚔️ {challenge.Player1.Mention} Challenged {challenge.Player2.Mention} to {challenge.Title}.\n{challenge.Player2.Mention} declined."
+                };
 
-            var components = new ComponentBuilder().WithButton(label: "Vote for Bob!", style: ButtonStyle.Link, emote: new Emoji("🗳️"), url: "https://top.gg/bot/705680059809398804/vote");
+                var components = new ComponentBuilder().WithButton(label: "⚔️ Accept", customId: $"acceptedChallenge", style: ButtonStyle.Success, disabled: true)
+                .WithButton(label: "🛡️ Decline", customId: $"declinedChallenge", style: ButtonStyle.Danger, disabled: true);
 
-            // Respond
-            await RespondAsync(embed: embed.Build(), components: components.Build());
+                await component.ModifyOriginalResponseAsync(x => { x.Embed = embed.Build(); x.Content = null; x.Components = components.Build(); });
+
+                Challenge.RemoveFromSpecificGameList(challenge);
+                challenge.Dispose();
+            }
         }
+    }
 
-        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
-        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
-        [SlashCommand("quote-prompts", "Bob will give you all valid prompts for /random quote.")]
-        public async Task QuotePrompts()
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+    [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
+    [SlashCommand("review", "Leave a review for Bob on Top.gg")]
+    public async Task Review()
+    {
+        var embed = new EmbedBuilder
         {
-            // Respond
-            await RespondAsync(text: @$"
+            Title = "<:bob:1161511472791293992> Review Bob on Top.GG",
+            Color = Bot.theme,
+            Footer = new EmbedFooterBuilder
+            {
+                Text = "Top.gg is not associated with BobTheBot."
+            }
+        };
+
+        var components = new ComponentBuilder().WithButton(label: "Review Bob!", style: ButtonStyle.Link, emote: new Emoji("✍️"), url: "https://top.gg/bot/705680059809398804#reviews");
+
+        // Respond
+        await RespondAsync(embed: embed.Build(), components: components.Build());
+    }
+
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+    [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
+    [SlashCommand("vote", "Vote for Bob on Top.gg")]
+    public async Task Vote()
+    {
+        var embed = new EmbedBuilder
+        {
+            Title = "<:bob:1161511472791293992> Upvote Bob on Top.GG",
+            Color = Bot.theme,
+            Footer = new EmbedFooterBuilder
+            {
+                Text = "Top.gg is not associated with BobTheBot."
+            }
+        };
+
+        var components = new ComponentBuilder().WithButton(label: "Vote for Bob!", style: ButtonStyle.Link, emote: new Emoji("🗳️"), url: "https://top.gg/bot/705680059809398804/vote");
+
+        // Respond
+        await RespondAsync(embed: embed.Build(), components: components.Build());
+    }
+
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+    [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
+    [SlashCommand("quote-prompts", "Bob will give you all valid prompts for /random quote.")]
+    public async Task QuotePrompts()
+    {
+        // Respond
+        await RespondAsync(text: @$"
 **Here are all valid prompts for {Help.GetCommandMention("random quote")}:**
 
 **Categories:**
@@ -585,150 +616,150 @@ namespace Bob.Commands
 • **Miscellaneous:**  
   `family`, `film`, `future`, `generosity`, `knowledge`, `nature`, `time`
 ");
-        }
+    }
 
-        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
-        [IntegrationType(ApplicationIntegrationType.GuildInstall)]
-        [SlashCommand("announce", "Bob will create a fancy embed announcement in the channel the command is used in.")]
-        public async Task Announce([Summary("title", "The title of the announcement (the title of the embed).")][MinLength(1)][MaxLength(256)] string title,
-            [Summary("description", "The anouncement (the description of the embed).")][MinLength(1)][MaxLength(4096)] string description,
-            [Summary("color", "A color name (purple), or a valid hex code (#8D52FD) or valid RGB code (141, 82, 253).")] string color,
-            [Summary("image", "An image you would like to use (PNG, JPG, JPEG, WEBP, GIF, BMP).")] Attachment attachment = null)
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+    [IntegrationType(ApplicationIntegrationType.GuildInstall)]
+    [SlashCommand("announce", "Bob will create a fancy embed announcement in the channel the command is used in.")]
+    public async Task Announce([Summary("title", "The title of the announcement (the title of the embed).")][MinLength(1)][MaxLength(256)] string title,
+        [Summary("description", "The anouncement (the description of the embed).")][MinLength(1)][MaxLength(4096)] string description,
+        [Summary("color", "A color name (purple), or a valid hex code (#8D52FD) or valid RGB code (141, 82, 253).")] string color,
+        [Summary("image", "An image you would like to use (PNG, JPG, JPEG, WEBP, GIF, BMP).")] Attachment attachment = null)
+    {
+        await DeferAsync(ephemeral: true);
+
+        if (!Context.Interaction.IsDMInteraction)
         {
-            await DeferAsync(ephemeral: true);
-
-            if (!Context.Interaction.IsDMInteraction)
+            IGuildChannel channelToCheck;
+            if (Context.Channel is SocketThreadChannel thread)
             {
-                IGuildChannel channelToCheck;
-                if (Context.Channel is SocketThreadChannel thread)
-                {
-                    channelToCheck = thread.ParentChannel;
-                }
-                else
-                {
-                    channelToCheck = (IGuildChannel)Context.Channel;
-                }
-
-                var botUser = Context.Guild.GetUser(Context.Client.CurrentUser.Id);
-                ChannelPermissions permissions = botUser.GetPermissions(channelToCheck);
-
-                if (!permissions.SendMessages || !permissions.ViewChannel || !permissions.EmbedLinks)
-                {
-                    await FollowupAsync(
-                        text: $"❌ Bob is either missing permissions to view, send messages, *or* " +
-                              $"embed links in the channel <#{Context.Channel.Id}>\n- Try giving Bob " +
-                              $"the following permissions: `View Channel`, `Embed Links`, " +
-                              $"and `Send Messages`.",
-                        ephemeral: true
-                    );
-                    return;
-                }
+                channelToCheck = thread.ParentChannel;
+            }
+            else
+            {
+                channelToCheck = (IGuildChannel)Context.Channel;
             }
 
-            Color? finalColor = Colors.TryGetColor(color);
-            if (finalColor == null)
+            var botUser = Context.Guild.GetUser(Context.Client.CurrentUser.Id);
+            ChannelPermissions permissions = botUser.GetPermissions(channelToCheck);
+
+            if (!permissions.SendMessages || !permissions.ViewChannel || !permissions.EmbedLinks)
             {
                 await FollowupAsync(
-                    text: $"❌ `{color}` is an invalid color. Here is a list of valid colors:\n" +
-                          $"- {Colors.GetSupportedColorsString()}.\n" +
-                          $"- Valid hex and RGB codes are also accepted.\n" +
-                          $"- If you think this is a mistake, let us know here: " +
-                          $"[Bob's Official Server](https://discord.gg/HvGMRZD8jQ)",
+                    text: $"❌ Bob is either missing permissions to view, send messages, *or* " +
+                          $"embed links in the channel <#{Context.Channel.Id}>\n- Try giving Bob " +
+                          $"the following permissions: `View Channel`, `Embed Links`, " +
+                          $"and `Send Messages`.",
                     ephemeral: true
                 );
                 return;
             }
+        }
 
-            string imageUrl = null;
-            if (attachment != null)
-            {
-                string contentType = attachment.ContentType?.ToLower();
-                if (string.IsNullOrEmpty(contentType) || (contentType != "image/png" && contentType != "image/jpeg" && contentType != "image/jpg" && contentType != "image/webp" && contentType != "image/gif" && contentType != "image/bmp"))
-                {
-                    await FollowupAsync(
-                        "❌ The image must be in either **PNG**, **JPG**, **JPEG**, " +
-                        "**WEBP**, **GIF**, or **BMP** format.",
-                        ephemeral: true
-                    );
-                    return;
-                }
-                imageUrl = attachment.Url;
-            }
+        Color? finalColor = Colors.TryGetColor(color);
+        if (finalColor == null)
+        {
+            await FollowupAsync(
+                text: $"❌ `{color}` is an invalid color. Here is a list of valid colors:\n" +
+                      $"- {Colors.GetSupportedColorsString()}.\n" +
+                      $"- Valid hex and RGB codes are also accepted.\n" +
+                      $"- If you think this is a mistake, let us know here: " +
+                      $"[Bob's Official Server](https://discord.gg/HvGMRZD8jQ)",
+                ephemeral: true
+            );
+            return;
+        }
 
-            var embed = new EmbedBuilder
+        string imageUrl = null;
+        if (attachment != null)
+        {
+            string contentType = attachment.ContentType?.ToLower();
+            if (string.IsNullOrEmpty(contentType) || (contentType != "image/png" && contentType != "image/jpeg" && contentType != "image/jpg" && contentType != "image/webp" && contentType != "image/gif" && contentType != "image/bmp"))
             {
-                Title = title,
-                Color = finalColor,
-                Description = Announcement.FormatDescription(description),
-                ImageUrl = imageUrl,
-                Footer = new EmbedFooterBuilder
-                {
-                    IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
-                    Text = $"Announced by {Context.User.Username}"
-                }
-            }.Build();
-
-            try
-            {
-                await Context.Channel.SendMessageAsync(embed: embed);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Failed to send announcement: {ex}");
                 await FollowupAsync(
-                    "❌ I was unable to send the announcement. Please double-check my permissions in this channel.",
+                    "❌ The image must be in either **PNG**, **JPG**, **JPEG**, " +
+                    "**WEBP**, **GIF**, or **BMP** format.",
                     ephemeral: true
                 );
                 return;
             }
-
-            await FollowupAsync(text: "✅ Your announcement has been made.", ephemeral: true);
+            imageUrl = attachment.Url;
         }
 
-        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
-        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
-        [SlashCommand("info", "Learn about Bob.")]
-        public async Task Info()
+        var embed = new EmbedBuilder
         {
-            var embed = new EmbedBuilder
+            Title = title,
+            Color = finalColor,
+            Description = Announcement.FormatDescription(description),
+            ImageUrl = imageUrl,
+            Footer = new EmbedFooterBuilder
             {
-                Title = $"Bob's Info",
-                Color = Bot.theme
-            };
+                IconUrl = Context.User.GetAvatarUrl() ?? Context.User.GetDefaultAvatarUrl(),
+                Text = $"Announced by {Context.User.Username}"
+            }
+        }.Build();
 
-            embed.AddField(name: "📛 Username", value: $"{Bot.Client.CurrentUser.Username}", inline: true)
-            .AddField(name: "🪪 ID", value: $"`{Bot.Client.CurrentUser.Id}`", inline: true)
-            .AddField(name: ":calendar_spiral: Date Created", value: Timestamp.FromDateTimeOffset(Bot.Client.CurrentUser.CreatedAt, Timestamp.Formats.Detailed), inline: false)
-            .AddField(name: "📈 Servers", value: $"`{Bot.Client.Guilds.Count:n0}`", inline: true)
-            .AddField(name: "🏗️ Made With", value: "C#, .NET, PostgreSQL, Docker", inline: true)
-            .AddField(name: "📡 Hosted With", value: "Railway", inline: true);
-
-            var components = new ComponentBuilder();
-
-            components.WithButton(label: "Website", emote: new Emoji("🌐"), style: ButtonStyle.Link, url: "https://bobthebot.net")
-            .WithButton(label: "GitHub", emote: Emote.Parse("<:github:1236245156798402685>"), style: ButtonStyle.Link, url: "https://github.com/bob-el-bot/BobTheBot");
-
-            await RespondAsync(embed: embed.Build(), components: components.Build());
+        try
+        {
+            await Context.Channel.SendMessageAsync(embed: embed);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Failed to send announcement: {ex}");
+            await FollowupAsync(
+                "❌ I was unable to send the announcement. Please double-check my permissions in this channel.",
+                ephemeral: true
+            );
+            return;
         }
 
-        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
-        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
-        [SlashCommand("new", "See the newest changes to Bob, and find out what's next.")]
-        public async Task New()
+        await FollowupAsync(text: "✅ Your announcement has been made.", ephemeral: true);
+    }
+
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+    [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
+    [SlashCommand("info", "Learn about Bob.")]
+    public async Task Info()
+    {
+        var embed = new EmbedBuilder
         {
-            string content = await GetFromAPI("https://api.github.com/repos/bob-el-bot/BobTheBot/commits/main", AcceptTypes.application_json);
+            Title = $"Bob's Info",
+            Color = Bot.theme
+        };
 
-            // Parse Content
-            var jsonData = JsonNode.Parse(content).AsObject();
-            var commit = JsonNode.Parse(jsonData["commit"].ToString()).AsObject();
-            var commitMessage = commit["message"].ToString();
-            var commitAuthor = JsonNode.Parse(commit["author"].ToString()).AsObject();
-            var commitDate = commitAuthor["date"].ToString();
+        embed.AddField(name: "📛 Username", value: $"{Bot.Client.CurrentUser.Username}", inline: true)
+        .AddField(name: "🪪 ID", value: $"`{Bot.Client.CurrentUser.Id}`", inline: true)
+        .AddField(name: ":calendar_spiral: Date Created", value: Timestamp.FromDateTimeOffset(Bot.Client.CurrentUser.CreatedAt, Timestamp.Formats.Detailed), inline: false)
+        .AddField(name: "📈 Servers", value: $"`{Bot.Client.Guilds.Count:n0}`", inline: true)
+        .AddField(name: "🏗️ Made With", value: "C#, .NET, PostgreSQL, Docker", inline: true)
+        .AddField(name: "📡 Hosted With", value: "Railway", inline: true);
 
-            var embed = new EmbedBuilder
-            {
-                Title = $"What's New?",
-                Description = @"### 🗒️ Creator's Notes (June 15th, 2025)
+        var components = new ComponentBuilder();
+
+        components.WithButton(label: "Website", emote: new Emoji("🌐"), style: ButtonStyle.Link, url: "https://bobthebot.net")
+        .WithButton(label: "GitHub", emote: Emote.Parse("<:github:1236245156798402685>"), style: ButtonStyle.Link, url: "https://github.com/bob-el-bot/BobTheBot");
+
+        await RespondAsync(embed: embed.Build(), components: components.Build());
+    }
+
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+    [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
+    [SlashCommand("new", "See the newest changes to Bob, and find out what's next.")]
+    public async Task New()
+    {
+        string content = await GetFromAPI("https://api.github.com/repos/bob-el-bot/BobTheBot/commits/main", AcceptTypes.application_json);
+
+        // Parse Content
+        var jsonData = JsonNode.Parse(content).AsObject();
+        var commit = JsonNode.Parse(jsonData["commit"].ToString()).AsObject();
+        var commitMessage = commit["message"].ToString();
+        var commitAuthor = JsonNode.Parse(commit["author"].ToString()).AsObject();
+        var commitDate = commitAuthor["date"].ToString();
+
+        var embed = new EmbedBuilder
+        {
+            Title = $"What's New?",
+            Description = @"### 🗒️ Creator's Notes (June 15th, 2025)
 - Due to the over all value increase of premium and the growing number of users Bob needs to look over we have increased the cost tht premium goes for. Monthly is now ***4.99*** and Lifetime is now ***$19.99***. Users who have already purchased premium will not be affected by this change (💜 thanks to everyone who already has).
 - Added image support to 📢 `/announce` command (thanks hbkvxncent for the idea).
 - Added 📌 `/react-board` group to setup and manage a React Baord in your server (thanks hbkvxncent for the idea). Make sure to see the `React Board Commands` section in `/help` for more info.
@@ -742,429 +773,424 @@ namespace Bob.Commands
 - Fixed 🪲 bug in Quote creation where if a user had no guild nickname it would show a blank name (thanks hbkvxncent for catching this).
 - Fixed a bug in Announcement creation where if a user had no guild nickname it would show a blank name (thanks hbkvxncent for catching this).
 - Stay 📺 tuned for more awesome updates!",
-                Color = theme
-            };
+            Color = theme
+        };
 
-            embed.AddField(name: "✨ Latest Update", value: commitMessage, inline: true)
-            .AddField(name: ":calendar_spiral: Date", value: Timestamp.FromString(commitDate, Timestamp.Formats.Detailed), inline: true);
+        embed.AddField(name: "✨ Latest Update", value: commitMessage, inline: true)
+        .AddField(name: ":calendar_spiral: Date", value: Timestamp.FromString(commitDate, Timestamp.Formats.Detailed), inline: true);
 
-            var components = new ComponentBuilder();
+        var components = new ComponentBuilder();
 
-            components.WithButton(label: "Future Plans", emote: new Emoji("🔮"), style: ButtonStyle.Link, url: "https://github.com/orgs/bob-el-bot/projects/4")
-            .WithButton(label: "Blog", emote: new Emoji("📰"), style: ButtonStyle.Link, url: "https://bobthebot.net/blog.html");
+        components.WithButton(label: "Future Plans", emote: new Emoji("🔮"), style: ButtonStyle.Link, url: "https://github.com/orgs/bob-el-bot/projects/4")
+        .WithButton(label: "Blog", emote: new Emoji("📰"), style: ButtonStyle.Link, url: "https://bobthebot.net/blog.html");
 
-            await RespondAsync(embed: embed.Build(), components: components.Build());
+        await RespondAsync(embed: embed.Build(), components: components.Build());
+    }
+
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+    [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
+    [SlashCommand("help", "Bob will share info about every command sorted by category.")]
+    public async Task HelpCommand()
+    {
+        await DeferAsync();
+
+        var embed = new EmbedBuilder
+        {
+            Title = "📖 All of My Commands.",
+            Description = "Select a category to see info about relevant commands.",
+            Color = Bot.theme
+        };
+
+        embed.AddField(name: "Categories", value: $"`{Help.CommandGroups.Length}`", inline: true)
+        .AddField(name: "Commands", value: $"`{Help.GetCommandCount()}`", inline: true);
+
+        await FollowupAsync(embed: embed.Build(), components: Help.GetComponents());
+    }
+
+    [ComponentInteraction("help")]
+    public async Task HelpOptionsHandler()
+    {
+        await DeferAsync();
+
+        SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
+
+        await component.ModifyOriginalResponseAsync(x => { x.Embed = Help.GetCategoryEmbed(int.Parse(component.Data.Values.FirstOrDefault())); });
+    }
+
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+    [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
+    [SlashCommand("search-commands", "Search for a command by name and description.")]
+    public async Task SearchCommands([Autocomplete(typeof(CommandAutocompleteHandler))][Summary("command", "The command you want to find or learn about. Filters by name and description.")] string command)
+    {
+        await DeferAsync();
+
+        await FollowupAsync(embed: Help.GetCommandSearchEmbed(command), components: Help.GetComponents());
+    }
+
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
+    [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
+    [SlashCommand("confess", "Bob will send someone a message anonymously (saying inappropriate things will result in punishment)")]
+    public async Task Confess(string message, SocketUser user, string signoff)
+    {
+        if (user.IsBot)
+        {
+            await RespondAsync("❌ Sorry, but you can't send messages to bots.", ephemeral: true);
+            return;
         }
 
-        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
-        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
-        [SlashCommand("help", "Bob will share info about every command sorted by category.")]
-        public async Task HelpCommand()
+        if (ConfessFiltering.IsBlank(message))
         {
-            await DeferAsync();
-
-            var embed = new EmbedBuilder
-            {
-                Title = "📖 All of My Commands.",
-                Description = "Select a category to see info about relevant commands.",
-                Color = Bot.theme
-            };
-
-            embed.AddField(name: "Categories", value: $"`{Help.CommandGroups.Length}`", inline: true)
-            .AddField(name: "Commands", value: $"`{Help.GetCommandCount()}`", inline: true);
-
-            await FollowupAsync(embed: embed.Build(), components: Help.GetComponents());
+            await RespondAsync("❌ Sorry, but you can't send blank, or effectively blank, messages.\n- Try adding characters that are not blank or zero-width.", ephemeral: true);
+            return;
         }
 
-        [ComponentInteraction("help")]
-        public async Task HelpOptionsHandler()
+        await DeferAsync(ephemeral: true);
+
+        try
         {
-            await DeferAsync();
+            var dbUser = await dbContext.GetUserOrNew(user.Id);
 
-            SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
+            FilterResult filterResult = new();
 
-            await component.ModifyOriginalResponseAsync(x => { x.Embed = Help.GetCategoryEmbed(int.Parse(component.Data.Values.FirstOrDefault())); });
-        }
-
-        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
-        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
-        [SlashCommand("search-commands", "Search for a command by name and description.")]
-        public async Task SearchCommands([Autocomplete(typeof(CommandAutocompleteHandler))][Summary("command", "The command you want to find or learn about. Filters by name and description.")] string command)
-        {
-            await DeferAsync();
-
-            await FollowupAsync(embed: Help.GetCommandSearchEmbed(command), components: Help.GetComponents());
-        }
-
-        [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
-        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
-        [SlashCommand("confess", "Bob will send someone a message anonymously (saying inappropriate things will result in punishment)")]
-        public async Task Confess(string message, SocketUser user, string signoff)
-        {
-            if (user.IsBot)
+            // If user has confess filtering on, check for blacklisted words
+            if (dbUser.ConfessFilteringOff == false)
             {
-                await RespondAsync("❌ Sorry, but you can't send messages to bots.", ephemeral: true);
-                return;
-            }
+                // Check for blacklisted words
+                filterResult = ConfessFiltering.ContainsBannedWords($"{message} {signoff}");
+                bool isUserBlacklisted = await BlackList.IsBlacklisted(Context.User.Id);
 
-            if (ConfessFiltering.IsBlank(message))
-            {
-                await RespondAsync("❌ Sorry, but you can't send blank, or effectively blank, messages.\n- Try adding characters that are not blank or zero-width.", ephemeral: true);
-                return;
-            }
-
-            await DeferAsync(ephemeral: true);
-
-            try
-            {
-                var dbUser = await dbContext.GetUserOrNew(user.Id);
-
-                FilterResult filterResult = new();
-
-                // If user has confess filtering on, check for blacklisted words
-                if (dbUser.ConfessFilteringOff == false)
+                if (filterResult.BlacklistMatches.Count > 0)
                 {
-                    // Check for blacklisted words
-                    filterResult = ConfessFiltering.ContainsBannedWords($"{message} {signoff}");
-                    bool isUserBlacklisted = await BlackList.IsBlacklisted(Context.User.Id);
+                    Server dbServer = Context.Guild?.Id != null ? await dbContext.GetServerOrNew(Context.Guild.Id) : null;
 
-                    if (filterResult.BlacklistMatches.Count > 0)
-                    {
-                        Server dbServer = Context.Guild?.Id != null ? await dbContext.GetServerOrNew(Context.Guild.Id) : null;
-
-                        // If a Guild Install and confess filtering is on for the server, punish.
-                        if (dbServer != null && dbServer.ConfessFilteringOff == false)
-                        {
-                            var bannedUser = await dbContext.GetUserFromBlackList(Context.User.Id);
-                            string reason = $"Sending a message with {Help.GetCommandMention("confess")} that contained: {ConfessFiltering.FormatBannedWords(filterResult.BlacklistMatches)}";
-
-                            if (isUserBlacklisted)
-                            {
-                                bannedUser = await BlackList.StepBanUser(Context.User.Id, reason);
-                                await FollowupAsync($"❌ This server has confess message filtering turned on and your message contains blacklisted words. You are **already banned** and so your punishment has **increased**.\n- You will be able to use {Help.GetCommandMention("confess")} again {Timestamp.FromDateTime((DateTime)bannedUser.Expiration, Timestamp.Formats.Relative)}.\n**Reason(s):**\n{bannedUser.Reason}\n- Use {Help.GetCommandMention("profile punishments")} to check your punishment status.\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
-                            }
-                            else
-                            {
-                                bannedUser = await BlackList.BlackListUser(bannedUser, Context.User.Id, reason, BlackList.Punishment.FiveMinutes);
-                                await FollowupAsync($"❌ This server has confess message filtering turned on and your message contains blacklisted words. You have been temporarily banned.\n- You will be able to use {Help.GetCommandMention("confess")} again {Timestamp.FromDateTime((DateTime)bannedUser.Expiration, Timestamp.Formats.Relative)}.\n**Reason(s):**\n{bannedUser.Reason}\n- Use {Help.GetCommandMention("profile punishments")} to check your punishment status.\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
-                            }
-
-                            return;
-                        }
-                    }
-
-                    if (isUserBlacklisted)
+                    // If a Guild Install and confess filtering is on for the server, punish.
+                    if (dbServer != null && dbServer.ConfessFilteringOff == false)
                     {
                         var bannedUser = await dbContext.GetUserFromBlackList(Context.User.Id);
-                        await FollowupAsync($"❌ This server has confess message filtering turned on. You are currently banned from using {Help.GetCommandMention("confess")}\n{bannedUser.FormatAsString()}\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
+                        string reason = $"Sending a message with {Help.GetCommandMention("confess")} that contained: {ConfessFiltering.FormatBannedWords(filterResult.BlacklistMatches)}";
+
+                        if (isUserBlacklisted)
+                        {
+                            bannedUser = await BlackList.StepBanUser(Context.User.Id, reason);
+                            await FollowupAsync($"❌ This server has confess message filtering turned on and your message contains blacklisted words. You are **already banned** and so your punishment has **increased**.\n- You will be able to use {Help.GetCommandMention("confess")} again {Timestamp.FromDateTime((DateTime)bannedUser.Expiration, Timestamp.Formats.Relative)}.\n**Reason(s):**\n{bannedUser.Reason}\n- Use {Help.GetCommandMention("profile punishments")} to check your punishment status.\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
+                        }
+                        else
+                        {
+                            bannedUser = await BlackList.BlackListUser(bannedUser, Context.User.Id, reason, BlackList.Punishment.FiveMinutes);
+                            await FollowupAsync($"❌ This server has confess message filtering turned on and your message contains blacklisted words. You have been temporarily banned.\n- You will be able to use {Help.GetCommandMention("confess")} again {Timestamp.FromDateTime((DateTime)bannedUser.Expiration, Timestamp.Formats.Relative)}.\n**Reason(s):**\n{bannedUser.Reason}\n- Use {Help.GetCommandMention("profile punishments")} to check your punishment status.\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
+                        }
+
                         return;
                     }
                 }
 
-                // If user has confessions off or filtering on and there are blacklisted words, do not send the message.
-                if (dbUser.ConfessionsOff || filterResult.BlacklistMatches.Count > 0)
+                if (isUserBlacklisted)
                 {
-                    await FollowupAsync($"❌ Bob could **not** DM {user.Mention}.\n- You could try again, but this *probably* means their DMs are closed which Bob cannot change.", ephemeral: true);
+                    var bannedUser = await dbContext.GetUserFromBlackList(Context.User.Id);
+                    await FollowupAsync($"❌ This server has confess message filtering turned on. You are currently banned from using {Help.GetCommandMention("confess")}\n{bannedUser.FormatAsString()}\n- **Do not try to use this command with an offending word or your punishment will be increased.**", ephemeral: true);
                     return;
                 }
-
-                string formattedMessage = $"{ConfessFiltering.notificationMessage}\n{message} - {signoff}";
-
-                if (filterResult.WordsToCensor.Count > 0)
-                {
-                    formattedMessage = ConfessFiltering.MarkSpoilers(formattedMessage, filterResult.WordsToCensor);
-                }
-
-                if (formattedMessage.Length > 2000)
-                {
-                    await FollowupAsync($"❌ The message *cannot* be delivered because it contains **{formattedMessage.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **2000** characters.", ephemeral: true);
-                    return;
-                }
-
-                var components = new ComponentBuilder()
-                    .WithButton(label: "Disable Confessions", customId: $"disableConfessions:{user.Id}", style: ButtonStyle.Secondary, emote: Emoji.Parse("🚫"));
-                ButtonBuilder reportMessageButton = new()
-                {
-                    Label = "Report Message",
-                    Style = ButtonStyle.Secondary,
-                    Emote = Emoji.Parse("⚠️")
-                };
-
-                var finalMessage = formattedMessage;
-
-                if (ConfessFiltering.ContainsLink(formattedMessage))
-                {
-                    if (formattedMessage.Length + ConfessFiltering.linkWarningMessage.Length < 2000)
-                    {
-                        finalMessage += "\n" + ConfessFiltering.linkWarningMessage;
-                    }
-                }
-
-                var sentMessage = await user.SendMessageAsync(text: finalMessage);
-                reportMessageButton.CustomId = $"reportMessage:{sentMessage.Channel.Id}:{sentMessage.Id}";
-                components.WithButton(reportMessageButton);
-
-                await sentMessage.ModifyAsync(x => x.Components = components.Build());
-                await FollowupAsync($"✉️ Sent!\n**Message:** {message} - {signoff}\n**To:** **{user.Mention}**", ephemeral: true);
             }
-            catch
+
+            // If user has confessions off or filtering on and there are blacklisted words, do not send the message.
+            if (dbUser.ConfessionsOff || filterResult.BlacklistMatches.Count > 0)
             {
                 await FollowupAsync($"❌ Bob could **not** DM {user.Mention}.\n- You could try again, but this *probably* means their DMs are closed which Bob cannot change.", ephemeral: true);
+                return;
             }
+
+            string formattedMessage = $"{ConfessFiltering.notificationMessage}\n{message} - {signoff}";
+
+            if (filterResult.WordsToCensor.Count > 0)
+            {
+                formattedMessage = ConfessFiltering.MarkSpoilers(formattedMessage, filterResult.WordsToCensor);
+            }
+
+            if (formattedMessage.Length > 2000)
+            {
+                await FollowupAsync($"❌ The message *cannot* be delivered because it contains **{formattedMessage.Length}** characters.\n- Try having fewer characters.\n- Discord has a limit of **2000** characters.", ephemeral: true);
+                return;
+            }
+
+            var components = new ComponentBuilder()
+                .WithButton(label: "Disable Confessions", customId: $"disableConfessions:{user.Id}", style: ButtonStyle.Secondary, emote: Emoji.Parse("🚫"));
+            ButtonBuilder reportMessageButton = new()
+            {
+                Label = "Report Message",
+                Style = ButtonStyle.Secondary,
+                Emote = Emoji.Parse("⚠️")
+            };
+
+            var finalMessage = formattedMessage;
+
+            if (ConfessFiltering.ContainsLink(formattedMessage))
+            {
+                if (formattedMessage.Length + ConfessFiltering.linkWarningMessage.Length < 2000)
+                {
+                    finalMessage += "\n" + ConfessFiltering.linkWarningMessage;
+                }
+            }
+
+            var sentMessage = await user.SendMessageAsync(text: finalMessage);
+            reportMessageButton.CustomId = $"reportMessage:{sentMessage.Channel.Id}:{sentMessage.Id}";
+            components.WithButton(reportMessageButton);
+
+            await sentMessage.ModifyAsync(x => x.Components = components.Build());
+            await FollowupAsync($"✉️ Sent!\n**Message:** {message} - {signoff}\n**To:** **{user.Mention}**", ephemeral: true);
+        }
+        catch
+        {
+            await FollowupAsync($"❌ Bob could **not** DM {user.Mention}.\n- You could try again, but this *probably* means their DMs are closed which Bob cannot change.", ephemeral: true);
+        }
+    }
+
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+    [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
+    [SlashCommand("premium", "Update your premium status or buy it!")]
+    public async Task PremiumStatus()
+    {
+        await DeferAsync();
+
+        User user;
+        user = await dbContext.GetUserOrNew(Context.User.Id);
+
+        // If user has premium ensure DB is updated.
+        bool isPremium = Premium.IsPremium(Context.Interaction.Entitlements);
+        if (isPremium == false && Premium.IsValidPremium(user.PremiumExpiration) == false)
+        {
+            await FollowupAsync(text: "✨ You can get premium below!\n💜 *Thanks so much!*", components: Premium.GetComponents());
+        }
+        else if (isPremium == false && Premium.IsValidPremium(user.PremiumExpiration))
+        {
+            await FollowupAsync(text: "✨ You already have premium!\n💜 *Thanks so much!*");
+        }
+        else
+        {
+            await foreach (var entitlementCollection in Client.GetShardFor(Context.Guild).GetEntitlementsAsync(userId: Context.User.Id))
+            {
+                if (entitlementCollection.Any(x => x.SkuId == 1282452500913328180))
+                {
+                    user.PremiumExpiration = DateTimeOffset.MaxValue;
+                    await dbContext.SaveChangesAsync();
+                }
+            }
+
+            await FollowupAsync(text: "✨ Your premium status has been updated!\n**💜 Thanks so much** for your support and have fun with your new features!");
         }
 
-        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
-        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
-        [SlashCommand("premium", "Update your premium status or buy it!")]
-        public async Task PremiumStatus()
+        // Temporarily commented out due to Discord not properly handling entitlements on their end.
+
+        // else
+        // {
+        //     await DeferAsync();
+
+        //     if (isPremium)
+        //     {
+
+
+        //         // Get Expiration Date
+        //         var entitlement = Context.Interaction.Entitlements.FirstOrDefault(x => x.SkuId == 1169107771673812992);
+        //         var expirationDate = entitlement?.EndsAt;
+
+        //         if (expirationDate == null && Context.Interaction.Entitlements.First(x => x.SkuId == 1282452500913328180) != null)
+        //         {
+        //             expirationDate = DateTimeOffset.MaxValue;
+        //         }
+
+        //         // Only write to DB if needed.
+        //         if (user.PremiumExpiration != expirationDate && expirationDate != null)
+        //         {
+        //             Console.WriteLine($"User {Context.User.Id} has updated their premium expiration to {expirationDate} in the DB");
+        //             user.PremiumExpiration = (DateTimeOffset) expirationDate;
+        //             await context.UpdateUser(user);
+        //         }
+        //         else
+        //         {
+        //             Console.WriteLine($"User {Context.User.Id} has not updated their premium expiration in the DB (it is already {expirationDate})");
+        //         }
+        //     }
+
+        //     // Respond
+        //     await FollowupAsync(text: "✨ Your premium status has been updated!\n**💜 Thanks so much** for your support and have fun with your new features!");
+        // }
+    }
+
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+    [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
+    [SlashCommand("support", "Sends an invite to Bob's support Server.")]
+    public async Task Support()
+    {
+        var components = new ComponentBuilder();
+        components.WithButton(label: "Join Bob's Server!", emote: new Emoji("🏰"), style: ButtonStyle.Link, url: "https://discord.gg/HvGMRZD8jQ");
+
+        // Respond
+        await RespondAsync(text: "Whether you're having issues with Bob, wanting to suggest a new idea, or maybe just wanna hang...", components: components.Build());
+    }
+
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
+    [IntegrationType(ApplicationIntegrationType.GuildInstall)]
+    [SlashCommand("poll", "Bob will create a poll.")]
+    public async Task Poll([Summary("prompt", "The question you are asking.")] string prompt, [Summary("option1", "an answer / response to your question")] string option1, [Summary("option2", "an answer / response to your question")] string option2, [Summary("option3", "an answer / response to your question")] string option3 = "", [Summary("option4", "an answer / response to your question")] string option4 = "")
+    {
+        var permissions = Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel);
+
+        // Check if Bob has permission to send messages in given channel
+        if (!permissions.SendMessages || !permissions.ViewChannel || !permissions.EmbedLinks || !permissions.AddReactions)
         {
-            await DeferAsync();
-
-            User user;
-            user = await dbContext.GetUserOrNew(Context.User.Id);
-
-            // If user has premium ensure DB is updated.
-            bool isPremium = Premium.IsPremium(Context.Interaction.Entitlements);
-            if (isPremium == false && Premium.IsValidPremium(user.PremiumExpiration) == false)
-            {
-                await FollowupAsync(text: "✨ You can get premium below!\n💜 *Thanks so much!*", components: Premium.GetComponents());
-            }
-            else if (isPremium == false && Premium.IsValidPremium(user.PremiumExpiration))
-            {
-                await FollowupAsync(text: "✨ You already have premium!\n💜 *Thanks so much!*");
-            }
-            else
-            {
-                await foreach (var entitlementCollection in Client.GetShardFor(Context.Guild).GetEntitlementsAsync(userId: Context.User.Id))
-                {
-                    if (entitlementCollection.Any(x => x.SkuId == 1282452500913328180))
-                    {
-                        user.PremiumExpiration = DateTimeOffset.MaxValue;
-                        await dbContext.SaveChangesAsync();
-                    }
-                }
-
-                await FollowupAsync(text: "✨ Your premium status has been updated!\n**💜 Thanks so much** for your support and have fun with your new features!");
-            }
-
-            // Temporarily commented out due to Discord not properly handling entitlements on their end.
-
-            // else
-            // {
-            //     await DeferAsync();
-
-            //     if (isPremium)
-            //     {
-
-
-            //         // Get Expiration Date
-            //         var entitlement = Context.Interaction.Entitlements.FirstOrDefault(x => x.SkuId == 1169107771673812992);
-            //         var expirationDate = entitlement?.EndsAt;
-
-            //         if (expirationDate == null && Context.Interaction.Entitlements.First(x => x.SkuId == 1282452500913328180) != null)
-            //         {
-            //             expirationDate = DateTimeOffset.MaxValue;
-            //         }
-
-            //         // Only write to DB if needed.
-            //         if (user.PremiumExpiration != expirationDate && expirationDate != null)
-            //         {
-            //             Console.WriteLine($"User {Context.User.Id} has updated their premium expiration to {expirationDate} in the DB");
-            //             user.PremiumExpiration = (DateTimeOffset) expirationDate;
-            //             await context.UpdateUser(user);
-            //         }
-            //         else
-            //         {
-            //             Console.WriteLine($"User {Context.User.Id} has not updated their premium expiration in the DB (it is already {expirationDate})");
-            //         }
-            //     }
-
-            //     // Respond
-            //     await FollowupAsync(text: "✨ Your premium status has been updated!\n**💜 Thanks so much** for your support and have fun with your new features!");
-            // }
+            await RespondAsync(text: $"❌ Bob is either missing permissions to view, send messages, add reactions, *or* embed links in the channel <#{Context.Channel.Id}>.\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`, `Add Reactions`, and `Embed Links`.", ephemeral: true);
         }
-
-        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
-        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
-        [SlashCommand("support", "Sends an invite to Bob's support Server.")]
-        public async Task Support()
+        else
         {
-            var components = new ComponentBuilder();
-            components.WithButton(label: "Join Bob's Server!", emote: new Emoji("🏰"), style: ButtonStyle.Link, url: "https://discord.gg/HvGMRZD8jQ");
-
-            // Respond
-            await RespondAsync(text: "Whether you're having issues with Bob, wanting to suggest a new idea, or maybe just wanna hang...", components: components.Build());
-        }
-
-        [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
-        [IntegrationType(ApplicationIntegrationType.GuildInstall)]
-        [SlashCommand("poll", "Bob will create a poll.")]
-        public async Task Poll([Summary("prompt", "The question you are asking.")] string prompt, [Summary("option1", "an answer / response to your question")] string option1, [Summary("option2", "an answer / response to your question")] string option2, [Summary("option3", "an answer / response to your question")] string option3 = "", [Summary("option4", "an answer / response to your question")] string option4 = "")
-        {
-            var permissions = Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel);
-
-            // Check if Bob has permission to send messages in given channel
-            if (!permissions.SendMessages || !permissions.ViewChannel || !permissions.EmbedLinks || !permissions.AddReactions)
-            {
-                await RespondAsync(text: $"❌ Bob is either missing permissions to view, send messages, add reactions, *or* embed links in the channel <#{Context.Channel.Id}>.\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`, `Add Reactions`, and `Embed Links`.", ephemeral: true);
-            }
-            else
-            {
-                // Setup base data
-                string footerText = Context.User.GlobalName ?? Context.User.Username + " created this poll.";
-                string instructions = "React with the corresponding number to cast your vote.";
-
-                // Embed
-                var embed = new EmbedBuilder
-                {
-                    Title = "📊 " + prompt,
-                    Description = instructions,
-                    Color = Bot.theme,
-                    Footer = new EmbedFooterBuilder
-                    {
-                        Text = footerText,
-                        IconUrl = Context.User.GetAvatarUrl()
-                    }
-                };
-
-                string[] possibleOptions = [option1, option2, option3, option4];
-                string[] optionLabels = ["1️⃣", "2️⃣", "3️⃣", "4️⃣"];
-                int index = 0;
-                foreach (string option in possibleOptions)
-                {
-                    if (option != "")
-                    {
-                        embed.AddField(name: $"Option {optionLabels[index]}", value: option);
-                        index++;
-                    }
-                }
-
-                await RespondAsync("✅ Your poll has been made.", ephemeral: true);
-
-                var response = await Context.Channel.SendMessageAsync(embed: embed.Build());
-
-                int index2 = 0;
-                foreach (string option in possibleOptions)
-                {
-                    if (option != "")
-                    {
-                        await response.AddReactionAsync(new Emoji(optionLabels[index2]));
-                        index2++;
-                    }
-                }
-            }
-        }
-
-        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
-        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
-        [SlashCommand("fonts", "Bob will type your text in a font of your choice")]
-        public async Task Fonts([Summary("text", "the text you want converted. NOTE: only the alphabet is converted.")] string text, FontConversion.FontTypes font)
-        {
-            if (text.Length + 6 > 2000) // 2000 is max characters in a message.
-            {
-                await RespondAsync($"❌ The inputted text *cannot* be converted to a different font because it contains **{text.Length + 6}** characters.\n- Try having fewer characters.\n- Discord has a limit of **2000** characters.", ephemeral: true);
-            }
-            else
-            {
-                string finalText = font switch
-                {
-                    FontConversion.FontTypes.fancy => FontConversion.Fancy(text),
-                    FontConversion.FontTypes.slashed => FontConversion.Slashed(text),
-                    FontConversion.FontTypes.outlined => FontConversion.Outlined(text),
-                    FontConversion.FontTypes.flipped => FontConversion.Flipped(text),
-                    FontConversion.FontTypes.boxed => FontConversion.Boxed(text),
-                    FontConversion.FontTypes.medieval => FontConversion.Medieval(text),
-                    _ => text,
-                };
-                await RespondAsync($"```{finalText}```");
-            }
-        }
-
-        [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
-        [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
-        [SlashCommand("ship", "Bob will determine how good of a couple two users would make")]
-        public async Task Ship(SocketUser person1 = null, SocketUser person2 = null)
-        {
-            if (!Context.Interaction.IsDMInteraction)
-            {
-                IGuildChannel channelToCheck;
-                if (Context.Channel is SocketThreadChannel thread)
-                {
-                    channelToCheck = thread.ParentChannel;
-                }
-                else
-                {
-                    channelToCheck = (IGuildChannel)Context.Channel;
-                }
-
-                var botUser = Context.Guild.GetUser(Context.Client.CurrentUser.Id);
-                ChannelPermissions permissions = botUser.GetPermissions(channelToCheck);
-
-                if (!permissions.EmbedLinks)
-                {
-                    await RespondAsync("❌ Bob is missing permissions to " +
-                        $"embed links in the channel <#{Context.Channel.Id}>\n- Try giving Bob " +
-                        $"the following permission: `Embed Links`", ephemeral: true);
-                    return;
-                }
-            }
-
-            await DeferAsync();
-
-            if (person1 == null)
-            {
-                await CachedUsers.AddGuildUsersAsync(Context); // Ensure the guild is cached
-                person1 = CachedUsers.GetRandomMember(Context);
-            }
-
-            if (person2 == null)
-            {
-                await CachedUsers.AddGuildUsersAsync(Context); // Ensure the guild is cached
-                person2 = CachedUsers.GetRandomMember(Context);
-            }
-
-            float matchPercent = 0;
-
-            if (person1.Id != person2.Id)
-            {
-                // Ensure order consistency
-                if (person1.Id > person2.Id)
-                {
-                    (person1, person2) = (person2, person1);
-                }
-
-                // Combine the snowflakes and usernames into a single string
-                string combinedString = person1.Id.ToString() + person2.Id.ToString() + person1.Username + person2.Username;
-
-                // 1. Hash the combined string (both IDs and usernames)
-                int hash = combinedString.GetHashCode(); // Combined hash of both user IDs and usernames
-
-                // 2. Normalize hash to 0-100 range
-                float hashBasedVariance = Math.Abs(hash % 100);  // Use modulo to restrict hash within 0-99
-                matchPercent = hashBasedVariance;  // Directly use the hash as the match percentage
-
-                // 3. Adjust match percentage if needed (for example, ensure the match is always between 0 and 100)
-                matchPercent = Math.Clamp(matchPercent, 0, 100);  // Ensure final result is within 0-100
-            }
-
-            // Determine Heart Level
-            string heartLevel = HeartLevels.CalculateHeartLevel(matchPercent);
+            // Setup base data
+            string footerText = Context.User.GlobalName ?? Context.User.Username + " created this poll.";
+            string instructions = "React with the corresponding number to cast your vote.";
 
             // Embed
             var embed = new EmbedBuilder
             {
-                Title = $"{person1.Username} ❤️ {person2.Username}",
-                Color = new Color(15548997),
+                Title = "📊 " + prompt,
+                Description = instructions,
+                Color = Bot.theme,
+                Footer = new EmbedFooterBuilder
+                {
+                    Text = footerText,
+                    IconUrl = Context.User.GetAvatarUrl()
+                }
             };
 
-            embed.AddField(name: $"Match of:", value: $"`{matchPercent}%`", inline: true)
-                 .AddField(name: "Heart Level", value: heartLevel, inline: true);
+            string[] possibleOptions = [option1, option2, option3, option4];
+            string[] optionLabels = ["1️⃣", "2️⃣", "3️⃣", "4️⃣"];
+            int index = 0;
+            foreach (string option in possibleOptions)
+            {
+                if (option != "")
+                {
+                    embed.AddField(name: $"Option {optionLabels[index]}", value: option);
+                    index++;
+                }
+            }
 
-            await FollowupAsync(embed: embed.Build());
+            await RespondAsync("✅ Your poll has been made.", ephemeral: true);
+
+            var response = await Context.Channel.SendMessageAsync(embed: embed.Build());
+
+            int index2 = 0;
+            foreach (string option in possibleOptions)
+            {
+                if (option != "")
+                {
+                    await response.AddReactionAsync(new Emoji(optionLabels[index2]));
+                    index2++;
+                }
+            }
         }
     }
+
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+    [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
+    [SlashCommand("fonts", "Bob will type your text in a font of your choice")]
+    public async Task Fonts([Summary("text", "the text you want converted. NOTE: only the alphabet is converted.")] string text, FontConversion.FontTypes font)
+    {
+        if (text.Length + 6 > 2000) // 2000 is max characters in a message.
+        {
+            await RespondAsync($"❌ The inputted text *cannot* be converted to a different font because it contains **{text.Length + 6}** characters.\n- Try having fewer characters.\n- Discord has a limit of **2000** characters.", ephemeral: true);
+        }
+        else
+        {
+            string finalText = font switch
+            {
+                FontConversion.FontTypes.fancy => FontConversion.Fancy(text),
+                FontConversion.FontTypes.slashed => FontConversion.Slashed(text),
+                FontConversion.FontTypes.outlined => FontConversion.Outlined(text),
+                FontConversion.FontTypes.flipped => FontConversion.Flipped(text),
+                FontConversion.FontTypes.boxed => FontConversion.Boxed(text),
+                FontConversion.FontTypes.medieval => FontConversion.Medieval(text),
+                _ => text,
+            };
+            await RespondAsync($"```{finalText}```");
+        }
+    }
+
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
+    [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
+    [SlashCommand("ship", "Bob will determine how good of a couple two users would make")]
+    public async Task Ship(SocketUser person1 = null, SocketUser person2 = null)
+    {
+        if (!Context.Interaction.IsDMInteraction)
+        {
+            IGuildChannel channelToCheck;
+            if (Context.Channel is SocketThreadChannel thread)
+            {
+                channelToCheck = thread.ParentChannel;
+            }
+            else
+            {
+                channelToCheck = (IGuildChannel)Context.Channel;
+            }
+
+            var botUser = Context.Guild.GetUser(Context.Client.CurrentUser.Id);
+            ChannelPermissions permissions = botUser.GetPermissions(channelToCheck);
+
+            if (!permissions.EmbedLinks)
+            {
+                await RespondAsync("❌ Bob is missing permissions to " +
+                    $"embed links in the channel <#{Context.Channel.Id}>\n- Try giving Bob " +
+                    $"the following permission: `Embed Links`", ephemeral: true);
+                return;
+            }
+        }
+
+        await DeferAsync();
+
+        if (person1 == null)
+        {
+            await CachedUsers.AddGuildUsersAsync(Context); // Ensure the guild is cached
+            person1 = CachedUsers.GetRandomMember(Context);
+        }
+
+        if (person2 == null)
+        {
+            await CachedUsers.AddGuildUsersAsync(Context); // Ensure the guild is cached
+            person2 = CachedUsers.GetRandomMember(Context);
+        }
+
+        float matchPercent = 0;
+
+        if (person1.Id != person2.Id)
+        {
+            // Ensure order consistency
+            if (person1.Id > person2.Id)
+            {
+                (person1, person2) = (person2, person1);
+            }
+
+            // Combine the snowflakes and usernames into a single string
+            string combinedString = person1.Id.ToString() + person2.Id.ToString() + person1.Username + person2.Username;
+
+            // 1. Hash the combined string (both IDs and usernames)
+            int hash = combinedString.GetHashCode(); // Combined hash of both user IDs and usernames
+
+            // 2. Normalize hash to 0-100 range
+            float hashBasedVariance = Math.Abs(hash % 100);  // Use modulo to restrict hash within 0-99
+            matchPercent = hashBasedVariance;  // Directly use the hash as the match percentage
+
+            // 3. Adjust match percentage if needed (for example, ensure the match is always between 0 and 100)
+            matchPercent = Math.Clamp(matchPercent, 0, 100);  // Ensure final result is within 0-100
+        }
+
+        // Determine Heart Level
+        string heartLevel = HeartLevels.CalculateHeartLevel(matchPercent);
+
+        // Embed
+        var embed = new EmbedBuilder
+        {
+            Title = $"{person1.Username} ❤️ {person2.Username}",
+            Color = new Color(15548997),
+        };
+
+        embed.AddField(name: $"Match of:", value: $"`{matchPercent}%`", inline: true)
+             .AddField(name: "Heart Level", value: heartLevel, inline: true);
+
+        await FollowupAsync(embed: embed.Build());
+    }
 }
-
-
-
-
