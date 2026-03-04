@@ -2068,7 +2068,7 @@ namespace Bob.Commands.Helpers
                     {
                         Name = "analyze-link",
                         InheritGroupName = false,
-                        Description = "See the route a link will take you through, see latency, servers, response codes, and check for rick rolls. Valid formats include: `bobthebot.net` and `https://bobthebot.net`, or an IP address such as `1.1.1.1`. Private and localhost IPs are blocked.",
+                        Description = "See the route a link or IP will take you through, see latency, servers, response codes, and check for rick rolls. Valid formats include: `bobthebot.net` and `https://bobthebot.net`, or an IP address such as `1.1.1.1`. Private and localhost IPs are blocked.",
                         Url = "https://docs.bobthebot.net#analyze-link"
                     },
                     new CommandInfo
