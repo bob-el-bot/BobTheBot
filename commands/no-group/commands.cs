@@ -64,7 +64,7 @@ public class NoGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInter
 
     [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
     [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
-    [SlashCommand("analyze-link", "Bob checks a link, IP, or Port and sees where it takes you.")]
+    [SlashCommand("analyze-link", "Trace a link's route: check latency, server headers, status codes, cookies, and for Rick-Rolls.")]
     public async Task AnalyzeLink([Summary("link", "The link, IP, or Host to analyze.")] string link)
     {
         string originalInput = link.Trim();
