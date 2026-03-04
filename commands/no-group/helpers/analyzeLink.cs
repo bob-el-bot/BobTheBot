@@ -276,6 +276,12 @@ public partial class Analyze
 
                     if (urlRedirect != null)
                     {
+                        if (!urlRedirect.StartsWith("http"))
+                        {
+                            Uri baseUri = new Uri(link);
+                            urlRedirect = new Uri(baseUri, urlRedirect).ToString();
+                        }
+
                         trail.Add(new LinkInfo
                         {
                             Link = $"{link}",
