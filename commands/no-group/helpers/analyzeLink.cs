@@ -30,6 +30,9 @@ public partial class Analyze
         public bool IsShortened { get; set; }
         public bool ContainsCookies { get; set; }
         public bool Failed { get; set; }
+        public long LatencyMs { get; set; }
+        public string Server { get; set; }
+        public string ContentType { get; set; }
     }
 
     public static async Task<Embed> AnalyzeLink(string link)
@@ -154,6 +157,8 @@ public partial class Analyze
         int redirectCount = 0;
         Random random = new();
 
+        var sw = new System.Diagnostics.Stopwatch();
+
         while (redirectCount <= maximumRedirectCount && !string.IsNullOrWhiteSpace(link))
         {
             if (visitedUrls.Contains(link))
@@ -188,9 +193,14 @@ public partial class Analyze
 
             try
             {
-                // Send the request
+                sw.Restart();
                 using var response = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+                sw.Stop();
+
+                long currentLatency = sw.ElapsedMilliseconds;
                 bool hasCookies = response.Headers.TryGetValues("Set-Cookie", out _);
+                string serverHeader = response.Headers.Server?.ToString() ?? "Unknown";
+                string contentType = response.Content.Headers.ContentType?.MediaType ?? "Unknown";
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -204,7 +214,10 @@ public partial class Analyze
                             IsRedirect = false,
                             IsShortened = IsShortenedUrl(link, false),
                             ContainsCookies = hasCookies,
-                            Failed = false
+                            Failed = false,
+                            LatencyMs = currentLatency,
+                            Server = serverHeader,
+                            ContentType = contentType
                         });
                         link = null;
                         continue;
@@ -225,7 +238,10 @@ public partial class Analyze
                             ContainsCookies = hasCookies,
                             IsRickRoll = HasRickRoll(link),
                             IsRedirect = true,
-                            IsShortened = IsShortenedUrl(link, true)
+                            IsShortened = IsShortenedUrl(link, true),
+                            LatencyMs = currentLatency,
+                            Server = serverHeader,
+                            ContentType = contentType
                         });
                         link = url;
                         redirectCount++;
@@ -246,7 +262,10 @@ public partial class Analyze
                             ContainsCookies = hasCookies,
                             IsRickRoll = HasRickRoll(link),
                             IsRedirect = true,
-                            IsShortened = IsShortenedUrl(link, true)
+                            IsShortened = IsShortenedUrl(link, true),
+                            LatencyMs = currentLatency,
+                            Server = serverHeader,
+                            ContentType = contentType
                         });
                         link = jsRedirect;
                         redirectCount++;
@@ -265,7 +284,10 @@ public partial class Analyze
                             ContainsCookies = hasCookies,
                             IsRickRoll = HasRickRoll(link),
                             IsRedirect = true,
-                            IsShortened = IsShortenedUrl(link, true)
+                            IsShortened = IsShortenedUrl(link, true),
+                            LatencyMs = currentLatency,
+                            Server = serverHeader,
+                            ContentType = contentType
                         });
                         link = urlRedirect;
                         redirectCount++;
@@ -280,7 +302,10 @@ public partial class Analyze
                         ContainsCookies = hasCookies,
                         IsRickRoll = HasRickRoll(link),
                         IsRedirect = isRedirect,
-                        IsShortened = IsShortenedUrl(link, isRedirect)
+                        IsShortened = IsShortenedUrl(link, isRedirect),
+                        LatencyMs = currentLatency,
+                        Server = serverHeader,
+                        ContentType = contentType
                     });
                     link = null;
                 }
@@ -294,7 +319,9 @@ public partial class Analyze
                         ContainsCookies = hasCookies,
                         IsRickRoll = HasRickRoll(link),
                         IsRedirect = isRedirect,
-                        IsShortened = IsShortenedUrl(link, isRedirect)
+                        IsShortened = IsShortenedUrl(link, isRedirect),
+                        LatencyMs = currentLatency,
+                        Server = serverHeader
                     });
 
                     if (response.Headers.Location != null)
@@ -499,6 +526,47 @@ public partial class Analyze
             _userAgentIndex = (_userAgentIndex + 1) % UserAgents.Count;
             return userAgent;
         }
+    }
+
+    public static async Task<Embed> ProbeLink(string link)
+    {
+        List<LinkInfo> trail = await GetUrlTrail(link);
+        var finalHop = trail.Last();
+
+        var embed = new EmbedBuilder
+        {
+            Title = $"🌐 Status Report: {new Uri(link).Host}",
+            Color = finalHop.Failed ? Color.Red : Color.Green,
+            Footer = new EmbedFooterBuilder { Text = $"Checked at {DateTime.UtcNow:HH:mm:ss} UTC" }
+        };
+
+        if (finalHop.Failed)
+        {
+            embed.Description = $"❌ **Offline or Unreachable**\n`{finalHop.SpecialCase ?? "Connection Refused"}`";
+        }
+        else
+        {
+            int code = (int)finalHop.StatusCode;
+            string statusEmoji = code >= 200 && code < 300 ? "🟢" : "🟡";
+
+            embed.Description = $"{statusEmoji} **System Online**\nReturned a `{code} {finalHop.StatusCode}` response.";
+
+            embed.AddField("Redirects", $"{trail.Count - 1} hops", true);
+
+            if (finalHop.LatencyMs > 0)
+                embed.AddField("Latency", $"{finalHop.LatencyMs}ms", true);
+
+            if (!string.IsNullOrEmpty(finalHop.Server))
+                embed.AddField("Server", finalHop.Server, true);
+
+            // If it's a redirect trail, show the final destination
+            if (trail.Count > 1)
+            {
+                embed.AddField("Final URL", $"`{finalHop.Link}`");
+            }
+        }
+
+        return embed.Build();
     }
 
     [GeneratedRegex(@"(?:v=|\/)([a-zA-Z0-9_-]{11})")]
