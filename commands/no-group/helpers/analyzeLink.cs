@@ -85,13 +85,41 @@ public partial class Analyze
             }
             else
             {
-                string errorMessage = l.SpecialCase != null ? $"**Failed:** {l.SpecialCase}" : "**Failed to visit link.**";
-                description.AppendLine($"❌ {errorMessage}");
-                description.AppendLine($"> <{l.Link}>\n");
-                description.AppendLine($"> ⏱️ `{l.LatencyMs}ms` | 🗄️ `{l.Server ?? "Unknown"}`\n");
+                string error = l.SpecialCase ?? "Unknown Error";
+
+                if (error.Contains("SSL connection could not be established"))
+                {
+                    error = "SSL/TLS Handshake Failed (Site may not support HTTPS)";
+                }
+                else if (error.Contains("Name or service not known"))
+                {
+                    error = "DNS Lookup Failed (Domain does not exist)";
+                }
+                else if (error.Contains("No such host is known"))
+                {
+                    error = "Host Unknown (Check the spelling of the domain)";
+                }
+                else if (error.Contains("Connection refused") || error.Contains("An error occurred while sending the request"))
+                {
+                    error = "Unreachable (No response from web server)";
+                }
+                else if (error.Contains("timed out") || error.Contains("Request Timeout"))
+                {
+                    error = "Request Timed Out (Server is too slow or down)";
+                }
+
+                // Display the cleaned error
+                description.AppendLine($"❌ **{error}**");
+                description.AppendLine($"> <{l.Link}>");
+
+                if (l.LatencyMs > 0 && !string.IsNullOrEmpty(l.Server) && l.Server != "Unknown")
+                {
+                    description.AppendLine($"> ⏱️ `{l.LatencyMs}ms` | 🗄️ `{l.Server}`");
+                }
+
                 if (!failed)
                 {
-                    warnings.AppendLine($"- {l.SpecialCase ?? "For an unknown reason, Bob could not open this page (it might not exist)"}. ");
+                    warnings.AppendLine($"- {error}. ");
                     failed = true;
                 }
             }
@@ -308,7 +336,7 @@ public partial class Analyze
                         // If it's a relative root "/" or contains login keywords
                         if (urlRedirect == "/" || loginTriggers.Any(t => urlRedirect.Contains(t, StringComparison.OrdinalIgnoreCase)))
                         {
-                            specialCase = "Login/Return Path";
+                            specialCase = "URL Redirect - Login/Return Path";
                         }
 
                         trail.Add(new LinkInfo

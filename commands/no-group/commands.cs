@@ -17,6 +17,7 @@ using Bob.PremiumInterface;
 using Bob.ColorMethods;
 using Bob.Moderation;
 using Bob.Time.Timestamps;
+using System.Net;
 
 namespace Bob.Commands;
 
@@ -82,6 +83,23 @@ public class NoGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInter
             return;
         }
 
+        bool isIP = IPAddress.TryParse(uriResult.Host, out _);
+        bool hasValidTld = uriResult.Host.Contains('.') && !uriResult.Host.EndsWith(".");
+
+        if (!isIP && !hasValidTld)
+        {
+            StringBuilder errorMsg = new();
+            errorMsg.AppendLine("❌ **That doesn't look like a valid target.**");
+            errorMsg.AppendLine("\nBob can analyze domains, IP addresses, and specific ports. For example:");
+            errorMsg.AppendLine("- **Domains:** `bobthebot.net` or `https://bobthebot.net` pieces");
+            errorMsg.AppendLine("- **IPv4:** `1.1.1.1` or `8.8.8.8:53` pieces");
+            errorMsg.AppendLine("- **IPv6:** `[2606:4700:4700::1111]`");
+            errorMsg.AppendLine("\n*Note: Local addresses like `localhost` or `127.0.0.1` are blocked.*");
+
+            await RespondAsync(text: errorMsg.ToString(), ephemeral: true);
+            return;
+        }
+
         // SSRF SECURITY CHECK: Prevent Bob from attacking its own server.
         if (Analyze.IsPrivateIP(uriResult.Host))
         {
@@ -123,6 +141,23 @@ public class NoGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInter
         if (!Uri.TryCreate(foundLink, UriKind.Absolute, out Uri uriResult))
         {
             await RespondAsync(text: "❌ Bob found a link, but it's not a valid format.", ephemeral: true);
+            return;
+        }
+
+        bool isIP = IPAddress.TryParse(uriResult.Host, out _);
+        bool hasValidTld = uriResult.Host.Contains('.') && !uriResult.Host.EndsWith(".");
+
+        if (!isIP && !hasValidTld)
+        {
+            StringBuilder errorMsg = new();
+            errorMsg.AppendLine("❌ **That doesn't look like a valid target.**");
+            errorMsg.AppendLine("\nBob can analyze domains, IP addresses, and specific ports. For example:");
+            errorMsg.AppendLine("- **Domains:** `bobthebot.net` or `https://bobthebot.net` pieces");
+            errorMsg.AppendLine("- **IPv4:** `1.1.1.1` or `8.8.8.8:53` pieces");
+            errorMsg.AppendLine("- **IPv6:** `[2606:4700:4700::1111]`");
+            errorMsg.AppendLine("\n*Note: Local addresses like `localhost` or `127.0.0.1` are blocked.*");
+
+            await RespondAsync(text: errorMsg.ToString(), ephemeral: true);
             return;
         }
 
