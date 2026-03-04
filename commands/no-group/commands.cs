@@ -63,23 +63,36 @@ public class NoGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInter
 
     [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
     [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
-    [SlashCommand("analyze-link", "Bob will check out a link, and see where it takes you.")]
-    public async Task AnalyzeLink([Summary("link", "The link in question.")] string link)
+    [SlashCommand("analyze-link", "Bob checks a link, IP, or Port and sees where it takes you.")]
+    public async Task AnalyzeLink([Summary("link", "The link, IP, or Host to analyze.")] string link)
     {
-        if (link.Contains('.') && link.Length < 7 || (link.Length >= 7 && link[..7] != "http://" && link.Length >= 8 && link[..8] != "https://"))
+        string originalInput = link.Trim();
+
+        // Add protocol if it's missing (helps Uri.TryCreate handle IPs/Ports)
+        if (!originalInput.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
+            !originalInput.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
         {
-            link = $"https://{link}";
+            link = $"https://{originalInput}";
         }
 
-        if (!Uri.IsWellFormedUriString(link, UriKind.Absolute))
+        // Try to create the URI. If https fails, it might be a raw IP/Port that only supports http
+        if (!Uri.TryCreate(link, UriKind.Absolute, out Uri uriResult))
         {
-            await RespondAsync(text: "❌ Your link is not valid. Here are some things to know:\n- Your link could look like this `http://bobthebot.net`, `https://bobthebot.net`, or `bobthebot.net`.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+            await RespondAsync(text: "❌ Bob can't parse that. Make sure it's a valid URL or IP (e.g., `1.1.1.1` or `[::1]:8080`).", ephemeral: true);
+            return;
         }
-        else
+
+        // SSRF SECURITY CHECK: Prevent Bob from attacking its own server.
+        if (Analyze.IsPrivateIP(uriResult.Host))
         {
-            await DeferAsync();
-            await FollowupAsync(embed: await Analyze.AnalyzeLink(link));
+            await RespondAsync(text: "🚫 Bob is not allowed to visit local or internal addresses (localhost/private IPs).", ephemeral: true);
+            return;
         }
+
+        await DeferAsync();
+
+        // Pass the well-formed URI string to your helper
+        await FollowupAsync(embed: await Analyze.AnalyzeLink(uriResult.ToString()));
     }
 
     [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
@@ -87,23 +100,41 @@ public class NoGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInter
     [MessageCommand("Analyze Link")]
     public async Task AnalyzeMessageLink(IMessage message)
     {
-        string pattern = @"(https?://\S+)|(www\.\S+)";
-
-        // Create a Regex object with the pattern
+        // 1. Extract potential links from the message content
+        string pattern = @"(https?://\S+)|(www\.\S+)|(\b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?\b)|(\b\S+\.\S+\b)";
         Regex regex = new(pattern);
-
-        // Find all matches in the input string
         MatchCollection matches = regex.Matches(message.Content);
 
         if (matches.Count == 0)
         {
-            await RespondAsync(text: "❌ Your link is not valid. Here are some things to know:\n- Your link could look like this `http://bobthebot.net`, or `https://bobthebot.net`.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+            await RespondAsync(text: "❌ Bob couldn't find a valid link or IP in that message.", ephemeral: true);
+            return;
         }
-        else
+
+        // Take the first match and normalize it
+        string foundLink = matches[0].Value.Trim();
+
+        if (!foundLink.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
+            !foundLink.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
         {
-            await DeferAsync();
-            await FollowupAsync(embed: await Analyze.AnalyzeLink(matches[0].Value));
+            foundLink = $"https://{foundLink}";
         }
+
+        if (!Uri.TryCreate(foundLink, UriKind.Absolute, out Uri uriResult))
+        {
+            await RespondAsync(text: "❌ Bob found a link, but it's not a valid format.", ephemeral: true);
+            return;
+        }
+
+        // SSRF SECURITY CHECK: Use the same logic as the Slash Command
+        if (Analyze.IsPrivateIP(uriResult.Host))
+        {
+            await RespondAsync(text: "🚫 Bob is not allowed to visit local or internal addresses (localhost/private IPs).", ephemeral: true);
+            return;
+        }
+
+        await DeferAsync();
+        await FollowupAsync(embed: await Analyze.AnalyzeLink(uriResult.ToString()));
     }
 
     [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]

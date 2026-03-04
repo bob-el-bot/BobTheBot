@@ -79,12 +79,16 @@ public partial class Analyze
 
             if (!l.Failed)
             {
-                description.AppendLine($"{(linkCount == trail.Count ? "📍" : "⬇️")} <{l.Link}> **Status Code:** `{(int)l.StatusCode} {l.StatusCode}{(l.SpecialCase != null ? $" - {l.SpecialCase}" : "")}`\n**Is Redirect?** {(l.IsRedirect ? "true" : "false")} **Has Cookies?** {(l.ContainsCookies ? "true" : "false")} **Is Short URL?** {(l.IsShortened ? "true" : "false")} **Is Rick Roll?** {(l.IsRickRoll ? "true" : "false")} ");
+                description.AppendLine($"{(linkCount == trail.Count ? "📍" : "⬇️")} **{(int)l.StatusCode} {l.StatusCode}**{(l.SpecialCase != null ? $" — *{l.SpecialCase}*" : "")}");
+                description.AppendLine($"> <{l.Link}>");
+                description.AppendLine($"> ⏱️ `{l.LatencyMs}ms` | 🗄️ `{l.Server ?? "Unknown"}` | 🍪 `{l.ContainsCookies}` | 🔞 `RickRoll: {l.IsRickRoll}`");
             }
             else
             {
-                string errorMessage = l.SpecialCase != null ? $"**Failed to visit link:** {l.SpecialCase}" : "**Failed to visit link.**";
-                description.AppendLine($"❌ <{l.Link}> {errorMessage}");
+                string errorMessage = l.SpecialCase != null ? $"**Failed:** {l.SpecialCase}" : "**Failed to visit link.**";
+                description.AppendLine($"❌ {errorMessage}");
+                description.AppendLine($"> <{l.Link}>\n");
+                description.AppendLine($"> ⏱️ `{l.LatencyMs}ms` | 🗄️ `{l.Server ?? "Unknown"}`\n");
                 if (!failed)
                 {
                     warnings.AppendLine($"- {l.SpecialCase ?? "For an unknown reason, Bob could not open this page (it might not exist)"}. ");
@@ -125,6 +129,25 @@ public partial class Analyze
         // Construct the final title with the link wrapped in <>
         title += $"{link}";
 
+        Color embedColor = Bot.theme; // Default
+
+        if (failed)
+        {
+            embedColor = Color.Red; // ⁉️ Unknown/Error
+        }
+        else if (isRickRoll || highRedirectCount)
+        {
+            embedColor = new Color(0xFF4747); // 🚫 Suspicious (Red)
+        }
+        else if (containsSpecialRedirect || containsCookies)
+        {
+            embedColor = Color.Gold; // ⚠️ Potentially Suspicious (Orange/Gold)
+        }
+        else
+        {
+            embedColor = Color.Green; // ✅ Not Suspicious
+        }
+
         var embed = new EmbedBuilder
         {
             Title = title,
@@ -133,7 +156,7 @@ public partial class Analyze
             {
                 Text = "Bob can't guarantee a link is safe."
             },
-            Color = Bot.theme
+            Color = embedColor
         };
 
         string adviceEmoji = failed ? "⁉️" : (isRickRoll || highRedirectCount || failed ? "🚫" : (containsSpecialRedirect || containsCookies ? "⚠️" : "✅"));
@@ -276,30 +299,39 @@ public partial class Analyze
 
                     if (urlRedirect != null)
                     {
-                        if (!urlRedirect.StartsWith("http"))
+                        urlRedirect = HttpUtility.UrlDecode(urlRedirect);
+
+                        // Identify if it's a "Soft" Login Redirect
+                        string specialCase = "URL Redirect";
+                        string[] loginTriggers = ["/login", "/signin", "/auth", "/cdn-cgi/access", "return_to"];
+
+                        // If it's a relative root "/" or contains login keywords
+                        if (urlRedirect == "/" || loginTriggers.Any(t => urlRedirect.Contains(t, StringComparison.OrdinalIgnoreCase)))
                         {
-                            Uri baseUri = new Uri(link);
-                            urlRedirect = new Uri(baseUri, urlRedirect).ToString();
+                            specialCase = "Login/Return Path";
                         }
 
                         trail.Add(new LinkInfo
                         {
-                            Link = $"{link}",
+                            Link = link,
                             StatusCode = response.StatusCode,
-                            SpecialCase = "URL Redirect",
+                            SpecialCase = specialCase,
                             ContainsCookies = hasCookies,
                             IsRickRoll = HasRickRoll(link),
                             IsRedirect = true,
                             IsShortened = IsShortenedUrl(link, true),
                             LatencyMs = currentLatency,
-                            Server = serverHeader,
-                            ContentType = contentType
+                            Server = serverHeader
                         });
+
+                        if (!urlRedirect.StartsWith("http"))
+                        {
+                            urlRedirect = new Uri(new Uri(link), urlRedirect).ToString();
+                        }
                         link = urlRedirect;
                         redirectCount++;
                         continue;
                     }
-
                     bool isRedirect = (int)response.StatusCode >= 300 && (int)response.StatusCode <= 308;
                     trail.Add(new LinkInfo
                     {
@@ -534,45 +566,35 @@ public partial class Analyze
         }
     }
 
-    public static async Task<Embed> ProbeLink(string link)
+    public static bool IsPrivateIP(string host)
     {
-        List<LinkInfo> trail = await GetUrlTrail(link);
-        var finalHop = trail.Last();
+        // Block literal localhost
+        if (host.Equals("localhost", StringComparison.OrdinalIgnoreCase)) return true;
 
-        var embed = new EmbedBuilder
+        if (IPAddress.TryParse(host, out IPAddress address))
         {
-            Title = $"🌐 Status Report: {new Uri(link).Host}",
-            Color = finalHop.Failed ? Color.Red : Color.Green,
-            Footer = new EmbedFooterBuilder { Text = $"Checked at {DateTime.UtcNow:HH:mm:ss} UTC" }
-        };
+            // Block loopback (127.0.0.1 or ::1)
+            if (IPAddress.IsLoopback(address)) return true;
 
-        if (finalHop.Failed)
-        {
-            embed.Description = $"❌ **Offline or Unreachable**\n`{finalHop.SpecialCase ?? "Connection Refused"}`";
-        }
-        else
-        {
-            int code = (int)finalHop.StatusCode;
-            string statusEmoji = code >= 200 && code < 300 ? "🟢" : "🟡";
-
-            embed.Description = $"{statusEmoji} **System Online**\nReturned a `{code} {finalHop.StatusCode}` response.";
-
-            embed.AddField("Redirects", $"{trail.Count - 1} hops", true);
-
-            if (finalHop.LatencyMs > 0)
-                embed.AddField("Latency", $"{finalHop.LatencyMs}ms", true);
-
-            if (!string.IsNullOrEmpty(finalHop.Server))
-                embed.AddField("Server", finalHop.Server, true);
-
-            // If it's a redirect trail, show the final destination
-            if (trail.Count > 1)
+            // Block IPv4 private ranges
+            if (address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
             {
-                embed.AddField("Final URL", $"`{finalHop.Link}`");
+                byte[] bytes = address.GetAddressBytes();
+                // 10.0.0.0/8 (Railway Internal)
+                if (bytes[0] == 10) return true;
+                // 172.16.0.0/12
+                if (bytes[0] == 172 && bytes[1] >= 16 && bytes[1] <= 31) return true;
+                // 192.168.0.0/16
+                if (bytes[0] == 192 && bytes[1] == 168) return true;
+                // 169.254.0.0/16 (Link-local / Cloud Metadata)
+                if (bytes[0] == 169 && bytes[1] == 254) return true;
             }
+
+            // Block IPv6 link-local
+            if (address.IsIPv6LinkLocal) return true;
         }
 
-        return embed.Build();
+        return false;
     }
 
     [GeneratedRegex(@"(?:v=|\/)([a-zA-Z0-9_-]{11})")]
