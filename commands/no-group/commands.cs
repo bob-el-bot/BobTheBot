@@ -17,6 +17,7 @@ using Bob.PremiumInterface;
 using Bob.ColorMethods;
 using Bob.Moderation;
 using Bob.Time.Timestamps;
+using System.Net;
 
 namespace Bob.Commands;
 
@@ -63,7 +64,7 @@ public class NoGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInter
 
     [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
     [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
-    [SlashCommand("analyze-link", "Bob checks a link, IP, or Port and sees where it takes you.")]
+    [SlashCommand("analyze-link", "Trace a link's route: check latency, server headers, status codes, cookies, and for Rick-Rolls.")]
     public async Task AnalyzeLink([Summary("link", "The link, IP, or Host to analyze.")] string link)
     {
         string originalInput = link.Trim();
@@ -79,6 +80,23 @@ public class NoGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInter
         if (!Uri.TryCreate(link, UriKind.Absolute, out Uri uriResult))
         {
             await RespondAsync(text: "❌ Bob can't parse that. Make sure it's a valid URL or IP (e.g., `1.1.1.1` or `[::1]:8080`).", ephemeral: true);
+            return;
+        }
+
+        bool isIP = IPAddress.TryParse(uriResult.Host, out _);
+        bool hasValidTld = uriResult.Host.Contains('.') && !uriResult.Host.EndsWith(".");
+
+        if (!isIP && !hasValidTld)
+        {
+            StringBuilder errorMsg = new();
+            errorMsg.AppendLine("❌ **That doesn't look like a valid target.**");
+            errorMsg.AppendLine("\nBob can analyze domains, IP addresses, and specific ports. For example:");
+            errorMsg.AppendLine("- **Domains:** `bobthebot.net` or `https://bobthebot.net` pieces");
+            errorMsg.AppendLine("- **IPv4:** `1.1.1.1` or `8.8.8.8:53` pieces");
+            errorMsg.AppendLine("- **IPv6:** `[2606:4700:4700::1111]`");
+            errorMsg.AppendLine("\n*Note: Local addresses like `localhost` or `127.0.0.1` are blocked.*");
+
+            await RespondAsync(text: errorMsg.ToString(), ephemeral: true);
             return;
         }
 
@@ -123,6 +141,23 @@ public class NoGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInter
         if (!Uri.TryCreate(foundLink, UriKind.Absolute, out Uri uriResult))
         {
             await RespondAsync(text: "❌ Bob found a link, but it's not a valid format.", ephemeral: true);
+            return;
+        }
+
+        bool isIP = IPAddress.TryParse(uriResult.Host, out _);
+        bool hasValidTld = uriResult.Host.Contains('.') && !uriResult.Host.EndsWith(".");
+
+        if (!isIP && !hasValidTld)
+        {
+            StringBuilder errorMsg = new();
+            errorMsg.AppendLine("❌ **That doesn't look like a valid target.**");
+            errorMsg.AppendLine("\nBob can analyze domains, IP addresses, and specific ports. For example:");
+            errorMsg.AppendLine("- **Domains:** `bobthebot.net` or `https://bobthebot.net` pieces");
+            errorMsg.AppendLine("- **IPv4:** `1.1.1.1` or `8.8.8.8:53` pieces");
+            errorMsg.AppendLine("- **IPv6:** `[2606:4700:4700::1111]`");
+            errorMsg.AppendLine("\n*Note: Local addresses like `localhost` or `127.0.0.1` are blocked.*");
+
+            await RespondAsync(text: errorMsg.ToString(), ephemeral: true);
             return;
         }
 
