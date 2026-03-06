@@ -81,7 +81,7 @@ public partial class Analyze
             {
                 description.AppendLine($"{(linkCount == trail.Count ? "📍" : "⬇️")} **{(int)l.StatusCode} {l.StatusCode}**{(l.SpecialCase != null ? $" — *{l.SpecialCase}*" : "")}");
                 description.AppendLine($"> <{l.Link}>");
-                description.AppendLine($"> ⏱️ `{l.LatencyMs}ms` | 🗄️ `{l.Server ?? "Unknown"}` | 🍪 `{l.ContainsCookies}` | 🔞 `RickRoll: {l.IsRickRoll}`");
+                description.AppendLine($"> ⏱️ `{l.LatencyMs}ms` | 🗄️ `{l.Server ?? "Unknown"}` | 🍪 `{l.ContainsCookies}` | 🎤 `RickRoll: {l.IsRickRoll}`");
             }
             else
             {
