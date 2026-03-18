@@ -90,11 +90,18 @@ namespace Bob.Commands
             [Summary("day", "The day for the time you want to convert.")][MinValue(1)][MaxValue(31)] int day,
             [Summary("hour", "The hour for the time you want to convert, in 24-hour format.")][MinValue(0)][MaxValue(23)] int hour,
             [Summary("minute", "The minute for the time you want to convert.")][MinValue(0)][MaxValue(59)] int minute,
-            [Summary("from-timezone", "The timezone to convert from.")] Timezone sourceTimezone,
-            [Summary("to-timezone", "The timezone you want to convert to.")] Timezone destinationTimezone)
+            [Summary("from-timezone", "The timezone to convert from.")][Autocomplete(typeof(TimezoneAutocompleteHandler))] string sourceTimezoneStr,
+            [Summary("to-timezone", "The timezone you want to convert to.")][Autocomplete(typeof(TimezoneAutocompleteHandler))] string destinationTimezoneStr)
         {
             try
             {
+                if (!Enum.TryParse<Timezone>(sourceTimezoneStr, out var sourceTimezone) ||
+                    !Enum.TryParse<Timezone>(destinationTimezoneStr, out var destinationTimezone))
+                {
+                    await RespondAsync("❌ Invalid timezone selected.", ephemeral: true);
+                    return;
+                }
+
                 // Validate the day based on the month and current year
                 if (day < 1 || day > DateTime.DaysInMonth(DateTime.UtcNow.Year, month))
                 {
