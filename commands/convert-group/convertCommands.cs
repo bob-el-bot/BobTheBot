@@ -95,8 +95,8 @@ namespace Bob.Commands
         {
             try
             {
-                if (!Enum.TryParse<Timezone>(sourceTimezoneStr, out var sourceTimezone) ||
-                    !Enum.TryParse<Timezone>(destinationTimezoneStr, out var destinationTimezone))
+                if (!TimezoneExtensions.FromChoiceDisplay.TryGetValue(sourceTimezoneStr, out var sourceTimezone) ||
+                    !TimezoneExtensions.FromChoiceDisplay.TryGetValue(destinationTimezoneStr, out var destinationTimezone))
                 {
                     await RespondAsync("❌ Invalid timezone selected.", ephemeral: true);
                     return;
