@@ -48,6 +48,9 @@ namespace Bob.Time.Timezones
             return TimezoneMappings[timezone];
         }
 
+        public static string FormatDateTime(DateTime dt) =>
+    dt.ToString("dddd, MMMM d, yyyy h:mm tt");
+
         /// <summary>
         /// Converts a local time specified by month, day, hour, and minute into UTC time, based on the provided timezone.
         /// </summary>

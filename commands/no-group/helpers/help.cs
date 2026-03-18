@@ -251,10 +251,10 @@ namespace Bob.Commands.Helpers
         /// <summary>
         /// Generates a Discord command mention string.
         /// </summary>
-        /// <param name="commandName">The name of the command.</param>
+        /// <param name="commandName">The name of the command. (without the slash)</param>
         /// <returns>
         /// A properly formatted Discord command mention if the command exists;
-        /// otherwise, returns a plain text representation of the command.
+        /// otherwise, returns a plain text representation of the command such as `/command`.
         /// </returns>
         public static string GetCommandMention(string commandName)
         {
@@ -1871,7 +1871,7 @@ namespace Bob.Commands.Helpers
                     {
                         Name = "timezones",
                         InheritGroupName = true,
-                        Description = "(TEMPORARILY REMOVED DUE TO ISSUES) Bob will convert a time from one timezone to another.",
+                        Description = "Bob will convert a time from one timezone to another.",
                         Url = "https://docs.bobthebot.net#convert-timezones",
                         Parameters =
                         [

@@ -53,34 +53,26 @@ namespace Bob.Time.Timestamps
         /// <returns>The generated timestamp string.</returns>
         public static string FromDateTime(DateTime dateTime, Formats format, Timezone? timeZone = null)
         {
-            // Ensure the dateTime is within the range supported by DateTimeOffset
             if (dateTime < DateTimeOffset.MinValue.UtcDateTime)
-            {
                 dateTime = DateTimeOffset.MinValue.UtcDateTime;
-            }
             else if (dateTime > DateTimeOffset.MaxValue.UtcDateTime)
-            {
                 dateTime = DateTimeOffset.MaxValue.UtcDateTime;
-            }
 
-            // Handle unspecified DateTime.Kind explicitly
-            if (dateTime.Kind == DateTimeKind.Unspecified)
-            {
-                dateTime = DateTime.SpecifyKind(dateTime, DateTimeKind.Local);
-            }
-
-            // Adjust for the provided timezone if specified
             var timeZoneInfo = timeZone.HasValue
-                ? TZConvert.GetTimeZoneInfo(TimeConverter.GetTimezoneId(timeZone.Value)) // fix
+                ? TZConvert.GetTimeZoneInfo(TimeConverter.GetTimezoneId(timeZone.Value))
                 : TimeZoneInfo.Local;
 
-            // Convert the DateTime to the target timezone
-            var adjustedDateTime = TimeZoneInfo.ConvertTime(dateTime, timeZoneInfo);
+            // datetime is already in the target timezone — just attach the offset
+            if (dateTime.Kind == DateTimeKind.Unspecified)
+            {
+                var offset = timeZoneInfo.GetUtcOffset(dateTime);
+                var dto = new DateTimeOffset(dateTime, offset);
+                return $"<t:{dto.ToUnixTimeSeconds()}:{(char)format}>";
+            }
 
-            // Create DateTimeOffset with the correct offset for the timezone
-            var dateTimeOffset = new DateTimeOffset(adjustedDateTime, timeZoneInfo.GetUtcOffset(adjustedDateTime));
-
-            // Return the formatted timestamp string
+            // For UTC/Local kinds, convert first
+            var adjusted = TimeZoneInfo.ConvertTime(dateTime, timeZoneInfo);
+            var dateTimeOffset = new DateTimeOffset(adjusted, timeZoneInfo.GetUtcOffset(adjusted));
             return $"<t:{dateTimeOffset.ToUnixTimeSeconds()}:{(char)format}>";
         }
 
