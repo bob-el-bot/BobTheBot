@@ -1,5 +1,6 @@
 using System;
 using Bob.Time.Timezones;
+using TimeZoneConverter;
 
 namespace Bob.Time.Timestamps
 {
@@ -70,8 +71,8 @@ namespace Bob.Time.Timestamps
 
             // Adjust for the provided timezone if specified
             var timeZoneInfo = timeZone.HasValue
-                ? TimeZoneInfo.FindSystemTimeZoneById(TimeConverter.GetTimezoneId(timeZone.Value))
-                : TimeZoneInfo.Local; // Default to local timezone
+                ? TZConvert.GetTimeZoneInfo(TimeConverter.GetTimezoneId(timeZone.Value)) // fix
+                : TimeZoneInfo.Local;
 
             // Convert the DateTime to the target timezone
             var adjustedDateTime = TimeZoneInfo.ConvertTime(dateTime, timeZoneInfo);

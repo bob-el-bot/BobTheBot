@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TimeZoneConverter;
 
 namespace Bob.Commands.Helpers
 {
@@ -68,10 +69,10 @@ namespace Bob.Commands.Helpers
             TimeSpan closestTime = TimeSpan.Zero;
             double smallestDifference = double.MaxValue;
 
-            // Find the closest time in the TimeEmojis dictionary.
             foreach (var entry in TimeEmojis)
             {
-                double difference = Math.Abs((inputTime - entry.Key).TotalMinutes);
+                double diff = Math.Abs((inputTime - entry.Key).TotalMinutes);
+                double difference = Math.Min(diff, 1440 - diff);
                 if (difference < smallestDifference)
                 {
                     smallestDifference = difference;
