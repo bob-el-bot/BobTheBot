@@ -152,8 +152,11 @@ namespace Bob
             try
             {
                 await interactionService.AddModulesAsync(Assembly.GetEntryAssembly(), Services);
-                var globalCommands = await interactionService.RegisterCommandsGloballyAsync();
+                Console.WriteLine($"[Notice] Modules loaded: {interactionService.Modules.Count()}");
 
+                var globalCommands = await interactionService.RegisterCommandsGloballyAsync();
+                Console.WriteLine($"[Notice] Commands registered: {globalCommands.Count()}");
+                
                 Help.PopulateCommandIds(globalCommands);
 
                 // Optional: Register per-guild debug commands
@@ -166,23 +169,28 @@ namespace Bob
             }
             catch (Discord.Net.HttpException ex)
             {
-                // Only ignore BASE_TYPE_REQUIRED errors
                 if (ex.Message.Contains("BASE_TYPE_REQUIRED") ||
                     ex.Reason.Contains("BASE_TYPE_REQUIRED", StringComparison.OrdinalIgnoreCase))
                 {
-                    Console.WriteLine("[Notice] Ignoring known Discord API bug BASE_TYPE_REQUIRED. Continuing startup...");
+                    Console.WriteLine("[Notice] BASE_TYPE_REQUIRED caught — registration was aborted.");
 
-                    if (_commandIds == null || _commandIds.Count == 0)
+                    var ids = await interactionService.RestClient.GetGlobalApplicationCommands();
+                    Help.PopulateCommandIds(ids);
+
+                    Console.WriteLine($"[Notice] Fetched {ids.Count()} commands via REST:");
+                    foreach (var cmd in ids)
                     {
-                        Console.WriteLine("[Notice] Attempting to fetch global command IDs via the REST client.");
-                        var ids = await interactionService.RestClient.GetGlobalApplicationCommands();
-                        Help.PopulateCommandIds(ids);
-                        Console.WriteLine("[Notice] Successfully populated command IDs via the REST client.");
+                        Console.WriteLine($"  /{cmd.Name}");
+                        foreach (var opt in cmd.Options)
+                        {
+                            Console.WriteLine(
+                                $"    Param: {opt.Name} | Type: {opt.Type} | Autocomplete: {opt.IsAutocomplete} | Choices: {opt.Choices?.Count ?? 0}"
+                            );
+                        }
                     }
                 }
                 else
                 {
-                    // Not known benign error
                     throw;
                 }
             }
