@@ -626,8 +626,9 @@ namespace Bob
                 var ctx = new ShardedInteractionContext(Client, interaction);
                 await interactionService.ExecuteCommandAsync(ctx, Services);
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"InteractionCreated error ({interaction.Type}): {ex}");
                 if (interaction.Type == InteractionType.ApplicationCommand)
                 {
                     await interaction.GetOriginalResponseAsync()
