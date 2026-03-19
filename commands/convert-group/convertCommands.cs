@@ -101,20 +101,26 @@ namespace Bob.Commands
                     await RespondAsync($"❌ Please enter a valid day between **1** and **{DateTime.DaysInMonth(DateTime.UtcNow.Year, month)}**.", ephemeral: true);
                     return;
                 }
-                
-                var sourceDateTime = new DateTime(DateTime.UtcNow.Year, month, day, hour, minute, 0, DateTimeKind.Unspecified);
-                Console.WriteLine("Source time: " + sourceDateTime);
 
-                var sourceTimestamp = Timestamp.FromDateTime(sourceDateTime, Timestamp.Formats.Exact, sourceTimezone);
-                Console.WriteLine("Source timestamp: " + sourceTimestamp);
+                var sourceDateTime = new DateTime(
+                    DateTime.UtcNow.Year, month, day, hour, minute, 0, DateTimeKind.Unspecified
+                );
 
-                var destinationDateTime = TimeConverter.ConvertBetweenTimezones(month, day, hour, minute, sourceTimezone, destinationTimezone);
-                Console.WriteLine("Destination time: " + destinationDateTime);
+                var destinationDateTime = TimeConverter.ConvertBetweenTimezones(
+                    month, day, hour, minute, sourceTimezone, destinationTimezone
+                );
 
-                var destinationTimestamp = Timestamp.FromDateTime(destinationDateTime, Timestamp.Formats.Exact, destinationTimezone);
-                Console.WriteLine("Destination timestamp: " + destinationTimestamp);
+                var embed = new EmbedBuilder()
+                    .WithColor(Bot.theme)
+                    .WithTitle($"{TimeConversion.GetClosestTimeEmoji(destinationDateTime)} Timezone Conversion")
+                    .AddField(sourceTimezone.ToDisplayName(), $"`{TimeConverter.FormatDateTime(sourceDateTime)}`", inline: true)
+                    .AddField("➡️", "\u200B", inline: true)
+                    .AddField(destinationTimezone.ToDisplayName(), $"`{TimeConverter.FormatDateTime(destinationDateTime)}`", inline: true)
+                    .AddField("\u200B", $"**Convert another:** {Help.GetCommandMention("convert timezones")}", inline: true)
+                    .WithFooter("Times are absolute and not affected by your local timezone.")
+                    .Build();
 
-                await RespondAsync($"{TimeConversion.GetClosestTimeEmoji(destinationDateTime)} {sourceTimestamp} in {sourceTimezone.ToDisplayName()} is {destinationTimestamp} in {destinationTimezone.ToDisplayName()}.");
+                await RespondAsync(embed: embed);
             }
             catch (TimeZoneNotFoundException)
             {
