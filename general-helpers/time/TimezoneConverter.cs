@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TimeZoneConverter;
 
 namespace Bob.Time.Timezones
 {
@@ -64,7 +65,7 @@ namespace Bob.Time.Timezones
 
             // Get the corresponding time zone ID from the TimezoneMappings
             var timeZoneId = TimezoneMappings[timezone];
-            var timeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(timeZoneId);
+            var timeZoneInfo = TZConvert.GetTimeZoneInfo(timeZoneId);
 
             // Convert the local time to UTC, treating the input time as being in the specified time zone
             var utcDateTime = TimeZoneInfo.ConvertTimeToUtc(localDateTime, timeZoneInfo);
@@ -95,7 +96,7 @@ namespace Bob.Time.Timezones
             Console.WriteLine("Source time in UTC: " + sourceTimeInUtc);
 
             // Get the destination time zone
-            var destinationTimeZoneInfo = TimeZoneInfo.FindSystemTimeZoneById(destinationTimezoneId);
+            var destinationTimeZoneInfo = TZConvert.GetTimeZoneInfo(destinationTimezoneId);
 
             // Convert from UTC to the destination time zone.
             return TimeZoneInfo.ConvertTimeFromUtc(sourceTimeInUtc, destinationTimeZoneInfo);
