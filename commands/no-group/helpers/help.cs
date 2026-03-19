@@ -1871,7 +1871,7 @@ namespace Bob.Commands.Helpers
                     {
                         Name = "timezones",
                         InheritGroupName = true,
-                        Description = "(TEMPORARILY REMOVED DUE TO ISSUES) Bob will convert a time from one timezone to another.",
+                        Description = "Bob will convert a time from one timezone to another.",
                         Url = "https://docs.bobthebot.net#convert-timezones",
                         Parameters =
                         [
