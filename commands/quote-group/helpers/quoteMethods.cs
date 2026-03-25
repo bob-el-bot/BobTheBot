@@ -147,8 +147,20 @@ namespace Bob.Commands.Helpers
         /// <returns>The constructed quote embed.</returns>
         public static Embed CreateQuoteEmbed(string quote, SocketUser user, DateTimeOffset timestamp, string quotedByUsername, string tag1 = "", string tag2 = "", string tag3 = "", string originalMessageUrl = null)
         {
-            var formattedQuote = quote.Length <= 4094 && quote[0] != '"' && quote[^1] != '"' ? $"\"{quote}\"" : quote;
-            var containsMentionsOrLinks = quote.Contains("<@") || quote.Contains("<#") || quote.Contains("http");
+            quote ??= string.Empty;
+            var trimmed = quote.Trim();
+    
+            bool needsQuotes =
+                trimmed.Length > 0
+                && trimmed.Length <= 4094
+                && !trimmed.StartsWith("\"", StringComparison.Ordinal)
+                && !trimmed.EndsWith("\"", StringComparison.Ordinal);
+        
+            var formattedQuote = needsQuotes ? $"\"{trimmed}\"" : trimmed;
+            bool containsMentionsOrLinks =
+                trimmed.Contains("<@", StringComparison.Ordinal)
+                || trimmed.Contains("<#", StringComparison.Ordinal)
+                || trimmed.Contains("http", StringComparison.OrdinalIgnoreCase);
 
             EmbedBuilder embed = new();
 
