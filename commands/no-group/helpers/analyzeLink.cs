@@ -250,7 +250,8 @@ public partial class Analyze
 
                 long currentLatency = sw.ElapsedMilliseconds;
                 bool hasCookies = response.Headers.TryGetValues("Set-Cookie", out _);
-                string serverHeader = response.Headers.Server?.ToString() ?? "Unknown";
+                string rawServer = response.Headers.Server?.ToString() ?? "";
+                string serverHeader = string.IsNullOrWhiteSpace(rawServer) ? "Unknown" : rawServer.Replace("`", "");
                 string contentType = response.Content.Headers.ContentType?.MediaType ?? "Unknown";
 
                 if (response.IsSuccessStatusCode)
