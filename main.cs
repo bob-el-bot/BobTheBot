@@ -121,6 +121,7 @@ namespace Bob
             // Restart / reset scheduled messages and announcements
             _ = Task.Run(Schedule.LoadAndScheduleItemsAsync<ScheduledAnnouncement>);
             _ = Task.Run(Schedule.LoadAndScheduleItemsAsync<ScheduledMessage>);
+            _ = Task.Run(Schedule.LoadAndScheduleItemsAsync<ScheduledReminder>);
 
             await Task.Delay(Timeout.Infinite);
         }
