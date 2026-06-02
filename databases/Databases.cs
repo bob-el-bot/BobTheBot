@@ -39,6 +39,7 @@ namespace Bob.Database
         public virtual DbSet<Memory> Memory { get; set; }
         public DbSet<MemoryDTO> MemoryDTOs { get; set; }   // Only for projection queries
         public virtual DbSet<Tag> Tag { get; set; }
+        public virtual DbSet<ScheduledReminder> ScheduledReminder { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
@@ -492,7 +493,7 @@ namespace Bob.Database
         }
 
         /// <summary>
-        /// Removes a scheduled item (either a message or an announcement) from the database.
+        /// Removes a scheduled item (either a message, announcement, or reminder) from the database.
         /// </summary>
         /// <param name="item">The scheduled item to remove.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
@@ -506,7 +507,31 @@ namespace Bob.Database
                 case ScheduledAnnouncement announcement:
                     await RemoveScheduledAnnouncement(announcement.Id);
                     break;
+                case ScheduledReminder reminder:
+                    await RemoveScheduledReminder(reminder.Id);
+                    break;
             }
+        }
+
+        public virtual async Task<ScheduledReminder> GetScheduledReminder(ulong id)
+        {
+            return await ScheduledReminder.FirstOrDefaultAsync(r => r.Id == id);
+        }
+
+        public virtual async Task AddScheduledReminder(ScheduledReminder reminder)
+        {
+            ScheduledReminder.Add(reminder);
+            await SaveChangesAsync();
+        }
+
+        public virtual async Task RemoveScheduledReminder(ulong reminderId)
+        {
+            await Database.ExecuteSqlRawAsync("DELETE FROM \"ScheduledReminder\" WHERE \"Id\" = @p0", reminderId);
+        }
+
+        public virtual async Task<List<ScheduledReminder>> GetScheduledRemindersForUser(ulong userId)
+        {
+            return await ScheduledReminder.Where(r => r.UserId == userId).OrderBy(r => r.TimeToSend).ToListAsync();
         }
 
         /// <summary>

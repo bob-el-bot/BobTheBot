@@ -16,6 +16,7 @@ namespace Bob.Database.Types
         // Message Scheduling
         public uint TotalScheduledMessages { get; set; }
         public uint TotalScheduledAnnouncements { get; set; }
+        public uint TotalReminders { get; set; }
         // Badges
         public ulong EarnedBadges { get; set; }
         // Stats
