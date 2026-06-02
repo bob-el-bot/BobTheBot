@@ -156,8 +156,11 @@ namespace Bob.Commands
                 int newsChannelEntriesCount = await dbContext.NewsChannel.CountAsync();
                 int scheduledMessageEntriesCount = await dbContext.ScheduledMessage.CountAsync();
                 int scheduledAnnouncementEntriesCount = await dbContext.ScheduledAnnouncement.CountAsync();
+                int scheduledReminderEntriesCount = await dbContext.ScheduledReminder.CountAsync();
                 int welcomeImageEntriesCount = await dbContext.WelcomeImage.CountAsync();
                 int memoryEntriesCount = await dbContext.Memory.CountAsync();
+                int tagEntriesCount = await dbContext.Tag.CountAsync();
+                int reactBoardMessageEntriesCount = await dbContext.ReactBoardMessage.CountAsync();
                 double size = await dbContext.GetDatabaseSizeBytes();
 
                 var embed = new EmbedBuilder
@@ -174,7 +177,10 @@ namespace Bob.Commands
                     .AddField(name: "NewsChannel Entries", value: $"`{newsChannelEntriesCount}`", inline: true)
                     .AddField(name: "Scheduled Message Entries", value: $"`{scheduledMessageEntriesCount}`", inline: true)
                     .AddField(name: "Scheduled Announcement Entries", value: $"`{scheduledAnnouncementEntriesCount}`", inline: true)
-                    .AddField(name: "Memory Entries", value: $"{memoryEntriesCount}`", inline: true)
+                    .AddField(name: "Scheduled Reminder Entries", value: $"`{scheduledReminderEntriesCount}`", inline: true)
+                    .AddField(name: "Memory Entries", value: $"`{memoryEntriesCount}`", inline: true)
+                    .AddField(name: "Tag Entries", value: $"`{tagEntriesCount}`", inline: true)
+                    .AddField(name: "ReactBoard Message Entries", value: $"`{reactBoardMessageEntriesCount}`", inline: true)
                     .AddField(name: "Size (Bytes)", value: $"`{size}`", inline: true)
                     .AddField(name: "Size (MegaBytes)", value: $"`{size / 1024 / 1024}`", inline: true)
                     .AddField(name: "Size (GigaBytes)", value: $"`{size / 1024 / 1024 / 1024}`", inline: true);
@@ -630,6 +636,102 @@ namespace Bob.Commands
 
                     await FollowupAsync(text: $"✅ Deleted Scheduled Announcement `{parsedAnnouncementId}`.");
                 }
+            }
+
+            [SlashCommand("remove-scheduled-reminder", "Removes the ScheduledReminder with the given ID from the database.")]
+            public async Task RemoveScheduledReminder(string reminderId)
+            {
+                await DeferAsync();
+
+                if (!ulong.TryParse(reminderId, out ulong parsedId))
+                {
+                    await FollowupAsync(text: $"❌ The given `reminderId` is not valid.");
+                    return;
+                }
+
+                var reminder = await dbContext.GetScheduledReminder(parsedId);
+                if (reminder == null)
+                {
+                    await FollowupAsync(text: $"❌ No reminder found with ID `{reminderId}`.");
+                    return;
+                }
+
+                await dbContext.RemoveScheduledReminder(parsedId);
+
+                if (Bob.Commands.Helpers.Schedule.ScheduledTasks.TryGetValue(parsedId, out var cts))
+                {
+                    cts.Cancel();
+                    Bob.Commands.Helpers.Schedule.ScheduledTasks.Remove(parsedId);
+                }
+
+                await FollowupAsync(text: $"✅ Deleted Scheduled Reminder `{parsedId}`.");
+            }
+
+            [SlashCommand("set-user-reminder-total", "Edit the scheduled reminder total for a user.")]
+            public async Task SetUserReminderTotal(int value, IUser user = null, string userId = null)
+            {
+                await DeferAsync();
+
+                bool conversionResult = ulong.TryParse(userId, out ulong parsedId);
+
+                if (user == null && userId == null)
+                {
+                    await FollowupAsync(text: $"❌ You **must** specify a `user` **or** a `userId`.");
+                    return;
+                }
+
+                IUser discordUser = user ?? await Client.GetShardFor(Context.Guild).GetUserAsync(parsedId);
+
+                if (discordUser.IsBot)
+                {
+                    await FollowupAsync(text: $"❌ You **cannot** perform this action on bots.");
+                }
+                else if (user != null && conversionResult != false && user.Id != parsedId)
+                {
+                    await FollowupAsync(text: $"❌ The given `user` **and** `userId` must have matching IDs.");
+                }
+                else if (value < 0)
+                {
+                    await FollowupAsync(text: $"❌ The given `value` must be greater than 0 (The field is a `uint`).");
+                }
+                else
+                {
+                    User dbUser = await dbContext.GetOrCreateUserAsync(user == null ? parsedId : user.Id);
+                    dbUser.TotalReminders = (uint)value;
+                    await dbContext.SaveChangesAsync();
+
+                    await FollowupAsync(text: $"✅ `Reminder Count of User: {discordUser.GlobalName}, {discordUser.Id} updated.`\n{UserDebugging.GetUserPropertyString(dbUser)}");
+                }
+            }
+
+            [SlashCommand("get-user-reminders", "Lists all scheduled reminders for a user.")]
+            public async Task GetUserReminders(IUser user = null, string userId = null)
+            {
+                await DeferAsync();
+
+                bool conversionResult = ulong.TryParse(userId, out ulong parsedId);
+
+                if (user == null && userId == null)
+                {
+                    await FollowupAsync(text: $"❌ You **must** specify a `user` **or** a `userId`.");
+                    return;
+                }
+
+                ulong targetId = user?.Id ?? parsedId;
+                var reminders = await dbContext.GetScheduledRemindersForUser(targetId);
+
+                if (reminders.Count == 0)
+                {
+                    await FollowupAsync(text: $"📭 No reminders found for user `{targetId}`.");
+                    return;
+                }
+
+                var sb = new StringBuilder();
+                sb.AppendLine($"⏰ **Reminders for `{targetId}`:**");
+                foreach (var r in reminders)
+                    sb.AppendLine($"- `{r.Id}` | <t:{new DateTimeOffset(r.TimeToSend, TimeSpan.Zero).ToUnixTimeSeconds()}:F> | {r.Message}");
+
+                await FollowupAsync(text: sb.ToString());
             }
         }
     }
