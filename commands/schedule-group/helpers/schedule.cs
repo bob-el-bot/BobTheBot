@@ -126,9 +126,9 @@ namespace Bob.Commands.Helpers
         }
 
         /// <summary>
-        /// Sends the scheduled item to the specified channel and removes it from the database.
+        /// Sends the scheduled item to the specified channel (or via DM for reminders) and removes it from the database.
         /// </summary>
-        /// <typeparam name="T">The type of scheduled item (message or announcement).</typeparam>
+        /// <typeparam name="T">The type of scheduled item (message, announcement, or reminder).</typeparam>
         /// <param name="scheduledItem">The scheduled item to be sent.</param>
         private static async Task SendScheduledItem<T>(T scheduledItem) where T : IScheduledItem
         {
@@ -136,6 +136,36 @@ namespace Bob.Commands.Helpers
             {
                 using var scope = Bot.Services.CreateScope();
                 var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
+
+                if (scheduledItem is ScheduledReminder)
+                {
+                    var reminderToSend = await context.GetScheduledReminder(scheduledItem.Id);
+                    if (reminderToSend != null)
+                    {
+                        try
+                        {
+                            Discord.IUser user = Bot.Client.GetUser(reminderToSend.UserId)
+                                ?? (Discord.IUser)await Bot.Client.Rest.GetUserAsync(reminderToSend.UserId);
+
+                            if (user != null)
+                            {
+                                var dm = await user.CreateDMChannelAsync();
+                                await dm.SendMessageAsync($"⏰ **Reminder:** {reminderToSend.Message}");
+                            }
+                        }
+                        catch { }
+
+                        await context.UpsertUserAsync(reminderToSend.UserId, u =>
+                        {
+                            if (u.TotalReminders > 0)
+                                u.TotalReminders -= 1;
+                        });
+                    }
+
+                    await context.RemoveScheduledItem(scheduledItem);
+                    ScheduledTasks.Remove(scheduledItem.Id);
+                    return;
+                }
 
                 if (Bot.Client.GetChannel(scheduledItem.ChannelId) is not IMessageChannel channel)
                 {

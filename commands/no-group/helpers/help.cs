@@ -1115,6 +1115,64 @@ namespace Bob.Commands.Helpers
                 ]
             },
             new() {
+                Title = "Reminders",
+                Description = "Commands for setting and managing personal reminders delivered via DM.",
+                Name = "remind",
+                Emoji = "⏰",
+                Url = "https://docs.bobthebot.net/#remind",
+                Commands =
+                [
+                    new CommandInfo
+                    {
+                        Name = "set",
+                        InheritGroupName = true,
+                        Description = "Bob will DM you a reminder at a specified date and time.",
+                        Url = "https://docs.bobthebot.net/#remind-set",
+                        Parameters =
+                        [
+                            new ParameterInfo { Name = "message", Description = "What you want to be reminded of." },
+                            new ParameterInfo { Name = "month", Description = "The month for the reminder." },
+                            new ParameterInfo { Name = "day", Description = "The day for the reminder." },
+                            new ParameterInfo { Name = "hour", Description = "The hour for the reminder, in military time (if PM, add 12)." },
+                            new ParameterInfo { Name = "minute", Description = "The minute for the reminder." },
+                            new ParameterInfo { Name = "timezone", Description = "Your timezone." }
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "in",
+                        InheritGroupName = true,
+                        Description = "Bob will DM you a reminder after a relative amount of time.",
+                        Url = "https://docs.bobthebot.net/#remind-in",
+                        Parameters =
+                        [
+                            new ParameterInfo { Name = "message", Description = "What you want to be reminded of." },
+                            new ParameterInfo { Name = "days", Description = "Number of days from now." },
+                            new ParameterInfo { Name = "hours", Description = "Number of hours from now." },
+                            new ParameterInfo { Name = "minutes", Description = "Number of minutes from now." }
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "delete",
+                        InheritGroupName = true,
+                        Description = "Delete one of your scheduled reminders.",
+                        Url = "https://docs.bobthebot.net/#remind-delete",
+                        Parameters =
+                        [
+                            new ParameterInfo { Name = "id", Description = "The ID of the reminder to delete." }
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "list",
+                        InheritGroupName = true,
+                        Description = "List all of your upcoming reminders.",
+                        Url = "https://docs.bobthebot.net/#remind-list",
+                    }
+                ]
+            },
+            new() {
                 Title = "Scheduling",
                 Description = "A collection of commands for scheduling messages and announcements.",
                 Name = "schedule",

@@ -167,6 +167,12 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/preview message [link]` Preview a Discord message from any server Bob is in.
 - `/preview color [color]` Preview what a color looks like, and get more information.
 
+### ⏰ Reminder Commands:
+- `/remind set [message] [month] [day] [hour] [minute] [timezone]` Bob will DM you a reminder at a specified time.
+- `/remind in [message] [days] [hours] [minutes]` Bob will DM you a reminder after a relative amount of time.
+- `/remind delete [id]` Delete one of your scheduled reminders.
+- `/remind list` List your upcoming reminders.
+
 ### 🕖 Schedule Commands:
 - `/schedule message [message] [channel] [month] [day] [hour] [minute] [timezone]` Bob will send your message at a specified time.
 - `/schedule announcement [title] [description] [color] [channel] [month] [day] [hour] [minute] [timezone]` Bob will send an embed at a specified time.

@@ -19,6 +19,7 @@ namespace Bob.PremiumInterface
         public static readonly int ChallengeLimit = 1;
         public static readonly int MaxScheduledAnnouncements = 0;
         public static readonly int MaxScheduledMessages = 1;
+        public static readonly int MaxReminders = 1;
 
         // Premium Message
         public static readonly string HasPremiumMessage = $"If you already have premium (💜 **thanks so much!**) simply use {Help.GetCommandMention("premium")} to unlock all of the features.";
