@@ -27,9 +27,15 @@ namespace Bob.Commands
             [Summary("day", "The day for the reminder.")][MinValue(1)][MaxValue(31)] int day,
             [Summary("hour", "The hour for the reminder, in military time (if PM, add 12).")][MinValue(0)][MaxValue(23)] int hour,
             [Summary("minute", "The minute for the reminder.")][MinValue(0)][MaxValue(59)] int minute,
-            [Summary("timezone", "Your timezone.")] Timezone timezone)
+            [Summary("timezone", "Your timezone.")][Autocomplete(typeof(TimezoneAutocompleteHandler))] string timezoneStr)
         {
             await DeferAsync(ephemeral: true);
+
+            if (!TimezoneExtensions.FromChoiceDisplay.TryGetValue(timezoneStr, out var timezone))
+            {
+                await FollowupAsync("❌ Invalid timezone selected.", ephemeral: true);
+                return;
+            }
 
             DateTime scheduledTime;
 
