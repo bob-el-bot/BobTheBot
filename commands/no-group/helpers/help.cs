@@ -1359,6 +1359,64 @@ namespace Bob.Commands.Helpers
                 ]
             },
             new() {
+                Title = "Webhooks",
+                Description = "Commands for posting notifications from services like GitHub and Vercel into a channel.",
+                Name = "webhook",
+                Emoji = "🪝",
+                Url = "https://docs.bobthebot.net/#webhook",
+                Commands =
+                [
+                    new CommandInfo
+                    {
+                        Name = "create",
+                        InheritGroupName = true,
+                        Description = "Register a new inbound webhook and get a URL to give to your service.",
+                        Url = "https://docs.bobthebot.net/#webhook-create",
+                        Parameters =
+                        [
+                            new ParameterInfo { Name = "channel", Description = "The channel notifications will be posted in." },
+                            new ParameterInfo { Name = "name", Description = "A friendly name for this webhook." },
+                            new ParameterInfo { Name = "provider", Description = "The service sending notifications. Choose from: GitHub, GitLab, Vercel, Railway, Netlify, Coolify, Docker Hub, Generic." },
+                            new ParameterInfo { Name = "avatar", Description = "A profile picture for the webhook's messages. Defaults to the provider's logo (optional)." }
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "edit",
+                        InheritGroupName = true,
+                        Description = "Change a registered webhook's name, channel, provider, or avatar.",
+                        Url = "https://docs.bobthebot.net/#webhook-edit",
+                        Parameters =
+                        [
+                            new ParameterInfo { Name = "webhook", Description = "The webhook to edit." },
+                            new ParameterInfo { Name = "name", Description = "A new friendly name (optional)." },
+                            new ParameterInfo { Name = "channel", Description = "A new channel to post in (optional)." },
+                            new ParameterInfo { Name = "provider", Description = "A new provider format to expect (optional)." },
+                            new ParameterInfo { Name = "avatar", Description = "A new profile picture (optional)." },
+                            new ParameterInfo { Name = "reset-avatar", Description = "Go back to the provider's logo (optional)." }
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "list",
+                        InheritGroupName = true,
+                        Description = "List all registered webhooks for this server.",
+                        Url = "https://docs.bobthebot.net/#webhook-list",
+                    },
+                    new CommandInfo
+                    {
+                        Name = "delete",
+                        InheritGroupName = true,
+                        Description = "Remove a registered webhook.",
+                        Url = "https://docs.bobthebot.net/#webhook-delete",
+                        Parameters =
+                        [
+                            new ParameterInfo { Name = "webhook", Description = "The webhook to remove." }
+                        ]
+                    }
+                ]
+            },
+            new() {
                 Title = "Encryption",
                 Name = "encrypt",
                 Description = "Commands related to encrypting messages.",

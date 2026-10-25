@@ -40,6 +40,7 @@ namespace Bob.Database
         public DbSet<MemoryDTO> MemoryDTOs { get; set; }   // Only for projection queries
         public virtual DbSet<Tag> Tag { get; set; }
         public virtual DbSet<ScheduledReminder> ScheduledReminder { get; set; }
+        public virtual DbSet<WebhookInfo> WebhookInfo { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {

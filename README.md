@@ -49,6 +49,9 @@ With multiple games to choose from like `/connect4`, `/tic-tac-toe`, `/trivia`, 
 ### 🖨️ Automatically do things!
 With commands like `/auto preview-messages` and `/auto preview-github` you can see the contents of a message, code file, pull request, or issue without ever leaving the channel they were shared in. Plus, you don't need to worry about publishing messages in news channels with `/auto publish-announcements`.
 
+### 🪝 Bring your tools into Discord!
+With `/webhook create`, Bob gives you a URL to plug into **GitHub**, **GitLab**, **Vercel**, **Railway**, **Netlify**, **Coolify**, or **Docker Hub**, and *beautifully* formats every push, pull request, deploy, and release right in your channel. Using something else? Send Bob *any* JSON and he will turn it into a clean embed.
+
 ### 🎲 All the RNG!
 Bob has a ***plethora*** of random commands to either fuel your Dungeons and Dragons experience like `/random dice-roll`, or simply cure your boredom with `/random 8ball`, `/random dad-joke`, `/random fact`, and many more!
 
@@ -182,6 +185,12 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/auto publish-announcements [publish] [channel]` Bob will publish all messages sent in the given channel.
 - `/auto preview-github [preview]` Bob will preview all valid GitHub links in the server.
 - `/auto preview-messages [preview]` Bob will preview all valid Discord message links in the server.
+
+### 🪝 Webhook Commands:
+- `/webhook create [channel] [name] [provider] [avatar]` Get a URL that posts notifications from GitHub, GitLab, Vercel, Railway, Netlify, Coolify, Docker Hub, or any JSON into a channel.
+- `/webhook edit [webhook] [name] [channel] [provider] [avatar] [reset-avatar]` Change a webhook's name, channel, provider, or avatar.
+- `/webhook list` List all of the server's webhooks.
+- `/webhook delete [webhook]` Remove a webhook.
 
 ### ⚖️ Automod Commands:
 - `/automod phone-numbers [strict]` Add phone number auto moderation. Prevent phone numbers from being sent in this server.

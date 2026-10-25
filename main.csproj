@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Discord.Net" Version="3.18.0" />
+    <PackageReference Include="Discord.Net" Version="3.20.2" />
     <PackageReference Include="DotNetEnv" Version="2.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers;buildtransitive</IncludeAssets>
@@ -28,6 +28,12 @@
     <Reference Include="System.Net.Http" />
     <PackageReference Include="ColorHelper" Version="1.8.1" />
     <None Update="commands\generate-group\helpers\youtube-like.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="BobLogo.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="commands/webhook-group/helpers/avatars/*.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Update="commands/wordle-group/helpers/wordList.txt">
