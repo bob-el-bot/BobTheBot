@@ -88,6 +88,11 @@ namespace Bob
 
             Services = services.BuildServiceProvider();
 
+            // Start HTTP listener for inbound webhooks + uptime checks (port from PORT env var, default 8080).
+            // It only needs the database, so it starts before Discord: Railway sends traffic to a new
+            // container as soon as it starts, and waiting for every shard left the port closed for a while.
+            _ = Task.Run(WebhookListener.StartAsync);
+
             Client.ShardReady += ShardReady;
             Client.Log += Log;
             Client.JoinedGuild += JoinedGuild;
@@ -120,9 +125,6 @@ namespace Bob
             _ = Task.Run(Schedule.LoadAndScheduleItemsAsync<ScheduledAnnouncement>);
             _ = Task.Run(Schedule.LoadAndScheduleItemsAsync<ScheduledMessage>);
             _ = Task.Run(Schedule.LoadAndScheduleItemsAsync<ScheduledReminder>);
-
-            // Start HTTP listener for inbound webhooks + uptime checks (port from PORT env var, default 8080)
-            _ = Task.Run(WebhookListener.StartAsync);
 
             await Task.Delay(Timeout.Infinite);
         }
