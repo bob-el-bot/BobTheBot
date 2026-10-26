@@ -21,6 +21,7 @@ public static class WebhookListener
         new CoolifyStrategy(),
         new GitHubStrategy(),
         new GitLabStrategy(),
+        new VercelStrategy(),
         new GenericStrategy(),
     ];
 

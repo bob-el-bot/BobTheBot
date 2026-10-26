@@ -32,6 +32,7 @@ namespace Bob.Commands
             [Summary("provider", "Which service will be sending payloads")]
             [Choice("GitHub", "github")]
             [Choice("GitLab", "gitlab")]
+            [Choice("Vercel", "vercel")]
             [Choice("Coolify", "coolify")]
             [Choice("Generic (any JSON)", "generic")]
             string provider)
