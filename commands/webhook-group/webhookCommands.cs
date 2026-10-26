@@ -33,6 +33,7 @@ namespace Bob.Commands
             [Choice("GitHub", "github")]
             [Choice("GitLab", "gitlab")]
             [Choice("Vercel", "vercel")]
+            [Choice("Railway", "railway")]
             [Choice("Coolify", "coolify")]
             [Choice("Generic (any JSON)", "generic")]
             string provider)

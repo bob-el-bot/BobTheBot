@@ -22,6 +22,7 @@ public static class WebhookListener
         new GitHubStrategy(),
         new GitLabStrategy(),
         new VercelStrategy(),
+        new RailwayStrategy(),
         new GenericStrategy(),
     ];
 
