@@ -31,6 +31,7 @@ namespace Bob.Commands
             [Summary("name", "A friendly name for this webhook")] string name,
             [Summary("provider", "Which service will be sending payloads")]
             [Choice("GitHub", "github")]
+            [Choice("GitLab", "gitlab")]
             [Choice("Coolify", "coolify")]
             [Choice("Generic (any JSON)", "generic")]
             string provider)

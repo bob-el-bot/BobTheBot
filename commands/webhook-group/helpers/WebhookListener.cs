@@ -20,6 +20,7 @@ public static class WebhookListener
     [
         new CoolifyStrategy(),
         new GitHubStrategy(),
+        new GitLabStrategy(),
         new GenericStrategy(),
     ];
 
