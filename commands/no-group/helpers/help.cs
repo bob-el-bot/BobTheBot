@@ -1377,7 +1377,7 @@ namespace Bob.Commands.Helpers
                             new ParameterInfo { Name = "channel", Description = "The channel notifications will be posted in." },
                             new ParameterInfo { Name = "name", Description = "A friendly name for this webhook." },
                             new ParameterInfo { Name = "provider", Description = "The service sending notifications. Choose from: GitHub, GitLab, Vercel, Railway, Netlify, Coolify, Docker Hub, Generic." },
-                            new ParameterInfo { Name = "avatar", Description = "A profile picture for the webhook's messages (optional)." }
+                            new ParameterInfo { Name = "avatar", Description = "A profile picture for the webhook's messages. Defaults to the provider's logo (optional)." }
                         ]
                     },
                     new CommandInfo
@@ -1393,7 +1393,7 @@ namespace Bob.Commands.Helpers
                             new ParameterInfo { Name = "channel", Description = "A new channel to post in (optional)." },
                             new ParameterInfo { Name = "provider", Description = "A new provider format to expect (optional)." },
                             new ParameterInfo { Name = "avatar", Description = "A new profile picture (optional)." },
-                            new ParameterInfo { Name = "remove-avatar", Description = "Go back to the default profile picture (optional)." }
+                            new ParameterInfo { Name = "reset-avatar", Description = "Go back to the provider's logo (optional)." }
                         ]
                     },
                     new CommandInfo

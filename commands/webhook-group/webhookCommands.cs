@@ -77,6 +77,18 @@ namespace Bob.Commands
             };
         }
 
+        /// <summary>
+        /// The provider's bundled logo (e.g. avatars/github.png), used when no avatar is given. Generic uses
+        /// Bob's own logo. The caller disposes the image.
+        /// </summary>
+        private static Image? DefaultAvatar(string providerKey)
+        {
+            var path = providerKey == WebhookProvider.Generic.Key()
+                ? "BobLogo.png"
+                : Path.Combine("commands", "webhook-group", "helpers", "avatars", $"{providerKey}.png");
+            return File.Exists(path) ? new Image(path) : null;
+        }
+
         /// <summary>Downloads an attachment for use as a webhook avatar. The caller disposes the image.</summary>
         private static async Task<(Image? Image, string Error)> LoadAvatarAsync(IAttachment avatar)
         {
@@ -102,7 +114,7 @@ namespace Bob.Commands
             [Summary("channel", "Channel where notifications will be posted")][ChannelTypes(ChannelType.Text, ChannelType.News)] ITextChannel channel,
             [Summary("name", "A friendly name for this webhook")][MaxLength(70)] string name,
             [Summary("provider", "Which service will be sending payloads")] WebhookProvider provider,
-            [Summary("avatar", "Profile picture for the webhook's messages (optional)")] IAttachment avatar = null)
+            [Summary("avatar", "Profile picture for the webhook's messages (defaults to the provider's logo)")] IAttachment avatar = null)
         {
             await DeferAsync(ephemeral: true);
 
@@ -128,6 +140,8 @@ namespace Bob.Commands
                     return;
                 }
             }
+
+            image ??= DefaultAvatar(provider.Key());
 
             // Create a Discord webhook in the target channel so the listener can post there
             IWebhook discordWebhook;
@@ -172,19 +186,19 @@ namespace Bob.Commands
             [Summary("channel", "Move notifications to a different channel (optional)")][ChannelTypes(ChannelType.Text, ChannelType.News)] ITextChannel channel = null,
             [Summary("provider", "Change which service's format to expect (optional)")] WebhookProvider? provider = null,
             [Summary("avatar", "New profile picture (optional)")] IAttachment avatar = null,
-            [Summary("remove-avatar", "Go back to the default profile picture (optional)")] bool removeAvatar = false)
+            [Summary("reset-avatar", "Go back to the provider's logo (optional)")] bool resetAvatar = false)
         {
             await DeferAsync(ephemeral: true);
 
-            if (name == null && channel == null && provider == null && avatar == null && !removeAvatar)
+            if (name == null && channel == null && provider == null && avatar == null && !resetAvatar)
             {
-                await FollowupAsync("❌ Nothing to change.\n- Give at least one of `name`, `channel`, `provider`, `avatar`, or `remove-avatar`.", ephemeral: true);
+                await FollowupAsync("❌ Nothing to change.\n- Give at least one of `name`, `channel`, `provider`, `avatar`, or `reset-avatar`.", ephemeral: true);
                 return;
             }
 
-            if (avatar != null && removeAvatar)
+            if (avatar != null && resetAvatar)
             {
-                await FollowupAsync("❌ Pick either `avatar` or `remove-avatar`, not both.", ephemeral: true);
+                await FollowupAsync("❌ Pick either `avatar` or `reset-avatar`, not both.", ephemeral: true);
                 return;
             }
 
@@ -220,12 +234,17 @@ namespace Bob.Commands
                 }
             }
 
+            // Resetting uses the logo of the provider the webhook will have after this edit
+            var newProviderKey = provider?.Key() ?? hook.Provider;
+            if (resetAvatar)
+                image = DefaultAvatar(newProviderKey);
+
             // Name and avatar live on the Discord webhook itself; provider is only stored by Bob
             using (image)
             {
                 try
                 {
-                    await ModifyDiscordWebhookAsync(hook, name, moving ? channel : null, image, removeAvatar);
+                    await ModifyDiscordWebhookAsync(hook, name, moving ? channel : null, image, clearAvatar: resetAvatar && image == null);
                 }
                 catch (Exception ex) when (WebhookListener.IsWebhookGone(ex))
                 {
@@ -243,13 +262,18 @@ namespace Bob.Commands
             var changes = new List<string>();
             if (name != null && name != hook.DisplayName) { changes.Add($"Name: **{hook.DisplayName}** → **{name}**"); hook.DisplayName = name; }
             if (moving) { changes.Add($"Channel: <#{hook.ChannelId}> → {channel.Mention}"); hook.ChannelId = channel.Id; }
-            if (provider is { } p && p.Key() != hook.Provider)
+            var providerChanged = newProviderKey != hook.Provider;
+            if (providerChanged)
             {
-                changes.Add($"Provider: {WebhookListener.GetStrategy(hook.Provider).ServiceName} → {WebhookListener.GetStrategy(p.Key()).ServiceName}");
-                hook.Provider = p.Key();
+                changes.Add($"Provider: {WebhookListener.GetStrategy(hook.Provider).ServiceName} → {WebhookListener.GetStrategy(newProviderKey).ServiceName}");
+                hook.Provider = newProviderKey;
             }
             if (avatar != null) changes.Add("Avatar: updated");
-            if (removeAvatar) changes.Add("Avatar: reset to default");
+            if (resetAvatar) changes.Add($"Avatar: reset to the {WebhookListener.GetStrategy(newProviderKey).ServiceName} logo");
+
+            // Changing provider keeps whatever avatar is set, since it may be a custom one
+            if (providerChanged && avatar == null && !resetAvatar)
+                changes.Add($"-# Use `reset-avatar` to switch to the {WebhookListener.GetStrategy(newProviderKey).ServiceName} logo.");
 
             await _db.SaveChangesAsync();
 
@@ -267,17 +291,17 @@ namespace Bob.Commands
         /// Applies name/avatar/channel changes to the Discord webhook. Moving channels needs Bob's own
         /// permissions; everything else goes through the webhook's token so it works without them.
         /// </summary>
-        private async Task ModifyDiscordWebhookAsync(WebhookInfo hook, string name, ITextChannel moveTo, Image? image, bool removeAvatar)
+        private async Task ModifyDiscordWebhookAsync(WebhookInfo hook, string name, ITextChannel moveTo, Image? image, bool clearAvatar)
         {
             void Apply(WebhookProperties props)
             {
                 if (name != null) props.Name = $"Bob | {name}";
                 if (image != null) props.Image = image;
-                if (removeAvatar) props.Image = null;
+                if (clearAvatar) props.Image = null;
                 if (moveTo != null) props.Channel = new Optional<ITextChannel>(moveTo);
             }
 
-            if (name == null && image == null && !removeAvatar && moveTo == null)
+            if (name == null && image == null && !clearAvatar && moveTo == null)
                 return; // Provider-only edit
 
             if (moveTo != null)
