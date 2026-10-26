@@ -1,5 +1,7 @@
 using System;
+using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Bob.Commands.Helpers;
@@ -25,6 +27,12 @@ namespace Bob.Commands
 
         // Public address the listener is reachable at — only used to show users their ingest URL
         private static string BaseUrl => Environment.GetEnvironmentVariable("WEBHOOK_BASE_URL")?.TrimEnd('/');
+
+        private static readonly HttpClient _http = new() { Timeout = TimeSpan.FromSeconds(15) };
+
+        // Discord accepts these formats for webhook avatars
+        private static readonly string[] AvatarTypes = ["image/png", "image/jpeg", "image/gif", "image/webp"];
+        private const int MaxAvatarBytes = 8 * 1024 * 1024;
 
         /// <summary>The user must be allowed to manage webhooks in the channel themselves, not just run this command.</summary>
         private string CheckUser(ITextChannel channel)
@@ -60,11 +68,32 @@ namespace Bob.Commands
             };
         }
 
+        /// <summary>Downloads an attachment for use as a webhook avatar. The caller disposes the image.</summary>
+        private static async Task<(Image? Image, string Error)> LoadAvatarAsync(IAttachment avatar)
+        {
+            if (!AvatarTypes.Contains(avatar.ContentType?.Split(';')[0]))
+                return (null, "❌ The avatar must be a PNG, JPEG, GIF, or WebP image.");
+
+            if (avatar.Size > MaxAvatarBytes)
+                return (null, "❌ The avatar must be smaller than 8 MB.");
+
+            try
+            {
+                var bytes = await _http.GetByteArrayAsync(avatar.Url);
+                return (new Image(new MemoryStream(bytes)), null);
+            }
+            catch (Exception)
+            {
+                return (null, "❌ Bob couldn't download that image.\n- Try uploading it again.");
+            }
+        }
+
         [SlashCommand("create", "Register a new inbound webhook for an external service.")]
         public async Task CreateWebhook(
             [Summary("channel", "Channel where notifications will be posted")][ChannelTypes(ChannelType.Text, ChannelType.News)] ITextChannel channel,
-            [Summary("name", "A friendly name for this webhook")] string name,
-            [Summary("provider", "Which service will be sending payloads")] WebhookProvider provider)
+            [Summary("name", "A friendly name for this webhook")][MaxLength(70)] string name,
+            [Summary("provider", "Which service will be sending payloads")] WebhookProvider provider,
+            [Summary("avatar", "Profile picture for the webhook's messages (optional)")] IAttachment avatar = null)
         {
             await DeferAsync(ephemeral: true);
 
@@ -86,18 +115,31 @@ namespace Bob.Commands
                 return;
             }
 
+            Image? image = null;
+            if (avatar != null)
+            {
+                (image, var avatarError) = await LoadAvatarAsync(avatar);
+                if (avatarError != null)
+                {
+                    await FollowupAsync(avatarError, ephemeral: true);
+                    return;
+                }
+            }
+
             // Create a Discord webhook in the target channel so the listener can post there
-            var discordWebhook = await channel.CreateWebhookAsync($"Bob | {name}");
+            IWebhook discordWebhook;
+            using (image)
+                discordWebhook = await channel.CreateWebhookAsync($"Bob | {name}", image?.Stream);
 
             var info = new WebhookInfo
             {
-                Provider           = provider.Key(),
-                GuildId            = Context.Guild.Id,
-                ChannelId          = channel.Id,
-                DiscordWebhookId   = discordWebhook.Id,
+                Provider            = provider.Key(),
+                GuildId             = Context.Guild.Id,
+                ChannelId           = channel.Id,
+                DiscordWebhookId    = discordWebhook.Id,
                 DiscordWebhookToken = discordWebhook.Token,
-                DisplayName        = name,
-                CreatedBy          = Context.User.Id,
+                DisplayName         = name,
+                CreatedBy           = Context.User.Id,
             };
 
             _db.WebhookInfo.Add(info);
@@ -106,15 +148,18 @@ namespace Bob.Commands
             var ingestUrl = $"{BaseUrl}/ingest/{info.Id}";
             var strategy  = WebhookListener.GetStrategy(info.Provider);
 
-            await FollowupAsync(embed: new EmbedBuilder()
+            var embed = new EmbedBuilder()
                 .WithTitle("Webhook Registered")
                 .WithColor(Bob.Bot.theme)
                 .AddField("Provider", strategy.ServiceName, inline: true)
                 .AddField("Channel", channel.Mention, inline: true)
                 .AddField("Point your service here", $"```\n{ingestUrl}\n```")
                 .AddField("Setup", strategy.SetupHint)
-                .WithFooter("Keep this URL private. Anyone who has it can post to your channel.")
-                .Build(), ephemeral: true);
+                .WithFooter("Keep this URL private. Anyone who has it can post to your channel.");
+
+            if (avatar != null) embed.WithThumbnailUrl(avatar.Url);
+
+            await FollowupAsync(embed: embed.Build(), ephemeral: true);
         }
 
         [SlashCommand("list", "List all registered webhooks for this server.")]
