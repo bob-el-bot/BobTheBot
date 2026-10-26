@@ -74,6 +74,23 @@ public static class WebhookListener
 
     private static readonly SemaphoreSlim _inFlight = new(Limits.MaxInFlight, Limits.MaxInFlight);
 
+    /// <summary>
+    /// What happened to one request, logged once at the end. The request's own details are copied in up
+    /// front because the listener may dispose the request once its response is closed.
+    /// </summary>
+    private sealed class RequestRecord(HttpListenerRequest req, string client)
+    {
+        public readonly string Method    = WebhookLog.Clean(req.HttpMethod, 10);
+        public readonly string Path      = LoggedPath(req.Url?.AbsolutePath);
+        public readonly string Client    = client;
+        public readonly string Event     = req.Headers["X-GitHub-Event"] ?? req.Headers["X-Gitlab-Event"];
+        public readonly string UserAgent = WebhookLog.Clean(req.UserAgent, 60);
+
+        public string Outcome = "error";
+        public string Hook;      // "name (provider)" once the webhook is known
+        public long Bytes = -1;  // Body size once read
+    }
+
     // Railway's edge sets X-Real-IP to the caller's address. Anywhere else the header is caller-controlled.
     private static readonly bool _trustRealIpHeader =
         Environment.GetEnvironmentVariable("RAILWAY_ENVIRONMENT_NAME") != null ||
@@ -116,8 +133,10 @@ public static class WebhookListener
             // Admission control: never queue work beyond the cap, answer immediately instead
             if (!_inFlight.Wait(0))
             {
-                Reject("busy");
+                var busy = new RequestRecord(ctx.Request, ClientKey(ctx.Request));
+                Reject(busy, "busy");
                 RespondImmediately(ctx.Response, 503, retryAfterSeconds: 5);
+                LogRequest(503, busy, elapsedMs: 0);
                 continue;
             }
 
@@ -134,14 +153,18 @@ public static class WebhookListener
         var req  = ctx.Request;
         var resp = ctx.Response;
         var aborted = false;
+        var started = System.Diagnostics.Stopwatch.GetTimestamp();
+        RequestRecord rec = null;
 
         try
         {
             var client = ClientKey(req);
+            rec = new RequestRecord(req, client);
+
 
             if (!Limits.PerIp.TryAcquire(client, out var ipRetry))
             {
-                Reject("rate-limited-ip");
+                Reject(rec, "rate-limited-ip");
                 await Respond(resp, 429, "Too Many Requests", ipRetry);
                 return;
             }
@@ -149,6 +172,7 @@ public static class WebhookListener
             // Anything that isn't a webhook delivery is an uptime check (e.g. Better Stack), whatever the method or path
             if (req.HttpMethod != "POST" || !req.Url.AbsolutePath.StartsWith("/ingest/"))
             {
+                rec.Outcome = "uptime";
                 if (req.HttpMethod == "HEAD")
                     resp.StatusCode = 200; // HEAD responses carry no body
                 else
@@ -158,7 +182,7 @@ public static class WebhookListener
 
             if (Limits.FailuresPerIp.IsLimited(client, out var failRetry))
             {
-                Reject("too-many-failures");
+                Reject(rec, "too-many-failures");
                 await Respond(resp, 429, "Too Many Requests", failRetry);
                 return;
             }
@@ -166,6 +190,7 @@ public static class WebhookListener
             var segments = req.Url.AbsolutePath.Split('/', StringSplitOptions.RemoveEmptyEntries);
             if (segments.Length != 2 || !Guid.TryParse(segments[1], out var id))
             {
+                rec.Outcome = "bad-request";
                 Limits.FailuresPerIp.Consume(client);
                 await Respond(resp, 400, "Bad Request");
                 return;
@@ -175,7 +200,7 @@ public static class WebhookListener
             if (req.ContentLength64 > Limits.MaxBodyBytes)
             {
                 Limits.FailuresPerIp.Consume(client);
-                Reject("too-large");
+                Reject(rec, "too-large");
                 await Respond(resp, 413, "Payload Too Large");
                 return;
             }
@@ -189,37 +214,39 @@ public static class WebhookListener
             catch (Exception)
             {
                 // Database trouble is expected under load or during an outage; counted in the summary, not logged per request
-                Reject("db-error");
+                Reject(rec, "db-error");
                 await Respond(resp, 503, "Service Unavailable", retryAfterSeconds: 30);
                 return;
             }
 
             if (lookup == WebhookLookup.Busy)
             {
-                Reject("db-busy");
+                Reject(rec, "db-busy");
                 await Respond(resp, 503, "Service Unavailable", retryAfterSeconds: 5);
                 return;
             }
             if (lookup == WebhookLookup.NotFound)
             {
                 Limits.FailuresPerIp.Consume(client);
-                Reject("not-found");
+                Reject(rec, "not-found");
                 await Respond(resp, 404, "Webhook not found");
                 return;
             }
 
+            rec.Hook = $"{WebhookLog.Clean(info.DisplayName, 40)} ({info.Provider})";
             var hookKey = info.Id.ToString();
             if (!Limits.RequestsPerWebhook.TryAcquire(hookKey, out var hookRetry))
             {
-                Reject("rate-limited-webhook");
+                Reject(rec, "rate-limited-webhook");
                 await Respond(resp, 429, "Too Many Requests", hookRetry);
                 return;
             }
 
             var (body, bodyResult) = await ReadBodyAsync(req.InputStream, Limits.MaxBodyBytes, Limits.BodyReadTimeout);
+            if (body != null) rec.Bytes = body.Length;
             if (bodyResult == BodyReadResult.TimedOut)
             {
-                Reject("slow-body");
+                Reject(rec, "slow-body");
                 resp.Abort(); // Drop the connection; the pending read fails and is discarded
                 aborted = true;
                 return;
@@ -227,7 +254,7 @@ public static class WebhookListener
             if (bodyResult == BodyReadResult.TooLarge)
             {
                 Limits.FailuresPerIp.Consume(client);
-                Reject("too-large");
+                Reject(rec, "too-large");
                 await Respond(resp, 413, "Payload Too Large");
                 return;
             }
@@ -237,6 +264,7 @@ public static class WebhookListener
                 var signature = req.Headers["X-Hub-Signature-256"] ?? req.Headers["X-Webhook-Signature"];
                 if (!ValidateSignature(body, info.Secret, signature))
                 {
+                    rec.Outcome = "bad-signature";
                     Limits.FailuresPerIp.Consume(client);
                     await Respond(resp, 401, "Invalid signature");
                     return;
@@ -248,6 +276,7 @@ public static class WebhookListener
             // Strategy chose to skip this event (e.g. a noisy GitHub action), so acknowledge it without posting
             if (embed == null)
             {
+                rec.Outcome = "ignored";
                 await Respond(resp, 200, "Ignored");
                 return;
             }
@@ -256,13 +285,13 @@ public static class WebhookListener
             if (!Limits.PostsPerWebhook.TryAcquire(hookKey, out var postRetry) ||
                 !Limits.PostsPerChannel.TryAcquire(info.ChannelId.ToString(), out postRetry))
             {
-                Reject("rate-limited-discord");
+                Reject(rec, "rate-limited-discord");
                 await Respond(resp, 429, "Too Many Requests", postRetry);
                 return;
             }
             if (!Limits.PostsGlobal.TryAcquire("all", out var globalRetry))
             {
-                Reject("discord-busy");
+                Reject(rec, "discord-busy");
                 await Respond(resp, 503, "Service Unavailable", globalRetry);
                 return;
             }
@@ -279,6 +308,7 @@ public static class WebhookListener
             catch (Exception ex) when (IsWebhookGone(ex))
             {
                 // Discord webhook (or its channel) was deleted, so stop accepting deliveries for it
+                rec.Outcome = "discord-gone";
                 WebhookLog.Write($"[WebhookListener] Discord webhook for {info.Id.ToString()[..8]}… ({WebhookLog.Clean(info.DisplayName, 40)}) no longer exists, deactivating");
                 await DeactivateAsync(info.Id);
                 await Respond(resp, 410, "Discord webhook no longer exists");
@@ -286,31 +316,77 @@ public static class WebhookListener
             }
             catch (Exception ex) when (ex is TimeoutException or RateLimitedException)
             {
-                Reject("discord-timeout");
+                Reject(rec, "discord-timeout");
                 await Respond(resp, 503, "Service Unavailable", retryAfterSeconds: 30);
                 return;
             }
             catch (Exception ex)
             {
+                rec.Outcome = "discord-error";
                 WebhookLog.Write($"[WebhookListener] Discord post failed for {info.Id.ToString()[..8]}…: {WebhookLog.Clean(ex.Message, 200)}");
                 await Respond(resp, 500, "Failed to post to Discord");
                 return;
             }
 
+            rec.Outcome = "posted";
             await Respond(resp, 200, "OK");
         }
         catch (Exception ex)
         {
+            if (rec != null) rec.Outcome = "error";
             WebhookLog.Write($"[WebhookListener] Unhandled error: {ex}");
             try { await Respond(resp, 500, "Internal Server Error"); } catch { /* client already gone */ }
         }
         finally
         {
+            var status = aborted ? 0 : resp.StatusCode;
             if (!aborted)
             {
                 try { resp.Close(); } catch { /* client already gone */ }
             }
+
+            var elapsedMs = (long)System.Diagnostics.Stopwatch.GetElapsedTime(started).TotalMilliseconds;
+            if (rec != null) LogRequest(status, rec, elapsedMs);
         }
+    }
+
+    /// <summary>
+    /// One line per request, e.g.
+    /// <c>[Webhook] POST /ingest/8476a422… 200 posted 203ms ip=1.2.3.4 bytes=152 hook="testing (github)" event=push ua="GitHub-Hookshot/1"</c>.
+    /// Webhook IDs are shortened because the full ID is what lets someone post; bodies are never logged.
+    /// </summary>
+    private static void LogRequest(int status, RequestRecord rec, long elapsedMs)
+    {
+        try
+        {
+            var sb = new StringBuilder("[Webhook] ")
+                .Append(rec.Method).Append(' ')
+                .Append(rec.Path).Append(' ')
+                .Append(status == 0 ? "aborted" : status.ToString()).Append(' ')
+                .Append(rec.Outcome).Append(' ')
+                .Append(elapsedMs).Append("ms ip=")
+                .Append(rec.Client);
+
+            if (rec.Bytes >= 0) sb.Append(" bytes=").Append(rec.Bytes);
+            if (rec.Hook != null) sb.Append(" hook=\"").Append(rec.Hook).Append('"');
+            if (rec.Event != null) sb.Append(" event=").Append(WebhookLog.Clean(rec.Event, 40));
+            sb.Append(" ua=\"").Append(rec.UserAgent).Append('"');
+
+            WebhookLog.Write(sb.ToString());
+        }
+        catch
+        {
+            // Logging must never fail a request
+        }
+    }
+
+    private static string LoggedPath(string path)
+    {
+        if (path == null) return "-";
+        if (!path.StartsWith("/ingest/")) return WebhookLog.Clean(path, 60);
+
+        var id = path["/ingest/".Length..];
+        return "/ingest/" + WebhookLog.Clean(id.Length > 8 ? id[..8] + "…" : id, 12);
     }
 
     internal enum BodyReadResult { Ok, TooLarge, TimedOut }
@@ -395,7 +471,11 @@ public static class WebhookListener
         }
     }
 
-    private static void Reject(string reason) => _rejections.AddOrUpdate(reason, 1, (_, n) => n + 1);
+    private static void Reject(RequestRecord rec, string reason)
+    {
+        rec.Outcome = reason;
+        _rejections.AddOrUpdate(reason, 1, (_, n) => n + 1);
+    }
 
     private static void RunMaintenance()
     {
