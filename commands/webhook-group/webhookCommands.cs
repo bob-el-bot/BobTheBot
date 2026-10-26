@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -41,6 +42,14 @@ namespace Bob.Commands
                 return null;
 
             return $"❌ You do not have permissions to manage webhooks in {channel.Mention}.\n- Ask a user with `Manage Webhooks` permission.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)";
+        }
+
+        private string CheckBot(ITextChannel channel)
+        {
+            if (Context.Guild.CurrentUser.GetPermissions(channel).ManageWebhooks)
+                return null;
+
+            return $"❌ Bob cannot manage webhooks in {channel.Mention}.\n- Give Bob the `Manage Webhooks` permission.";
         }
 
         /// <summary>
@@ -103,15 +112,9 @@ namespace Bob.Commands
                 return;
             }
 
-            if (CheckUser(channel) is { } error)
+            if ((CheckUser(channel) ?? CheckBot(channel)) is { } error)
             {
                 await FollowupAsync(error, ephemeral: true);
-                return;
-            }
-
-            if (!Context.Guild.CurrentUser.GetPermissions(channel).ManageWebhooks)
-            {
-                await FollowupAsync($"❌ Bob cannot create webhooks in {channel.Mention}.\n- Give Bob the `Manage Webhooks` permission.", ephemeral: true);
                 return;
             }
 
@@ -160,6 +163,133 @@ namespace Bob.Commands
             if (avatar != null) embed.WithThumbnailUrl(avatar.Url);
 
             await FollowupAsync(embed: embed.Build(), ephemeral: true);
+        }
+
+        [SlashCommand("edit", "Change a registered webhook's name, channel, provider, or avatar.")]
+        public async Task EditWebhook(
+            [Summary("webhook", "The webhook to edit")][Autocomplete(typeof(WebhookAutocompleteHandler))] string webhook,
+            [Summary("name", "New friendly name (optional)")][MaxLength(70)] string name = null,
+            [Summary("channel", "Move notifications to a different channel (optional)")][ChannelTypes(ChannelType.Text, ChannelType.News)] ITextChannel channel = null,
+            [Summary("provider", "Change which service's format to expect (optional)")] WebhookProvider? provider = null,
+            [Summary("avatar", "New profile picture (optional)")] IAttachment avatar = null,
+            [Summary("remove-avatar", "Go back to the default profile picture (optional)")] bool removeAvatar = false)
+        {
+            await DeferAsync(ephemeral: true);
+
+            if (name == null && channel == null && provider == null && avatar == null && !removeAvatar)
+            {
+                await FollowupAsync("❌ Nothing to change.\n- Give at least one of `name`, `channel`, `provider`, `avatar`, or `remove-avatar`.", ephemeral: true);
+                return;
+            }
+
+            if (avatar != null && removeAvatar)
+            {
+                await FollowupAsync("❌ Pick either `avatar` or `remove-avatar`, not both.", ephemeral: true);
+                return;
+            }
+
+            var (hook, findError) = await FindWebhookAsync(webhook);
+            if (findError != null)
+            {
+                await FollowupAsync(findError, ephemeral: true);
+                return;
+            }
+
+            var currentChannel = Context.Guild.GetTextChannel(hook.ChannelId);
+            if (currentChannel != null && CheckUser(currentChannel) is { } currentError)
+            {
+                await FollowupAsync(currentError, ephemeral: true);
+                return;
+            }
+
+            var moving = channel != null && channel.Id != hook.ChannelId;
+            if (moving && (CheckUser(channel) ?? CheckBot(channel)) is { } moveError)
+            {
+                await FollowupAsync(moveError, ephemeral: true);
+                return;
+            }
+
+            Image? image = null;
+            if (avatar != null)
+            {
+                (image, var avatarError) = await LoadAvatarAsync(avatar);
+                if (avatarError != null)
+                {
+                    await FollowupAsync(avatarError, ephemeral: true);
+                    return;
+                }
+            }
+
+            // Name and avatar live on the Discord webhook itself; provider is only stored by Bob
+            using (image)
+            {
+                try
+                {
+                    await ModifyDiscordWebhookAsync(hook, name, moving ? channel : null, image, removeAvatar);
+                }
+                catch (Exception ex) when (WebhookListener.IsWebhookGone(ex))
+                {
+                    await WebhookListener.DeactivateAsync(hook.Id);
+                    await FollowupAsync($"❌ The Discord webhook for **{hook.DisplayName}** was deleted outside of Bob, so it has been removed.\n- Use {Help.GetCommandMention("webhook create")} to set it up again.", ephemeral: true);
+                    return;
+                }
+                catch (Discord.Net.HttpException)
+                {
+                    await FollowupAsync($"❌ Discord rejected the change.\n- Make sure Bob has the `Manage Webhooks` permission in <#{hook.ChannelId}>{(moving ? $" and {channel.Mention}" : "")}.", ephemeral: true);
+                    return;
+                }
+            }
+
+            var changes = new List<string>();
+            if (name != null && name != hook.DisplayName) { changes.Add($"Name: **{hook.DisplayName}** → **{name}**"); hook.DisplayName = name; }
+            if (moving) { changes.Add($"Channel: <#{hook.ChannelId}> → {channel.Mention}"); hook.ChannelId = channel.Id; }
+            if (provider is { } p && p.Key() != hook.Provider)
+            {
+                changes.Add($"Provider: {WebhookListener.GetStrategy(hook.Provider).ServiceName} → {WebhookListener.GetStrategy(p.Key()).ServiceName}");
+                hook.Provider = p.Key();
+            }
+            if (avatar != null) changes.Add("Avatar: updated");
+            if (removeAvatar) changes.Add("Avatar: reset to default");
+
+            await _db.SaveChangesAsync();
+
+            var embed = new EmbedBuilder()
+                .WithTitle($"Webhook Updated: {hook.DisplayName}")
+                .WithDescription(changes.Count > 0 ? string.Join("\n", changes) : "Nothing was different, so nothing changed.")
+                .WithColor(Bob.Bot.theme);
+
+            if (avatar != null) embed.WithThumbnailUrl(avatar.Url);
+
+            await FollowupAsync(embed: embed.Build(), ephemeral: true);
+        }
+
+        /// <summary>
+        /// Applies name/avatar/channel changes to the Discord webhook. Moving channels needs Bob's own
+        /// permissions; everything else goes through the webhook's token so it works without them.
+        /// </summary>
+        private async Task ModifyDiscordWebhookAsync(WebhookInfo hook, string name, ITextChannel moveTo, Image? image, bool removeAvatar)
+        {
+            void Apply(WebhookProperties props)
+            {
+                if (name != null) props.Name = $"Bob | {name}";
+                if (image != null) props.Image = image;
+                if (removeAvatar) props.Image = null;
+                if (moveTo != null) props.Channel = new Optional<ITextChannel>(moveTo);
+            }
+
+            if (name == null && image == null && !removeAvatar && moveTo == null)
+                return; // Provider-only edit
+
+            if (moveTo != null)
+            {
+                var restHook = await Context.Guild.GetWebhookAsync(hook.DiscordWebhookId)
+                    ?? throw new InvalidOperationException("Could not find a webhook with the supplied credentials.");
+                await restHook.ModifyAsync(Apply);
+                return;
+            }
+
+            using var client = new DiscordWebhookClient(hook.DiscordWebhookId, hook.DiscordWebhookToken);
+            await client.ModifyWebhookAsync(Apply);
         }
 
         [SlashCommand("list", "List all registered webhooks for this server.")]

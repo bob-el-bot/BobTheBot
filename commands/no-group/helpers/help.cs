@@ -1382,6 +1382,22 @@ namespace Bob.Commands.Helpers
                     },
                     new CommandInfo
                     {
+                        Name = "edit",
+                        InheritGroupName = true,
+                        Description = "Change a registered webhook's name, channel, provider, or avatar.",
+                        Url = "https://docs.bobthebot.net/#webhook-edit",
+                        Parameters =
+                        [
+                            new ParameterInfo { Name = "webhook", Description = "The webhook to edit." },
+                            new ParameterInfo { Name = "name", Description = "A new friendly name (optional)." },
+                            new ParameterInfo { Name = "channel", Description = "A new channel to post in (optional)." },
+                            new ParameterInfo { Name = "provider", Description = "A new provider format to expect (optional)." },
+                            new ParameterInfo { Name = "avatar", Description = "A new profile picture (optional)." },
+                            new ParameterInfo { Name = "remove-avatar", Description = "Go back to the default profile picture (optional)." }
+                        ]
+                    },
+                    new CommandInfo
+                    {
                         Name = "list",
                         InheritGroupName = true,
                         Description = "List all registered webhooks for this server.",

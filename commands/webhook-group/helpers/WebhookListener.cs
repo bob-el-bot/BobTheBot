@@ -156,7 +156,7 @@ public static class WebhookListener
         }
     }
 
-    private static bool IsWebhookGone(Exception ex) => ex switch
+    internal static bool IsWebhookGone(Exception ex) => ex switch
     {
         // Thrown by the DiscordWebhookClient constructor when Discord returns 404 for the webhook
         InvalidOperationException ioe when ioe.Message.Contains("Could not find a webhook") => true,
@@ -165,7 +165,7 @@ public static class WebhookListener
         _ => false,
     };
 
-    private static async Task DeactivateAsync(Guid id)
+    internal static async Task DeactivateAsync(Guid id)
     {
         try
         {
