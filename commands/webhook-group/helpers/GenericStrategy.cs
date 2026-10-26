@@ -99,10 +99,11 @@ public class GenericStrategy : WebhookStrategy
 
             case JsonValueKind.Array:
                 var items = value.EnumerateArray().ToList();
-                if (items.Count > 0 && items.All(i => Scalar(i) != null))
-                    fields.Add((name, string.Join(", ", items.Select(Scalar))));
-                else if (items.Count > 0)
-                    fields.Add((name, $"{items.Count} item(s)"));
+                if (items.Count == 0) break;
+
+                fields.Add(items.All(i => Scalar(i) != null)
+                    ? (name, string.Join(", ", items.Select(Scalar)))
+                    : (name, $"{items.Count} item(s)"));
                 break;
 
             case JsonValueKind.Null or JsonValueKind.Undefined or JsonValueKind.Object:
