@@ -35,8 +35,6 @@ namespace Bob.Commands
             return $"❌ You do not have permissions to manage webhooks in {channel.Mention}.\n- Ask a user with `Manage Webhooks` permission.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)";
         }
 
-        // ── /webhook create ────────────────────────────────────────────────────
-
         [SlashCommand("create", "Register a new inbound webhook for an external service.")]
         public async Task CreateWebhook(
             [Summary("channel", "Channel where notifications will be posted")][ChannelTypes(ChannelType.Text, ChannelType.News)] ITextChannel channel,
@@ -103,8 +101,6 @@ namespace Bob.Commands
                 .Build(), ephemeral: true);
         }
 
-        // ── /webhook list ──────────────────────────────────────────────────────
-
         [SlashCommand("list", "List all registered webhooks for this server.")]
         public async Task ListWebhooks()
         {
@@ -129,8 +125,6 @@ namespace Bob.Commands
                 .WithColor(Bob.Bot.theme)
                 .Build(), ephemeral: true);
         }
-
-        // ── /webhook delete ────────────────────────────────────────────────────
 
         [SlashCommand("delete", "Remove a registered webhook.")]
         public async Task DeleteWebhook(
