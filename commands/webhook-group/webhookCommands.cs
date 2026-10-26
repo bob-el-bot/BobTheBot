@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Bob.Commands.Helpers;
 using Bob.Database;
 using Bob.Database.Types;
 using Bob.Webhooks;
@@ -100,7 +101,7 @@ namespace Bob.Commands
 
             if (hooks.Count == 0)
             {
-                await RespondAsync("No webhooks registered. Use `/webhook create` to add one.", ephemeral: true);
+                await RespondAsync($"No webhooks registered. Use {Help.GetCommandMention("webhook create")} to add one.", ephemeral: true);
                 return;
             }
 

@@ -1359,6 +1359,47 @@ namespace Bob.Commands.Helpers
                 ]
             },
             new() {
+                Title = "Webhooks",
+                Description = "Commands for posting notifications from services like GitHub and Vercel into a channel.",
+                Name = "webhook",
+                Emoji = "🪝",
+                Url = "https://docs.bobthebot.net/#webhook",
+                Commands =
+                [
+                    new CommandInfo
+                    {
+                        Name = "create",
+                        InheritGroupName = true,
+                        Description = "Register a new inbound webhook and get a URL to give to your service.",
+                        Url = "https://docs.bobthebot.net/#webhook-create",
+                        Parameters =
+                        [
+                            new ParameterInfo { Name = "channel", Description = "The channel notifications will be posted in." },
+                            new ParameterInfo { Name = "name", Description = "A friendly name for this webhook." },
+                            new ParameterInfo { Name = "provider", Description = "The service sending notifications. Choose from: GitHub, GitLab, Vercel, Railway, Netlify, Coolify, Docker Hub, Generic." }
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "list",
+                        InheritGroupName = true,
+                        Description = "List all registered webhooks for this server.",
+                        Url = "https://docs.bobthebot.net/#webhook-list",
+                    },
+                    new CommandInfo
+                    {
+                        Name = "delete",
+                        InheritGroupName = true,
+                        Description = "Remove a registered webhook.",
+                        Url = "https://docs.bobthebot.net/#webhook-delete",
+                        Parameters =
+                        [
+                            new ParameterInfo { Name = "name", Description = "The name of the webhook to remove." }
+                        ]
+                    }
+                ]
+            },
+            new() {
                 Title = "Encryption",
                 Name = "encrypt",
                 Description = "Commands related to encrypting messages.",
