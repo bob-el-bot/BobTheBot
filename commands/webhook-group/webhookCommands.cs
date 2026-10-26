@@ -35,6 +35,31 @@ namespace Bob.Commands
             return $"❌ You do not have permissions to manage webhooks in {channel.Mention}.\n- Ask a user with `Manage Webhooks` permission.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)";
         }
 
+        /// <summary>
+        /// Autocomplete submits the webhook's ID. If the user typed instead of picking a suggestion,
+        /// fall back to an exact (then unique partial) name match.
+        /// </summary>
+        private async Task<(WebhookInfo Hook, string Error)> FindWebhookAsync(string input)
+        {
+            var hooks = await _db.WebhookInfo
+                .Where(w => w.GuildId == Context.Guild.Id && w.IsActive)
+                .ToListAsync();
+
+            if (Guid.TryParse(input, out var id) && hooks.FirstOrDefault(w => w.Id == id) is { } byId)
+                return (byId, null);
+
+            if (hooks.FirstOrDefault(w => w.DisplayName.Equals(input, StringComparison.OrdinalIgnoreCase)) is { } exact)
+                return (exact, null);
+
+            var matches = hooks.Where(w => w.DisplayName.Contains(input, StringComparison.OrdinalIgnoreCase)).ToList();
+            return matches.Count switch
+            {
+                1 => (matches[0], null),
+                0 => (null, $"❌ No active webhook matching `{input}`.\n- Use {Help.GetCommandMention("webhook list")} to see this server's webhooks."),
+                _ => (null, $"❌ Multiple webhooks match `{input}`: {string.Join(", ", matches.Select(w => $"`{w.DisplayName}`"))}.\n- Pick one from the suggestions instead."),
+            };
+        }
+
         [SlashCommand("create", "Register a new inbound webhook for an external service.")]
         public async Task CreateWebhook(
             [Summary("channel", "Channel where notifications will be posted")][ChannelTypes(ChannelType.Text, ChannelType.News)] ITextChannel channel,
@@ -119,29 +144,14 @@ namespace Bob.Commands
 
         [SlashCommand("delete", "Remove a registered webhook.")]
         public async Task DeleteWebhook(
-            [Summary("name", "Name of the webhook to remove (partial match)")] string name)
+            [Summary("webhook", "The webhook to remove")][Autocomplete(typeof(WebhookAutocompleteHandler))] string webhook)
         {
-            var all = await _db.WebhookInfo
-                .Where(w => w.GuildId == Context.Guild.Id && w.IsActive)
-                .ToListAsync();
-
-            var matches = all
-                .Where(w => w.DisplayName.Contains(name, StringComparison.OrdinalIgnoreCase))
-                .ToList();
-
-            if (matches.Count == 0)
+            var (hook, findError) = await FindWebhookAsync(webhook);
+            if (findError != null)
             {
-                await RespondAsync($"❌ No active webhook matching `{name}`.", ephemeral: true);
+                await RespondAsync(findError, ephemeral: true);
                 return;
             }
-            if (matches.Count > 1)
-            {
-                var names = string.Join(", ", matches.Select(w => $"`{w.DisplayName}`"));
-                await RespondAsync($"❌ Multiple matches: {names}. Be more specific.", ephemeral: true);
-                return;
-            }
-
-            var hook = matches[0];
 
             var hookChannel = Context.Guild.GetTextChannel(hook.ChannelId);
             if (hookChannel != null && CheckUser(hookChannel) is { } error)

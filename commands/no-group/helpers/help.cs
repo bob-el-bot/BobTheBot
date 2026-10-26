@@ -1394,7 +1394,7 @@ namespace Bob.Commands.Helpers
                         Url = "https://docs.bobthebot.net/#webhook-delete",
                         Parameters =
                         [
-                            new ParameterInfo { Name = "name", Description = "The name of the webhook to remove." }
+                            new ParameterInfo { Name = "webhook", Description = "The webhook to remove." }
                         ]
                     }
                 ]
