@@ -23,6 +23,7 @@ public static class WebhookListener
         new GitLabStrategy(),
         new VercelStrategy(),
         new RailwayStrategy(),
+        new NetlifyStrategy(),
         new GenericStrategy(),
     ];
 
