@@ -26,6 +26,15 @@ namespace Bob.Commands
         // Public address the listener is reachable at — only used to show users their ingest URL
         private static string BaseUrl => Environment.GetEnvironmentVariable("WEBHOOK_BASE_URL")?.TrimEnd('/');
 
+        /// <summary>The user must be allowed to manage webhooks in the channel themselves, not just run this command.</summary>
+        private string CheckUser(ITextChannel channel)
+        {
+            if (((SocketGuildUser)Context.User).GetPermissions(channel).ManageWebhooks)
+                return null;
+
+            return $"❌ You do not have permissions to manage webhooks in {channel.Mention}.\n- Ask a user with `Manage Webhooks` permission.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)";
+        }
+
         // ── /webhook create ────────────────────────────────────────────────────
 
         [SlashCommand("create", "Register a new inbound webhook for an external service.")]
@@ -51,17 +60,15 @@ namespace Bob.Commands
                 return;
             }
 
-            // The user must be allowed to create webhooks there themselves, not just use this command
-            if (!((SocketGuildUser)Context.User).GetPermissions(channel).ManageWebhooks)
+            if (CheckUser(channel) is { } error)
             {
-                await FollowupAsync($"❌ You need the `Manage Webhooks` permission in {channel.Mention}.", ephemeral: true);
+                await FollowupAsync(error, ephemeral: true);
                 return;
             }
 
-            var perms = Context.Guild.CurrentUser.GetPermissions(channel);
-            if (!perms.ManageWebhooks)
+            if (!Context.Guild.CurrentUser.GetPermissions(channel).ManageWebhooks)
             {
-                await FollowupAsync($"❌ I need the `Manage Webhooks` permission in {channel.Mention}.", ephemeral: true);
+                await FollowupAsync($"❌ Bob cannot create webhooks in {channel.Mention}.\n- Give Bob the `Manage Webhooks` permission.", ephemeral: true);
                 return;
             }
 
@@ -150,6 +157,13 @@ namespace Bob.Commands
             }
 
             var hook = matches[0];
+
+            var hookChannel = Context.Guild.GetTextChannel(hook.ChannelId);
+            if (hookChannel != null && CheckUser(hookChannel) is { } error)
+            {
+                await RespondAsync(error, ephemeral: true);
+                return;
+            }
 
             // Delete the underlying Discord webhook using its own token, so this works even if Bob lost Manage Webhooks
             try
