@@ -30,6 +30,7 @@ namespace Bob.Commands
             [Summary("channel", "Channel where notifications will be posted")] ITextChannel channel,
             [Summary("name", "A friendly name for this webhook")] string name,
             [Summary("provider", "Which service will be sending payloads")]
+            [Choice("GitHub", "github")]
             [Choice("Coolify", "coolify")]
             [Choice("Generic (any JSON)", "generic")]
             string provider)
