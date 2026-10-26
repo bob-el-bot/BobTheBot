@@ -27,7 +27,6 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq.Expressions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
-using BobTheBot.Chat;
 using Bob.Webhooks;
 
 namespace Bob
@@ -418,12 +417,6 @@ namespace Bob
                     // Ignore bots
                     if (message.Author.IsBot)
                         return;
-
-                    // Mention handling
-                    if (channel.Guild.Id == supportServerId && message.Content.StartsWith("<@705680059809398804>"))
-                    {
-                        await ChatHandling.HandleMentionAsync(message);
-                    }
 
                     // GitHub auto-embeds
                     Server server;
