@@ -96,7 +96,7 @@ public static class WebhookListener
 
         if (listener == null) return;
 
-        Console.WriteLine($"[WebhookListener] Listening on {listener.Prefixes.First()}");
+        WebhookLog.Write($"[WebhookListener] Listening on {listener.Prefixes.First()}");
         _maintenance = new Timer(_ => RunMaintenance(), null, Limits.MaintenanceInterval, Limits.MaintenanceInterval);
 
         while (true)
@@ -108,7 +108,7 @@ public static class WebhookListener
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[WebhookListener] Accept error: {ex.Message}");
+                WebhookLog.Write($"[WebhookListener] Accept error: {WebhookLog.Clean(ex.Message, 200)}");
                 await Task.Delay(100); // Don't spin if accepting keeps failing
                 continue;
             }
@@ -279,7 +279,7 @@ public static class WebhookListener
             catch (Exception ex) when (IsWebhookGone(ex))
             {
                 // Discord webhook (or its channel) was deleted, so stop accepting deliveries for it
-                Console.WriteLine($"[WebhookListener] Discord webhook for {info.Id} ({info.DisplayName}) no longer exists, deactivating");
+                WebhookLog.Write($"[WebhookListener] Discord webhook for {info.Id.ToString()[..8]}… ({WebhookLog.Clean(info.DisplayName, 40)}) no longer exists, deactivating");
                 await DeactivateAsync(info.Id);
                 await Respond(resp, 410, "Discord webhook no longer exists");
                 return;
@@ -292,7 +292,7 @@ public static class WebhookListener
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[WebhookListener] Discord post failed for {info.Id}: {ex.Message}");
+                WebhookLog.Write($"[WebhookListener] Discord post failed for {info.Id.ToString()[..8]}…: {WebhookLog.Clean(ex.Message, 200)}");
                 await Respond(resp, 500, "Failed to post to Discord");
                 return;
             }
@@ -301,7 +301,7 @@ public static class WebhookListener
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[WebhookListener] Unhandled error: {ex}");
+            WebhookLog.Write($"[WebhookListener] Unhandled error: {ex}");
             try { await Respond(resp, 500, "Internal Server Error"); } catch { /* client already gone */ }
         }
         finally
@@ -391,7 +391,7 @@ public static class WebhookListener
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[WebhookListener] Failed to deactivate {id}: {ex.Message}");
+            WebhookLog.Write($"[WebhookListener] Failed to deactivate {id.ToString()[..8]}…: {WebhookLog.Clean(ex.Message, 200)}");
         }
     }
 
@@ -415,11 +415,11 @@ public static class WebhookListener
                 .ToList();
 
             if (counts.Count > 0)
-                Console.WriteLine($"[WebhookListener] Rejected in the last minute: {string.Join(", ", counts.Select(r => $"{r.reason}={r.count}"))} (tracking {Limits.PerIp.Count} IPs)");
+                WebhookLog.Write($"[WebhookListener] Rejected in the last minute: {string.Join(", ", counts.Select(r => $"{r.reason}={r.count}"))} (tracking {Limits.PerIp.Count} IPs)");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[WebhookListener] Maintenance failed: {ex.Message}");
+            WebhookLog.Write($"[WebhookListener] Maintenance failed: {WebhookLog.Clean(ex.Message, 200)}");
         }
     }
 
@@ -435,7 +435,7 @@ public static class WebhookListener
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"[WebhookListener] Failed to start on {prefix}: {ex.Message}");
+            WebhookLog.Write($"[WebhookListener] Failed to start on {prefix}: {WebhookLog.Clean(ex.Message, 200)}");
             listener.Close();
             return null;
         }
