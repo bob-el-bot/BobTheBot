@@ -18,6 +18,7 @@ public static class WebhookListener
 {
     private static readonly List<IWebhookStrategy> _strategies =
     [
+        new CoolifyStrategy(),
         new GenericStrategy(),
     ];
 
