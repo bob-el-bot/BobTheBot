@@ -39,16 +39,7 @@ namespace Bob.Commands
         public async Task CreateWebhook(
             [Summary("channel", "Channel where notifications will be posted")][ChannelTypes(ChannelType.Text, ChannelType.News)] ITextChannel channel,
             [Summary("name", "A friendly name for this webhook")] string name,
-            [Summary("provider", "Which service will be sending payloads")]
-            [Choice("GitHub", "github")]
-            [Choice("GitLab", "gitlab")]
-            [Choice("Vercel", "vercel")]
-            [Choice("Railway", "railway")]
-            [Choice("Netlify", "netlify")]
-            [Choice("Coolify", "coolify")]
-            [Choice("Docker Hub", "dockerhub")]
-            [Choice("Generic (any JSON)", "generic")]
-            string provider)
+            [Summary("provider", "Which service will be sending payloads")] WebhookProvider provider)
         {
             await DeferAsync(ephemeral: true);
 
@@ -75,7 +66,7 @@ namespace Bob.Commands
 
             var info = new WebhookInfo
             {
-                Provider           = provider,
+                Provider           = provider.Key(),
                 GuildId            = Context.Guild.Id,
                 ChannelId          = channel.Id,
                 DiscordWebhookId   = discordWebhook.Id,
@@ -88,7 +79,7 @@ namespace Bob.Commands
             await _db.SaveChangesAsync();
 
             var ingestUrl = $"{BaseUrl}/ingest/{info.Id}";
-            var strategy  = WebhookListener.GetStrategy(provider);
+            var strategy  = WebhookListener.GetStrategy(info.Provider);
 
             await FollowupAsync(embed: new EmbedBuilder()
                 .WithTitle("Webhook Registered")
