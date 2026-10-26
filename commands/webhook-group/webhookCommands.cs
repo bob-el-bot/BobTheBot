@@ -8,12 +8,14 @@ using Bob.Database.Types;
 using Bob.Webhooks;
 using Discord;
 using Discord.Interactions;
+using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 
 namespace Bob.Commands
 {
     [CommandContextType(InteractionContextType.Guild)]
     [IntegrationType(ApplicationIntegrationType.GuildInstall)]
+    [DefaultMemberPermissions(GuildPermission.ManageGuild)] // Discord only honours this on the top-level group
     [Group("webhook", "Manage inbound webhooks from external services.")]
     public class WebhookGroup : InteractionModuleBase<ShardedInteractionContext>
     {
@@ -26,9 +28,8 @@ namespace Bob.Commands
         // ── /webhook create ────────────────────────────────────────────────────
 
         [SlashCommand("create", "Register a new inbound webhook for an external service.")]
-        [DefaultMemberPermissions(GuildPermission.ManageGuild)]
         public async Task CreateWebhook(
-            [Summary("channel", "Channel where notifications will be posted")] ITextChannel channel,
+            [Summary("channel", "Channel where notifications will be posted")][ChannelTypes(ChannelType.Text, ChannelType.News)] ITextChannel channel,
             [Summary("name", "A friendly name for this webhook")] string name,
             [Summary("provider", "Which service will be sending payloads")]
             [Choice("GitHub", "github")]
@@ -49,9 +50,14 @@ namespace Bob.Commands
                 return;
             }
 
-            var botUser = Context.Guild.GetUser(Bob.Bot.Client.CurrentUser.Id);
-            var perms   = botUser.GetPermissions(channel);
+            // The user must be allowed to create webhooks there themselves, not just use this command
+            if (!((SocketGuildUser)Context.User).GetPermissions(channel).ManageWebhooks)
+            {
+                await FollowupAsync($"❌ You need the `Manage Webhooks` permission in {channel.Mention}.", ephemeral: true);
+                return;
+            }
 
+            var perms = Context.Guild.CurrentUser.GetPermissions(channel);
             if (!perms.ManageWebhooks)
             {
                 await FollowupAsync($"❌ I need the `Manage Webhooks` permission in {channel.Mention}.", ephemeral: true);
@@ -119,7 +125,6 @@ namespace Bob.Commands
         // ── /webhook delete ────────────────────────────────────────────────────
 
         [SlashCommand("delete", "Remove a registered webhook.")]
-        [DefaultMemberPermissions(GuildPermission.ManageGuild)]
         public async Task DeleteWebhook(
             [Summary("name", "Name of the webhook to remove (partial match)")] string name)
         {
