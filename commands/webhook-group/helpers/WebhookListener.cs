@@ -35,7 +35,7 @@ public static class WebhookListener
 
     public static async Task StartAsync()
     {
-        // Railway routes public traffic to $PORT; this listener also replaces Uptime's "Bob is Alive!" check
+        // Railway routes public traffic to $PORT; this listener also answers uptime checks
         var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
         var listener = TryStart($"http://+:{port}/")
             // Windows denies binding all interfaces without admin / a netsh urlacl, but localhost is allowed
@@ -66,17 +66,13 @@ public static class WebhookListener
 
         try
         {
-            // Health check
-            if (req.HttpMethod == "GET" && req.Url.AbsolutePath is "/" or "/health")
-            {
-                await WriteResponse(resp, 200, "Bob is Alive!");
-                return;
-            }
-
-            // Only accept POST /ingest/{guid}
+            // Anything that isn't a webhook delivery is an uptime check (e.g. Better Stack), whatever the method or path
             if (req.HttpMethod != "POST" || !req.Url.AbsolutePath.StartsWith("/ingest/"))
             {
-                await WriteResponse(resp, 404, "Not Found");
+                if (req.HttpMethod == "HEAD")
+                    resp.StatusCode = 200; // HEAD responses carry no body
+                else
+                    await WriteResponse(resp, 200, "Bob is Alive!");
                 return;
             }
 
