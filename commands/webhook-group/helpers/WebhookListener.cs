@@ -8,6 +8,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Bob.Database;
 using Bob.Database.Types;
+using Discord;
+using Discord.Net;
 using Discord.Webhook;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -126,6 +128,14 @@ public static class WebhookListener
                 using var webhookClient = new DiscordWebhookClient(info.DiscordWebhookId, info.DiscordWebhookToken);
                 await webhookClient.SendMessageAsync(embeds: [embed]);
             }
+            catch (Exception ex) when (IsWebhookGone(ex))
+            {
+                // Discord webhook (or its channel) was deleted — stop accepting deliveries for it
+                Console.WriteLine($"[WebhookListener] Discord webhook for {info.Id} ({info.DisplayName}) no longer exists — deactivating");
+                await DeactivateAsync(info.Id);
+                await WriteResponse(resp, 410, "Discord webhook no longer exists");
+                return;
+            }
             catch (Exception ex)
             {
                 Console.WriteLine($"[WebhookListener] Discord post failed for {info.Id}: {ex.Message}");
@@ -143,6 +153,33 @@ public static class WebhookListener
         finally
         {
             resp.Close();
+        }
+    }
+
+    private static bool IsWebhookGone(Exception ex) => ex switch
+    {
+        // Thrown by the DiscordWebhookClient constructor when Discord returns 404 for the webhook
+        InvalidOperationException ioe when ioe.Message.Contains("Could not find a webhook") => true,
+        HttpException { HttpCode: HttpStatusCode.NotFound or HttpStatusCode.Unauthorized } => true,
+        HttpException { DiscordCode: DiscordErrorCode.UnknownWebhook or DiscordErrorCode.InvalidWebhookToken } => true,
+        _ => false,
+    };
+
+    private static async Task DeactivateAsync(Guid id)
+    {
+        try
+        {
+            using var scope = Bob.Bot.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<BobEntities>();
+            var info = await db.WebhookInfo.FindAsync(id);
+            if (info == null) return;
+
+            info.IsActive = false;
+            await db.SaveChangesAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"[WebhookListener] Failed to deactivate {id}: {ex.Message}");
         }
     }
 
