@@ -73,7 +73,7 @@ namespace Bob.Commands
             }
 
             // Create a Discord webhook in the target channel so the listener can post there
-            var discordWebhook = await channel.CreateWebhookAsync($"Bob — {name}");
+            var discordWebhook = await channel.CreateWebhookAsync($"Bob | {name}");
 
             var info = new WebhookInfo
             {
@@ -99,7 +99,7 @@ namespace Bob.Commands
                 .AddField("Channel", channel.Mention, inline: true)
                 .AddField("Point your service here", $"```\n{ingestUrl}\n```")
                 .AddField("Setup", strategy.SetupHint)
-                .WithFooter("Keep this URL private — anyone who has it can post to your channel.")
+                .WithFooter("Keep this URL private. Anyone who has it can post to your channel.")
                 .Build(), ephemeral: true);
         }
 
@@ -121,7 +121,7 @@ namespace Bob.Commands
 
             var sb = new StringBuilder();
             foreach (var h in hooks)
-                sb.AppendLine($"**{h.DisplayName}** (`{h.Provider}`) → <#{h.ChannelId}> — `{h.Id.ToString()[..8]}…`");
+                sb.AppendLine($"**{h.DisplayName}** (`{h.Provider}`) → <#{h.ChannelId}> (`{h.Id.ToString()[..8]}…`)");
 
             await RespondAsync(embed: new EmbedBuilder()
                 .WithTitle($"Registered Webhooks ({hooks.Count})")

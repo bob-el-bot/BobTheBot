@@ -36,7 +36,7 @@ public class CoolifyStrategy : WebhookStrategy
         var subject = Str(root, "application_name", "database_name", "task_name", "container_name", "server_name");
 
         var builder = new EmbedBuilder()
-            .WithTitle(Truncate($"{icon} {Label(evt)}{(subject != null ? $" — {subject}" : "")}", 256))
+            .WithTitle(Truncate($"{icon} {Label(evt)}{(subject != null ? $" | {subject}" : "")}", 256))
             .WithColor(color);
 
         if (message != null) builder.WithDescription(Truncate(message, 2000));

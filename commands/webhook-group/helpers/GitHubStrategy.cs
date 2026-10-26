@@ -82,7 +82,7 @@ public class GitHubStrategy : WebhookStrategy
         foreach (var c in commits.Take(5))
         {
             var sha = ShortSha(Str(c, "id"));
-            sb.AppendLine($"[`{sha}`]({Str(c, "url")}) {Truncate(FirstLine(Str(c, "message")), 70)} — {Str(c, "author.username", "author.name")}");
+            sb.AppendLine($"[`{sha}`]({Str(c, "url")}) {Truncate(FirstLine(Str(c, "message")), 70)} by {Str(c, "author.username", "author.name")}");
         }
         if (commits.Count > 5) sb.AppendLine($"…and {commits.Count - 5} more");
 

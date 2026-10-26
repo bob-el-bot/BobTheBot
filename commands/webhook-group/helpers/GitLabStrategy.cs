@@ -57,7 +57,7 @@ public class GitLabStrategy : WebhookStrategy
 
         var sb = new StringBuilder();
         foreach (var c in commits.Take(5))
-            sb.AppendLine($"[`{ShortSha(Str(c, "id"))}`]({Str(c, "url")}) {Truncate(FirstLine(Str(c, "message", "title")), 70)} — {Str(c, "author.name")}");
+            sb.AppendLine($"[`{ShortSha(Str(c, "id"))}`]({Str(c, "url")}) {Truncate(FirstLine(Str(c, "message", "title")), 70)} by {Str(c, "author.name")}");
         if (total > 5) sb.AppendLine($"…and {total - 5} more");
 
         var before = Str(root, "before");

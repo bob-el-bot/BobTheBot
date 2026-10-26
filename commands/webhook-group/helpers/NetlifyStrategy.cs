@@ -32,7 +32,7 @@ public class NetlifyStrategy : WebhookStrategy
         };
 
         var builder = new EmbedBuilder()
-            .WithTitle(Truncate($"{icon} {name} — {label}", 256))
+            .WithTitle(Truncate($"{icon} {name} | {label}", 256))
             .WithColor(color)
             .WithUrl(Str(root, "deploy_ssl_url", "ssl_url", "url"));
 
@@ -51,7 +51,7 @@ public class NetlifyStrategy : WebhookStrategy
         if (state == "error" && error != null)
             builder.WithDescription($"```\n{Truncate(error, 1000)}\n```");
         else if (title != null)
-            builder.WithDescription(Truncate(FirstLine(title), 300) + (Str(root, "committer") is { } who ? $"\n— {who}" : ""));
+            builder.WithDescription(Truncate(FirstLine(title), 300) + (Str(root, "committer") is { } who ? $"\nby {who}" : ""));
 
         var admin = Str(root, "admin_url");
         var id    = Str(root, "id");

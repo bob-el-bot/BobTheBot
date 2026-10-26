@@ -31,7 +31,7 @@ public class VercelStrategy : WebhookStrategy
         };
 
         var builder = new EmbedBuilder()
-            .WithTitle(Truncate($"{icon} {name} — {label}", 256))
+            .WithTitle(Truncate($"{icon} {name} | {label}", 256))
             .WithColor(color)
             .WithUrl(Str(root, "payload.links.deployment"));
 
@@ -46,7 +46,7 @@ public class VercelStrategy : WebhookStrategy
 
         if (branch != null) builder.AddField("Branch", $"`{branch}`", inline: true);
         if (sha != null)    builder.AddField("Commit", $"`{ShortSha(sha)}`", inline: true);
-        if (msg != null)    builder.WithDescription(Truncate(FirstLine(msg), 300) + (author != null ? $"\n— {author}" : ""));
+        if (msg != null)    builder.WithDescription(Truncate(FirstLine(msg), 300) + (author != null ? $"\nby {author}" : ""));
 
         var url = Str(root, "payload.deployment.url");
         if (url != null && type is "deployment.succeeded" or "deployment.ready" or "deployment.promoted")
