@@ -276,6 +276,7 @@ namespace Bob.Commands
                 changes.Add($"-# Use `reset-avatar` to switch to the {WebhookListener.GetStrategy(newProviderKey).ServiceName} logo.");
 
             await _db.SaveChangesAsync();
+            WebhookCache.Invalidate(hook.Id);
 
             var embed = new EmbedBuilder()
                 .WithTitle($"Webhook Updated: {hook.DisplayName}")
@@ -369,6 +370,7 @@ namespace Bob.Commands
 
             hook.IsActive = false;
             await _db.SaveChangesAsync();
+            WebhookCache.Invalidate(hook.Id);
 
             await RespondAsync($"✅ Webhook **{hook.DisplayName}** deleted.", ephemeral: true);
         }
