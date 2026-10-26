@@ -8,6 +8,7 @@ using Bob.Database.Types;
 using Bob.Webhooks;
 using Discord;
 using Discord.Interactions;
+using Discord.Webhook;
 using Discord.WebSocket;
 using Microsoft.EntityFrameworkCore;
 
@@ -150,12 +151,11 @@ namespace Bob.Commands
 
             var hook = matches[0];
 
-            // Try to delete the underlying Discord webhook so it can't be misused
+            // Delete the underlying Discord webhook using its own token, so this works even if Bob lost Manage Webhooks
             try
             {
-                var discordHook = await Context.Guild.GetWebhookAsync(hook.DiscordWebhookId);
-                if (discordHook != null)
-                    await discordHook.DeleteAsync();
+                using var discordHook = new DiscordWebhookClient(hook.DiscordWebhookId, hook.DiscordWebhookToken);
+                await discordHook.DeleteWebhookAsync();
             }
             catch { /* webhook may have already been deleted manually */ }
 
