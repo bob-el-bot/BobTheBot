@@ -24,6 +24,7 @@ public static class WebhookListener
         new VercelStrategy(),
         new RailwayStrategy(),
         new NetlifyStrategy(),
+        new DockerHubStrategy(),
         new GenericStrategy(),
     ];
 

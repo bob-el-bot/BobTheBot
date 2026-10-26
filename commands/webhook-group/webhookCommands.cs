@@ -36,6 +36,7 @@ namespace Bob.Commands
             [Choice("Railway", "railway")]
             [Choice("Netlify", "netlify")]
             [Choice("Coolify", "coolify")]
+            [Choice("Docker Hub", "dockerhub")]
             [Choice("Generic (any JSON)", "generic")]
             string provider)
         {
