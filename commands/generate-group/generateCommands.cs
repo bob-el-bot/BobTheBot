@@ -41,29 +41,8 @@ namespace Bob.Commands
                 username = Context.User.Username;  // Default username if none provided
             }
 
-            avatarUrl = await ResolveImageUrl(avatar, avatarUrl, "avatar");
-            if (avatarUrl == null)
-            {
-                return;
-            }
-
-            try
-            {
-                // Generate the image
-                using var image = await YouTubeCommentImageGenerator.GenerateYouTubeCommentImage($"@{username}", avatarUrl, comment, time, timeUnit, likes, theme, background, foreground);
-
-                if (image == null)
-                {
-                    await FollowupAsync(ImageErrorMessage("avatar"), ephemeral: true);
-                    return;
-                }
-
-                await SendImageAsync(image, "youtube_comment.png");
-            }
-            catch (Exception ex)
-            {
-                await Logger.HandleUnexpectedError(Context, ex, true); 
-            }
+            await GenerateAndSendAsync(avatar, avatarUrl, "avatar", "youtube_comment.png",
+                url => YouTubeCommentImageGenerator.GenerateYouTubeCommentImage($"@{username}", url, comment, time, timeUnit, likes, theme, background, foreground));
         }
 
         [SlashCommand("tweet", "Bob will generate a tweet image!")]
@@ -98,28 +77,8 @@ namespace Bob.Commands
                 handle = Context.User.Username;
             }
 
-            avatarUrl = await ResolveImageUrl(avatar, avatarUrl, "avatar");
-            if (avatarUrl == null)
-            {
-                return;
-            }
-
-            try
-            {
-                using var image = await TweetImageGenerator.GenerateTweetImage(displayName, handle, avatarUrl, text, likes, reposts, verified, theme, background, foreground);
-
-                if (image == null)
-                {
-                    await FollowupAsync(ImageErrorMessage("avatar"), ephemeral: true);
-                    return;
-                }
-
-                await SendImageAsync(image, "tweet.png");
-            }
-            catch (Exception ex)
-            {
-                await Logger.HandleUnexpectedError(Context, ex, true);
-            }
+            await GenerateAndSendAsync(avatar, avatarUrl, "avatar", "tweet.png",
+                url => TweetImageGenerator.GenerateTweetImage(displayName, handle, url, text, likes, reposts, verified, theme, background, foreground));
         }
 
         [SlashCommand("quote", "Bob will generate an inspirational quote image!")]
@@ -145,28 +104,8 @@ namespace Bob.Commands
                 author = Context.User.GlobalName ?? Context.User.Username;
             }
 
-            avatarUrl = await ResolveImageUrl(avatar, avatarUrl, "avatar");
-            if (avatarUrl == null)
-            {
-                return;
-            }
-
-            try
-            {
-                using var image = await QuoteImageGenerator.GenerateQuoteImage(quote, author, avatarUrl, grayscale, background, foreground);
-
-                if (image == null)
-                {
-                    await FollowupAsync(ImageErrorMessage("avatar"), ephemeral: true);
-                    return;
-                }
-
-                await SendImageAsync(image, "quote.png");
-            }
-            catch (Exception ex)
-            {
-                await Logger.HandleUnexpectedError(Context, ex, true);
-            }
+            await GenerateAndSendAsync(avatar, avatarUrl, "avatar", "quote.png",
+                url => QuoteImageGenerator.GenerateQuoteImage(quote, author, url, grayscale, background, foreground));
         }
 
         [SlashCommand("caption", "Bob will add a meme caption above an image!")]
@@ -185,28 +124,8 @@ namespace Bob.Commands
                 return;
             }
 
-            imageUrl = await ResolveImageUrl(image, imageUrl, "image");
-            if (imageUrl == null)
-            {
-                return;
-            }
-
-            try
-            {
-                using var captioned = await CaptionImageGenerator.GenerateCaptionImage(imageUrl, caption, background, foreground);
-
-                if (captioned == null)
-                {
-                    await FollowupAsync(ImageErrorMessage("image"), ephemeral: true);
-                    return;
-                }
-
-                await SendImageAsync(captioned, "caption.png");
-            }
-            catch (Exception ex)
-            {
-                await Logger.HandleUnexpectedError(Context, ex, true);
-            }
+            await GenerateAndSendAsync(image, imageUrl, "image", "caption.png",
+                url => CaptionImageGenerator.GenerateCaptionImage(url, caption, background, foreground));
         }
 
         [SlashCommand("achievement", "Bob will generate an achievement unlocked image!")]
@@ -228,28 +147,8 @@ namespace Bob.Commands
                 return;
             }
 
-            iconUrl = await ResolveImageUrl(icon, iconUrl, "icon");
-            if (iconUrl == null)
-            {
-                return;
-            }
-
-            try
-            {
-                using var image = await AchievementImageGenerator.GenerateAchievementImage(title, description, iconUrl, background, foreground, titleForeground);
-
-                if (image == null)
-                {
-                    await FollowupAsync(ImageErrorMessage("icon"), ephemeral: true);
-                    return;
-                }
-
-                await SendImageAsync(image, "achievement.png");
-            }
-            catch (Exception ex)
-            {
-                await Logger.HandleUnexpectedError(Context, ex, true);
-            }
+            await GenerateAndSendAsync(icon, iconUrl, "icon", "achievement.png",
+                url => AchievementImageGenerator.GenerateAchievementImage(title, description, url, background, foreground, titleForeground));
         }
 
         /// <summary>
@@ -309,26 +208,44 @@ namespace Bob.Commands
         }
 
         /// <summary>
-        /// The error message for when an image could not be downloaded or decoded.
+        /// Resolves the image to use, generates an image from it, and sends the result as a followup attachment.
+        /// Sends an error followup if the image cannot be resolved or loaded.
         /// </summary>
-        /// <param name="name">The name of the image option.</param>
-        private static string ImageErrorMessage(string name)
+        /// <param name="attachment">The uploaded image, or null.</param>
+        /// <param name="url">The user provided URL, or an empty string.</param>
+        /// <param name="name">The name of the image option, used in error messages.</param>
+        /// <param name="fileName">The file name of the sent image.</param>
+        /// <param name="generate">Generates the image from the resolved image URL, returning null if the image could not be loaded.</param>
+        private async Task GenerateAndSendAsync(IAttachment attachment, string url, string name, string fileName, Func<string, Task<SKBitmap>> generate)
         {
-            return $"❌ Your provided {name} could not be loaded. Make sure it is a valid image (up to {ImageCache.MaxPixels / 1_000_000} megapixels).";
-        }
+            url = await ResolveImageUrl(attachment, url, name);
+            if (url == null)
+            {
+                return;
+            }
 
-        /// <summary>
-        /// Encodes an image as a PNG and sends it as a followup attachment.
-        /// </summary>
-        private async Task SendImageAsync(SKBitmap image, string fileName)
-        {
-            using var ms = new MemoryStream();
-            image.Encode(ms, SKEncodedImageFormat.Png, 100);
-            // Rewind the stream before sending
-            ms.Seek(0, SeekOrigin.Begin);
+            try
+            {
+                using var image = await generate(url);
 
-            // Send the image as a Discord message attachment
-            await FollowupWithFileAsync(ms, fileName);
+                if (image == null)
+                {
+                    await FollowupAsync($"❌ Your provided {name} could not be loaded. Make sure it is a valid image (up to {ImageCache.MaxPixels / 1_000_000} megapixels).", ephemeral: true);
+                    return;
+                }
+
+                // Encode the image and rewind the stream before sending
+                using var ms = new MemoryStream();
+                image.Encode(ms, SKEncodedImageFormat.Png, 100);
+                ms.Seek(0, SeekOrigin.Begin);
+
+                // Send the image as a Discord message attachment
+                await FollowupWithFileAsync(ms, fileName);
+            }
+            catch (Exception ex)
+            {
+                await Logger.HandleUnexpectedError(Context, ex, true);
+            }
         }
     }
 }
