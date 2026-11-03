@@ -144,6 +144,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 
 ### 🪄 Generate Commands:
 - `/generate youtube-comment [comment] [username] [avatar] [avatar-url] [likes] [time] [time-unit] [theme]` Bob will generate a Youtube comment image!
+- `/generate tweet [text] [display-name] [handle] [avatar] [avatar-url] [likes] [reposts] [verified] [theme]` Bob will generate a tweet image!
 
 ### ✨ Miscellaneous Commands: 
 - `/fonts [text] [font]` Change your text to a different font.

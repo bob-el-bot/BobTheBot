@@ -56,6 +56,53 @@ namespace Bob.Commands
             }
         }
 
+        [SlashCommand("tweet", "Bob will generate a tweet image!")]
+        public async Task Tweet([Summary("text", "The tweet content.")][MaxLength(280)] string text,
+            [Summary("display-name", "The display name for the poster. Defaults to your Discord display name.")][MinLength(1)][MaxLength(50)] string displayName = "",
+            [Summary("handle", "The handle for the poster (without the @). Defaults to your Discord username.")][MinLength(1)][MaxLength(15)] string handle = "",
+            [Summary("avatar", "An image you want to have as the profile picture. Defaults to your Discord PFP.")] IAttachment avatar = null,
+            [Summary("avatar-url", "The URL of an image you want to have as the profile picture, used if no avatar is uploaded.")] string avatarUrl = "",
+            [Summary("likes", "The like count for the tweet. Defaults to 1000.")][MinValue(0)][MaxValue(999999999)] int likes = 1000,
+            [Summary("reposts", "The repost count for the tweet. Defaults to 100.")][MinValue(0)][MaxValue(999999999)] int reposts = 100,
+            [Summary("verified", "Whether to show a verified badge. Defaults to false.")] bool verified = false,
+            [Summary("theme", "The theme of the tweet. Defaults to Dark.")] TweetImageGenerator.Theme theme = TweetImageGenerator.Theme.Dark)
+        {
+            await DeferAsync();
+
+            if (displayName == "")
+            {
+                displayName = Context.User.GlobalName ?? Context.User.Username;
+            }
+
+            if (handle == "")
+            {
+                handle = Context.User.Username;
+            }
+
+            avatarUrl = await ResolveImageUrl(avatar, avatarUrl, "avatar");
+            if (avatarUrl == null)
+            {
+                return;
+            }
+
+            try
+            {
+                using var image = await TweetImageGenerator.GenerateTweetImage(displayName, handle, avatarUrl, text, likes, reposts, verified, theme);
+
+                if (image == null)
+                {
+                    await FollowupAsync(ImageErrorMessage("avatar"), ephemeral: true);
+                    return;
+                }
+
+                await SendImageAsync(image, "tweet.png");
+            }
+            catch (Exception ex)
+            {
+                await Logger.HandleUnexpectedError(Context, ex, true);
+            }
+        }
+
         /// <summary>
         /// Resolves the image to use from an uploaded attachment or a URL, preferring the attachment and defaulting to the user's avatar.
         /// Sends an error followup and returns null if the attachment is not an image or the URL is invalid.

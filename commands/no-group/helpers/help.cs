@@ -1702,6 +1702,61 @@ namespace Bob.Commands.Helpers
                                 Description = "The theme of the comment (choose from Dark, Light). Defaults to Dark."
                             }
                         ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "tweet",
+                        InheritGroupName = true,
+                        Description = "Bob will generate a tweet image!",
+                        Url = "https://docs.bobthebot.net#generate-tweet",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "text",
+                                Description = "The tweet content (up to 280 characters)."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "display-name",
+                                Description = "The display name for the poster (between 1 and 50 characters). Defaults to your Discord display name."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "handle",
+                                Description = "The handle for the poster, without the @ (between 1 and 15 characters). Defaults to your Discord username."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "avatar",
+                                Description = "An image you want to have as the profile picture. Defaults to your Discord PFP."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "avatar-url",
+                                Description = "The URL of an image you want to have as the profile picture, used if no avatar is uploaded."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "likes",
+                                Description = "The like count for the tweet (between 0 and 999,999,999). Defaults to 1000."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "reposts",
+                                Description = "The repost count for the tweet (between 0 and 999,999,999). Defaults to 100."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "verified",
+                                Description = "Whether to show a verified badge. Defaults to false."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "theme",
+                                Description = "The theme of the tweet (choose from Dark, Light). Defaults to Dark."
+                            }
+                        ]
                     }
                 ]
             },
