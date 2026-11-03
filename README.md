@@ -143,7 +143,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/decrypt binary [message]` Decrypts your message using binary.
 
 ### 🪄 Generate Commands:
-- `/generate youtube-comment [comment] [username] [avatar-url] [likes] [time] [time-unit] [theme]` Bob will generate a Youtube comment image!
+- `/generate youtube-comment [comment] [username] [avatar] [avatar-url] [likes] [time] [time-unit] [theme]` Bob will generate a Youtube comment image!
 
 ### ✨ Miscellaneous Commands: 
 - `/fonts [text] [font]` Change your text to a different font.

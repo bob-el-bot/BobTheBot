@@ -1673,8 +1673,13 @@ namespace Bob.Commands.Helpers
                             },
                             new ParameterInfo
                             {
+                                Name = "avatar",
+                                Description = "An image you want to have as the profile picture. Defaults to your Discord PFP."
+                            },
+                            new ParameterInfo
+                            {
                                 Name = "avatar-url",
-                                Description = "The URL of an image you want to have as the profile picture. Defaults to your Discord PFP."
+                                Description = "The URL of an image you want to have as the profile picture, used if no avatar is uploaded."
                             },
                             new ParameterInfo
                             {
