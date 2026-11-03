@@ -29,9 +29,7 @@ namespace Bob.Commands
         {
             await DeferAsync();
 
-            var (validBackground, background) = await ResolveColor(backgroundColor);
-            var (validText, foreground) = validBackground ? await ResolveColor(textColor) : (false, null);
-            if (!validBackground || !validText)
+            if (await ResolveColors(backgroundColor, textColor) is not [var background, var foreground])
             {
                 return;
             }
@@ -60,9 +58,7 @@ namespace Bob.Commands
         {
             await DeferAsync();
 
-            var (validBackground, background) = await ResolveColor(backgroundColor);
-            var (validText, foreground) = validBackground ? await ResolveColor(textColor) : (false, null);
-            if (!validBackground || !validText)
+            if (await ResolveColors(backgroundColor, textColor) is not [var background, var foreground])
             {
                 return;
             }
@@ -92,9 +88,7 @@ namespace Bob.Commands
         {
             await DeferAsync();
 
-            var (validBackground, background) = await ResolveColor(backgroundColor);
-            var (validText, foreground) = validBackground ? await ResolveColor(textColor) : (false, null);
-            if (!validBackground || !validText)
+            if (await ResolveColors(backgroundColor, textColor) is not [var background, var foreground])
             {
                 return;
             }
@@ -117,9 +111,7 @@ namespace Bob.Commands
         {
             await DeferAsync();
 
-            var (validBackground, background) = await ResolveColor(backgroundColor);
-            var (validText, foreground) = validBackground ? await ResolveColor(textColor) : (false, null);
-            if (!validBackground || !validText)
+            if (await ResolveColors(backgroundColor, textColor) is not [var background, var foreground])
             {
                 return;
             }
@@ -139,10 +131,7 @@ namespace Bob.Commands
         {
             await DeferAsync();
 
-            var (validBackground, background) = await ResolveColor(backgroundColor);
-            var (validText, foreground) = validBackground ? await ResolveColor(textColor) : (false, null);
-            var (validTitle, titleForeground) = validBackground && validText ? await ResolveColor(titleColor) : (false, null);
-            if (!validBackground || !validText || !validTitle)
+            if (await ResolveColors(backgroundColor, textColor, titleColor) is not [var background, var foreground, var titleForeground])
             {
                 return;
             }
@@ -186,25 +175,32 @@ namespace Bob.Commands
         }
 
         /// <summary>
-        /// Resolves a user provided color name, hex, or RGB value. Sends an error followup if the color is invalid.
+        /// Resolves user provided color names, hex, or RGB values in order. Sends an error followup for the first invalid color.
         /// </summary>
-        /// <param name="input">The user provided color, or an empty string for no custom color.</param>
-        /// <returns>Whether the color is valid, and the color or null if none was provided.</returns>
-        private async Task<(bool Valid, SKColor? Color)> ResolveColor(string input)
+        /// <param name="inputs">The user provided colors, each an empty string for no custom color.</param>
+        /// <returns>The colors in the same order, each null if none was provided, or null if any color is invalid.</returns>
+        private async Task<SKColor?[]> ResolveColors(params string[] inputs)
         {
-            if (input == "")
+            var colors = new SKColor?[inputs.Length];
+
+            for (int i = 0; i < inputs.Length; i++)
             {
-                return (true, null);
+                if (inputs[i] == "")
+                {
+                    continue;
+                }
+
+                Color? color = Colors.TryGetColor(inputs[i]);
+                if (color == null)
+                {
+                    await FollowupAsync(text: $"❌ `{inputs[i]}` is an invalid color. Here is a list of valid colors:\n- {Colors.GetSupportedColorsString()}.\n- Valid hex and RGB codes are also accepted.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    return null;
+                }
+
+                colors[i] = new SKColor(color.Value.R, color.Value.G, color.Value.B);
             }
 
-            Color? color = Colors.TryGetColor(input);
-            if (color == null)
-            {
-                await FollowupAsync(text: $"❌ `{input}` is an invalid color. Here is a list of valid colors:\n- {Colors.GetSupportedColorsString()}.\n- Valid hex and RGB codes are also accepted.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
-                return (false, null);
-            }
-
-            return (true, new SKColor(color.Value.R, color.Value.G, color.Value.B));
+            return colors;
         }
 
         /// <summary>
