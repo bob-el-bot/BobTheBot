@@ -42,7 +42,7 @@ namespace Bob.Commands.Helpers
                         {
                             AbsoluteExpiration = DateTime.UtcNow.AddHours(1),
                             Size = 1
-                        });
+                        }.RegisterPostEvictionCallback(PurgeGuildUsers));
 
                         OnGoingDownloads.TryRemove(ctx.Guild.Id, out Task _); // Clean up
                     });
@@ -78,7 +78,7 @@ namespace Bob.Commands.Helpers
                         {
                             AbsoluteExpiration = DateTime.UtcNow.AddHours(1),
                             Size = 1
-                        });
+                        }.RegisterPostEvictionCallback(PurgeGuildUsers));
 
                         OnGoingDownloads.TryRemove(ctx.Guild.Id, out Task _); // Clean up
                     });
@@ -86,6 +86,23 @@ namespace Bob.Commands.Helpers
                     await downloadTask;
                 }
             }
+        }
+
+        /// <summary>
+        /// Frees a guild's downloaded members once its cache entry is evicted, since Discord.Net never removes them on its own.
+        /// The support server is skipped because the Friend badge relies on its members being cached.
+        /// </summary>
+        private static void PurgeGuildUsers(object key, object value, EvictionReason reason, object state)
+        {
+            var guildId = (ulong)key;
+
+            // A new download (or a fresh entry) means the members are needed again
+            if (guildId == Bot.supportServerId || OnGoingDownloads.ContainsKey(guildId) || Cache.TryGetValue(guildId, out _))
+            {
+                return;
+            }
+
+            Bot.Client.GetGuild(guildId)?.PurgeUserCache();
         }
 
         /// <summary>

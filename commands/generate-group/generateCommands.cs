@@ -43,7 +43,7 @@ namespace Bob.Commands
             try
             {
                 // Generate the image
-                var image = await YouTubeCommentImageGenerator.GenerateYouTubeCommentImage($"@{username}", avatarUrl, comment, time, timeUnit, likes, theme);
+                using var image = await YouTubeCommentImageGenerator.GenerateYouTubeCommentImage($"@{username}", avatarUrl, comment, time, timeUnit, likes, theme);
 
                 if (image == null)
                 {
