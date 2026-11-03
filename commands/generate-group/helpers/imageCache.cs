@@ -17,7 +17,17 @@ namespace Bob.Commands.Helpers
         private static SKBitmap _dislikeIcon;
         private static readonly MemoryCache Cache = new(new MemoryCacheOptions());
         private static readonly ConcurrentDictionary<string, Task<SKBitmap>> OnGoingDownloads = new();
-        private static readonly HttpClient Http = new();
+        private static readonly HttpClient Http = new() { MaxResponseContentBufferSize = MaxDownloadBytes };
+
+        /// <summary>
+        /// The largest image download allowed, in bytes.
+        /// </summary>
+        public const int MaxDownloadBytes = 25 * 1024 * 1024;
+
+        /// <summary>
+        /// The largest decoded image allowed, in pixels, to keep a single image from using too much memory.
+        /// </summary>
+        public const int MaxPixels = 40_000_000;
 
         static ImageCache()
         {
@@ -57,7 +67,7 @@ namespace Bob.Commands.Helpers
         /// Gets an image from a URL, caching it for 5 minutes.
         /// </summary>
         /// <param name="url">The URL to download the image from.</param>
-        /// <returns>The downloaded image.</returns>
+        /// <returns>The downloaded image, or null if it could not be downloaded, is not an image, or is too large.</returns>
         public static async Task<SKBitmap> GetImageFromUrl(string url)
         {
             // Check if the image is already cached
@@ -76,8 +86,13 @@ namespace Bob.Commands.Helpers
                 {
                     // Perform the download
                     byte[] imageBytes = await Http.GetByteArrayAsync(url);
-                    using var stream = new MemoryStream(imageBytes);
-                    var bitmap = SKBitmap.Decode(stream);
+                    using var codec = SKCodec.Create(new MemoryStream(imageBytes));
+                    if (codec == null || (long)codec.Info.Width * codec.Info.Height > MaxPixels)
+                    {
+                        return null;
+                    }
+
+                    var bitmap = SKBitmap.Decode(codec);
 
                     // Cache the image and mark the download as complete
                     Cache.Set(url, bitmap, CreateEntryOptions());
