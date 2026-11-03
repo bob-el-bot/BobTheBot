@@ -7,6 +7,7 @@ using Discord;
 using System.Text;
 using static Bob.ApiInteractions.Interface;
 using Bob.Commands.Helpers;
+using Bob.Debug;
 using Bob.Database.Types;
 using Bob.Database;
 using System.Text.RegularExpressions;
@@ -849,7 +850,15 @@ public class NoGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInter
 
         SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
 
-        await component.ModifyOriginalResponseAsync(x => { x.Embed = Help.GetCategoryEmbed(int.Parse(component.Data.Values.FirstOrDefault())); });
+        try
+        {
+            Embed[] embeds = Help.GetCategoryEmbeds(int.Parse(component.Data.Values.FirstOrDefault()));
+            await component.ModifyOriginalResponseAsync(x => { x.Embeds = embeds; });
+        }
+        catch (Exception ex)
+        {
+            await Logger.HandleUnexpectedError(Context, ex, true);
+        }
     }
 
     [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]

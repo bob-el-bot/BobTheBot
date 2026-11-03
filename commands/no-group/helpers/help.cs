@@ -138,38 +138,65 @@ namespace Bob.Commands.Helpers
         }
 
         /// <summary>
-        /// Generates an embed containing information about a command group and its commands.
+        /// Generates the embeds containing information about a command group and its commands.
+        /// Groups too long for one embed description are continued in additional embeds.
         /// </summary>
         /// <param name="index">The index of the command group in the CommandGroups array.</param>
-        /// <returns>An embed containing the details of the specified command group.</returns>
-        public static Embed GetCategoryEmbed(int index)
+        /// <returns>The embeds containing the details of the specified command group.</returns>
+        public static Embed[] GetCategoryEmbeds(int index)
         {
-            StringBuilder description = new();
+            var group = CommandGroups[index];
 
-            description.AppendLine($"[Docs]({CommandGroups[index].Url}) {CommandGroups[index].Description}");
+            // Build each command's text separately so a command is never split across embeds
+            List<string> sections = [$"[Docs]({group.Url}) {group.Description}\n"];
 
-            foreach (var command in CommandGroups[index].Commands)
+            foreach (var command in group.Commands)
             {
-                var name = command.InheritGroupName ? $"{CommandGroups[index].Name} {command.Name}" : command.Name;
-                description.AppendLine($"- [Docs]({command.Url}) </{name}:{command.Id}> {command.Description}");
+                StringBuilder section = new();
+                var name = command.InheritGroupName ? $"{group.Name} {command.Name}" : command.Name;
+                section.AppendLine($"- [Docs]({command.Url}) </{name}:{command.Id}> {command.Description}");
 
                 if (command.Parameters != null)
                 {
                     foreach (var parameter in command.Parameters)
                     {
-                        description.AppendLine($"  - `{parameter.Name}` {parameter.Description}");
+                        section.AppendLine($"  - `{parameter.Name}` {parameter.Description}");
                     }
                 }
+
+                sections.Add(section.ToString());
             }
 
-            var embed = new EmbedBuilder
-            {
-                Title = $"{CommandGroups[index].Emoji} {CommandGroups[index].Title} | {CommandGroups[index].Commands.Length} Commands.",
-                Description = description.ToString(),
-                Color = Bot.theme
-            };
+            List<Embed> embeds = [];
+            StringBuilder description = new();
 
-            return embed.Build();
+            foreach (var section in sections)
+            {
+                if (description.Length + section.Length > EmbedBuilder.MaxDescriptionLength)
+                {
+                    embeds.Add(BuildCategoryEmbed(group, description.ToString(), embeds.Count == 0));
+                    description.Clear();
+                }
+
+                description.Append(section);
+            }
+
+            embeds.Add(BuildCategoryEmbed(group, description.ToString(), embeds.Count == 0));
+
+            return [.. embeds];
+        }
+
+        /// <summary>
+        /// Builds one embed of a command group's help. Only the first embed has a title.
+        /// </summary>
+        private static Embed BuildCategoryEmbed(CommandInfoGroup group, string description, bool withTitle)
+        {
+            return new EmbedBuilder
+            {
+                Title = withTitle ? $"{group.Emoji} {group.Title} | {group.Commands.Length} Commands." : null,
+                Description = description,
+                Color = Bot.theme
+            }.Build();
         }
 
         public static string GetCommandMention(string commandName, ulong commandId)
