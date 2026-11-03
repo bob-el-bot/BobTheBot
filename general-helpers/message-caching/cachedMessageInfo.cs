@@ -5,15 +5,16 @@ using Discord;
 namespace Bob.Commands.Helpers;
 
 /// <summary>
-/// Represents a cached Discord message along with a count of reactions per emoji.
+/// Represents a cached Discord message's ID along with a count of reactions per emoji.
+/// Only the ID is kept (not the full message) to keep the cache small.
 /// Provides methods to access and update reaction counts efficiently.
 /// </summary>
 public class CachedMessageInfo
 {
     /// <summary>
-    /// Gets or sets the cached Discord message.
+    /// Gets the ID of the cached Discord message.
     /// </summary>
-    public IUserMessage Message { get; set; }
+    public ulong Id { get; }
 
     private readonly Dictionary<string, uint> _reactionCounts = new();
 
@@ -24,7 +25,7 @@ public class CachedMessageInfo
     /// <param name="message">The Discord message to cache and track reactions for.</param>
     public CachedMessageInfo(IUserMessage message)
     {
-        Message = message;
+        Id = message.Id;
         foreach (var reaction in message.Reactions)
         {
             var key = reaction.Key is Emote emote ? emote.Id.ToString() : reaction.Key.Name;

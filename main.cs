@@ -552,18 +552,24 @@ namespace Bob
                         return;
                     }
 
-                    if (await ReactBoardMethods.IsMessageOnBoardAsync(reactBoardChannel, userMessage.Message.Id))
+                    if (await ReactBoardMethods.IsMessageOnBoardAsync(reactBoardChannel, userMessage.Id))
+                    {
+                        return;
+                    }
+
+                    // The cache only keeps reaction counts, so fetch the full message to build the board post
+                    if (await textChannel.GetMessageAsync(userMessage.Id) is not IUserMessage message)
                     {
                         return;
                     }
 
                     await reactBoardChannel.SendMessageAsync(
-                        embeds: [.. ReactBoardMethods.GetReactBoardEmbeds(userMessage.Message)],
+                        embeds: [.. ReactBoardMethods.GetReactBoardEmbeds(message)],
                         allowedMentions: AllowedMentions.None,
-                        components: ReactBoardMethods.GetReactBoardComponents(userMessage.Message)
+                        components: ReactBoardMethods.GetReactBoardComponents(message)
                     );
 
-                    await ReactBoardMethods.AddToCacheAndDbAsync(reactBoardChannel, userMessage.Message.Id);
+                    await ReactBoardMethods.AddToCacheAndDbAsync(reactBoardChannel, userMessage.Id);
                 }
                 catch (Exception e)
                 {
