@@ -11,8 +11,11 @@ namespace Bob.Commands.Helpers
         /// <param name="title">The title of the achievement, shown in yellow.</param>
         /// <param name="description">The achievement description.</param>
         /// <param name="iconUrl">The URL of the icon image.</param>
+        /// <param name="customBackgroundColor">A background color to use instead of dark gray, or null. The border is derived from it.</param>
+        /// <param name="customTextColor">A description color to use instead of white, or null.</param>
+        /// <param name="customTitleColor">A title color to use instead of yellow, or null.</param>
         /// <returns>A Task representing the asynchronous operation that returns the generated SKBitmap image. Returns null if the given iconUrl gets a null image.</returns>
-        public static async Task<SKBitmap> GenerateAchievementImage(string title, string description, string iconUrl)
+        public static async Task<SKBitmap> GenerateAchievementImage(string title, string description, string iconUrl, SKColor? customBackgroundColor = null, SKColor? customTextColor = null, SKColor? customTitleColor = null)
         {
             SKBitmap iconBitmap = await ImageCache.GetImageFromUrl(iconUrl);
             if (iconBitmap == null)
@@ -30,11 +33,14 @@ namespace Bob.Commands.Helpers
 
             // Toast background with a light border
             var toastRect = new SKRoundRect(new SKRect(4, 4, width - 4, height - 4), 10);
-            using (var backgroundPaint = new SKPaint { Color = new SKColor(33, 33, 33), IsAntialias = true })
+            SKColor backgroundColor = customBackgroundColor ?? new SKColor(33, 33, 33);
+            using (var backgroundPaint = new SKPaint { Color = backgroundColor, IsAntialias = true })
             {
                 canvas.DrawRoundRect(toastRect, backgroundPaint);
             }
-            using (var borderPaint = new SKPaint { Color = new SKColor(85, 85, 85), IsAntialias = true, Style = SKPaintStyle.Stroke, StrokeWidth = 4 })
+            // Blend the background toward gray so the border stands out on both light and dark backgrounds
+            SKColor borderColor = new((byte)((backgroundColor.Red + 128) / 2), (byte)((backgroundColor.Green + 128) / 2), (byte)((backgroundColor.Blue + 128) / 2));
+            using (var borderPaint = new SKPaint { Color = borderColor, IsAntialias = true, Style = SKPaintStyle.Stroke, StrokeWidth = 4 })
             {
                 canvas.DrawRoundRect(toastRect, borderPaint);
             }
@@ -55,7 +61,7 @@ namespace Bob.Commands.Helpers
 
             using var titlePaint = new SKPaint
             {
-                Color = new SKColor(255, 221, 0),
+                Color = customTitleColor ?? new SKColor(255, 221, 0),
                 TextSize = 26,
                 IsAntialias = true,
                 Typeface = SKTypeface.FromFamilyName("Arial", SKFontStyle.Bold)
@@ -63,7 +69,7 @@ namespace Bob.Commands.Helpers
 
             using var descriptionPaint = new SKPaint
             {
-                Color = SKColors.White,
+                Color = customTextColor ?? SKColors.White,
                 TextSize = 22,
                 IsAntialias = true,
                 Typeface = SKTypeface.FromFamilyName("Arial")

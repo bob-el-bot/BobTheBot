@@ -27,8 +27,10 @@ namespace Bob.Commands.Helpers
         /// <param name="reposts">The number of reposts on the tweet.</param>
         /// <param name="verified">Whether to show a verified badge next to the display name.</param>
         /// <param name="theme">The theme of the tweet image (light or dark).</param>
+        /// <param name="customBackgroundColor">A background color that overrides the theme, or null.</param>
+        /// <param name="customTextColor">A text color that overrides the theme, or null. Secondary text is derived from it.</param>
         /// <returns>A Task representing the asynchronous operation that returns the generated SKBitmap image. Returns null if the given avatarUrl gets a null image.</returns>
-        public static async Task<SKBitmap> GenerateTweetImage(string displayName, string handle, string avatarUrl, string text, int likes, int reposts, bool verified, Theme theme)
+        public static async Task<SKBitmap> GenerateTweetImage(string displayName, string handle, string avatarUrl, string text, int likes, int reposts, bool verified, Theme theme, SKColor? customBackgroundColor = null, SKColor? customTextColor = null)
         {
             SKBitmap avatarBitmap = await ImageCache.GetImageFromUrl(avatarUrl);
             if (avatarBitmap == null)
@@ -37,10 +39,10 @@ namespace Bob.Commands.Helpers
             }
 
             bool isDarkTheme = theme == Theme.Dark;
-            SKColor backgroundColor = isDarkTheme ? SKColors.Black : SKColors.White;
-            SKColor textColor = isDarkTheme ? new SKColor(231, 233, 234) : new SKColor(15, 20, 25);
-            SKColor subTextColor = isDarkTheme ? new SKColor(113, 118, 123) : new SKColor(83, 100, 113);
-            SKColor dividerColor = isDarkTheme ? new SKColor(47, 51, 54) : new SKColor(239, 243, 244);
+            SKColor backgroundColor = customBackgroundColor ?? (isDarkTheme ? SKColors.Black : SKColors.White);
+            SKColor textColor = customTextColor ?? (isDarkTheme ? new SKColor(231, 233, 234) : new SKColor(15, 20, 25));
+            SKColor subTextColor = customTextColor?.WithAlpha(150) ?? (isDarkTheme ? new SKColor(113, 118, 123) : new SKColor(83, 100, 113));
+            SKColor dividerColor = customTextColor?.WithAlpha(50) ?? (isDarkTheme ? new SKColor(47, 51, 54) : new SKColor(239, 243, 244));
             SKColor verifiedColor = new(29, 155, 240);
 
             using var namePaint = new SKPaint

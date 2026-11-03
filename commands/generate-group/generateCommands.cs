@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using Bob.ColorMethods;
 using Bob.Commands.Helpers;
 using Bob.Debug;
 using Discord;
@@ -22,9 +23,18 @@ namespace Bob.Commands
             [Summary("likes", "The like count for the comment. Defaults to 1000.")][MinValue(0)][MaxValue(999999999)] int likes = 1000,
             [Summary("time", "The amount of time of the specified unit. Defaults to 1.")][MinValue(0)][MaxValue(999999999)] int time = 1,
             [Summary("time-unit", "The unit of time. Defaults to Hour.")] YouTubeCommentImageGenerator.TimeUnit timeUnit = YouTubeCommentImageGenerator.TimeUnit.Hour,
-            [Summary("theme", "The theme of the comment. Defaults to Dark.")] YouTubeCommentImageGenerator.Theme theme = YouTubeCommentImageGenerator.Theme.Dark)
+            [Summary("theme", "The theme of the comment. Defaults to Dark.")] YouTubeCommentImageGenerator.Theme theme = YouTubeCommentImageGenerator.Theme.Dark,
+            [Summary("background-color", "The background color as a name, hex, or RGB. Defaults to the theme.")] string backgroundColor = "",
+            [Summary("text-color", "The text color as a name, hex, or RGB. Defaults to the theme.")] string textColor = "")
         {
             await DeferAsync();
+
+            var (validBackground, background) = await ResolveColor(backgroundColor);
+            var (validText, foreground) = validBackground ? await ResolveColor(textColor) : (false, null);
+            if (!validBackground || !validText)
+            {
+                return;
+            }
 
             if (username == "")
             {
@@ -40,7 +50,7 @@ namespace Bob.Commands
             try
             {
                 // Generate the image
-                using var image = await YouTubeCommentImageGenerator.GenerateYouTubeCommentImage($"@{username}", avatarUrl, comment, time, timeUnit, likes, theme);
+                using var image = await YouTubeCommentImageGenerator.GenerateYouTubeCommentImage($"@{username}", avatarUrl, comment, time, timeUnit, likes, theme, background, foreground);
 
                 if (image == null)
                 {
@@ -65,9 +75,18 @@ namespace Bob.Commands
             [Summary("likes", "The like count for the tweet. Defaults to 1000.")][MinValue(0)][MaxValue(999999999)] int likes = 1000,
             [Summary("reposts", "The repost count for the tweet. Defaults to 100.")][MinValue(0)][MaxValue(999999999)] int reposts = 100,
             [Summary("verified", "Whether to show a verified badge. Defaults to false.")] bool verified = false,
-            [Summary("theme", "The theme of the tweet. Defaults to Dark.")] TweetImageGenerator.Theme theme = TweetImageGenerator.Theme.Dark)
+            [Summary("theme", "The theme of the tweet. Defaults to Dark.")] TweetImageGenerator.Theme theme = TweetImageGenerator.Theme.Dark,
+            [Summary("background-color", "The background color as a name, hex, or RGB. Defaults to the theme.")] string backgroundColor = "",
+            [Summary("text-color", "The text color as a name, hex, or RGB. Defaults to the theme.")] string textColor = "")
         {
             await DeferAsync();
+
+            var (validBackground, background) = await ResolveColor(backgroundColor);
+            var (validText, foreground) = validBackground ? await ResolveColor(textColor) : (false, null);
+            if (!validBackground || !validText)
+            {
+                return;
+            }
 
             if (displayName == "")
             {
@@ -87,7 +106,7 @@ namespace Bob.Commands
 
             try
             {
-                using var image = await TweetImageGenerator.GenerateTweetImage(displayName, handle, avatarUrl, text, likes, reposts, verified, theme);
+                using var image = await TweetImageGenerator.GenerateTweetImage(displayName, handle, avatarUrl, text, likes, reposts, verified, theme, background, foreground);
 
                 if (image == null)
                 {
@@ -108,9 +127,18 @@ namespace Bob.Commands
             [Summary("author", "Who said the quote. Defaults to your Discord display name.")][MinLength(1)][MaxLength(50)] string author = "",
             [Summary("avatar", "An image of the author. Defaults to your Discord PFP.")] IAttachment avatar = null,
             [Summary("avatar-url", "The URL of an image of the author, used if no avatar is uploaded.")] string avatarUrl = "",
-            [Summary("grayscale", "Whether to make the image black and white. Defaults to true.")] bool grayscale = true)
+            [Summary("grayscale", "Whether to make the image black and white. Defaults to true.")] bool grayscale = true,
+            [Summary("background-color", "The background color as a name, hex, or RGB. Defaults to black.")] string backgroundColor = "",
+            [Summary("text-color", "The text color as a name, hex, or RGB. Defaults to white.")] string textColor = "")
         {
             await DeferAsync();
+
+            var (validBackground, background) = await ResolveColor(backgroundColor);
+            var (validText, foreground) = validBackground ? await ResolveColor(textColor) : (false, null);
+            if (!validBackground || !validText)
+            {
+                return;
+            }
 
             if (author == "")
             {
@@ -125,7 +153,7 @@ namespace Bob.Commands
 
             try
             {
-                using var image = await QuoteImageGenerator.GenerateQuoteImage(quote, author, avatarUrl, grayscale);
+                using var image = await QuoteImageGenerator.GenerateQuoteImage(quote, author, avatarUrl, grayscale, background, foreground);
 
                 if (image == null)
                 {
@@ -144,9 +172,18 @@ namespace Bob.Commands
         [SlashCommand("caption", "Bob will add a meme caption above an image!")]
         public async Task Caption([Summary("caption", "The caption text.")][MaxLength(200)] string caption,
             [Summary("image", "The image to caption. Defaults to your Discord PFP.")] IAttachment image = null,
-            [Summary("image-url", "The URL of the image to caption, used if no image is attached.")] string imageUrl = "")
+            [Summary("image-url", "The URL of the image to caption, used if no image is attached.")] string imageUrl = "",
+            [Summary("background-color", "The background color as a name, hex, or RGB. Defaults to white.")] string backgroundColor = "",
+            [Summary("text-color", "The text color as a name, hex, or RGB. Defaults to black.")] string textColor = "")
         {
             await DeferAsync();
+
+            var (validBackground, background) = await ResolveColor(backgroundColor);
+            var (validText, foreground) = validBackground ? await ResolveColor(textColor) : (false, null);
+            if (!validBackground || !validText)
+            {
+                return;
+            }
 
             imageUrl = await ResolveImageUrl(image, imageUrl, "image");
             if (imageUrl == null)
@@ -156,7 +193,7 @@ namespace Bob.Commands
 
             try
             {
-                using var captioned = await CaptionImageGenerator.GenerateCaptionImage(imageUrl, caption);
+                using var captioned = await CaptionImageGenerator.GenerateCaptionImage(imageUrl, caption, background, foreground);
 
                 if (captioned == null)
                 {
@@ -176,9 +213,20 @@ namespace Bob.Commands
         public async Task Achievement([Summary("description", "What the achievement was for.")][MaxLength(100)] string description,
             [Summary("title", "The title of the achievement. Defaults to \"Achievement Unlocked!\".")][MinLength(1)][MaxLength(40)] string title = "Achievement Unlocked!",
             [Summary("icon", "An image you want as the icon. Defaults to your Discord PFP.")] IAttachment icon = null,
-            [Summary("icon-url", "The URL of an image you want as the icon, used if no icon is uploaded.")] string iconUrl = "")
+            [Summary("icon-url", "The URL of an image you want as the icon, used if no icon is uploaded.")] string iconUrl = "",
+            [Summary("title-color", "The title color as a name, hex, or RGB. Defaults to yellow.")] string titleColor = "",
+            [Summary("background-color", "The background color as a name, hex, or RGB. Defaults to dark gray.")] string backgroundColor = "",
+            [Summary("text-color", "The text color as a name, hex, or RGB. Defaults to white.")] string textColor = "")
         {
             await DeferAsync();
+
+            var (validBackground, background) = await ResolveColor(backgroundColor);
+            var (validText, foreground) = validBackground ? await ResolveColor(textColor) : (false, null);
+            var (validTitle, titleForeground) = validBackground && validText ? await ResolveColor(titleColor) : (false, null);
+            if (!validBackground || !validText || !validTitle)
+            {
+                return;
+            }
 
             iconUrl = await ResolveImageUrl(icon, iconUrl, "icon");
             if (iconUrl == null)
@@ -188,7 +236,7 @@ namespace Bob.Commands
 
             try
             {
-                using var image = await AchievementImageGenerator.GenerateAchievementImage(title, description, iconUrl);
+                using var image = await AchievementImageGenerator.GenerateAchievementImage(title, description, iconUrl, background, foreground, titleForeground);
 
                 if (image == null)
                 {
@@ -236,6 +284,28 @@ namespace Bob.Commands
             }
 
             return url;
+        }
+
+        /// <summary>
+        /// Resolves a user provided color name, hex, or RGB value. Sends an error followup if the color is invalid.
+        /// </summary>
+        /// <param name="input">The user provided color, or an empty string for no custom color.</param>
+        /// <returns>Whether the color is valid, and the color or null if none was provided.</returns>
+        private async Task<(bool Valid, SKColor? Color)> ResolveColor(string input)
+        {
+            if (input == "")
+            {
+                return (true, null);
+            }
+
+            Color? color = Colors.TryGetColor(input);
+            if (color == null)
+            {
+                await FollowupAsync(text: $"❌ `{input}` is an invalid color. Here is a list of valid colors:\n- {Colors.GetSupportedColorsString()}.\n- Valid hex and RGB codes are also accepted.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                return (false, null);
+            }
+
+            return (true, new SKColor(color.Value.R, color.Value.G, color.Value.B));
         }
 
         /// <summary>

@@ -11,8 +11,10 @@ namespace Bob.Commands.Helpers
         /// </summary>
         /// <param name="imageUrl">The URL of the image to caption.</param>
         /// <param name="caption">The caption text.</param>
+        /// <param name="customBackgroundColor">A caption band color to use instead of white, or null.</param>
+        /// <param name="customTextColor">A caption text color to use instead of black, or null.</param>
         /// <returns>A Task representing the asynchronous operation that returns the generated SKBitmap image. Returns null if the given imageUrl gets a null image.</returns>
-        public static async Task<SKBitmap> GenerateCaptionImage(string imageUrl, string caption)
+        public static async Task<SKBitmap> GenerateCaptionImage(string imageUrl, string caption, SKColor? customBackgroundColor = null, SKColor? customTextColor = null)
         {
             SKBitmap sourceBitmap = await ImageCache.GetImageFromUrl(imageUrl);
             if (sourceBitmap == null)
@@ -28,7 +30,7 @@ namespace Bob.Commands.Helpers
 
             using var captionPaint = new SKPaint
             {
-                Color = SKColors.Black,
+                Color = customTextColor ?? SKColors.Black,
                 TextSize = 56,
                 IsAntialias = true,
                 TextAlign = SKTextAlign.Center,
@@ -42,7 +44,7 @@ namespace Bob.Commands.Helpers
 
             var bitmap = new SKBitmap(width, bandHeight + imageHeight);
             using var canvas = new SKCanvas(bitmap);
-            canvas.Clear(SKColors.White);
+            canvas.Clear(customBackgroundColor ?? SKColors.White);
 
             // Center the text block within the band
             var metrics = captionPaint.FontMetrics;

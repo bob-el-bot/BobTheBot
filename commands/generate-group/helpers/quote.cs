@@ -13,8 +13,10 @@ namespace Bob.Commands.Helpers
         /// <param name="author">The name the quote is attributed to.</param>
         /// <param name="avatarUrl">The URL of the author's avatar image.</param>
         /// <param name="grayscale">Whether to draw the avatar in grayscale.</param>
+        /// <param name="customBackgroundColor">A background color to use instead of black, or null.</param>
+        /// <param name="customTextColor">A text color to use instead of white, or null. The author line is derived from it.</param>
         /// <returns>A Task representing the asynchronous operation that returns the generated SKBitmap image. Returns null if the given avatarUrl gets a null image.</returns>
-        public static async Task<SKBitmap> GenerateQuoteImage(string quote, string author, string avatarUrl, bool grayscale)
+        public static async Task<SKBitmap> GenerateQuoteImage(string quote, string author, string avatarUrl, bool grayscale, SKColor? customBackgroundColor = null, SKColor? customTextColor = null)
         {
             SKBitmap avatarBitmap = await ImageCache.GetImageFromUrl(avatarUrl);
             if (avatarBitmap == null)
@@ -28,7 +30,11 @@ namespace Bob.Commands.Helpers
             var bitmap = new SKBitmap(width * scaleFactor, height * scaleFactor);
             using var canvas = new SKCanvas(bitmap);
             canvas.Scale(scaleFactor);
-            canvas.Clear(SKColors.Black);
+
+            SKColor backgroundColor = customBackgroundColor ?? SKColors.Black;
+            SKColor textColor = customTextColor ?? SKColors.White;
+            SKColor authorColor = customTextColor?.WithAlpha(170) ?? new SKColor(170, 170, 170);
+            canvas.Clear(backgroundColor);
 
             // Avatar on the left, filling the full height
             var avatarRect = new SKRect(0, 0, height, height);
@@ -48,7 +54,7 @@ namespace Bob.Commands.Helpers
                 fadePaint.Shader = SKShader.CreateLinearGradient(
                     new SKPoint(height * 0.35f, 0),
                     new SKPoint(height, 0),
-                    [SKColors.Transparent, SKColors.Black],
+                    [backgroundColor.WithAlpha(0), backgroundColor],
                     SKShaderTileMode.Clamp);
                 canvas.DrawRect(avatarRect, fadePaint);
             }
@@ -61,7 +67,7 @@ namespace Bob.Commands.Helpers
 
             using var quotePaint = new SKPaint
             {
-                Color = SKColors.White,
+                Color = textColor,
                 IsAntialias = true,
                 TextAlign = SKTextAlign.Center,
                 Typeface = SKTypeface.FromFamilyName("Georgia", SKFontStyle.Italic)
@@ -87,7 +93,7 @@ namespace Bob.Commands.Helpers
 
             using var authorPaint = new SKPaint
             {
-                Color = new SKColor(170, 170, 170),
+                Color = authorColor,
                 TextSize = 20,
                 IsAntialias = true,
                 TextAlign = SKTextAlign.Center,

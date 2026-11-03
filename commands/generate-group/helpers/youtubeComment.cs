@@ -40,8 +40,10 @@ namespace Bob.Commands.Helpers
         /// <param name="timeUnit">The unit of time for the timeAgo value.</param>
         /// <param name="likesCount">The number of likes on the comment.</param>
         /// <param name="theme">The theme of the comment image (light or dark).</param>
+        /// <param name="customBackgroundColor">A background color that overrides the theme, or null.</param>
+        /// <param name="customTextColor">A text color that overrides the theme, or null. Secondary text is derived from it.</param>
         /// <returns>A Task representing the asynchronous operation that returns the generated SKBitmap image. Returns null if the given avatarUrl gets a null image.</returns>
-        public static async Task<SKBitmap> GenerateYouTubeCommentImage(string username, string avatarUrl, string comment, int timeAgo, TimeUnit timeUnit, int likesCount, Theme theme)
+        public static async Task<SKBitmap> GenerateYouTubeCommentImage(string username, string avatarUrl, string comment, int timeAgo, TimeUnit timeUnit, int likesCount, Theme theme, SKColor? customBackgroundColor = null, SKColor? customTextColor = null)
         {
             // Load the avatar and like icon images from URLs and file paths
             SKBitmap avatarBitmap = await ImageCache.GetImageFromUrl(avatarUrl);
@@ -65,9 +67,9 @@ namespace Bob.Commands.Helpers
             bool isDarkTheme = theme == Theme.Dark;
 
             // Define theme colors
-            SKColor backgroundColor = isDarkTheme ? new SKColor(15, 15, 15) : SKColors.White;
-            SKColor textColor = isDarkTheme ? SKColors.White : SKColors.Black;
-            SKColor subTextColor = isDarkTheme ? new SKColor(96, 96, 96) : new SKColor(170, 170, 170);
+            SKColor backgroundColor = customBackgroundColor ?? (isDarkTheme ? new SKColor(15, 15, 15) : SKColors.White);
+            SKColor textColor = customTextColor ?? (isDarkTheme ? SKColors.White : SKColors.Black);
+            SKColor subTextColor = customTextColor?.WithAlpha(150) ?? (isDarkTheme ? new SKColor(96, 96, 96) : new SKColor(170, 170, 170));
 
             canvas.Clear(backgroundColor); // Set background color
 

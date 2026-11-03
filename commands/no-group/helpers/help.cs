@@ -1700,6 +1700,16 @@ namespace Bob.Commands.Helpers
                             {
                                 Name = "theme",
                                 Description = "The theme of the comment (choose from Dark, Light). Defaults to Dark."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "background-color",
+                                Description = "The background color. Valid colors are names, hex, or RGB. Defaults to the theme."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "text-color",
+                                Description = "The text color. Valid colors are names, hex, or RGB. Defaults to the theme."
                             }
                         ]
                     },
@@ -1755,6 +1765,16 @@ namespace Bob.Commands.Helpers
                             {
                                 Name = "theme",
                                 Description = "The theme of the tweet (choose from Dark, Light). Defaults to Dark."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "background-color",
+                                Description = "The background color. Valid colors are names, hex, or RGB. Defaults to the theme."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "text-color",
+                                Description = "The text color. Valid colors are names, hex, or RGB. Defaults to the theme."
                             }
                         ]
                     },
@@ -1790,6 +1810,16 @@ namespace Bob.Commands.Helpers
                             {
                                 Name = "grayscale",
                                 Description = "Whether to make the image black and white. Defaults to true."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "background-color",
+                                Description = "The background color. Valid colors are names, hex, or RGB. Defaults to black."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "text-color",
+                                Description = "The text color. Valid colors are names, hex, or RGB. Defaults to white."
                             }
                         ]
                     },
@@ -1815,6 +1845,16 @@ namespace Bob.Commands.Helpers
                             {
                                 Name = "image-url",
                                 Description = "The URL of the image to caption, used if no image is attached."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "background-color",
+                                Description = "The background color. Valid colors are names, hex, or RGB. Defaults to white."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "text-color",
+                                Description = "The text color. Valid colors are names, hex, or RGB. Defaults to black."
                             }
                         ]
                     },
@@ -1845,6 +1885,21 @@ namespace Bob.Commands.Helpers
                             {
                                 Name = "icon-url",
                                 Description = "The URL of an image you want as the icon, used if no icon is uploaded."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "title-color",
+                                Description = "The title color. Valid colors are names, hex, or RGB. Defaults to yellow."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "background-color",
+                                Description = "The background color. Valid colors are names, hex, or RGB. Defaults to dark gray."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "text-color",
+                                Description = "The text color. Valid colors are names, hex, or RGB. Defaults to white."
                             }
                         ]
                     }
