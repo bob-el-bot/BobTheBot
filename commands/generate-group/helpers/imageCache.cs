@@ -17,6 +17,7 @@ namespace Bob.Commands.Helpers
         private static SKBitmap _dislikeIcon;
         private static readonly MemoryCache Cache = new(new MemoryCacheOptions());
         private static readonly ConcurrentDictionary<string, Task<SKBitmap>> OnGoingDownloads = new();
+        private static readonly HttpClient Http = new();
 
         static ImageCache()
         {
@@ -63,7 +64,7 @@ namespace Bob.Commands.Helpers
             if (Cache.TryGetValue(url, out var cachedBitmap))
             {
                 // Update the last accessed time and return the cached image
-                Cache.Set(url, cachedBitmap, DateTime.Now.AddMinutes(5));
+                Cache.Set(url, cachedBitmap, CreateEntryOptions());
                 
                 return (SKBitmap)cachedBitmap;
             }
@@ -74,12 +75,12 @@ namespace Bob.Commands.Helpers
                 try
                 {
                     // Perform the download
-                    byte[] imageBytes = await new HttpClient().GetByteArrayAsync(url);
+                    byte[] imageBytes = await Http.GetByteArrayAsync(url);
                     using var stream = new MemoryStream(imageBytes);
                     var bitmap = SKBitmap.Decode(stream);
 
                     // Cache the image and mark the download as complete
-                    Cache.Set(url, bitmap, DateTime.Now.AddMinutes(5));
+                    Cache.Set(url, bitmap, CreateEntryOptions());
                     
                     return bitmap;
                 }
@@ -97,6 +98,27 @@ namespace Bob.Commands.Helpers
 
             // Await the download task and return the result
             return await downloadTask;
+        }
+
+        /// <summary>
+        /// Creates cache options that expire an image after 5 minutes and free its native memory once evicted.
+        /// </summary>
+        private static MemoryCacheEntryOptions CreateEntryOptions()
+        {
+            return new MemoryCacheEntryOptions
+            {
+                AbsoluteExpiration = DateTime.Now.AddMinutes(5)
+            }.RegisterPostEvictionCallback(static (_, value, reason, _) =>
+            {
+                // Replaced means the same bitmap was re-cached on access, so it is still in use
+                if (reason == EvictionReason.Replaced || value is not SKBitmap bitmap)
+                {
+                    return;
+                }
+
+                // Delay disposal so a command that grabbed the bitmap right before it expired can finish drawing with it
+                _ = Task.Delay(TimeSpan.FromMinutes(1)).ContinueWith(_ => bitmap.Dispose());
+            });
         }
 
         /// <summary>
