@@ -103,6 +103,44 @@ namespace Bob.Commands
             }
         }
 
+        [SlashCommand("quote", "Bob will generate an inspirational quote image!")]
+        public async Task Quote([Summary("quote", "The quote content.")][MaxLength(300)] string quote,
+            [Summary("author", "Who said the quote. Defaults to your Discord display name.")][MinLength(1)][MaxLength(50)] string author = "",
+            [Summary("avatar", "An image of the author. Defaults to your Discord PFP.")] IAttachment avatar = null,
+            [Summary("avatar-url", "The URL of an image of the author, used if no avatar is uploaded.")] string avatarUrl = "",
+            [Summary("grayscale", "Whether to make the image black and white. Defaults to true.")] bool grayscale = true)
+        {
+            await DeferAsync();
+
+            if (author == "")
+            {
+                author = Context.User.GlobalName ?? Context.User.Username;
+            }
+
+            avatarUrl = await ResolveImageUrl(avatar, avatarUrl, "avatar");
+            if (avatarUrl == null)
+            {
+                return;
+            }
+
+            try
+            {
+                using var image = await QuoteImageGenerator.GenerateQuoteImage(quote, author, avatarUrl, grayscale);
+
+                if (image == null)
+                {
+                    await FollowupAsync(ImageErrorMessage("avatar"), ephemeral: true);
+                    return;
+                }
+
+                await SendImageAsync(image, "quote.png");
+            }
+            catch (Exception ex)
+            {
+                await Logger.HandleUnexpectedError(Context, ex, true);
+            }
+        }
+
         /// <summary>
         /// Resolves the image to use from an uploaded attachment or a URL, preferring the attachment and defaulting to the user's avatar.
         /// Sends an error followup and returns null if the attachment is not an image or the URL is invalid.

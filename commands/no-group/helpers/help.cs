@@ -1757,6 +1757,41 @@ namespace Bob.Commands.Helpers
                                 Description = "The theme of the tweet (choose from Dark, Light). Defaults to Dark."
                             }
                         ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "quote",
+                        InheritGroupName = true,
+                        Description = "Bob will generate an inspirational quote image!",
+                        Url = "https://docs.bobthebot.net#generate-quote",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "quote",
+                                Description = "The quote content (up to 300 characters)."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "author",
+                                Description = "Who said the quote (between 1 and 50 characters). Defaults to your Discord display name."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "avatar",
+                                Description = "An image of the author. Defaults to your Discord PFP."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "avatar-url",
+                                Description = "The URL of an image of the author, used if no avatar is uploaded."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "grayscale",
+                                Description = "Whether to make the image black and white. Defaults to true."
+                            }
+                        ]
                     }
                 ]
             },
