@@ -1817,6 +1817,36 @@ namespace Bob.Commands.Helpers
                                 Description = "The URL of the image to caption, used if no image is attached."
                             }
                         ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "achievement",
+                        InheritGroupName = true,
+                        Description = "Bob will generate an achievement unlocked image!",
+                        Url = "https://docs.bobthebot.net#generate-achievement",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "description",
+                                Description = "What the achievement was for (up to 100 characters)."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "title",
+                                Description = "The title of the achievement (between 1 and 40 characters). Defaults to \"Achievement Unlocked!\"."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "icon",
+                                Description = "An image you want as the icon. Defaults to your Discord PFP."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "icon-url",
+                                Description = "The URL of an image you want as the icon, used if no icon is uploaded."
+                            }
+                        ]
                     }
                 ]
             },

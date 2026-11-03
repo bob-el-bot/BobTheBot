@@ -147,6 +147,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
 - `/generate tweet [text] [display-name] [handle] [avatar] [avatar-url] [likes] [reposts] [verified] [theme]` Bob will generate a tweet image!
 - `/generate quote [quote] [author] [avatar] [avatar-url] [grayscale]` Bob will generate an inspirational quote image!
 - `/generate caption [caption] [image] [image-url]` Bob will add a meme caption above an image!
+- `/generate achievement [description] [title] [icon] [icon-url]` Bob will generate an achievement unlocked image!
 
 ### ✨ Miscellaneous Commands: 
 - `/fonts [text] [font]` Change your text to a different font.

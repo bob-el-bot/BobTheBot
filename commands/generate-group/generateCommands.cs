@@ -172,6 +172,38 @@ namespace Bob.Commands
             }
         }
 
+        [SlashCommand("achievement", "Bob will generate an achievement unlocked image!")]
+        public async Task Achievement([Summary("description", "What the achievement was for.")][MaxLength(100)] string description,
+            [Summary("title", "The title of the achievement. Defaults to \"Achievement Unlocked!\".")][MinLength(1)][MaxLength(40)] string title = "Achievement Unlocked!",
+            [Summary("icon", "An image you want as the icon. Defaults to your Discord PFP.")] IAttachment icon = null,
+            [Summary("icon-url", "The URL of an image you want as the icon, used if no icon is uploaded.")] string iconUrl = "")
+        {
+            await DeferAsync();
+
+            iconUrl = await ResolveImageUrl(icon, iconUrl, "icon");
+            if (iconUrl == null)
+            {
+                return;
+            }
+
+            try
+            {
+                using var image = await AchievementImageGenerator.GenerateAchievementImage(title, description, iconUrl);
+
+                if (image == null)
+                {
+                    await FollowupAsync(ImageErrorMessage("icon"), ephemeral: true);
+                    return;
+                }
+
+                await SendImageAsync(image, "achievement.png");
+            }
+            catch (Exception ex)
+            {
+                await Logger.HandleUnexpectedError(Context, ex, true);
+            }
+        }
+
         /// <summary>
         /// Resolves the image to use from an uploaded attachment or a URL, preferring the attachment and defaulting to the user's avatar.
         /// Sends an error followup and returns null if the attachment is not an image or the URL is invalid.
