@@ -138,38 +138,65 @@ namespace Bob.Commands.Helpers
         }
 
         /// <summary>
-        /// Generates an embed containing information about a command group and its commands.
+        /// Generates the embeds containing information about a command group and its commands.
+        /// Groups too long for one embed description are continued in additional embeds.
         /// </summary>
         /// <param name="index">The index of the command group in the CommandGroups array.</param>
-        /// <returns>An embed containing the details of the specified command group.</returns>
-        public static Embed GetCategoryEmbed(int index)
+        /// <returns>The embeds containing the details of the specified command group.</returns>
+        public static Embed[] GetCategoryEmbeds(int index)
         {
-            StringBuilder description = new();
+            var group = CommandGroups[index];
 
-            description.AppendLine($"[Docs]({CommandGroups[index].Url}) {CommandGroups[index].Description}");
+            // Build each command's text separately so a command is never split across embeds
+            List<string> sections = [$"[Docs]({group.Url}) {group.Description}\n"];
 
-            foreach (var command in CommandGroups[index].Commands)
+            foreach (var command in group.Commands)
             {
-                var name = command.InheritGroupName ? $"{CommandGroups[index].Name} {command.Name}" : command.Name;
-                description.AppendLine($"- [Docs]({command.Url}) </{name}:{command.Id}> {command.Description}");
+                StringBuilder section = new();
+                var name = command.InheritGroupName ? $"{group.Name} {command.Name}" : command.Name;
+                section.AppendLine($"- [Docs]({command.Url}) </{name}:{command.Id}> {command.Description}");
 
                 if (command.Parameters != null)
                 {
                     foreach (var parameter in command.Parameters)
                     {
-                        description.AppendLine($"  - `{parameter.Name}` {parameter.Description}");
+                        section.AppendLine($"  - `{parameter.Name}` {parameter.Description}");
                     }
                 }
+
+                sections.Add(section.ToString());
             }
 
-            var embed = new EmbedBuilder
-            {
-                Title = $"{CommandGroups[index].Emoji} {CommandGroups[index].Title} | {CommandGroups[index].Commands.Length} Commands.",
-                Description = description.ToString(),
-                Color = Bot.theme
-            };
+            List<Embed> embeds = [];
+            StringBuilder description = new();
 
-            return embed.Build();
+            foreach (var section in sections)
+            {
+                if (description.Length + section.Length > EmbedBuilder.MaxDescriptionLength)
+                {
+                    embeds.Add(BuildCategoryEmbed(group, description.ToString(), embeds.Count == 0));
+                    description.Clear();
+                }
+
+                description.Append(section);
+            }
+
+            embeds.Add(BuildCategoryEmbed(group, description.ToString(), embeds.Count == 0));
+
+            return [.. embeds];
+        }
+
+        /// <summary>
+        /// Builds one embed of a command group's help. Only the first embed has a title.
+        /// </summary>
+        private static Embed BuildCategoryEmbed(CommandInfoGroup group, string description, bool withTitle)
+        {
+            return new EmbedBuilder
+            {
+                Title = withTitle ? $"{group.Emoji} {group.Title} | {group.Commands.Length} Commands." : null,
+                Description = description,
+                Color = Bot.theme
+            }.Build();
         }
 
         public static string GetCommandMention(string commandName, ulong commandId)
@@ -1673,8 +1700,13 @@ namespace Bob.Commands.Helpers
                             },
                             new ParameterInfo
                             {
+                                Name = "avatar",
+                                Description = "An image you want to have as the profile picture. Defaults to your Discord PFP."
+                            },
+                            new ParameterInfo
+                            {
                                 Name = "avatar-url",
-                                Description = "The URL of an image you want to have as the profile picture. Defaults to your Discord PFP."
+                                Description = "The URL of an image you want to have as the profile picture, used if no avatar is uploaded."
                             },
                             new ParameterInfo
                             {
@@ -1695,6 +1727,206 @@ namespace Bob.Commands.Helpers
                             {
                                 Name = "theme",
                                 Description = "The theme of the comment (choose from Dark, Light). Defaults to Dark."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "background-color",
+                                Description = "The background color. Valid colors are names, hex, or RGB. Defaults to the theme."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "text-color",
+                                Description = "The text color. Valid colors are names, hex, or RGB. Defaults to the theme."
+                            }
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "tweet",
+                        InheritGroupName = true,
+                        Description = "Bob will generate a tweet image!",
+                        Url = "https://docs.bobthebot.net#generate-tweet",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "text",
+                                Description = "The tweet content (up to 280 characters)."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "display-name",
+                                Description = "The display name for the poster (between 1 and 50 characters). Defaults to your Discord display name."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "handle",
+                                Description = "The handle for the poster, without the @ (between 1 and 15 characters). Defaults to your Discord username."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "avatar",
+                                Description = "An image you want to have as the profile picture. Defaults to your Discord PFP."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "avatar-url",
+                                Description = "The URL of an image you want to have as the profile picture, used if no avatar is uploaded."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "likes",
+                                Description = "The like count for the tweet (between 0 and 999,999,999). Defaults to 1000."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "reposts",
+                                Description = "The repost count for the tweet (between 0 and 999,999,999). Defaults to 100."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "verified",
+                                Description = "Whether to show a verified badge. Defaults to false."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "theme",
+                                Description = "The theme of the tweet (choose from Dark, Light). Defaults to Dark."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "background-color",
+                                Description = "The background color. Valid colors are names, hex, or RGB. Defaults to the theme."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "text-color",
+                                Description = "The text color. Valid colors are names, hex, or RGB. Defaults to the theme."
+                            }
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "quote",
+                        InheritGroupName = true,
+                        Description = "Bob will generate an inspirational quote image!",
+                        Url = "https://docs.bobthebot.net#generate-quote",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "quote",
+                                Description = "The quote content (up to 300 characters)."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "author",
+                                Description = "Who said the quote (between 1 and 50 characters). Defaults to your Discord display name."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "avatar",
+                                Description = "An image of the author. Defaults to your Discord PFP."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "avatar-url",
+                                Description = "The URL of an image of the author, used if no avatar is uploaded."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "grayscale",
+                                Description = "Whether to make the image black and white. Defaults to true."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "background-color",
+                                Description = "The background color. Valid colors are names, hex, or RGB. Defaults to black."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "text-color",
+                                Description = "The text color. Valid colors are names, hex, or RGB. Defaults to white."
+                            }
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "caption",
+                        InheritGroupName = true,
+                        Description = "Bob will add a meme caption above an image!",
+                        Url = "https://docs.bobthebot.net#generate-caption",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "caption",
+                                Description = "The caption text (up to 200 characters)."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "image",
+                                Description = "The image to caption. Defaults to your Discord PFP."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "image-url",
+                                Description = "The URL of the image to caption, used if no image is attached."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "background-color",
+                                Description = "The background color. Valid colors are names, hex, or RGB. Defaults to white."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "text-color",
+                                Description = "The text color. Valid colors are names, hex, or RGB. Defaults to black."
+                            }
+                        ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "achievement",
+                        InheritGroupName = true,
+                        Description = "Bob will generate an achievement unlocked image!",
+                        Url = "https://docs.bobthebot.net#generate-achievement",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "description",
+                                Description = "What the achievement was for (up to 100 characters)."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "title",
+                                Description = "The title of the achievement (between 1 and 40 characters). Defaults to \"Achievement Unlocked!\"."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "icon",
+                                Description = "An image you want as the icon. Defaults to your Discord PFP."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "icon-url",
+                                Description = "The URL of an image you want as the icon, used if no icon is uploaded."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "title-color",
+                                Description = "The title color. Valid colors are names, hex, or RGB. Defaults to yellow."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "background-color",
+                                Description = "The background color. Valid colors are names, hex, or RGB. Defaults to dark gray."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "text-color",
+                                Description = "The text color. Valid colors are names, hex, or RGB. Defaults to white."
                             }
                         ]
                     }

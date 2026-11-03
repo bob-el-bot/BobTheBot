@@ -1,7 +1,6 @@
 using SkiaSharp;
 using System.Collections.Generic;
 using System.IO;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace Bob.Commands.Helpers
@@ -41,8 +40,10 @@ namespace Bob.Commands.Helpers
         /// <param name="timeUnit">The unit of time for the timeAgo value.</param>
         /// <param name="likesCount">The number of likes on the comment.</param>
         /// <param name="theme">The theme of the comment image (light or dark).</param>
+        /// <param name="customBackgroundColor">A background color that overrides the theme, or null.</param>
+        /// <param name="customTextColor">A text color that overrides the theme, or null. Secondary text is derived from it.</param>
         /// <returns>A Task representing the asynchronous operation that returns the generated SKBitmap image. Returns null if the given avatarUrl gets a null image.</returns>
-        public static async Task<SKBitmap> GenerateYouTubeCommentImage(string username, string avatarUrl, string comment, int timeAgo, TimeUnit timeUnit, int likesCount, Theme theme)
+        public static async Task<SKBitmap> GenerateYouTubeCommentImage(string username, string avatarUrl, string comment, int timeAgo, TimeUnit timeUnit, int likesCount, Theme theme, SKColor? customBackgroundColor = null, SKColor? customTextColor = null)
         {
             // Load the avatar and like icon images from URLs and file paths
             SKBitmap avatarBitmap = await ImageCache.GetImageFromUrl(avatarUrl);
@@ -66,9 +67,9 @@ namespace Bob.Commands.Helpers
             bool isDarkTheme = theme == Theme.Dark;
 
             // Define theme colors
-            SKColor backgroundColor = isDarkTheme ? new SKColor(15, 15, 15) : SKColors.White;
-            SKColor textColor = isDarkTheme ? SKColors.White : SKColors.Black;
-            SKColor subTextColor = isDarkTheme ? new SKColor(96, 96, 96) : new SKColor(170, 170, 170);
+            SKColor backgroundColor = customBackgroundColor ?? (isDarkTheme ? new SKColor(15, 15, 15) : SKColors.White);
+            SKColor textColor = customTextColor ?? (isDarkTheme ? SKColors.White : SKColors.Black);
+            SKColor subTextColor = customTextColor?.WithAlpha(150) ?? (isDarkTheme ? new SKColor(96, 96, 96) : new SKColor(170, 170, 170));
 
             canvas.Clear(backgroundColor); // Set background color
 
@@ -129,14 +130,17 @@ namespace Bob.Commands.Helpers
             // Draw the username
             float usernameX = 80;
             float usernameY = 40;
+            string timeAgoText = GetTimeAgoString(timeAgo, timeUnit);
+            float usernameMaxWidth = (width / scaleFactor) - usernameX - timePaint.MeasureText(timeAgoText) - 30;
+            username = GenerateImageUtils.TruncateText(username, usernameMaxWidth, usernamePaint);
             canvas.DrawText(username, usernameX, usernameY, usernamePaint);
 
             // Draw the "time ago" text
             float timeX = usernameX + usernamePaint.MeasureText(username) + 10;
-            canvas.DrawText(GetTimeAgoString(timeAgo, timeUnit), timeX, usernameY, timePaint);
+            canvas.DrawText(timeAgoText, timeX, usernameY, timePaint);
 
             // Wrap and draw the comment
-            List<string> wrappedComment = WrapText(comment, (width / scaleFactor) - 100, commentPaint);
+            List<string> wrappedComment = GenerateImageUtils.WrapText(comment, (width / scaleFactor) - 100, commentPaint, 2);
             float commentY = 80;
             foreach (var line in wrappedComment)
             {
@@ -187,71 +191,6 @@ namespace Bob.Commands.Helpers
 
             // Return the high-resolution bitmap
             return bitmap;
-        }
-
-        /// <summary>
-        /// Wrap text to fit within a specified width.
-        /// </summary>
-        /// <param name="text">The text to wrap.</param>
-        /// <param name="maxWidth">The maximum width for each line.</param>
-        /// <param name="paint">The SKPaint object used to measure the text width.</param>
-        /// <returns>A list of wrapped lines.</returns>
-        private static List<string> WrapText(string text, float maxWidth, SKPaint paint)
-        {
-            var lines = new List<string>();
-            var words = text.Split(' '); // Split text into words
-            var currentLine = new StringBuilder();
-
-            foreach (var word in words)
-            {
-                string testLine = currentLine.Length == 0 ? word : currentLine + " " + word;
-
-                // Check if the current line fits within the max width
-                if (paint.MeasureText(testLine) <= maxWidth)
-                {
-                    currentLine.Append(string.IsNullOrEmpty(currentLine.ToString()) ? word : " " + word);
-                }
-                else
-                {
-                    // Add the current line to the list and start a new one
-                    lines.Add(currentLine.ToString());
-                    currentLine.Clear();
-                    currentLine.Append(word);
-
-                    // If the third line is about to be created, truncate the second line
-                    if (lines.Count == 2)
-                    {
-                        string secondLine = lines[1]; // Current second line
-                        while (paint.MeasureText(secondLine + "...") > maxWidth)
-                        {
-                            secondLine = secondLine[..^1]; // Remove one character at a time
-                        }
-
-                        lines[1] = secondLine + "..."; // Replace the second line with truncated text
-                        return lines; // Stop processing after two lines
-                    }
-                }
-            }
-
-            // Add any remaining text
-            if (currentLine.Length > 0)
-            {
-                lines.Add(currentLine.ToString());
-            }
-
-            // Ensure only two lines, with ellipsis if necessary
-            if (lines.Count == 2 && paint.MeasureText(lines[1]) > maxWidth)
-            {
-                string secondLine = lines[1];
-                while (paint.MeasureText(secondLine + "...") > maxWidth)
-                {
-                    secondLine = secondLine[..^1];
-                }
-
-                lines[1] = secondLine + "...";
-            }
-
-            return lines;
         }
 
         /// <summary>
