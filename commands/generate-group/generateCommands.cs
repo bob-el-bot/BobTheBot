@@ -141,6 +141,37 @@ namespace Bob.Commands
             }
         }
 
+        [SlashCommand("caption", "Bob will add a meme caption above an image!")]
+        public async Task Caption([Summary("caption", "The caption text.")][MaxLength(200)] string caption,
+            [Summary("image", "The image to caption. Defaults to your Discord PFP.")] IAttachment image = null,
+            [Summary("image-url", "The URL of the image to caption, used if no image is attached.")] string imageUrl = "")
+        {
+            await DeferAsync();
+
+            imageUrl = await ResolveImageUrl(image, imageUrl, "image");
+            if (imageUrl == null)
+            {
+                return;
+            }
+
+            try
+            {
+                using var captioned = await CaptionImageGenerator.GenerateCaptionImage(imageUrl, caption);
+
+                if (captioned == null)
+                {
+                    await FollowupAsync(ImageErrorMessage("image"), ephemeral: true);
+                    return;
+                }
+
+                await SendImageAsync(captioned, "caption.png");
+            }
+            catch (Exception ex)
+            {
+                await Logger.HandleUnexpectedError(Context, ex, true);
+            }
+        }
+
         /// <summary>
         /// Resolves the image to use from an uploaded attachment or a URL, preferring the attachment and defaulting to the user's avatar.
         /// Sends an error followup and returns null if the attachment is not an image or the URL is invalid.

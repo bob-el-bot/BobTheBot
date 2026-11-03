@@ -1792,6 +1792,31 @@ namespace Bob.Commands.Helpers
                                 Description = "Whether to make the image black and white. Defaults to true."
                             }
                         ]
+                    },
+                    new CommandInfo
+                    {
+                        Name = "caption",
+                        InheritGroupName = true,
+                        Description = "Bob will add a meme caption above an image!",
+                        Url = "https://docs.bobthebot.net#generate-caption",
+                        Parameters =
+                        [
+                            new ParameterInfo
+                            {
+                                Name = "caption",
+                                Description = "The caption text (up to 200 characters)."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "image",
+                                Description = "The image to caption. Defaults to your Discord PFP."
+                            },
+                            new ParameterInfo
+                            {
+                                Name = "image-url",
+                                Description = "The URL of the image to caption, used if no image is attached."
+                            }
+                        ]
                     }
                 ]
             },
