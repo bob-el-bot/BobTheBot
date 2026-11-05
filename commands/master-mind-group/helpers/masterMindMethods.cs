@@ -57,6 +57,11 @@ namespace Bob.Commands.Helpers
             public Emoji Emote { get; set; } // Associated emoji
         }
 
+        /// <summary>
+        /// The number of attempts given on Hard difficulty.
+        /// </summary>
+        public const int HardAttempts = 6;
+
         // Predefined difficulty options for the game
         private static readonly List<SelectOptionBuilder> Difficulty =
         [
@@ -77,7 +82,7 @@ namespace Bob.Commands.Helpers
             new SelectOptionBuilder
             {
                 Label = "Hard (6 attempts)",
-                Value = "6",
+                Value = HardAttempts.ToString(),
                 Description = "6 attempts",
                 Emote = new Emoji("💀")
             }

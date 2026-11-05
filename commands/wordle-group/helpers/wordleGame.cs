@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Bob.BadgeInterface;
 using Bob.Challenges;
 using Discord;
 using Discord.WebSocket;
@@ -71,6 +72,11 @@ namespace Bob.Commands.Helpers
             catch (Exception)
             {
                 // Do nothing Because the game will already be deleted.
+            }
+
+            if (!lost && Guesses.Count <= 2)
+            {
+                await Badge.AwardBadgeAsync(Player1, Bob.Badges.Badges.Wordsmith, Message.Channel);
             }
 
             _ = EndGame();

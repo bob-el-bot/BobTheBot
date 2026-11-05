@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Bob.BadgeInterface;
 using Bob.Challenges;
 using Discord;
 using Discord.WebSocket;
@@ -160,6 +161,10 @@ namespace Bob.Commands.Helpers
                     Challenge.DecrementUserChallenges(Player2.Id);
 
                     await Challenge.UpdateUserStats(this, Connect4Methods.GetWinner(this));
+                }
+                else if (Connect4Methods.GetWinner(this) == Challenge.WinCases.Player1)
+                {
+                    await Badge.AwardBadgeAsync(Player1, Bob.Badges.Badges.BobBeater, Message.Channel);
                 }
             }
             catch (Exception)

@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using System.Linq;
+using Bob.BadgeInterface;
 using Bob.Challenges;
 using Bob.Commands.Helpers;
 using Discord;
@@ -105,6 +106,11 @@ namespace Bob.Commands
 
                 // Respond
                 await RespondAsync(text: "🎯 Guess Made.", ephemeral: true);
+
+                if (solved && game.Guesses.Count + game.GuessesLeft == MasterMindMethods.HardAttempts)
+                {
+                    await Badge.AwardBadgeAsync(Context.User, Bob.Badges.Badges.Codebreaker, Context.Channel);
+                }
             }
         }
 

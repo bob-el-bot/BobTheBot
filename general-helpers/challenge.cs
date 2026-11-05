@@ -474,13 +474,20 @@ namespace Bob.Challenges
             User player1 = users.First(u => u.Id == game.Player1.Id);
             User player2 = users.First(u => u.Id == game.Player2.Id);
 
+            ulong player1Badges = player1.EarnedBadges;
+            ulong player2Badges = player2.EarnedBadges;
+
             // Update stats accordingly
             player1 = UpdateSpecificGameUserStats(game.Type, player1, winner, true);
             player2 = UpdateSpecificGameUserStats(game.Type, player2, winner, false);
 
             var updatedUsers = Badge.CheckGivingUserBadge([player1, player2], Bob.Badges.Badges.Winner3);
+            updatedUsers = Badge.CheckGivingUserBadge(updatedUsers, Bob.Badges.Badges.Veteran);
 
             await context.UpdateOrAddUsers(updatedUsers);
+
+            await Badge.AnnounceNewBadgesAsync(game.Message.Channel, game.Player1, player1Badges, player1.EarnedBadges);
+            await Badge.AnnounceNewBadgesAsync(game.Message.Channel, game.Player2, player2Badges, player2.EarnedBadges);
         }
 
         /// <summary>
