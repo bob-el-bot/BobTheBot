@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using System.Web;
 using Discord;
 using HtmlAgilityPack;
+using Bob.Networking;
 
 namespace Bob.Commands.Helpers;
 
@@ -231,12 +232,7 @@ public partial class Analyze
                 break; // Stop processing if the URL is invalid
             }
 
-            using HttpClientHandler handler = new()
-            {
-                AllowAutoRedirect = false,
-            };
-
-            using HttpClient httpClient = new(handler);
+            using HttpClient httpClient = new(SafeHttp.CreateHandler(allowAutoRedirect: false));
             httpClient.Timeout = TimeSpan.FromSeconds(requestTimeoutSeconds);
             HttpRequestMessage request = new(HttpMethod.Head, link);
             string customUserAgent = GetNextUserAgent();
@@ -597,33 +593,7 @@ public partial class Analyze
 
     public static bool IsPrivateIP(string host)
     {
-        // Block literal localhost
-        if (host.Equals("localhost", StringComparison.OrdinalIgnoreCase)) return true;
-
-        if (IPAddress.TryParse(host, out IPAddress address))
-        {
-            // Block loopback (127.0.0.1 or ::1)
-            if (IPAddress.IsLoopback(address)) return true;
-
-            // Block IPv4 private ranges
-            if (address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
-            {
-                byte[] bytes = address.GetAddressBytes();
-                // 10.0.0.0/8 (Railway Internal)
-                if (bytes[0] == 10) return true;
-                // 172.16.0.0/12
-                if (bytes[0] == 172 && bytes[1] >= 16 && bytes[1] <= 31) return true;
-                // 192.168.0.0/16
-                if (bytes[0] == 192 && bytes[1] == 168) return true;
-                // 169.254.0.0/16 (Link-local / Cloud Metadata)
-                if (bytes[0] == 169 && bytes[1] == 254) return true;
-            }
-
-            // Block IPv6 link-local
-            if (address.IsIPv6LinkLocal) return true;
-        }
-
-        return false;
+        return SafeHttp.IsInternalHost(host);
     }
 
     [GeneratedRegex(@"(?:v=|\/)([a-zA-Z0-9_-]{11})")]
