@@ -2026,9 +2026,11 @@ namespace Bob.Commands.Helpers
                             new ParameterInfo { Name = "prompt", Description = "The poll prompt." },
                             new ParameterInfo
                             {
-                                Name = "option * 4",
-                                Description = "2-4 options for the poll."
-                            }
+                                Name = "option * 10",
+                                Description = "2-10 options for the poll."
+                            },
+                            new ParameterInfo { Name = "duration", Description = "How long voting stays open (defaults to 1 day)." },
+                            new ParameterInfo { Name = "multiple-choice", Description = "Let people vote for more than one option." }
                         ]
                     },
                     new CommandInfo

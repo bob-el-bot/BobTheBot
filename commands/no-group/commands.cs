@@ -1137,63 +1137,52 @@ public class NoGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInter
         await RespondAsync(text: "Whether you're having issues with Bob, wanting to suggest a new idea, or maybe just wanna hang...", components: components.Build());
     }
 
-    [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
-    [IntegrationType(ApplicationIntegrationType.GuildInstall)]
-    [SlashCommand("poll", "Bob will create a poll.")]
-    public async Task Poll([Summary("prompt", "The question you are asking.")] string prompt, [Summary("option1", "an answer / response to your question")] string option1, [Summary("option2", "an answer / response to your question")] string option2, [Summary("option3", "an answer / response to your question")] string option3 = "", [Summary("option4", "an answer / response to your question")] string option4 = "")
+    public enum PollDuration
     {
-        var permissions = Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel);
+        [ChoiceDisplay("1 hour")]
+        OneHour = 1,
+        [ChoiceDisplay("4 hours")]
+        FourHours = 4,
+        [ChoiceDisplay("8 hours")]
+        EightHours = 8,
+        [ChoiceDisplay("1 day")]
+        OneDay = 24,
+        [ChoiceDisplay("3 days")]
+        ThreeDays = 72,
+        [ChoiceDisplay("1 week")]
+        OneWeek = 168,
+        [ChoiceDisplay("2 weeks")]
+        TwoWeeks = 336,
+    }
 
-        // Check if Bob has permission to send messages in given channel
-        if (!permissions.SendMessages || !permissions.ViewChannel || !permissions.EmbedLinks || !permissions.AddReactions)
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
+    [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
+    [SlashCommand("poll", "Bob will create a poll.")]
+    public async Task Poll(
+        [Summary("prompt", "The question you are asking.")][MaxLength(300)] string prompt,
+        [Summary("option1", "An answer to your question.")][MaxLength(55)] string option1,
+        [Summary("option2", "An answer to your question.")][MaxLength(55)] string option2,
+        [Summary("option3", "An answer to your question.")][MaxLength(55)] string option3 = null,
+        [Summary("option4", "An answer to your question.")][MaxLength(55)] string option4 = null,
+        [Summary("option5", "An answer to your question.")][MaxLength(55)] string option5 = null,
+        [Summary("option6", "An answer to your question.")][MaxLength(55)] string option6 = null,
+        [Summary("option7", "An answer to your question.")][MaxLength(55)] string option7 = null,
+        [Summary("option8", "An answer to your question.")][MaxLength(55)] string option8 = null,
+        [Summary("option9", "An answer to your question.")][MaxLength(55)] string option9 = null,
+        [Summary("option10", "An answer to your question.")][MaxLength(55)] string option10 = null,
+        [Summary("duration", "How long voting stays open (defaults to 1 day).")] PollDuration duration = PollDuration.OneDay,
+        [Summary("multiple-choice", "Let people vote for more than one option.")] bool multipleChoice = false)
+    {
+        string[] options = [option1, option2, option3, option4, option5, option6, option7, option8, option9, option10];
+
+        await RespondAsync(poll: new PollProperties
         {
-            await RespondAsync(text: $"❌ Bob is either missing permissions to view, send messages, add reactions, *or* embed links in the channel <#{Context.Channel.Id}>.\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`, `Add Reactions`, and `Embed Links`.", ephemeral: true);
-        }
-        else
-        {
-            // Setup base data
-            string footerText = Context.User.GlobalName ?? Context.User.Username + " created this poll.";
-            string instructions = "React with the corresponding number to cast your vote.";
-
-            // Embed
-            var embed = new EmbedBuilder
-            {
-                Title = "📊 " + prompt,
-                Description = instructions,
-                Color = Bot.theme,
-                Footer = new EmbedFooterBuilder
-                {
-                    Text = footerText,
-                    IconUrl = Context.User.GetAvatarUrl()
-                }
-            };
-
-            string[] possibleOptions = [option1, option2, option3, option4];
-            string[] optionLabels = ["1️⃣", "2️⃣", "3️⃣", "4️⃣"];
-            int index = 0;
-            foreach (string option in possibleOptions)
-            {
-                if (option != "")
-                {
-                    embed.AddField(name: $"Option {optionLabels[index]}", value: option);
-                    index++;
-                }
-            }
-
-            await RespondAsync("✅ Your poll has been made.", ephemeral: true);
-
-            var response = await Context.Channel.SendMessageAsync(embed: embed.Build());
-
-            int index2 = 0;
-            foreach (string option in possibleOptions)
-            {
-                if (option != "")
-                {
-                    await response.AddReactionAsync(new Emoji(optionLabels[index2]));
-                    index2++;
-                }
-            }
-        }
+            Question = new PollMediaProperties { Text = prompt },
+            Answers = [.. options.Where(o => !string.IsNullOrWhiteSpace(o)).Select(o => new PollMediaProperties { Text = o })],
+            Duration = (uint)duration,
+            AllowMultiselect = multipleChoice,
+            LayoutType = PollLayout.Default,
+        });
     }
 
     [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
