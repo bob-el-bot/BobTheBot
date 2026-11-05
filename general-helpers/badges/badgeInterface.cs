@@ -129,6 +129,7 @@ namespace Bob.BadgeInterface
 
                 using var scope = Bot.Services.CreateScope();
                 var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
+                context.User.Update(user);
                 await context.SaveChangesAsync();
             }
         }
@@ -189,6 +190,7 @@ namespace Bob.BadgeInterface
 
                 using var scope = Bot.Services.CreateScope();
                 var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
+                context.User.Update(user);
                 await context.SaveChangesAsync();
             }
         }
