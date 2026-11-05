@@ -50,7 +50,7 @@ namespace Bob.Commands.Helpers
             {
                 Challenge.DecrementUserChallenges(Player1.Id);
 
-                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateEmbed(WordleMethods.CreateFinalTitle(this), Challenge.SinglePlayerLoseColor, Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome, true)); x.Components = null; });
+                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateEmbed(WordleMethods.CreateFinalTitle(this), Challenge.SinglePlayerLoseColor, Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome, true)); x.Components = new ComponentBuilder().WithRematchButton(this).Build(); });
             }
             catch (Exception)
             {
@@ -66,7 +66,7 @@ namespace Bob.Commands.Helpers
             {
                 Challenge.DecrementUserChallenges(Player1.Id);
 
-                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateEmbed(WordleMethods.CreateFinalTitle(this), lost ? Challenge.SinglePlayerLoseColor : Challenge.SinglePlayerWinColor, Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome, true)); x.Components = null; });
+                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateEmbed(WordleMethods.CreateFinalTitle(this), lost ? Challenge.SinglePlayerLoseColor : Challenge.SinglePlayerWinColor, Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome, true)); x.Components = new ComponentBuilder().WithRematchButton(this).Build(); });
             }
             catch (Exception)
             {

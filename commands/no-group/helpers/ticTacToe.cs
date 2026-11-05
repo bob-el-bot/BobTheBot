@@ -76,7 +76,7 @@ namespace Bob.Commands.Helpers
                     await Challenge.UpdateUserStats(this, outcome);
                 }
 
-                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, Challenge.CreateFinalTitle(this, outcome), Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome), outcome); x.Components = TTTMethods.GetButtons(Grid, Turns, Id, true).Build(); });
+                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, Challenge.CreateFinalTitle(this, outcome), Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome), outcome); x.Components = TTTMethods.GetButtons(Grid, Turns, Id, true).WithRematchButton(this).Build(); });
             }
             catch (Exception)
             {
@@ -99,7 +99,7 @@ namespace Bob.Commands.Helpers
                 properties = (x) =>
                 {
                     x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, Challenge.CreateFinalTitle(this, outcome), Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome), outcome);
-                    x.Components = TTTMethods.GetButtons(Grid, Turns, Id).Build();
+                    x.Components = TTTMethods.GetButtons(Grid, Turns, Id).WithRematchButton(this).Build();
                 };
 
                 await FinishGame(component, properties);
@@ -186,7 +186,7 @@ namespace Bob.Commands.Helpers
                 properties = (x) =>
                 {
                     x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, Challenge.CreateFinalTitle(this, outcome), Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome));
-                    x.Components = TTTMethods.GetButtons(Grid, Turns, Id).Build();
+                    x.Components = TTTMethods.GetButtons(Grid, Turns, Id).WithRematchButton(this).Build();
                 };
 
                 await FinishGame(component, properties);

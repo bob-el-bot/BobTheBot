@@ -505,6 +505,73 @@ public class NoGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInter
         }
     }
 
+    [ComponentInteraction("rematch:*:*:*")]
+    public async Task RematchButtonHandler(string type, string player1Id, string player2Id)
+    {
+        SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
+        Games.GameType gameType = (Games.GameType)int.Parse(type);
+        ulong[] playerIds = [ulong.Parse(player1Id), ulong.Parse(player2Id)];
+
+        if (!playerIds.Contains(Context.User.Id))
+        {
+            await RespondAsync(text: "❌ Only the players of this game can start a rematch.", ephemeral: true);
+            return;
+        }
+
+        ulong opponentId = Context.User.Id == playerIds[0] ? playerIds[1] : playerIds[0];
+        IUser opponent = opponentId == 0 ? null : await Client.GetUserAsync(opponentId, CacheMode.AllowDownload, null);
+
+        // Solo games (Wordle, or anything against a bot) start right away.
+        if (opponent == null || opponent.IsBot)
+        {
+            if (gameType == Games.GameType.Wordle && Challenge.WordleGames.ContainsKey(Context.Channel.Id))
+            {
+                await RespondAsync(text: "❌ Only one game of Wordle can be played per channel at a time.", ephemeral: true);
+                return;
+            }
+
+            if (!Challenge.TryClaimRematch(component.Message))
+            {
+                await RespondAsync(text: "❌ A new game has already been started.", ephemeral: true);
+                return;
+            }
+
+            await DeferAsync();
+            await Challenge.RemoveRematchButton(component.Message);
+            await CreateGame(gameType, Context.User, opponent).StartBotGame(Context.Interaction);
+            return;
+        }
+
+        (bool canChallenge, string reason) = await Challenge.CanChallengeAsync(Context.User.Id, opponent.Id);
+        if (!canChallenge)
+        {
+            await RespondAsync(text: reason, ephemeral: true);
+            return;
+        }
+
+        if (!Challenge.TryClaimRematch(component.Message))
+        {
+            await RespondAsync(text: "❌ A rematch has already been started.", ephemeral: true);
+            return;
+        }
+
+        await Challenge.SendMessage(Context.Interaction, CreateGame(gameType, Context.User, opponent));
+        await Challenge.RemoveRematchButton(component.Message);
+    }
+
+    private static Games.Game CreateGame(Games.GameType type, IUser player1, IUser player2)
+    {
+        return type switch
+        {
+            Games.GameType.RockPaperScissors => new RockPaperScissors(player1, player2),
+            Games.GameType.TicTacToe => new TicTacToe(player1, player2),
+            Games.GameType.Trivia => new Trivia(player1, player2),
+            Games.GameType.Connect4 => new Connect4(player1, player2),
+            Games.GameType.Wordle => new Wordle(player1, null),
+            _ => throw new ArgumentOutOfRangeException(nameof(type)),
+        };
+    }
+
     [ComponentInteraction("acceptChallenge:*")]
     public async Task AcceptChallengeButtonHandler(string Id)
     {

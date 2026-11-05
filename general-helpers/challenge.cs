@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -50,6 +51,7 @@ namespace Bob.Challenges
         public static Dictionary<ulong, Connect4> Connect4Games { get; set; } = [];
         public static Dictionary<ulong, Wordle> WordleGames { get; set; } = [];
         public static Dictionary<ulong, uint?> UserChallenges { get; } = [];
+        private static readonly ConcurrentDictionary<ulong, byte> ClaimedRematches = new();
 
         /// <summary>
         /// Checks if a user can challenge another user asynchronously.
@@ -479,6 +481,74 @@ namespace Bob.Challenges
             var updatedUsers = Badge.CheckGivingUserBadge([player1, player2], Bob.Badges.Badges.Winner3);
 
             await context.UpdateOrAddUsers(updatedUsers);
+        }
+
+        /// <summary>
+        /// Creates a button that starts a new game of the same type with the same players.
+        /// </summary>
+        /// <param name="game">The game that just ended.</param>
+        /// <returns>The rematch button.</returns>
+        public static ButtonBuilder CreateRematchButton(Games.Game game)
+        {
+            bool solo = game.Player2 == null || game.Player2.IsBot;
+
+            return new ButtonBuilder(label: solo ? "Play Again" : "Rematch", customId: $"rematch:{(int)game.Type}:{game.Player1.Id}:{game.Player2?.Id ?? 0}", style: ButtonStyle.Primary, emote: new Emoji("🔁"));
+        }
+
+        /// <summary>
+        /// Adds a rematch button on its own row below the given components.
+        /// </summary>
+        /// <param name="components">The components of the finished game.</param>
+        /// <param name="game">The game that just ended.</param>
+        /// <returns>The components with the rematch button added.</returns>
+        public static ComponentBuilder WithRematchButton(this ComponentBuilder components, Games.Game game)
+        {
+            return components.WithButton(CreateRematchButton(game), row: components.ActionRows?.Count ?? 0);
+        }
+
+        /// <summary>
+        /// Claims a finished game's rematch button so a double click only starts one new game.
+        /// The claim is released by <see cref="RemoveRematchButton"/> or <see cref="ReleaseRematch"/>.
+        /// </summary>
+        /// <param name="message">The finished game's message.</param>
+        /// <returns>True if this click claimed the rematch, false if another click already did.</returns>
+        public static bool TryClaimRematch(IUserMessage message)
+        {
+            return ClaimedRematches.TryAdd(message.Id, 0);
+        }
+
+        /// <summary>
+        /// Releases a rematch claim without removing the button, for when the new game could not start.
+        /// </summary>
+        /// <param name="message">The finished game's message.</param>
+        public static void ReleaseRematch(IUserMessage message)
+        {
+            ClaimedRematches.TryRemove(message.Id, out _);
+        }
+
+        /// <summary>
+        /// Removes the rematch button from a finished game's message so it can only be used once.
+        /// The button always sits alone in the last top level row, so the rest of the message is left untouched.
+        /// </summary>
+        /// <param name="message">The finished game's message.</param>
+        public static async Task RemoveRematchButton(IUserMessage message)
+        {
+            var remaining = message.Components
+                .Where(c => !(c is ActionRowComponent row && row.Components.Any(b => b is ButtonComponent button && button.CustomId?.StartsWith("rematch") == true)))
+                .ToList();
+
+            MessageComponent components = message.Flags?.HasFlag(MessageFlags.ComponentsV2) == true
+                ? remaining.ToBuilder().Build()
+                : ComponentBuilder.FromComponents(remaining).Build();
+
+            try
+            {
+                await message.ModifyAsync(x => x.Components = components);
+            }
+            finally
+            {
+                ReleaseRematch(message);
+            }
         }
 
         /// <summary>

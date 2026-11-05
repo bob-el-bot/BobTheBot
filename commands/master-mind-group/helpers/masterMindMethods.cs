@@ -197,6 +197,16 @@ Good luck cracking the code!");
         }
 
         /// <summary>
+        /// Creates the play again button shown once a game of Master Mind ends.
+        /// </summary>
+        /// <param name="mode">The game mode to start the next game with.</param>
+        /// <returns>A <see cref="MessageComponent"/> containing the button.</returns>
+        public static MessageComponent GetPlayAgainButton(GameMode mode)
+        {
+            return new ComponentBuilder().WithButton(label: "Play Again", customId: $"rematch-mastermind:{(int)mode}", style: ButtonStyle.Primary, emote: new Emoji("🔁")).Build();
+        }
+
+        /// <summary>
         /// Converts an array of colors into a string representation using emojis.
         /// </summary>
         /// <param name="colors">The array of colors to convert.</param>

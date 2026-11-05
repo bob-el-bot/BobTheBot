@@ -313,6 +313,7 @@ namespace Bob.Commands.Helpers
 
             var components = new ComponentBuilderV2()
                 .WithContainer(container)
+                .WithActionRow([Challenge.CreateRematchButton(game)])
                 .Build();
 
             return components;
