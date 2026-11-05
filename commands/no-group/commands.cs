@@ -686,38 +686,15 @@ public class NoGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInter
     [SlashCommand("quote-prompts", "Bob will give you all valid prompts for /random quote.")]
     public async Task QuotePrompts()
     {
+        StringBuilder prompts = new($"**Here are all valid prompts for {Help.GetCommandMention("random quote")}:**\n\n**Categories:**\n");
+
+        foreach (var (category, categoryPrompts) in RandomQuote.PromptCategories)
+        {
+            prompts.Append($"\n• **{category}:**\n  {string.Join(", ", categoryPrompts.Select(p => $"`{p}`"))}\n");
+        }
+
         // Respond
-        await RespondAsync(text: @$"
-**Here are all valid prompts for {Help.GetCommandMention("random quote")}:**
-
-**Categories:**
-
-• **Life & Philosophy:**  
-  `age`, `change`, `character`, `courage`, `failure`, `faith`, `gratitude`, `happiness`, `honor`, `inspirational`,  
-  `life`, `love`, `pain`, `perseverance`, `philosophy`, `self`, `truth`, `virtue`, `wisdom`
-
-• **Work & Success:**  
-  `business`, `competition`, `ethics`, `genius`, `leadership`, `motivational`, `opportunity`, `success`,  
-  `work`
-
-• **Society & Politics:**  
-  `conservative`, `education`, `freedom`, `politics`, `power-quotes`, `religion`, `tolerance`, `war`
-
-• **Health & Wellness:**  
-  `athletics`, `health`, `sports`, `wellness`
-
-• **Science & Technology:**  
-  `mathematics`, `science`, `technology`
-
-• **Famous & Historical:**  
-  `famous-quotes`, `history`, `proverb`
-
-• **Emotions & Humor:**  
-  `humor`, `humorous`, `sadness`, `stupidity`, `weakness`
-
-• **Miscellaneous:**  
-  `family`, `film`, `future`, `generosity`, `knowledge`, `nature`, `time`
-");
+        await RespondAsync(text: prompts.ToString());
     }
 
     [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]

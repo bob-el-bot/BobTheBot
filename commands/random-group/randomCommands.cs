@@ -143,37 +143,28 @@ namespace Bob.Commands
         [CommandContextType(InteractionContextType.Guild | InteractionContextType.PrivateChannel)]
         [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
         [SlashCommand("quote", "Bob will tell you a quote.")]
-        public async Task Quote([Summary("prompt", "use /quote-prompts to see all valid prompts")] string prompt = "")
+        public async Task Quote([Summary("prompt", "use /quote-prompts to see all valid prompts")][Autocomplete(typeof(QuotePromptAutocompleteHandler))] string prompt = "")
         {
-            string content;
+            string normalizedPrompt = RandomQuote.NormalizePrompt(prompt);
 
-            try
+            if (!RandomQuote.IsValidPrompt(normalizedPrompt))
             {
-                content = await GetFromAPI($"http://api.quotable.io/quotes/random?tags={prompt}", AcceptTypes.application_json);
-            }
-            catch (HttpRequestException ex)
-            {
-                Console.WriteLine($"An error occurred while fetching the quote: {ex.Message}");
-                await RespondAsync(text: "❌ There was an issue getting a quote.\n- The API `quotable.io` failed to respond.\n- This is out of Bob's control unfortunately.\n- Please try again later.", ephemeral: true);
+                // Respond if the prompt is not recognized
+                await RespondAsync(text: $"❌ The prompt: {prompt} was not recognized. Use {Help.GetCommandMention("quote-prompts")} to see all valid prompts.", ephemeral: true);
                 return;
             }
 
-            // Check if the content is empty or indicates no quotes found
-            if (content != "[]")
-            {
-                // Parse Content
-                var formattedContent = content[1..^1];
-                var jsonData = JsonNode.Parse(formattedContent).AsObject();
-                var quote = jsonData["content"].ToString();
-                var author = jsonData["author"].ToString();
+            var quote = await RandomQuote.GetQuoteAsync(normalizedPrompt);
 
+            if (quote != null)
+            {
                 // Respond with the quote
-                await RespondAsync(text: $"✍️ {quote} - *{author}*");
+                await RespondAsync(text: $"✍️ {quote.Content} - *{quote.Author}*");
             }
             else
             {
                 // Respond if no quotes match the prompt
-                await RespondAsync(text: $"❌ The prompt: {prompt} was not recognized. Use {Help.GetCommandMention("quote-prompts")} to see all valid prompts.", ephemeral: true);
+                await RespondAsync(text: $"❌ No quotes were found for the prompt: {prompt}. Use {Help.GetCommandMention("quote-prompts")} to see all valid prompts.", ephemeral: true);
             }
         }
 

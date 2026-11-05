@@ -42,5 +42,6 @@
     <None Update="commands/wordle-group/helpers/answerList.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <EmbeddedResource Include="commands/random-group/helpers/quotes.json" LogicalName="quotes.json" />
   </ItemGroup>
 </Project>
