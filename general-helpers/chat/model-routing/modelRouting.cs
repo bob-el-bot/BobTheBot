@@ -105,6 +105,8 @@ public static class ModelRouter
 
             if (role.Equals("system", StringComparison.OrdinalIgnoreCase))
                 systemTexts.Add(content);
+            else if (role.Equals("assistant", StringComparison.OrdinalIgnoreCase))
+                outList.Add(("model", content)); // Gemini calls the assistant role "model"
             else
                 outList.Add((role, content));
         }
