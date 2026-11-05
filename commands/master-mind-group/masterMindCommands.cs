@@ -1,5 +1,7 @@
 using System.Threading.Tasks;
 using System.Linq;
+using Bob.BadgeInterface;
+using Bob.Challenges;
 using Bob.Commands.Helpers;
 using Discord;
 using Discord.Interactions;
@@ -16,9 +18,36 @@ namespace Bob.Commands
         [RequireBotPermission(ChannelPermission.ViewChannel | ChannelPermission.EmbedLinks)]
         public async Task NewGame(MasterMindMethods.GameMode mode = MasterMindMethods.GameMode.Classic)
         {
+            await StartGame(mode);
+        }
+
+        [ComponentInteraction("rematch-mastermind:*", ignoreGroupNames: true)]
+        public async Task PlayAgainButtonHandler(string mode)
+        {
+            var message = ((SocketMessageComponent)Context.Interaction).Message;
+
+            if (!Challenge.TryClaimRematch(message))
+            {
+                await RespondAsync(text: "❌ A new game has already been started.", ephemeral: true);
+                return;
+            }
+
+            if (await StartGame((MasterMindMethods.GameMode)int.Parse(mode)))
+            {
+                await Challenge.RemoveRematchButton(message);
+            }
+            else
+            {
+                Challenge.ReleaseRematch(message);
+            }
+        }
+
+        private async Task<bool> StartGame(MasterMindMethods.GameMode mode)
+        {
             if (MasterMindMethods.CurrentGames != null && MasterMindMethods.GetGame(Context.Channel.Id) != null)
             {
                 await RespondAsync(text: "❌ Only one game of Master Mind can be played per channel at a time.", ephemeral: true);
+                return false;
             }
             else // Display Rules / Initial Embed
             {
@@ -33,6 +62,7 @@ namespace Bob.Commands
                 embed.AddField(name: "How to Play.", value: MasterMindMethods.GetRules(mode), inline: false);
 
                 await RespondAsync(embed: embed.Build(), components: MasterMindMethods.CreateDifficultySelectMenu());
+                return true;
             }
         }
 
@@ -58,14 +88,15 @@ namespace Bob.Commands
                 game.Guesses.Add((game.GetResultString(guess), guess));
 
                 // Edit Game Message Embed
-                if (game.DoesGuessMatchKey(guess)) // it is solved
+                bool solved = game.DoesGuessMatchKey(guess);
+                if (solved)
                 {
-                    await game.Message.ModifyAsync(x => { x.Embed = MasterMindMethods.CreateEmbed(game, true); x.Components = null; });
+                    await game.Message.ModifyAsync(x => { x.Embed = MasterMindMethods.CreateEmbed(game, true); x.Components = MasterMindMethods.GetPlayAgainButton(game.Mode); });
                     MasterMindMethods.CurrentGames.Remove(game);
                 }
                 else if (game.GuessesLeft <= 0) // lose game
                 {
-                    await game.Message.ModifyAsync(x => { x.Embed = MasterMindMethods.CreateEmbed(game); x.Components = null; });
+                    await game.Message.ModifyAsync(x => { x.Embed = MasterMindMethods.CreateEmbed(game); x.Components = MasterMindMethods.GetPlayAgainButton(game.Mode); });
                     MasterMindMethods.CurrentGames.Remove(game);
                 }
                 else
@@ -75,6 +106,11 @@ namespace Bob.Commands
 
                 // Respond
                 await RespondAsync(text: "🎯 Guess Made.", ephemeral: true);
+
+                if (solved && game.Guesses.Count + game.GuessesLeft == MasterMindMethods.HardAttempts)
+                {
+                    await Badge.AwardBadgeAsync(Context.User, Bob.Badges.Badges.Codebreaker, Context.Channel);
+                }
             }
         }
 
@@ -146,7 +182,7 @@ namespace Bob.Commands
 
                 embed.Title += " (forfeited)";
                 embed.AddField(name: "Answer:", value: MasterMindMethods.GetColorsString(game.Key));
-                await game.Message.ModifyAsync(x => { x.Embed = embed.Build(); x.Components = MasterMindMethods.GetForfeitButton(true); });
+                await game.Message.ModifyAsync(x => { x.Embed = embed.Build(); x.Components = MasterMindMethods.GetPlayAgainButton(game.Mode); });
                 MasterMindMethods.CurrentGames.Remove(game);
             }
             else

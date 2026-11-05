@@ -57,6 +57,11 @@ namespace Bob.Commands.Helpers
             public Emoji Emote { get; set; } // Associated emoji
         }
 
+        /// <summary>
+        /// The number of attempts given on Hard difficulty.
+        /// </summary>
+        public const int HardAttempts = 6;
+
         // Predefined difficulty options for the game
         private static readonly List<SelectOptionBuilder> Difficulty =
         [
@@ -77,7 +82,7 @@ namespace Bob.Commands.Helpers
             new SelectOptionBuilder
             {
                 Label = "Hard (6 attempts)",
-                Value = "6",
+                Value = HardAttempts.ToString(),
                 Description = "6 attempts",
                 Emote = new Emoji("💀")
             }
@@ -194,6 +199,16 @@ Good luck cracking the code!");
             };
 
             return new ComponentBuilder().WithButton(button).Build();
+        }
+
+        /// <summary>
+        /// Creates the play again button shown once a game of Master Mind ends.
+        /// </summary>
+        /// <param name="mode">The game mode to start the next game with.</param>
+        /// <returns>A <see cref="MessageComponent"/> containing the button.</returns>
+        public static MessageComponent GetPlayAgainButton(GameMode mode)
+        {
+            return new ComponentBuilder().WithButton(label: "Play Again", customId: $"rematch-mastermind:{(int)mode}", style: ButtonStyle.Primary, emote: new Emoji("🔁")).Build();
         }
 
         /// <summary>

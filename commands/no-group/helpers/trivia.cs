@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Bob.BadgeInterface;
 using Bob.Challenges;
 using Bob.Database;
 using Bob.Database.Types;
@@ -178,6 +179,16 @@ namespace Bob.Commands.Helpers
             catch (Exception)
             {
                 // Do nothing Because the game will already be deleted.
+            }
+
+            if (Player1Points == TriviaMethods.TotalQuestions)
+            {
+                await Badge.AwardBadgeAsync(Player1, Bob.Badges.Badges.KnowItAll, Message.Channel);
+            }
+
+            if (!Player2.IsBot && Player2Points == TriviaMethods.TotalQuestions)
+            {
+                await Badge.AwardBadgeAsync(Player2, Bob.Badges.Badges.KnowItAll, Message.Channel);
             }
         }
 

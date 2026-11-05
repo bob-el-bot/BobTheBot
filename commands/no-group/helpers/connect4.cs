@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Bob.BadgeInterface;
 using Bob.Challenges;
 using Discord;
 using Discord.WebSocket;
@@ -79,7 +80,7 @@ namespace Bob.Commands.Helpers
                     await Challenge.UpdateUserStats(this, outcome);
                 }
 
-                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"{Challenge.CreateFinalTitle(this, outcome)}\n{Connect4Methods.GetGrid(Grid)}", Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome)); x.Components = Connect4Methods.GetButtons(this, true).Build(); });
+                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"{Challenge.CreateFinalTitle(this, outcome)}\n{Connect4Methods.GetGrid(Grid)}", Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome)); x.Components = Connect4Methods.GetButtons(this, true).WithRematchButton(this).Build(); });
             }
             catch (Exception)
             {
@@ -102,7 +103,7 @@ namespace Bob.Commands.Helpers
                 properties = (x) =>
                 {
                     x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"{Challenge.CreateFinalTitle(this, outcome)}\n{Connect4Methods.GetGrid(Grid)}", Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome));
-                    x.Components = Connect4Methods.GetButtons(this).Build();
+                    x.Components = Connect4Methods.GetButtons(this).WithRematchButton(this).Build();
                 };
 
                 await FinishGame(component, properties);
@@ -161,6 +162,10 @@ namespace Bob.Commands.Helpers
 
                     await Challenge.UpdateUserStats(this, Connect4Methods.GetWinner(this));
                 }
+                else if (Connect4Methods.GetWinner(this) == Challenge.WinCases.Player1)
+                {
+                    await Badge.AwardBadgeAsync(Player1, Bob.Badges.Badges.BobBeater, Message.Channel);
+                }
             }
             catch (Exception)
             {
@@ -189,7 +194,7 @@ namespace Bob.Commands.Helpers
                 properties = (x) =>
                 {
                     x.Embed = Challenge.CreateTurnBasedEmbed(IsPlayer1Turn, $"{Challenge.CreateFinalTitle(this, outcome)}\n{Connect4Methods.GetGrid(Grid)}", Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome));
-                    x.Components = Connect4Methods.GetButtons(this).Build();
+                    x.Components = Connect4Methods.GetButtons(this).WithRematchButton(this).Build();
                 };
 
                 await FinishGame(component, properties);

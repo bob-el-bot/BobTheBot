@@ -77,7 +77,7 @@ namespace Bob.Commands.Helpers
                     await Challenge.UpdateUserStats(this, outcome);
                 }
 
-                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateEmbed(Challenge.CreateFinalTitle(this, outcome), GetColor(outcome), Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome)); x.Components = null; });
+                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateEmbed(Challenge.CreateFinalTitle(this, outcome), GetColor(outcome), Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome)); x.Components = new ComponentBuilder().WithRematchButton(this).Build(); });
             }
             catch (Exception)
             {
@@ -101,7 +101,7 @@ namespace Bob.Commands.Helpers
                 }
 
                 string[] options = ["🪨", "📃", "✂️"];
-                await interaction.UpdateAsync(x => { x.Embed = Challenge.CreateEmbed($"{Challenge.CreateFinalTitle(this, outcome)}\n{options[Player1Choice]} **VS** {options[Player2Choice]}", GetColor(outcome), Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome)); x.Components = null; });
+                await interaction.UpdateAsync(x => { x.Embed = Challenge.CreateEmbed($"{Challenge.CreateFinalTitle(this, outcome)}\n{options[Player1Choice]} **VS** {options[Player2Choice]}", GetColor(outcome), Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome)); x.Components = new ComponentBuilder().WithRematchButton(this).Build(); });
             }
             catch (Exception)
             {

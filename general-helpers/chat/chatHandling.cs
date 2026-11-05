@@ -128,7 +128,7 @@ public static partial class ChatHandling
                 {
                     messages.Add(new
                     {
-                        role = "system",
+                        role = "user",
                         content = $"[Memory from {mem.CreatedAt:u}] {mem.UserMessage}"
                     });
 
@@ -136,7 +136,7 @@ public static partial class ChatHandling
                     {
                         messages.Add(new
                         {
-                            role = "system",
+                            role = "assistant",
                             content = $"[Bob’s reply] {mem.BotResponse}"
                         });
                     }
@@ -160,7 +160,7 @@ public static partial class ChatHandling
             {
                 messages.Add(new
                 {
-                    role = "system",
+                    role = "user",
                     content = $"[Memory from {mem.CreatedAt:u}] {mem.UserMessage}"
                 });
 
@@ -168,7 +168,7 @@ public static partial class ChatHandling
                 {
                     messages.Add(new
                     {
-                        role = "system",
+                        role = "assistant",
                         content = $"[Bob’s reply] {mem.BotResponse}"
                     });
                 }
@@ -268,12 +268,13 @@ public static partial class ChatHandling
             await webhookClient.SendMessageAsync(
                 text: text,
                 username: "BobTheBot",
-                avatarUrl: Bot.Client.CurrentUser.GetAvatarUrl());
+                avatarUrl: Bot.Client.CurrentUser.GetAvatarUrl(),
+                allowedMentions: AllowedMentions.None);
         }
         else
         {
             var options = new RequestOptions { RatelimitCallback = RateLimitHandling.GlobalRatelimitCallback };
-            await channel.SendMessageAsync(text, options: options);
+            await channel.SendMessageAsync(text, options: options, allowedMentions: AllowedMentions.None);
         }
     }
 

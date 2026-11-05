@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Bob.ApiInteractions
@@ -49,8 +50,9 @@ namespace Bob.ApiInteractions
         /// <param name="link">The URL to send the request to.</param>
         /// <param name="accept">The type of content to accept in the response.</param>
         /// <param name="token">Optional. The authentication token to include in the request header.</param>
+        /// <param name="cancellationToken">Optional. A token used to cancel the request (e.g. for a timeout).</param>
         /// <returns>Returns the response content as a string.</returns>
-        public static async Task<string> GetFromAPI(string link, AcceptTypes accept, string token = null)
+        public static async Task<string> GetFromAPI(string link, AcceptTypes accept, string token = null, CancellationToken cancellationToken = default)
         {
             // Formulate Request
             HttpRequestMessage request = new(HttpMethod.Get, link);
@@ -70,11 +72,11 @@ namespace Bob.ApiInteractions
             }
 
             // Send the request
-            var response = await Client.SendAsync(request);
+            var response = await Client.SendAsync(request, cancellationToken);
             response.EnsureSuccessStatusCode();
 
             // Return content as string
-            return await response.Content.ReadAsStringAsync();
+            return await response.Content.ReadAsStringAsync(cancellationToken);
         }
 
         /// <summary>

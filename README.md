@@ -154,7 +154,7 @@ Bob The Bot has many features all of which are `/slash` commands for ease of use
     - `[font]` choices: 𝖒𝖊𝖉𝖎𝖊𝖛𝖆𝖑, 𝓯𝓪𝓷𝓬𝔂, 𝕠𝕦𝕥𝕝𝕚𝕟𝕖𝕕, s̷l̷̷a̷s̷h̷e̷d̷, ɟןıddǝp, and 🄱🄾🅇🄴🄳.
 - `/confess [message] [user] [signoff]` Have Bob DM a user a message.
 - `/announce [title] [description] [color] [image]` Have a fancy embed message sent.
-- `/poll [prompt] [option]*4` Create a poll.
+- `/poll [prompt] [option]*10 [duration] [multiple-choice]` Create a native Discord poll.
 - `/ship [user]*2` See how good of a match 2 users are.
 - `/hug [user]*5` Show your friends some love with a hug.
 - `/vote` Get a link to upvote Bob on Top.GG.

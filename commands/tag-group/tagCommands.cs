@@ -1,5 +1,6 @@
 using System.Linq;
 using System.Threading.Tasks;
+using Bob.Commands.Helpers;
 using Bob.Database;
 using Bob.Database.Types;
 using Discord;
@@ -16,7 +17,41 @@ public class TagGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInte
     public async Task Create([Summary("name", "The name of the tag (1-50 characters).")][MinLength(1)][MaxLength(50)] string name, [Summary("content", "The content of the tag (5-2000 characters).")][MinLength(5)][MaxLength(2000)] string content)
     {
         await DeferAsync(ephemeral: true);
+        await CreateTag(name, content);
+    }
 
+    [MessageCommand("Save as Tag")]
+    public async Task SaveAsTag(IMessage message)
+    {
+        if (string.IsNullOrWhiteSpace(message.Content) || message.Content.Length < 5)
+        {
+            await RespondAsync("❌ This message can't be saved as a tag.\n- Tags need at least 5 characters of text.", ephemeral: true);
+            return;
+        }
+
+        if (message.Content.Length > 2000)
+        {
+            await RespondAsync("❌ This message is too long to be saved as a tag.\n- Tags can be at most 2000 characters.", ephemeral: true);
+            return;
+        }
+
+        var modal = new SaveTagModal
+        {
+            Content = message.Content
+        };
+
+        await Context.Interaction.RespondWithModalAsync(modal: modal, customId: "saveTagModal");
+    }
+
+    [ModalInteraction("saveTagModal", true)]
+    public async Task SaveTagModalHandler(SaveTagModal modal)
+    {
+        await DeferAsync(ephemeral: true);
+        await CreateTag(modal.Name, modal.Content);
+    }
+
+    private async Task CreateTag(string name, string content)
+    {
         var existingTag = await dbContext.GetTag(Context.Guild.Id, name);
         if (existingTag != null)
         {

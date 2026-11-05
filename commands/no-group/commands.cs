@@ -246,29 +246,28 @@ public class NoGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInter
             }
             else
             {
-                await DeferAsync();
-
                 // Prepare Position
                 string[] coords = coordinate.Split('-');
                 int[] position = [Convert.ToInt16(coords[0]), Convert.ToInt16(coords[1])];
 
                 // Check if the chosen move is valid and within bounds
-                if (game.Grid[position[0], position[1]] == 0)
+                if (game.Grid[position[0], position[1]] != 0)
                 {
-                    game.Grid[position[0], position[1]] = game.IsPlayer1Turn ? 1 : 2;
-                    if (game.Player2.IsBot)
-                    {
-                        await game.EndBotTurn(component);
-                    }
-                    else
-                    {
-                        await game.EndTurn(component);
-                    }
+                    await component.RespondAsync(text: $"❌ Invalid move.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    return;
+                }
+
+                game.Grid[position[0], position[1]] = game.IsPlayer1Turn ? 1 : 2;
+
+                await DeferAsync();
+
+                if (game.Player2.IsBot)
+                {
+                    await game.EndBotTurn(component);
                 }
                 else
                 {
-                    // Handle the case where the chosen move is not valid or out of bounds
-                    await component.RespondAsync(text: $"❌ Invalid move.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    await game.EndTurn(component);
                 }
             }
         }
@@ -468,8 +467,6 @@ public class NoGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInter
             }
             else
             {
-                await DeferAsync();
-
                 if (int.TryParse(column, out int col))
                 {
                     // Find the lowest empty row in the selected column
@@ -480,6 +477,8 @@ public class NoGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInter
                             game.Grid[col - 1, row] = isPlayer1 ? 1 : 2;
                             game.LastMoveColumn = col - 1;
                             game.LastMoveRow = row;
+
+                            await DeferAsync();
 
                             if (game.Player2.IsBot)
                             {
@@ -504,6 +503,73 @@ public class NoGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInter
                 }
             }
         }
+    }
+
+    [ComponentInteraction("rematch:*:*:*")]
+    public async Task RematchButtonHandler(string type, string player1Id, string player2Id)
+    {
+        SocketMessageComponent component = (SocketMessageComponent)Context.Interaction;
+        Games.GameType gameType = (Games.GameType)int.Parse(type);
+        ulong[] playerIds = [ulong.Parse(player1Id), ulong.Parse(player2Id)];
+
+        if (!playerIds.Contains(Context.User.Id))
+        {
+            await RespondAsync(text: "❌ Only the players of this game can start a rematch.", ephemeral: true);
+            return;
+        }
+
+        ulong opponentId = Context.User.Id == playerIds[0] ? playerIds[1] : playerIds[0];
+        IUser opponent = opponentId == 0 ? null : await Client.GetUserAsync(opponentId, CacheMode.AllowDownload, null);
+
+        // Solo games (Wordle, or anything against a bot) start right away.
+        if (opponent == null || opponent.IsBot)
+        {
+            if (gameType == Games.GameType.Wordle && Challenge.WordleGames.ContainsKey(Context.Channel.Id))
+            {
+                await RespondAsync(text: "❌ Only one game of Wordle can be played per channel at a time.", ephemeral: true);
+                return;
+            }
+
+            if (!Challenge.TryClaimRematch(component.Message))
+            {
+                await RespondAsync(text: "❌ A new game has already been started.", ephemeral: true);
+                return;
+            }
+
+            await DeferAsync();
+            await Challenge.RemoveRematchButton(component.Message);
+            await CreateGame(gameType, Context.User, opponent).StartBotGame(Context.Interaction);
+            return;
+        }
+
+        (bool canChallenge, string reason) = await Challenge.CanChallengeAsync(Context.User.Id, opponent.Id);
+        if (!canChallenge)
+        {
+            await RespondAsync(text: reason, ephemeral: true);
+            return;
+        }
+
+        if (!Challenge.TryClaimRematch(component.Message))
+        {
+            await RespondAsync(text: "❌ A rematch has already been started.", ephemeral: true);
+            return;
+        }
+
+        await Challenge.SendMessage(Context.Interaction, CreateGame(gameType, Context.User, opponent));
+        await Challenge.RemoveRematchButton(component.Message);
+    }
+
+    private static Games.Game CreateGame(Games.GameType type, IUser player1, IUser player2)
+    {
+        return type switch
+        {
+            Games.GameType.RockPaperScissors => new RockPaperScissors(player1, player2),
+            Games.GameType.TicTacToe => new TicTacToe(player1, player2),
+            Games.GameType.Trivia => new Trivia(player1, player2),
+            Games.GameType.Connect4 => new Connect4(player1, player2),
+            Games.GameType.Wordle => new Wordle(player1, null),
+            _ => throw new ArgumentOutOfRangeException(nameof(type)),
+        };
     }
 
     [ComponentInteraction("acceptChallenge:*")]
@@ -620,38 +686,15 @@ public class NoGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInter
     [SlashCommand("quote-prompts", "Bob will give you all valid prompts for /random quote.")]
     public async Task QuotePrompts()
     {
+        StringBuilder prompts = new($"**Here are all valid prompts for {Help.GetCommandMention("random quote")}:**\n\n**Categories:**\n");
+
+        foreach (var (category, categoryPrompts) in RandomQuote.PromptCategories)
+        {
+            prompts.Append($"\n• **{category}:**\n  {string.Join(", ", categoryPrompts.Select(p => $"`{p}`"))}\n");
+        }
+
         // Respond
-        await RespondAsync(text: @$"
-**Here are all valid prompts for {Help.GetCommandMention("random quote")}:**
-
-**Categories:**
-
-• **Life & Philosophy:**  
-  `age`, `change`, `character`, `courage`, `failure`, `faith`, `gratitude`, `happiness`, `honor`, `inspirational`,  
-  `life`, `love`, `pain`, `perseverance`, `philosophy`, `self`, `truth`, `virtue`, `wisdom`
-
-• **Work & Success:**  
-  `business`, `competition`, `ethics`, `genius`, `leadership`, `motivational`, `opportunity`, `success`,  
-  `work`
-
-• **Society & Politics:**  
-  `conservative`, `education`, `freedom`, `politics`, `power-quotes`, `religion`, `tolerance`, `war`
-
-• **Health & Wellness:**  
-  `athletics`, `health`, `sports`, `wellness`
-
-• **Science & Technology:**  
-  `mathematics`, `science`, `technology`
-
-• **Famous & Historical:**  
-  `famous-quotes`, `history`, `proverb`
-
-• **Emotions & Humor:**  
-  `humor`, `humorous`, `sadness`, `stupidity`, `weakness`
-
-• **Miscellaneous:**  
-  `family`, `film`, `future`, `generosity`, `knowledge`, `nature`, `time`
-");
+        await RespondAsync(text: prompts.ToString());
     }
 
     [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]
@@ -1071,63 +1114,52 @@ public class NoGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInter
         await RespondAsync(text: "Whether you're having issues with Bob, wanting to suggest a new idea, or maybe just wanna hang...", components: components.Build());
     }
 
-    [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
-    [IntegrationType(ApplicationIntegrationType.GuildInstall)]
-    [SlashCommand("poll", "Bob will create a poll.")]
-    public async Task Poll([Summary("prompt", "The question you are asking.")] string prompt, [Summary("option1", "an answer / response to your question")] string option1, [Summary("option2", "an answer / response to your question")] string option2, [Summary("option3", "an answer / response to your question")] string option3 = "", [Summary("option4", "an answer / response to your question")] string option4 = "")
+    public enum PollDuration
     {
-        var permissions = Context.Guild.GetUser(Context.Client.CurrentUser.Id).GetPermissions((IGuildChannel)Context.Channel);
+        [ChoiceDisplay("1 hour")]
+        OneHour = 1,
+        [ChoiceDisplay("4 hours")]
+        FourHours = 4,
+        [ChoiceDisplay("8 hours")]
+        EightHours = 8,
+        [ChoiceDisplay("1 day")]
+        OneDay = 24,
+        [ChoiceDisplay("3 days")]
+        ThreeDays = 72,
+        [ChoiceDisplay("1 week")]
+        OneWeek = 168,
+        [ChoiceDisplay("2 weeks")]
+        TwoWeeks = 336,
+    }
 
-        // Check if Bob has permission to send messages in given channel
-        if (!permissions.SendMessages || !permissions.ViewChannel || !permissions.EmbedLinks || !permissions.AddReactions)
+    [CommandContextType(InteractionContextType.Guild, InteractionContextType.PrivateChannel)]
+    [IntegrationType(ApplicationIntegrationType.UserInstall, ApplicationIntegrationType.GuildInstall)]
+    [SlashCommand("poll", "Bob will create a poll.")]
+    public async Task Poll(
+        [Summary("prompt", "The question you are asking.")][MaxLength(300)] string prompt,
+        [Summary("option1", "An answer to your question.")][MaxLength(55)] string option1,
+        [Summary("option2", "An answer to your question.")][MaxLength(55)] string option2,
+        [Summary("option3", "An answer to your question.")][MaxLength(55)] string option3 = null,
+        [Summary("option4", "An answer to your question.")][MaxLength(55)] string option4 = null,
+        [Summary("option5", "An answer to your question.")][MaxLength(55)] string option5 = null,
+        [Summary("option6", "An answer to your question.")][MaxLength(55)] string option6 = null,
+        [Summary("option7", "An answer to your question.")][MaxLength(55)] string option7 = null,
+        [Summary("option8", "An answer to your question.")][MaxLength(55)] string option8 = null,
+        [Summary("option9", "An answer to your question.")][MaxLength(55)] string option9 = null,
+        [Summary("option10", "An answer to your question.")][MaxLength(55)] string option10 = null,
+        [Summary("duration", "How long voting stays open (defaults to 1 day).")] PollDuration duration = PollDuration.OneDay,
+        [Summary("multiple-choice", "Let people vote for more than one option.")] bool multipleChoice = false)
+    {
+        string[] options = [option1, option2, option3, option4, option5, option6, option7, option8, option9, option10];
+
+        await RespondAsync(poll: new PollProperties
         {
-            await RespondAsync(text: $"❌ Bob is either missing permissions to view, send messages, add reactions, *or* embed links in the channel <#{Context.Channel.Id}>.\n- Try giving Bob the following permissions: `View Channel`, `Send Messages`, `Add Reactions`, and `Embed Links`.", ephemeral: true);
-        }
-        else
-        {
-            // Setup base data
-            string footerText = Context.User.GlobalName ?? Context.User.Username + " created this poll.";
-            string instructions = "React with the corresponding number to cast your vote.";
-
-            // Embed
-            var embed = new EmbedBuilder
-            {
-                Title = "📊 " + prompt,
-                Description = instructions,
-                Color = Bot.theme,
-                Footer = new EmbedFooterBuilder
-                {
-                    Text = footerText,
-                    IconUrl = Context.User.GetAvatarUrl()
-                }
-            };
-
-            string[] possibleOptions = [option1, option2, option3, option4];
-            string[] optionLabels = ["1️⃣", "2️⃣", "3️⃣", "4️⃣"];
-            int index = 0;
-            foreach (string option in possibleOptions)
-            {
-                if (option != "")
-                {
-                    embed.AddField(name: $"Option {optionLabels[index]}", value: option);
-                    index++;
-                }
-            }
-
-            await RespondAsync("✅ Your poll has been made.", ephemeral: true);
-
-            var response = await Context.Channel.SendMessageAsync(embed: embed.Build());
-
-            int index2 = 0;
-            foreach (string option in possibleOptions)
-            {
-                if (option != "")
-                {
-                    await response.AddReactionAsync(new Emoji(optionLabels[index2]));
-                    index2++;
-                }
-            }
-        }
+            Question = new PollMediaProperties { Text = prompt },
+            Answers = [.. options.Where(o => !string.IsNullOrWhiteSpace(o)).Select(o => new PollMediaProperties { Text = o })],
+            Duration = (uint)duration,
+            AllowMultiselect = multipleChoice,
+            LayoutType = PollLayout.Default,
+        });
     }
 
     [CommandContextType(InteractionContextType.Guild, InteractionContextType.BotDm, InteractionContextType.PrivateChannel)]

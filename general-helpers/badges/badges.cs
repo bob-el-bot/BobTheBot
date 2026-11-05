@@ -25,6 +25,16 @@ namespace Bob.Badges
         Winner3 = 1 << 7,
         [ChoiceDisplay("Artist")]
         Artist = 1 << 8,
+        [ChoiceDisplay("Wordsmith")]
+        Wordsmith = 1 << 9,
+        [ChoiceDisplay("Know-It-All")]
+        KnowItAll = 1 << 10,
+        [ChoiceDisplay("Codebreaker")]
+        Codebreaker = 1 << 11,
+        [ChoiceDisplay("Bob Beater")]
+        BobBeater = 1 << 12,
+        [ChoiceDisplay("Veteran")]
+        Veteran = 1 << 13,
     }
 
     public class BadgeInformation
@@ -127,6 +137,56 @@ namespace Bob.Badges
                     Emoji = "🖼️",
                     Description = "It's... magnificent.",
                     HowToGet = "Make fanart and share it on Bob's official server!"
+                }
+            },
+            {
+                Badges.Wordsmith,
+                new BadgeInformation
+                {
+                    DisplayName = "Wordsmith",
+                    Emoji = "📖",
+                    Description = "Did you peek?",
+                    HowToGet = "Solve a Wordle in 2 guesses or fewer."
+                }
+            },
+            {
+                Badges.KnowItAll,
+                new BadgeInformation
+                {
+                    DisplayName = "Know-It-All",
+                    Emoji = "🎓",
+                    Description = "Is there anything you don't know?",
+                    HowToGet = "Answer every question correctly in a game of trivia."
+                }
+            },
+            {
+                Badges.Codebreaker,
+                new BadgeInformation
+                {
+                    DisplayName = "Codebreaker",
+                    Emoji = "🧠",
+                    Description = "No code is safe.",
+                    HowToGet = "Crack the code in Master Mind on Hard."
+                }
+            },
+            {
+                Badges.BobBeater,
+                new BadgeInformation
+                {
+                    DisplayName = "Bob Beater",
+                    Emoji = "🤖",
+                    Description = "The student has become the master.",
+                    HowToGet = "Beat Bob in a game of Connect 4."
+                }
+            },
+            {
+                Badges.Veteran,
+                new BadgeInformation
+                {
+                    DisplayName = "Veteran",
+                    Emoji = "🎖️",
+                    Description = "You've seen a few battles.",
+                    HowToGet = "Play 100 multiplayer games."
                 }
             },
         };

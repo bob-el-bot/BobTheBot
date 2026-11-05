@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Bob.BadgeInterface;
 using Bob.Challenges;
 using Discord;
 using Discord.WebSocket;
@@ -50,7 +51,7 @@ namespace Bob.Commands.Helpers
             {
                 Challenge.DecrementUserChallenges(Player1.Id);
 
-                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateEmbed(WordleMethods.CreateFinalTitle(this), Challenge.SinglePlayerLoseColor, Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome, true)); x.Components = null; });
+                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateEmbed(WordleMethods.CreateFinalTitle(this), Challenge.SinglePlayerLoseColor, Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome, true)); x.Components = new ComponentBuilder().WithRematchButton(this).Build(); });
             }
             catch (Exception)
             {
@@ -66,11 +67,16 @@ namespace Bob.Commands.Helpers
             {
                 Challenge.DecrementUserChallenges(Player1.Id);
 
-                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateEmbed(WordleMethods.CreateFinalTitle(this), lost ? Challenge.SinglePlayerLoseColor : Challenge.SinglePlayerWinColor, Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome, true)); x.Components = null; });
+                await Message.ModifyAsync(x => { x.Embed = Challenge.CreateEmbed(WordleMethods.CreateFinalTitle(this), lost ? Challenge.SinglePlayerLoseColor : Challenge.SinglePlayerWinColor, Challenge.GetFinalThumbnailUrl(Player1, Player2, outcome, true)); x.Components = new ComponentBuilder().WithRematchButton(this).Build(); });
             }
             catch (Exception)
             {
                 // Do nothing Because the game will already be deleted.
+            }
+
+            if (!lost && Guesses.Count <= 2)
+            {
+                await Badge.AwardBadgeAsync(Player1, Bob.Badges.Badges.Wordsmith, Message.Channel);
             }
 
             _ = EndGame();

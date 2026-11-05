@@ -92,7 +92,7 @@ namespace Bob.Commands.Helpers
             {
                 return Challenge.WinCases.Player2;
             }
-            else if (winner == -1 && game.Turns == 42 || (forfeited && game.Turns == 0)) // draw
+            else if (winner == 0 && game.Turns == 42 || (forfeited && game.Turns == 0)) // draw
             {
                 return Challenge.WinCases.Tie;
             }

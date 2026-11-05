@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Bob.Badges;
 using Bob.Database;
 using Bob.Database.Types;
+using Discord;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Bob.BadgeInterface
@@ -129,7 +130,54 @@ namespace Bob.BadgeInterface
 
                 using var scope = Bot.Services.CreateScope();
                 var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
+                context.User.Update(user);
                 await context.SaveChangesAsync();
+            }
+        }
+
+        /// <summary>
+        /// Awards a badge to a user, saves it, and announces it in the channel if it was newly earned.
+        /// </summary>
+        /// <param name="user">The user to award the badge to.</param>
+        /// <param name="badge">The badge to award.</param>
+        /// <param name="channel">The channel to announce the badge in.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public static async Task AwardBadgeAsync(IUser user, Badges.Badges badge, IMessageChannel channel)
+        {
+            using var scope = Bot.Services.CreateScope();
+            var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
+            User dbUser = await context.GetOrCreateUserAsync(user.Id);
+
+            ulong previousBadges = dbUser.EarnedBadges;
+            GiveUserObjectBadge(dbUser, badge);
+
+            if (dbUser.EarnedBadges != previousBadges)
+            {
+                await context.SaveChangesAsync();
+                await AnnounceNewBadgesAsync(channel, user, previousBadges, dbUser.EarnedBadges);
+            }
+        }
+
+        /// <summary>
+        /// Announces any badges in <paramref name="currentBadges"/> that are not in <paramref name="previousBadges"/>.
+        /// </summary>
+        /// <param name="channel">The channel to announce the badges in.</param>
+        /// <param name="user">The user who earned the badges.</param>
+        /// <param name="previousBadges">The user's badges before the update.</param>
+        /// <param name="currentBadges">The user's badges after the update.</param>
+        /// <returns>A task representing the asynchronous operation.</returns>
+        public static async Task AnnounceNewBadgesAsync(IMessageChannel channel, IUser user, ulong previousBadges, ulong currentBadges)
+        {
+            foreach (Badges.Badges badge in GetUserBadges(currentBadges & ~previousBadges))
+            {
+                try
+                {
+                    await channel.SendMessageAsync(text: $"🎉 {user.Mention} unlocked the **{GetBadgeEmoji(badge)} {GetBadgeDisplayName(badge)}** badge!\n- {BadgeDescriptions.Descriptions[badge].HowToGet}", allowedMentions: AllowedMentions.None);
+                }
+                catch (Exception)
+                {
+                    // Missing permissions to send here, the badge is still saved.
+                }
             }
         }
 
@@ -189,6 +237,7 @@ namespace Bob.BadgeInterface
 
                 using var scope = Bot.Services.CreateScope();
                 var context = scope.ServiceProvider.GetRequiredService<BobEntities>();
+                context.User.Update(user);
                 await context.SaveChangesAsync();
             }
         }
@@ -312,6 +361,13 @@ namespace Bob.BadgeInterface
                         else if (users[i].WinStreak >= 10)
                         {
                             users[i] = GiveUserObjectBadge(users[i], Badges.Badges.Winner1);
+                        }
+                        break;
+                    case Badges.Badges.Veteran:
+                        User u = users[i];
+                        if (u.TotalConnect4Games + u.TotalTicTacToeGames + u.TotalTriviaGames + u.TotalRockPaperScissorsGames >= 100)
+                        {
+                            users[i] = GiveUserObjectBadge(u, badge);
                         }
                         break;
                     case Badges.Badges.Friend:

@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Bob.Networking;
 using Microsoft.Extensions.Caching.Memory;
 using SkiaSharp;
 
@@ -17,7 +18,7 @@ namespace Bob.Commands.Helpers
         private static SKBitmap _dislikeIcon;
         private static readonly MemoryCache Cache = new(new MemoryCacheOptions());
         private static readonly ConcurrentDictionary<string, Task<SKBitmap>> OnGoingDownloads = new();
-        private static readonly HttpClient Http = new() { MaxResponseContentBufferSize = MaxDownloadBytes };
+        private static readonly HttpClient Http = new(SafeHttp.CreateHandler()) { MaxResponseContentBufferSize = MaxDownloadBytes };
 
         /// <summary>
         /// The largest image download allowed, in bytes.
