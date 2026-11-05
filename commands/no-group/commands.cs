@@ -246,29 +246,28 @@ public class NoGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInter
             }
             else
             {
-                await DeferAsync();
-
                 // Prepare Position
                 string[] coords = coordinate.Split('-');
                 int[] position = [Convert.ToInt16(coords[0]), Convert.ToInt16(coords[1])];
 
                 // Check if the chosen move is valid and within bounds
-                if (game.Grid[position[0], position[1]] == 0)
+                if (game.Grid[position[0], position[1]] != 0)
                 {
-                    game.Grid[position[0], position[1]] = game.IsPlayer1Turn ? 1 : 2;
-                    if (game.Player2.IsBot)
-                    {
-                        await game.EndBotTurn(component);
-                    }
-                    else
-                    {
-                        await game.EndTurn(component);
-                    }
+                    await component.RespondAsync(text: $"❌ Invalid move.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    return;
+                }
+
+                game.Grid[position[0], position[1]] = game.IsPlayer1Turn ? 1 : 2;
+
+                await DeferAsync();
+
+                if (game.Player2.IsBot)
+                {
+                    await game.EndBotTurn(component);
                 }
                 else
                 {
-                    // Handle the case where the chosen move is not valid or out of bounds
-                    await component.RespondAsync(text: $"❌ Invalid move.\n- If you think this is a mistake, let us know here: [Bob's Official Server](https://discord.gg/HvGMRZD8jQ)", ephemeral: true);
+                    await game.EndTurn(component);
                 }
             }
         }
@@ -468,8 +467,6 @@ public class NoGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInter
             }
             else
             {
-                await DeferAsync();
-
                 if (int.TryParse(column, out int col))
                 {
                     // Find the lowest empty row in the selected column
@@ -480,6 +477,8 @@ public class NoGroup(BobEntities dbContext) : InteractionModuleBase<ShardedInter
                             game.Grid[col - 1, row] = isPlayer1 ? 1 : 2;
                             game.LastMoveColumn = col - 1;
                             game.LastMoveRow = row;
+
+                            await DeferAsync();
 
                             if (game.Player2.IsBot)
                             {
